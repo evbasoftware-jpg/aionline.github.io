@@ -2,24 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Online QR Payment</title>
+<title>AI Online Services – Payment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
 <style>
 body{
   font-family: Arial, sans-serif;
-  background:#f2f2f2;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff;
   text-align:center;
-  padding:30px;
+  padding:20px;
 }
-.box{
-  background:#fff;
-  padding:25px;
-  border-radius:10px;
-  max-width:400px;
+.container{
+  background:#ffffff;
+  color:#000;
+  max-width:420px;
   margin:auto;
-  box-shadow:0 0 10px rgba(0,0,0,0.1);
+  padding:25px;
+  border-radius:12px;
 }
+h1{color:#0f2027;}
 input{
   width:100%;
   padding:12px;
@@ -27,49 +30,69 @@ input{
   font-size:16px;
 }
 button{
-  background:#007bff;
-  color:white;
-  border:none;
-  padding:14px;
   width:100%;
-  font-size:18px;
+  padding:14px;
+  font-size:17px;
+  margin-top:10px;
+  border:none;
   border-radius:6px;
+  cursor:pointer;
 }
-#qrcode{
-  margin-top:20px;
-}
+.pay{background:#28a745;color:#fff;}
+.whatsapp{background:#25D366;color:#fff;}
+#qrcode{margin-top:15px;}
+small{color:#555;}
 </style>
 </head>
 
 <body>
-<div class="box">
-  <h2>AI Online QR Payment</h2>
-  <p>Enter amount & scan QR</p>
+<div class="container">
+  <h1>AI Online Services</h1>
+  <p>Pay securely using UPI</p>
 
   <input type="number" id="amount" placeholder="Enter Amount (₹)">
+  <input type="text" id="name" placeholder="Your Name">
 
-  <button onclick="generateQR()">Generate QR Code</button>
+  <button class="pay" onclick="payUPI()">💳 Pay with UPI App</button>
+  <button class="pay" onclick="generateQR()">📷 Generate QR Code</button>
 
   <div id="qrcode"></div>
+
+  <button class="whatsapp" onclick="paymentDone()">✅ Payment Done (WhatsApp)</button>
+
+  <small>After payment, click “Payment Done”</small>
 </div>
 
 <script>
+function payUPI(){
+  let amt = amount.value;
+  if(amt==""){alert("Enter amount");return;}
+  let link = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
+  window.location.href = link;
+}
+
 function generateQR(){
-  var amt = document.getElementById("amount").value;
-  if(amt==""){
-    alert("Enter amount");
-    return;
-  }
+  let amt = amount.value;
+  if(amt==""){alert("Enter amount");return;}
+  qrcode.innerHTML="";
+  let upi = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
+  new QRCode(qrcode,{text:upi,width:220,height:220});
+}
 
-  document.getElementById("qrcode").innerHTML = "";
-
-  var upi = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am=" + amt + "&cu=INR";
-
-  new QRCode(document.getElementById("qrcode"), {
-    text: upi,
-    width: 220,
-    height: 220
+function paymentDone(){
+  let amt = amount.value;
+  let nm = name.value || "Unknown";
+  // Google Sheet log
+  fetch("YOUR_GOOGLE_SCRIPT_URL",{
+    method:"POST",
+    body:JSON.stringify({name:nm,amount:amt}),
+    headers:{"Content-Type":"application/json"}
   });
+
+  // WhatsApp
+  let msg = `Payment Done%0AName: ${nm}%0AAmount: ₹${amt}`;
+  window.location.href =
+  "https://wa.me/91XXXXXXXXXX?text="+msg;
 }
 </script>
 </body>
