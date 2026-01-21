@@ -2,115 +2,147 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Online Services – Payment</title>
+<title>AI Online Services | Secure Payment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- QR Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
 <style>
+*{box-sizing:border-box}
 body{
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:#fff;
+}
+header{
+  padding:40px 20px;
   text-align:center;
-  padding:20px;
 }
-.container{
-  background:#ffffff;
-  color:#000;
+header h1{
+  margin:0;
+  font-size:28px;
+  font-weight:600;
+}
+header p{
+  opacity:.9;
+  font-size:14px;
+}
+
+.card{
+  background:#fff;
+  color:#333;
   max-width:420px;
-  margin:auto;
+  margin:-20px auto 30px;
   padding:25px;
-  border-radius:12px;
+  border-radius:14px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
 }
-h1{color:#0f2027;}
+
+.card h2{
+  text-align:center;
+  margin-top:0;
+  color:#203a43;
+}
+
 input{
   width:100%;
-  padding:12px;
+  padding:14px;
   margin:10px 0;
-  font-size:16px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:15px;
 }
+
 button{
   width:100%;
   padding:14px;
-  font-size:17px;
   margin-top:10px;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
   cursor:pointer;
 }
-.pay{background:#28a745;color:#fff;}
-.whatsapp{background:#25D366;color:#fff;}
-#qrcode{margin-top:15px;}
-small{color:#555;}
+
+.btn-pay{background:#1e88e5;color:#fff}
+.btn-qr{background:#3949ab;color:#fff}
+.btn-wa{background:#25D366;color:#fff}
+
+button:active{transform:scale(.98)}
+
+#qrcode{
+  margin-top:15px;
+  text-align:center;
+}
+
+footer{
+  text-align:center;
+  font-size:12px;
+  opacity:.8;
+  padding-bottom:20px;
+}
 </style>
 </head>
 
 <body>
-<div class="container">
+
+<header>
   <h1>AI Online Services</h1>
-  <p>Pay securely using UPI</p>
+  <p>Fast • Secure • Professional Digital Solutions</p>
+</header>
 
-  <input type="number" id="amount" placeholder="Enter Amount (₹)">
+<div class="card">
+  <h2>Make a Payment</h2>
+
   <input type="text" id="name" placeholder="Your Name">
+  <input type="number" id="amount" placeholder="Enter Amount (₹)">
 
-  <button class="pay" onclick="payUPI()">💳 Pay with UPI App</button>
-  <button class="pay" onclick="generateQR()">📷 Generate QR Code</button>
+  <button class="btn-pay" onclick="payUPI()">Pay with UPI App</button>
+  <button class="btn-qr" onclick="generateQR()">Generate QR Code</button>
 
   <div id="qrcode"></div>
 
-  <button class="whatsapp" onclick="paymentDone()">✅ Payment Done (WhatsApp)</button>
-
-  <small>After payment, click “Payment Done”</small>
+  <button class="btn-wa" onclick="paymentDone()">Payment Done (Confirm)</button>
 </div>
+
+<footer>
+  © 2026 AI Online • Secure Payment System
+</footer>
 
 <script>
 function payUPI(){
   let amt = amount.value;
-  if(amt==""){alert("Enter amount");return;}
+  if(!amt){alert("Enter amount");return;}
   let link = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
   window.location.href = link;
 }
 
 function generateQR(){
   let amt = amount.value;
-  if(amt==""){alert("Enter amount");return;}
+  if(!amt){alert("Enter amount");return;}
   qrcode.innerHTML="";
   let upi = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
-  new QRCode(qrcode,{text:upi,width:220,height:220});
+  new QRCode(qrcode,{text:upi,width:200,height:200});
 }
 
 function paymentDone(){
-  let amt = amount.value;
   let nm = name.value || "Unknown";
-  // Google Sheet log
-  fetch("YOUR_GOOGLE_SCRIPT_URL",{
-    method:"POST",
-    body:JSON.stringify({name:nm,amount:amt}),
-    headers:{"Content-Type":"application/json"}
-  });
-
-  // WhatsApp
-  let msg = `Payment Done%0AName: ${nm}%0AAmount: ₹${amt}`;
-  window.location.href =
-  "https://wa.me/919800074626="+msg;
-}
-
-function paymentDone(){
-  let amt = document.getElementById("amount").value;
-  let nm  = document.getElementById("name").value || "Unknown";
-
-  if(amt==""){
-    alert("Enter amount");
-    return;
-  }
+  let amt = amount.value;
+  if(!amt){alert("Enter amount");return;}
 
   let formURL =
   "https://docs.google.com/forms/d/e/1FAIpQLSe632ftcEOxunfdnDS4tD1fgAj26WuEEIAcyUMciuSar96guw/viewform"
   + "?entry.1696920536=" + encodeURIComponent(nm)
   + "&entry.585334201=" + encodeURIComponent(amt);
 
-  window.open(formURL, "_blank");
+  window.open(formURL,"_blank");
 }
 </script>
+
 </body>
 </html>
