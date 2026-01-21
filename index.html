@@ -1,148 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>AI Online Services | Secure Payment</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-<!-- QR Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:'Poppins',sans-serif;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:#fff;
-}
-header{
-  padding:40px 20px;
-  text-align:center;
-}
-header h1{
-  margin:0;
-  font-size:28px;
-  font-weight:600;
-}
-header p{
-  opacity:.9;
-  font-size:14px;
-}
-
-.card{
-  background:#fff;
-  color:#333;
-  max-width:420px;
-  margin:-20px auto 30px;
-  padding:25px;
-  border-radius:14px;
-  box-shadow:0 15px 40px rgba(0,0,0,.25);
-}
-
-.card h2{
-  text-align:center;
-  margin-top:0;
-  color:#203a43;
-}
-
-input{
-  width:100%;
-  padding:14px;
-  margin:10px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:15px;
-}
-
-button{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.btn-pay{background:#1e88e5;color:#fff}
-.btn-qr{background:#3949ab;color:#fff}
-.btn-wa{background:#25D366;color:#fff}
-
-button:active{transform:scale(.98)}
-
-#qrcode{
-  margin-top:15px;
-  text-align:center;
-}
-
-footer{
-  text-align:center;
-  font-size:12px;
-  opacity:.8;
-  padding-bottom:20px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>AI Online – Smart Digital Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <header>
-  <h1>AI Online Services</h1>
-  <p>Fast • Secure • Professional Digital Solutions</p>
+  <div class="logo">AI<span>Online</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="contact.html">Contact</a>
+  </nav>
 </header>
 
-<div class="card">
-  <h2>Make a Payment</h2>
+<section class="hero">
+  <h1>Welcome to AI Online</h1>
+  <p>Smart AI Tools • Online Services • Digital Payments</p>
+  <a href="#services" class="btn">Explore Services</a>
+</section>
 
-  <input type="text" id="name" placeholder="Your Name">
-  <input type="number" id="amount" placeholder="Enter Amount (₹)">
+<section id="services" class="services">
+  <h2>Our Services</h2>
 
-  <button class="btn-pay" onclick="payUPI()">Pay with UPI App</button>
-  <button class="btn-qr" onclick="generateQR()">Generate QR Code</button>
+  <div class="card">
+    <h3>AI Tools</h3>
+    <p>Online AI based smart tools for daily use.</p>
+  </div>
 
-  <div id="qrcode"></div>
+  <div class="card">
+    <h3>Online Payments</h3>
+    <p>UPI QR, Pay Button & WhatsApp Confirmation.</p>
+  </div>
 
-  <button class="btn-wa" onclick="paymentDone()">Payment Done (Confirm)</button>
-</div>
+  <div class="card">
+    <h3>Web Solutions</h3>
+    <p>Low cost professional websites.</p>
+  </div>
+</section>
 
 <footer>
-  © 2026 AI Online • Secure Payment System
+  <p>© 2026 AI Online | All Rights Reserved</p>
 </footer>
-
-<script>
-function payUPI(){
-  let amt = amount.value;
-  if(!amt){alert("Enter amount");return;}
-  let link = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
-  window.location.href = link;
-}
-
-function generateQR(){
-  let amt = amount.value;
-  if(!amt){alert("Enter amount");return;}
-  qrcode.innerHTML="";
-  let upi = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am="+amt+"&cu=INR";
-  new QRCode(qrcode,{text:upi,width:200,height:200});
-}
-
-function paymentDone(){
-  let nm = name.value || "Unknown";
-  let amt = amount.value;
-  if(!amt){alert("Enter amount");return;}
-
-  let formURL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSe632ftcEOxunfdnDS4tD1fgAj26WuEEIAcyUMciuSar96guw/viewform"
-  + "?entry.1696920536=" + encodeURIComponent(nm)
-  + "&entry.585334201=" + encodeURIComponent(amt);
-
-  window.open(formURL,"_blank");
-}
-</script>
 
 </body>
 </html>
