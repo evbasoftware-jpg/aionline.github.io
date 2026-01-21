@@ -1,4 +1,4 @@
-* {
+aq* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -12,7 +12,7 @@ body {
 
 /* Header */
 header {
-  background: linear-gradient(135deg, #2cabf5, #1dbdf5, #2fddf7);
+  background: linear-gradient(135deg, #2cabf5);
   color: white;
   padding: 20px;
   text-align: center;
