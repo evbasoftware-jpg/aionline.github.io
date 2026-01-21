@@ -92,7 +92,19 @@ function paymentDone(){
   // WhatsApp
   let msg = `Payment Done%0AName: ${nm}%0AAmount: ₹${amt}`;
   window.location.href =
-  "https://wa.me/91XXXXXXXXXX?text="+msg;
+  "https://wa.me/919800074626="+msg;
+}
+
+function paymentDone(){
+  let amt = document.getElementById("amount").value;
+  let nm = document.getElementById("name").value || "Unknown";
+
+  let formURL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSe632ftcEOxunfdnDS4tD1fgAj26WuEEIAcyUMciuSar96guw/viewform?usp=header"
+  + "?entry.111111=" + encodeURIComponent(nm)
+  + "&entry.222222=" + encodeURIComponent(amt);
+
+  window.open(formURL, "_blank");
 }
 </script>
 </body>
