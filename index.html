@@ -1,22 +1,68 @@
-
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Premium Access</title>
+<title>AI Online Payment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial;background:#f4f6f9;text-align:center;padding:40px}
-.box{background:#fff;padding:30px;border-radius:10px;max-width:400px;margin:auto}
-a{display:inline-block;margin-top:20px;background:#28a745;color:#fff;
-padding:12px 25px;text-decoration:none;border-radius:6px}
+body{
+  font-family: Arial, sans-serif;
+  background:#f2f2f2;
+  text-align:center;
+  padding:40px;
+}
+.box{
+  background:#fff;
+  padding:25px;
+  border-radius:10px;
+  max-width:400px;
+  margin:auto;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  font-size:16px;
+}
+button{
+  background:#28a745;
+  color:white;
+  border:none;
+  padding:15px;
+  width:100%;
+  font-size:18px;
+  border-radius:6px;
+}
 </style>
 </head>
+
 <body>
 <div class="box">
-<h1>Premium Content</h1>
-<p>₹99 দিয়ে এক্সেস আনলক করুন</p>
-<a href="payment.html">Pay Now (UPI)</a>
+  <h2>AI Online Payment</h2>
+  <p>Pay securely using UPI</p>
+
+  <input type="number" id="amount" placeholder="Enter Amount" required>
+
+  <button onclick="payNow()">Pay with UPI</button>
 </div>
+
+<script>
+function payNow(){
+  var amt = document.getElementById("amount").value;
+  if(amt==""){
+    alert("Enter amount");
+    return;
+  }
+
+  var upiLink = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am=" + amt + "&cu=INR";
+
+  window.location.href = upiLink;
+
+  setTimeout(function(){
+    window.location.href = "success.html";
+  }, 4000);
+}
+</script>
 </body>
 </html>
