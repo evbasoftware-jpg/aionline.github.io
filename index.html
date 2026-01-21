@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Online Payment</title>
+<title>AI Online QR Payment</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 body{
   font-family: Arial, sans-serif;
   background:#f2f2f2;
   text-align:center;
-  padding:40px;
+  padding:30px;
 }
 .box{
   background:#fff;
@@ -26,42 +27,49 @@ input{
   font-size:16px;
 }
 button{
-  background:#28a745;
+  background:#007bff;
   color:white;
   border:none;
-  padding:15px;
+  padding:14px;
   width:100%;
   font-size:18px;
   border-radius:6px;
+}
+#qrcode{
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 <div class="box">
-  <h2>AI Online Payment</h2>
-  <p>Pay securely using UPI</p>
+  <h2>AI Online QR Payment</h2>
+  <p>Enter amount & scan QR</p>
 
-  <input type="number" id="amount" placeholder="Enter Amount" required>
+  <input type="number" id="amount" placeholder="Enter Amount (₹)">
 
-  <button onclick="payNow()">Pay with UPI</button>
+  <button onclick="generateQR()">Generate QR Code</button>
+
+  <div id="qrcode"></div>
 </div>
 
 <script>
-function payNow(){
+function generateQR(){
   var amt = document.getElementById("amount").value;
   if(amt==""){
     alert("Enter amount");
     return;
   }
 
-  var upiLink = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am=" + amt + "&cu=INR";
+  document.getElementById("qrcode").innerHTML = "";
 
-  window.location.href = upiLink;
+  var upi = "upi://pay?pa=9800074626@upi&pn=AI%20Online&am=" + amt + "&cu=INR";
 
-  setTimeout(function(){
-    window.location.href = "success.html";
-  }, 4000);
+  new QRCode(document.getElementById("qrcode"), {
+    text: upi,
+    width: 220,
+    height: 220
+  });
 }
 </script>
 </body>
