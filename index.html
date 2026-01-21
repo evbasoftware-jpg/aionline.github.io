@@ -97,12 +97,17 @@ function paymentDone(){
 
 function paymentDone(){
   let amt = document.getElementById("amount").value;
-  let nm = document.getElementById("name").value || "Unknown";
+  let nm  = document.getElementById("name").value || "Unknown";
+
+  if(amt==""){
+    alert("Enter amount");
+    return;
+  }
 
   let formURL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSe632ftcEOxunfdnDS4tD1fgAj26WuEEIAcyUMciuSar96guw/viewform?usp=header"
-  + "?entry.111111=" + encodeURIComponent(nm)
-  + "&entry.222222=" + encodeURIComponent(amt);
+  "https://docs.google.com/forms/d/e/1FAIpQLSe632ftcEOxunfdnDS4tD1fgAj26WuEEIAcyUMciuSar96guw/viewform"
+  + "?entry.1696920536=" + encodeURIComponent(nm)
+  + "&entry.585334201=" + encodeURIComponent(amt);
 
   window.open(formURL, "_blank");
 }
