@@ -6,8 +6,8 @@
 }
 
 body {
-  background: #f4f6f9;
-  color: #333;
+  background: #f9f9f4;
+  color: #4f75f0;
 }
 
 /* Header */
@@ -66,8 +66,8 @@ nav a {
 
 /* Footer */
 footer {
-  background: #222;
-  color: #ccc;
+  background: #ed3737;
+  color: #f5f57a;
   text-align: center;
   padding: 15px;
   margin-top: 40px;
