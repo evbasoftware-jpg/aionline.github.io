@@ -1,1 +1,40 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact – AI Online</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">AI<span>Online</span></div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<section class="contact">
+  <h1>Contact Us</h1>
+  <p>Have any questions? Feel free to contact.</p>
+
+  <div class="contact-box">
+    <p><strong>📧 Email:</strong> support@aionline.in.net</p>
+    <p><strong>📱 WhatsApp:</strong> 9800074626</p>
+    <p><strong>🌐 Website:</strong> aionline.in.net</p>
+  </div>
+
+  <a class="btn" href="https://wa.me/919800074626" target="_blank">
+    Chat on WhatsApp
+  </a>
+</section>
+
+<footer>
+  <p>© 2026 AI Online</p>
+</footer>
+
+</body>
+</html>
