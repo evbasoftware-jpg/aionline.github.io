@@ -161,7 +161,7 @@ th{
 
 <body>
 
-<h2>Upload Excel File</h2>
+<h2>Upload Excel File with data</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
@@ -181,7 +181,8 @@ th{
 <div id="table_container"></div>
 
 <script>
-// normalize text
+    
+  // normalize text
 const norm = v =>
   String(v || "")
     .toUpperCase()
@@ -229,6 +230,7 @@ let allMonthlyRows = [];
 let otherSheetData = []; 
 let currentEmployeeData = null; 
 let globalCircleName = "N/A"; 
+let globalDistrictName = "N/A";  
 
 document.getElementById("excel_file").addEventListener("change", e => {
     const file = e.target.files[0];
@@ -243,6 +245,7 @@ reader.onload = ev => {
     allMonthlyRows = [];
     otherSheetData = [];
     globalCircleName = "N/A";
+    globalDistrictName= "N/A";
 
     const MONTHS = [
         "MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER",
@@ -281,6 +284,7 @@ const otherSheetName =
     if (otherSheetName) {
         const ws = wb.Sheets[otherSheetName];
         globalCircleName = String(ws["H4"].v).trim();
+        globalDistrictName= String(ws["D4"].v).trim();
         const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
 
   const hIndex = rows.findIndex(r =>
@@ -368,6 +372,7 @@ const otherRecord = otherSheetData.find(item =>
     let designation = "N/A";
     let sex = "N/A";
     let circleName = globalCircleName;
+    let distName=globalDistrictName;
 
      let   othInc1 ="N/A";
      let  othInc1Rs = "N/A";
@@ -588,8 +593,8 @@ const otherRecord = otherSheetData.find(item =>
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
-                <h2>Office of the Sub-Inspector of Schools, ${circleName} Circle</h2>
-                 <h4>${assesYear}</h4>
+                <h2 style="color: #1414e0;">Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h2>
+                 <h4 style="color: #8e14e0;">${assesYear}</h4>
             
                 <table>
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
@@ -632,7 +637,7 @@ function navigateEmployee(direction) {
 
 document.getElementById("prev_btn").addEventListener("click", () => navigateEmployee('prev'));
 document.getElementById("next_btn").addEventListener("click", () => navigateEmployee('next'));
-          
+            
 </script>
 
 </body>
