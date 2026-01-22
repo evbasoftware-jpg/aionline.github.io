@@ -112,51 +112,42 @@ th{
     h2 {
         display: none !important;
     }
-* {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-}
+
     /* ✅ Clean page */
     body {
         background: white;
         padding: 0;
         margin: 0;
     }
-    
-/* ✅ Infobox print friendly */
+
+    /* ✅ Tables full width */
+    table {
+        width: 100% !important;
+        box-shadow: none;
+    }
+
+    /* ✅ Infobox print friendly */
     .infobox {
         box-shadow: none;
         border-left: 5px solid #000;
         border-right: 5px solid #000;
         page-break-inside: avoid;
-        background: exact;
-      
     }
-    
-    /* ✅ Tables full width */
-    table {
-        width: 100% !important;
-        box-shadow: none;
-        background: exact;
-   /*     -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;*/
-    }
-
-    
 
     /* ✅ Header color force */
     th {
-        background: exact;
-    /*    -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;*/
+        background: #ddd !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     /* ✅ Summary row color */
     .summary {
-        background:exact;
+        background: #eee !important;
         font-weight: bold;
-    /*    -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;*/
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 }
     
@@ -165,7 +156,7 @@ th{
 
 <body>
 
-<h2>Upload Excel file</h2>
+<h2>Upload Excel file data</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
