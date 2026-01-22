@@ -69,7 +69,13 @@ h2 {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
+.qr-img {
+  max-width: 260px;
+  width: 100%;
+  height: auto;
+  margin: 10px auto;
+  display: block;
+}
 .pay-btn {
   display: inline-block;
   background: #2e7d32;
