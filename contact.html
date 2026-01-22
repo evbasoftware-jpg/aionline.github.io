@@ -1,28 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Contact – AI Online</title>
+  <meta charset="UTF-8">
+  <title>Contact & Payment | AI Online</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-  <h1>Contact Us</h1>
+<header class="header">
+  <h1>AI Online</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html" class="active">Contact</a>
+  </nav>
 </header>
 
-<div class="container">
-  <div class="card">
-    <p><b>UPI:</b> 9800074626@upi</p>
-    <p>WhatsApp support available after payment.</p>
+<section class="container">
+  <h2>Contact & Payment</h2>
 
-    <a class="btn" href="https://wa.me/919800074626">
-      WhatsApp Support
+  <div class="card center">
+    <h3>Pay via UPI</h3>
+    <p class="upi">UPI ID: <b>9800074626@upi</b></p>
+
+    <img src="QR.png" alt="UPI QR Code" class="qr">
+
+    <a class="pay-btn"
+       href="upi://pay?pa=9800074626@upi&pn=AI Online&cu=INR">
+       Pay Now
     </a>
   </div>
-</div>
 
-<footer>© AI Online</footer>
+  <div class="card center">
+    <h3>After Payment</h3>
+    <p>
+      After completing payment, click the button below and send
+      your payment screenshot.
+    </p>
+
+    <a class="whatsapp-btn"
+       href="https://wa.me/919800074626?text=Hello%20AI%20Online,%20I%20have%20completed%20the%20payment."
+       target="_blank">
+       WhatsApp Support
+    </a>
+  </div>
+</section>
+
+<footer>
+  © 2026 AI Online. All rights reserved.
+</footer>
 
 </body>
 </html>
