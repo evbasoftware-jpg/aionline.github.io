@@ -163,7 +163,7 @@ th{
 
 <body>
 
-<h1>Upload Excel </h1>
+<h1>Upload Excel file</h1>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
@@ -528,7 +528,7 @@ const otherRecord = otherSheetData.find(item =>
                 if (bonusAmount > 0) {
                     html += `<tr class="bonus-row">
                         <td><b>BONUS</b></td>
-                        <td colspan="7" style="text-align:right; padding-right:20px; font-style:italic;"></td>
+                        <td colspan="6" style="text-align:right; padding-right:20px; font-style:italic;"></td>
                         <td><b>${bonusAmount.toFixed(2)}</b></td>
                         <td colspan="4"></td>
                         <td><b>${bonusAmount.toFixed(2)}</b></td>
@@ -539,7 +539,7 @@ const otherRecord = otherSheetData.find(item =>
                 if (arrearAmount > 0) {
                     html += `<tr class="arrear-row">
                         <td><b>ARREAR</b></td>
-                        <td colspan="7" style="text-align:right; padding-right:20px; font-style:italic;"></td>
+                        <td colspan="6" style="text-align:right; padding-right:20px; font-style:italic;"></td>
                         <td><b>${arrearAmount.toFixed(2)}</b></td>
                         <td colspan="4"></td>
                         <td><b>${arrearAmount.toFixed(2)}</b></td>
