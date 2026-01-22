@@ -103,53 +103,44 @@ th{
 }
 
     /* ================= PRINT SETTINGS ================= */
-@media print {
+    
+#printHeader{
+    text-align:center;
+    font-weight:bold;
+    font-size:16px;
+    margin-bottom:8px;
+    display:none; /* screen এ hide */
+}
 
-    /* ❌ Hide upload & controls */
+#salaryTitle{
+    text-align:center;
+    color:#6a1b9a;
+}
+
+/* ✅ PRINT FIX */
+@media print {
+    
+/* ❌ Hide upload & controls */
     input[type="file"],
     #search_section,
     button,
     h2 {
         display: none !important;
     }
+  #printHeader{
+    display:block !important;
+  }
 
-    /* ✅ Clean page */
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-    }
+  body{
+    margin-top:0;
+  }
 
-    /* ✅ Tables full width */
-    table {
-        width: 100% !important;
-        box-shadow: none;
-    }
-
-    /* ✅ Infobox print friendly 
-    .infobox {
-        box-shadow: none;
-        border-left: 5px solid #000;
-        border-right: 5px solid #000;
-        page-break-inside: avoid;
-        padding: 20px;
-    }*/
-
-    /* ✅ Header color force */
-    th {
-      /*  background: #ddd !important;
-        color: black !important;*/
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-
-    /* ✅ Summary row color */
-    .summary {
-        /*background: #eee !important;*/
-        font-weight: bold;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
+  *{
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+    
 }
     
 </style>
@@ -157,7 +148,7 @@ th{
 
 <body>
 
-<h2>Upload Excel </h2>
+<h2>Upload Excel file</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
@@ -583,15 +574,15 @@ const otherRecord = otherSheetData.find(item =>
       localStorage.setItem("CCD_80_2", safeNum(ccd80_2));
 
     const container = document.getElementById("table_container");
-    const office=`Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}`;
+   /* const office=`Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}`;
     const assesYear = `SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})`;
-
+*/
     if (found) {
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
-                <h2 style="color: #1414e0;"> ${office}</h2>
-                 <h4 style="color: #8e14e0;">${assesYear}</h4>
+                <h2 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h2>
+                 <h4 style="color: #8e14e0;">$SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})}</h4>
             
                 <table>
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
