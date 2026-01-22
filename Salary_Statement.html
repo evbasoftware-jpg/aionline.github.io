@@ -67,7 +67,14 @@ th{
     background:#fff3bf;
     font-weight:bold;
 }
-
+.bonus-row {
+    background-color: white !important; 
+    color: #1414e0;
+}
+.arrear-row {
+    background-color: #f6f7f0 !important; 
+    color: #fa3c3c;
+}
     /* Infobox Style */
 .infobox {
     background: white;
@@ -130,8 +137,8 @@ th{
     /* ✅ Infobox print friendly */
     .infobox {
         box-shadow: none;
-        border-left: 5px solid #000;
-        border-right: 5px solid #000;
+        border-left: 5px solid #ff8400;
+        border-right: 5px solid #ff8400;
         page-break-inside: avoid;
         webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -139,15 +146,12 @@ th{
 
     /* ✅ Header color force */
     th {
-      /*  background: #ddd !important;
-        color: black !important;*/
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     /* ✅ Summary row color */
     .summary {
-       /* background: #eee !important;*/
         font-weight: bold;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -159,7 +163,7 @@ th{
 
 <body>
 
-<h1>Upload Excel fil</h1>
+<h1>Upload Excel </h1>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
