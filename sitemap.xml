@@ -3,14 +3,33 @@
 
   <url>
     <loc>https://aionline.in.net/</loc>
+    <lastmod>2026-01-22</lastmod>
+    <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://aionline.in.net/about.html</loc>
+    <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://aionline.in.net/contact.html</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://aionline.in.net/payment.html</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://aionline.in.net/privacy.html</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://aionline.in.net/terms.html</loc>
+    <priority>0.5</priority>
   </url>
 
 </urlset>
