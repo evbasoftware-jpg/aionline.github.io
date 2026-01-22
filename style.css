@@ -1,82 +1,78 @@
-aq* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Arial, sans-serif;
-}
-
 body {
-  background: #f9f9f4;
-  color: #4f75f0;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #333;
 }
 
-/* Header */
-header {
-  background: linear-gradient(135deg, #2c5ef5, #2c5ef5, #2c5ef5);
+.header {
+  background: #2f5bea;
   color: white;
-  padding: 20px;
   text-align: center;
-}
-
-header h1 {
-  font-size: 26px;
-}
-
-nav {
-  margin-top: 10px;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  margin: 0 10px;
-  font-weight: 500;
-}
-
-/* Container */
-.container {
-  max-width: 1000px;
-  margin: 30px auto;
   padding: 20px;
 }
 
-/* Card */
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-  margin-bottom: 20px;
+.header nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-/* Buttons */
+.hero {
+  padding: 30px;
+  text-align: center;
+  background: white;
+  margin: 20px;
+  border-radius: 10px;
+}
+
 .btn {
   display: inline-block;
   padding: 12px 20px;
-  background: #0d6efd;
+  margin: 10px;
+  background: #2f5bea;
   color: white;
   text-decoration: none;
   border-radius: 6px;
-  font-weight: 600;
 }
 
-.btn:hover {
-  background: #084298;
-}
-
-/* Footer */
-footer {
-  background: #ed3737;
-  color: #f5f57a;
+.services {
   text-align: center;
-  padding: 15px;
-  margin-top: 40px;
-  font-size: 14px;
+  padding: 20px;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 22px;
-  }
+.card {
+  background: white;
+  margin: 15px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.payment {
+  text-align: center;
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.payment img {
+  width: 200px;
+  margin: 15px;
+}
+
+.pay {
+  background: green;
+}
+
+.whatsapp {
+  background: #25D366;
+}
+
+footer {
+  background: #e53935;
+  color: white;
+  text-align: center;
+  padding: 10px;
 }
