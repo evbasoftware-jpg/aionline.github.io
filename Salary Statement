@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salary Statement (Protected)</title>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+/* ---- Protection Styles ---- */
+body {
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
+    user-select: none; /* Standard */
+}
+
+/* Regular Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background: #f4f6f9;
+    color: #333;
+}
+h2 {
+    color: #444;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 14px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: center;
+}
+th {
+    background: #007bff;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+tr:nth-child(even) { background: #f9f9f9; }
+tr:hover { background: #f1f1f1; }
+
+#search_section {
+    margin-top: 20px;
+    padding: 20px;
+    width: 350px;
+    background: white;
+    border-radius: 27px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: none;
+}
+input[type=text] {
+    padding: 10px;
+    width: 300px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 27px;
+    /* Allow text selection inside input box only */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #f5b938;
+    color: Blue;
+    border: none;
+    border-radius: 10px;
+    margin-left: 7px;
+    transition: background 0.3s;
+}
+button:hover { background: #f2a7c1; }
+button.print-btn { background: #f5fa73; }
+button.print-btn:hover { background: #138496; }
+
+.summary {
+    background: #faf79b; 
+    color: #d35400;
+    font-weight: bold;
+    border-top: 2px solid #aaa;
+}
+.bonus-row {
+    background-color: white !important; 
+    color: #1414e0;
+}
+.arrear-row {
+    background-color: #f6f7f0 !important; 
+    color: #fa3c3c;
+}
+
+/* Infobox Style */
+.infobox {
+    background: white;
+    padding: 20px;
+    border-radius: 55px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 30px 0;
+    width: 900px;
+    height: 217px;
+    border-left: 5px solid #ff8400;
+    border-right: 5px solid #ff8400;
+    text-align: center;
+}
+.infobox h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+.infobox table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.infobox td {
+    padding: 10px;
+    vertical-align: top;
+    border-bottom: 1px solid #eee;
+    text-align:left
+}
+.infobox td:first-child {
+    font-weight: bold;
+    width: 450px;
+    color: #555;
+    text-align:left;
+}
+
+/* Print Styles */
+@media print {
+    /* Allow selection/copy when printing to PDF */
+    body { 
+        background: white; 
+        padding: 0; 
+        -webkit-user-select: auto;
+        -moz-user-select: auto;
+        -ms-user-select: auto;
+        user-select: auto;
+    }
+    button, input, #excel_file, label, h2, #ai_controls { display: none; }
+    #search_section { box-shadow: none; padding: 0; margin: 0; }
+    table { width: 100%; box-shadow: none; font-size: 12px; }
+    th { background: #ddd !important; color: black !important; }
+    td { page-break-inside: avoid; }
+    .bonus-row, .arrear-row { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .infobox { border-left: 5px solid #000; page-break-inside: avoid; }
+}
+</style>
+</head>
+
+<body oncontextmenu="return false;"> 
+    <h2>Upload Excel File</h2>
+<input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
+
+<div id="search_section">
+    <label><b>Search Employee:</b> </label>
+    <input type="text" id="searchBox" list="name_list" autocapitalize="characters" placeholder="Enter Name of Teacher">
+    <datalist id="name_list"></datalist>
+    
+ <div id="action_buttons" style="margin-top:10px;">
+    <button id="search_btn" style="margin-left:130px;">Search</button></br>
+    <button id="prev_btn" style="background: #c4fffa; color: red;">← Previous Emp.</button>
+    <button id="next_btn" style="background: #ffc4fd; color: purple;">Next Emp. →</button>
+    <button class="print-btn" onclick="window.print()" style="margin-left:117px;">Print / PDF</button>
+</div>
+</div>
+
+<div id="table_container"></div>
+
+<script>
+// ================= SOURCE PROTECTION SCRIPT =================
+document.onkeydown = function(e) {
+    if(event.keyCode == 123) { // F12
+        return false;
+    }
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { // Ctrl+Shift+I
+        return false;
+    }
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { // Ctrl+Shift+C
+        return false;
+    }
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { // Ctrl+Shift+J
+        return false;
+    }
+    if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { // Ctrl+U
+        return false;
+    }
+    if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) { // Ctrl+S (Save)
+        return false;
+    }
+}
+// ================= END PROTECTION SCRIPT =================
+    // ---------- UNIVERSAL HELPERS ----------
+
+// normalize text
+const norm = v =>
+  String(v || "")
+    .toUpperCase()
+    .replace(/[\s._-]/g, "");
+
+// safe number
+const num = v => isNaN(Number(v)) ? 0 : Number(v);
+
+// flexible match
+const like = (a, b) => norm(a).includes(norm(b));
+
+// universal column finder
+const findColIndex = (header, keywords=[]) => {
+  const map = {};
+  header.forEach((h,i)=> map[norm(h)] = i);
+
+  for (let key of keywords) {
+    const nk = norm(key);
+    for (let h in map) {
+      if (h.includes(nk)) return map[h];
+    }
+  }
+  return -1;
+};
+
+// universal account matcher
+const sameAccount = (a,b) =>
+  String(a||"").replace(/\D/g,"") ===
+  String(b||"").replace(/\D/g,"");
+
+// detect header row automatically
+const detectHeaderRow = rows => {
+  for (let i=0;i<rows.length;i++) {
+    const r = rows[i].join(" ").toUpperCase();
+    if (
+      r.includes("BASIC") &&
+      (r.includes("DA") || r.includes("PAY"))
+    ) return i;
+  }
+  return -1;
+};
+    
+let year = 2025;
+let allMonthlyRows = [];
+let otherSheetData = []; 
+let currentEmployeeData = null; 
+let globalCircleName = "N/A"; 
+
+document.getElementById("excel_file").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    // ================= PARSE EXCEL FILE =================
+reader.onload = ev => {
+    const data = new Uint8Array(ev.target.result);
+    const wb = XLSX.read(data, { type: "array" });
+
+    allMonthlyRows = [];
+    otherSheetData = [];
+    globalCircleName = "N/A";
+
+    const MONTHS = [
+        "MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER",
+        "OCTOBER","NOVEMBER","DECEMBER","JANUARY","FEBRUARY"
+    ];
+
+    wb.SheetNames.forEach(sheetName => {
+
+  // allow ANY sheet containing month name
+  const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN",
+                  "JUL","AUG","SEP","OCT","NOV","DEC"];
+  if (!MONTHS.some(m => norm(sheetName).includes(m))) return;
+
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+
+  const hIndex = detectHeaderRow(rows);
+  if (hIndex === -1) return;
+
+  const header = rows[hIndex];
+
+  rows.slice(hIndex+1).forEach(r=>{
+    if (r.join("").trim().length>5) {
+      allMonthlyRows.push({
+        sheet: sheetName,
+        header,
+        row: r
+      });
+    }
+  });
+});
+    // ---------- 2️⃣ READ OTHER SHEET ----------
+const otherSheetName =
+  wb.SheetNames.find(s => like(s,"OTHER")) || null;
+
+    if (otherSheetName) {
+        const ws = wb.Sheets[otherSheetName];
+        globalCircleName = String(ws["H4"].v).trim();
+        const rows = XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+
+  const hIndex = rows.findIndex(r =>
+    r.join(" ").toUpperCase().includes("BONUS")
+  );
+
+  if (hIndex !== -1) {
+    const header = rows[hIndex];
+    rows.slice(hIndex+1).forEach(r=>{
+      otherSheetData.push({header,row:r});
+    });
+  }
+}
+    // ---------- 3️⃣ POPULATE SEARCH LIST ----------
+    const dataSet = new Set();
+    otherSheetData.forEach(it => {
+        const name = it.row[2];
+        if (name && String(name).trim().length > 3) {
+            dataSet.add(String(name).trim());
+        }
+    });
+
+    const list = document.getElementById("name_list");
+    list.innerHTML = "";
+    dataSet.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        list.appendChild(opt);
+    });
+
+    document.getElementById("search_section").style.display = "block";
+    document.getElementById("table_container").innerHTML =
+        "<b style='color:green;font-size:18px'>✔ Excel loaded successfully</b>";
+};
+    reader.readAsArrayBuffer(file);
+});
+
+document.getElementById("search_btn").addEventListener("click", () => {
+    const key = document.getElementById("searchBox").value.trim();
+    if (!key) return alert("Please enter Name of Teacher");
+
+    // 🔴 STEP–0: FIRST search ONLY in OTHER sheet
+    const keyNorm = key.toUpperCase().trim();
+
+const otherRecord = otherSheetData.find(item =>
+    item.row.some(c =>
+        String(c || "").toUpperCase().trim() === keyNorm
+    )
+);
+
+
+    if (!otherRecord) {
+        document.getElementById("table_container").innerHTML =
+        `<div style="text-align:center; padding:20px; color:red; font-size:18px;">
+            ❌ Name "<b>${key}</b>" not found in OTHER sheet
+        </div>`;
+        return; // ⛔ stop here
+    }
+
+    let totalGross = 0, totalNet = 0, total_itax=0;
+    
+    let totals = {
+        BASIC: 0, ADDL: 0, DA: 0, HRA: 0, MA: 0, CONV: 0, DAARR: 0,
+        GPF: 0, GSLI: 0, PTAX: 0, ITAX: 0
+    };
+
+    let html = `<table>
+    <thead>
+        <tr>
+            <th>MONTH</th><th>BASIC PAY</th><th>ADDL ALLOW</th><th>DA</th><th>HRA</th>
+            <th>MA</th><th>CONV. ALLOW</th><th>DA ARR</th><th>GROSS PAY</th>
+            <th>GPF</th><th>GSLI</th><th>P.TAX</th><th>I.TAX</th><th>NET PAY</th>
+        </tr>
+    </thead>
+    <tbody>`;
+
+    let found = false;
+    let bonusAmount = 0;
+    let arrearAmount = 0;
+
+    let teacherName = "N/A";
+    let schoolName = "N/A";
+    let pan = "N/A";
+    let mobile = "N/A";
+    let designation = "N/A";
+    let sex = "N/A";
+    let circleName = globalCircleName;
+
+     let   othInc1 ="N/A";
+     let  othInc1Rs = "N/A";
+     let   othInc2 = "N/A";
+     let  othInc2Rs = "N/A";
+     let   savAccInt = "N/A";
+     let   famPen = "N/A";
+     let   ccd80_2 = "N/A";
+    
+    // --- Step A: Get Bonus/Arrear & Employee Info ---
+    let accountNo = null;
+
+        
+    if (otherRecord) {
+        const oMap = {};
+        otherRecord.header.forEach((h, i) => oMap[String(h).toUpperCase().trim()] = i);
+        
+        const getVal = (colName) => {
+            let idx = oMap[colName];
+            if (idx === undefined) {
+                const fuzzyKey = Object.keys(oMap).find(k => k.includes(colName));
+                if(fuzzyKey) idx = oMap[fuzzyKey];
+            }
+            return Number(otherRecord.row[idx] || 0);
+        };
+
+        const getTextVal = (colName) => {
+            const upperCol = colName.toUpperCase().trim();
+            let idx = oMap[upperCol];
+            if (idx === undefined) {
+                const fuzzyKey = Object.keys(oMap).find(k => k.includes(upperCol));
+                if (fuzzyKey) idx = oMap[fuzzyKey];
+            }
+            if (idx === undefined) return "N/A";
+            let val = otherRecord.row[idx];
+            if (val == null || val === "" || val === undefined) return "N/A";
+            return String(val).trim();
+        };
+
+        const getBestText = (cols) => {
+            for (let col of cols) {
+                let v = getTextVal(col);
+                if (v !== "N/A") return v;
+            }
+            return "N/A";
+        };
+
+        accountNo = getBestText(["ACCOUNT NO"]);
+        bonusAmount = getVal("BONUS");
+        arrearAmount = getVal("ARREAR");
+
+        teacherName = getBestText(["NAME OF THE TEACHER"]);
+        schoolName = getBestText(["NAME OF THE SCHOOL"]);
+        pan = getTextVal("PAN");
+        if (pan !== "N/A") pan = pan.toUpperCase();
+        mobile = getBestText(["CONTACT NO."]);
+        designation = getBestText(["DESIGNATION"]);
+        sex = getBestText(["SEX"]);
+ //Other income from OTHER Sheet       
+        othInc1 = getBestText(["Source of Other Income (1)"]);
+        othInc1Rs = getBestText(["(1) Rs."]);
+        othInc2 = getBestText(["Source of Other Income (2)"]);
+        othInc2Rs = getBestText(["(2) Rs."]);
+        savAccInt = getBestText(["Savings Account Interest"]);
+        famPen = getBestText(["Family Pension"]);
+        ccd80_2 = getBestText(["80CCD(2)"]);
+        
+        if (circleName === "N/A") {
+             circleName = getBestText(["Circle"]);
+        }
+    }
+    
+
+    // --- Step B: Loop through Monthly Data ---
+    allMonthlyRows.forEach(it => {
+        if (accountNo && it.row.some(c => String(c || "").trim() === String(accountNo).trim())) {
+            found = true;
+            
+            const map = {};
+            it.header.forEach((h, i) => map[String(h).toUpperCase().trim()] = i);
+            
+            const v = k => {
+                 let val = 0;
+                 if (map[k] !== undefined) val = Number(it.row[map[k]] || 0);
+                 else {
+                     const fuzzy = Object.keys(map).find(key => key.startsWith(k.split('.')[0])); 
+                     if(fuzzy) val = Number(it.row[map[fuzzy]] || 0);
+                 }
+                 return val;
+            };
+
+            const basic = v("BASIC");
+            const addl = v("ADDL. ALLOW");
+            const da = v("DA");
+            const hra = v("HRA");
+            const ma = v("MA");
+            const conv = v("CONV ALLOW");
+            const daArr = v("DA ARREAR");
+            
+            const gpf = v("GPF");
+            const gsli = v("GSLI");
+            const ptax = v("P. TAX") || v("P.TAX") || v("PTAX");
+            const itax = v("I.TAX") || v("ITAX");
+
+            totals.BASIC += basic;
+            totals.ADDL += addl;
+            totals.DA += da;
+            totals.HRA += hra;
+            totals.MA += ma;
+            totals.CONV += conv;
+            totals.DAARR += daArr;
+            totals.GPF += gpf;
+            totals.GSLI += gsli;
+            totals.PTAX += ptax;
+            totals.ITAX += itax;
+
+            const gross = basic + addl + da + hra + ma + conv + daArr;
+            const net = gross - gpf - gsli - ptax - itax;
+
+            totalGross += gross;
+            totalNet += net;
+            total_itax +=itax;
+
+            let monthName = it.sheet;
+            let year2 = year;
+            if (["JANUARY", "FEBRUARY"].includes(monthName.toUpperCase())) {
+                year2 = year+1;
+            }
+            const monthWithYear = `${monthName} ${year2}`;
+         
+            html += `<tr>
+                <td><b>${monthWithYear}</b></td>
+                <td>${basic}</td>
+                <td>${addl}</td>
+                <td>${da}</td>
+                <td>${hra}</td>
+                <td>${ma}</td>
+                <td>${conv}</td>
+                <td>${daArr}</td>
+                <td style="background:#fcf568"><b>${gross.toFixed(2)}</b></td>
+                <td>${gpf}</td>
+                <td>${gsli}</td>
+                <td>${ptax}</td>
+                <td>${itax}</td>
+                <td style="background:#c5faef"><b>${net.toFixed(2)}</b></td>
+            </tr>`;
+
+            if (monthName.toUpperCase() === "FEBRUARY") {
+                if (bonusAmount > 0) {
+                    html += `<tr class="bonus-row">
+                        <td><b>BONUS</b></td>
+                        <td colspan="7" style="text-align:right; padding-right:20px; font-style:italic;"></td>
+                        <td><b>${bonusAmount.toFixed(2)}</b></td>
+                        <td colspan="4"></td>
+                        <td><b>${bonusAmount.toFixed(2)}</b></td>
+                    </tr>`;
+                    totalGross += bonusAmount;
+                    totalNet += bonusAmount;
+                }
+                if (arrearAmount > 0) {
+                    html += `<tr class="arrear-row">
+                        <td><b>ARREAR</b></td>
+                        <td colspan="7" style="text-align:right; padding-right:20px; font-style:italic;"></td>
+                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                        <td colspan="4"></td>
+                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                    </tr>`;
+                    totalGross += arrearAmount;
+                    totalNet += arrearAmount;
+
+                }
+            }
+        }
+    });
+
+    html += `<tr class="summary">
+        <td>TOTAL (YEARLY)</td>
+        <td>${totals.BASIC.toFixed(2)}</td>
+        <td>${totals.ADDL.toFixed(2)}</td>
+        <td>${totals.DA.toFixed(2)}</td>
+        <td>${totals.HRA.toFixed(2)}</td>
+        <td>${totals.MA.toFixed(2)}</td>
+        <td>${totals.CONV.toFixed(2)}</td>
+        <td>${totals.DAARR.toFixed(2)}</td>
+        <td>${totalGross.toFixed(2)}</td>
+        <td>${totals.GPF.toFixed(2)}</td>
+        <td>${totals.GSLI.toFixed(2)}</td>
+        <td>${totals.PTAX.toFixed(2)}</td>
+        <td>${total_itax.toFixed(2)}</td>
+        <td>${totalNet.toFixed(2)}</td>
+    </tr>
+    </tbody>
+    </table>`;
+
+    // send other iformations in form 16 page
+    const safeText = v => {
+       if (v === null || v === undefined || String(v).trim() === "") {
+            return "";
+       }
+           return String(v).trim();
+       };
+      localStorage.setItem("OI1", safeText(othInc1));
+      localStorage.setItem("OI2", safeText(othInc2));
+
+    const safeNum = v => isNaN(Number(v)) ? "0.00" : Number(v).toFixed(2);
+      localStorage.setItem("TOTAL_GROSS", safeNum(totalGross));
+      localStorage.setItem("TOTAL_ITAX", safeNum(total_itax));
+      localStorage.setItem("OI1RS", safeNum(othInc1Rs));
+      localStorage.setItem("OI2RS", safeNum(othInc2Rs));
+      localStorage.setItem("SAV_ACC_INT", safeNum(savAccInt));
+      localStorage.setItem("FAM_PEN", safeNum(famPen));
+      localStorage.setItem("CCD_80_2", safeNum(ccd80_2));
+
+    const container = document.getElementById("table_container");
+    const assesYear = `SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})`;
+
+    if (found) {
+        let infoboxHtml = '';
+        if (otherRecord) {
+            infoboxHtml = `<div class="infobox">
+                <h2>Office of the Sub-Inspector of Schools, ${circleName} Circle</h2>
+                 <h4>${assesYear}</h4>
+            
+                <table>
+                    <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
+                    <td><strong>Designation:</strong> ${designation} &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+                    <strong>Sex:</strong> ${sex}</td></tr>
+                    <tr><td><strong>PAN:</strong> ${pan}</td>
+                    <td><strong>Mobile:</strong> ${mobile}</td></tr>
+                    <tr><td><strong>School Name:</strong> ${schoolName}</td>
+                    <td><strong>Circle Name:</strong> ${circleName}</td></tr>
+                    
+            </table>
+            </div>`;
+        }
+        container.innerHTML = infoboxHtml + html;
+    } else {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:red; font-size:18px;">
+            ❌ No records found for "<b>${key}</b>"
+        </div>`;
+    }
+});
+
+function navigateEmployee(direction) {
+    const searchBox = document.getElementById("searchBox");
+    const list = document.getElementById("name_list");
+    const options = Array.from(list.options).map(opt => opt.value);
+    
+    if (options.length === 0) return;
+
+    let currentIndex = options.indexOf(searchBox.value.trim());
+
+    if (dir
