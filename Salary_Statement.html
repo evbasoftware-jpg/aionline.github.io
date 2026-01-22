@@ -162,7 +162,7 @@ th{
 
 <body>
 
-<h2>Upload Excel File </h2>
+<h2>Upload Excel </h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
@@ -588,13 +588,14 @@ const otherRecord = otherSheetData.find(item =>
       localStorage.setItem("CCD_80_2", safeNum(ccd80_2));
 
     const container = document.getElementById("table_container");
+    const office=`Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}`;
     const assesYear = `SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})`;
 
     if (found) {
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
-                <h2 style="color: #1414e0;">Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h2>
+                <h2 style="color: #1414e0;"> ${office}</h2>
                  <h4 style="color: #8e14e0;">${assesYear}</h4>
             
                 <table>
