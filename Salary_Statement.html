@@ -112,7 +112,10 @@ th{
     h2 {
         display: none !important;
     }
-
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
     /* ✅ Clean page */
     body {
         background: white;
@@ -135,8 +138,8 @@ th{
         width: 100% !important;
         box-shadow: none;
         background: exact;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+   /*     -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;*/
     }
 
     
@@ -144,16 +147,16 @@ th{
     /* ✅ Header color force */
     th {
         background: exact;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    /*    -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;*/
     }
 
     /* ✅ Summary row color */
     .summary {
         background:exact;
         font-weight: bold;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    /*    -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;*/
     }
 }
     
@@ -162,7 +165,7 @@ th{
 
 <body>
 
-<h2>Upload Excel </h2>
+<h2>Upload Excel file</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
