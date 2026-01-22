@@ -123,17 +123,9 @@ th{
 /* ❌ Hide upload & controls */
     input[type="file"],
     #search_section,
-    button,
-    h2 {
+    button{
         display: none !important;
     }
-  #printHeader{
-    display:block !important;
-  }
-
-  body{
-    margin-top:0;
-  }
 
   *{
     -webkit-print-color-adjust: exact !important;
@@ -148,7 +140,7 @@ th{
 
 <body>
 
-<h2>Upload Excel file</h2>
+<h2>Upload Excel </h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
@@ -574,15 +566,13 @@ const otherRecord = otherSheetData.find(item =>
       localStorage.setItem("CCD_80_2", safeNum(ccd80_2));
 
     const container = document.getElementById("table_container");
-   /* const office=`Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}`;
-    const assesYear = `SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})`;
-*/
+   
     if (found) {
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
                 <h2 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h2>
-                 <h4 style="color: #8e14e0;">$SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})}</h4>
+                 <h4 style="color: #8e14e0;">SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})</h4>
             
                 <table>
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
