@@ -102,37 +102,52 @@ th{
     text-align:left;
 }
 
-    /* ================= PRINT SETTINGS ================= */
-    
-#printHeader{
-    text-align:center;
-    font-weight:bold;
-    font-size:16px;
-    margin-bottom:8px;
-    display:none; /* screen এ hide */
-}
-
-#salaryTitle{
-    text-align:center;
-    color:#6a1b9a;
-}
-
-/* ✅ PRINT FIX */
+/* ================= PRINT SETTINGS ================= */
 @media print {
-    
-/* ❌ Hide upload & controls */
+
+    /* ❌ Hide upload & controls */
     input[type="file"],
     #search_section,
-    button{
+    button, h1 {
         display: none !important;
     }
 
-  *{
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-}
-    
+    /* ✅ Clean page */
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* ✅ Tables full width */
+    table {
+        width: 100% !important;
+        box-shadow: none;
+    }
+
+    /* ✅ Infobox print friendly */
+    .infobox {
+        box-shadow: none;
+        border-left: 5px solid #000;
+        border-right: 5px solid #000;
+        page-break-inside: avoid;
+    }
+
+    /* ✅ Header color force */
+    th {
+      /*  background: #ddd !important;
+        color: black !important;*/
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ✅ Summary row color */
+    .summary {
+       /* background: #eee !important;*/
+        font-weight: bold;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 }
     
 </style>
@@ -140,7 +155,7 @@ th{
 
 <body>
 
-<h2>Upload Excel </h2>
+<h1>Upload Excel </h1>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
