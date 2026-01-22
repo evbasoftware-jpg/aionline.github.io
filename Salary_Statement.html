@@ -162,7 +162,7 @@ button.print-btn:hover { background: #138496; }
 </head>
 
 <body oncontextmenu="return false;"> 
-    <h2>Upload Excel file</h2>
+    <h2>Upload Excel </h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <div id="search_section">
@@ -233,6 +233,28 @@ let otherSheetData = [];
 let currentEmployeeData = null; 
 let globalCircleName = "N/A"; 
 
+    document.getElementById("excel_file").addEventListener("change", function(e){
+
+    document.getElementById("search_section").style.display = "block";
+    document.getElementById("table_container").innerHTML =
+        "<b style='color:blue'>File detected...</b>";
+
+    try {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(ev){
+            document.getElementById("table_container").innerHTML =
+                "<b style='color:green'>Excel loaded</b>";
+        };
+
+        reader.readAsArrayBuffer(file);
+
+    } catch(err){
+        alert(err.message);
+    }
+});
+    /*
 document.getElementById("excel_file").addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -251,7 +273,7 @@ reader.onload = ev => {
         "MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER",
         "OCTOBER","NOVEMBER","DECEMBER","JANUARY","FEBRUARY"
     ];
-
+*/
     wb.SheetNames.forEach(sheetName => {
 
   // allow ANY sheet containing month name
@@ -313,34 +335,14 @@ const otherSheetName =
         opt.value = v;
         list.appendChild(opt);
     });
-document.getElementById("excel_file").addEventListener("change", function(e){
 
-    document.getElementById("search_section").style.display = "block";
-    document.getElementById("table_container").innerHTML =
-        "<b style='color:blue'>File detected...</b>";
-
-    try {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(ev){
-            document.getElementById("table_container").innerHTML =
-                "<b style='color:green'>Excel loaded</b>";
-        };
-
-        reader.readAsArrayBuffer(file);
-
-    } catch(err){
-        alert(err.message);
-    }
-});
-    document.getElementById("search_section").style.display = "block";
+   /* document.getElementById("search_section").style.display = "block";
     document.getElementById("table_container").innerHTML =
         "<b style='color:green;font-size:18px'>✔ Excel loaded successfully</b>";
 };
     reader.readAsArrayBuffer(file);
 });
-
+*/
 document.getElementById("search_btn").addEventListener("click", () => {
     const key = document.getElementById("searchBox").value.trim();
     if (!key) return alert("Please enter Name of Teacher");
