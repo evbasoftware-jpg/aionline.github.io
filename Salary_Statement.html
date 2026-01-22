@@ -158,7 +158,7 @@ button.print-btn:hover { background: #138496; }
 </head>
 
 <body oncontextmenu="return false;"> 
-    <h2>Upload Excel software</h2>
+    <h2>Upload Excel File</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <div id="search_section">
@@ -177,19 +177,7 @@ button.print-btn:hover { background: #138496; }
 <div id="table_container"></div>
 
 <script>
-// ================= SOURCE PROTECTION SCRIPT =================
 
-document.addEventListener("keydown", function(e) {
-  if (
-    e.key === "F12" ||
-    (e.ctrlKey && e.shiftKey && ["I","C","J"].includes(e.key)) ||
-    (e.ctrlKey && ["U","S"].includes(e.key))
-  ) {
-    e.preventDefault();
-  }
-});
-
-// ================= END PROTECTION SCRIPT =================
     // ---------- UNIVERSAL HELPERS ----------
 
 // normalize text
