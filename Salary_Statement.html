@@ -67,12 +67,47 @@ th{
     background:#fff3bf;
     font-weight:bold;
 }
+
+    /* Infobox Style */
+.infobox {
+    background: white;
+    padding: 20px;
+    border-radius: 55px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 30px 0;
+    width: 900px;
+    height: 217px;
+    border-left: 5px solid #ff8400;
+    border-right: 5px solid #ff8400;
+    text-align: center;
+}
+.infobox h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+.infobox table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.infobox td {
+    padding: 10px;
+    vertical-align: top;
+    border-bottom: 1px solid #eee;
+    text-align:left
+}
+.infobox td:first-child {
+    font-weight: bold;
+    width: 450px;
+    color: #555;
+    text-align:left;
+}
+
 </style>
 </head>
 
 <body>
 
-<h2>Upload Excel</h2>
+<h2>Upload Excel File with employee data</h2>
 <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
 
 <!-- 🔍 SEARCH SECTION -->
