@@ -23,17 +23,10 @@
 }
 
 /* Ensure content is above watermark */
-body *{
+/*body *{
     position: relative;
     z-index: 1;
-}
-
-/* Print specific (very important) */
-@media print{
-    .watermark{
-        color: rgba(0,0,0,0.12);
-    }
-}
+}*/
     /*watermark complete*/
     
 body{
@@ -182,6 +175,10 @@ th{
         font-weight: bold;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+    
+    .watermark{
+        color: rgba(0,0,0,0.12);
     }
 }
     
