@@ -567,7 +567,7 @@ const otherRecord = otherSheetData.find(item =>
         GPF: 0, GSLI: 0, PTAX: 0, ITAX: 0
     };
 
-    let html = `<table style="font-size:10px;">
+    let html = `<table style="font-size:12px;">
     <thead>
         <tr>
             <th>MONTH</th><th>BASIC PAY</th><th>ADDL ALLOW</th><th>DA</th><th>HRA</th>
@@ -810,10 +810,10 @@ const otherRecord = otherSheetData.find(item =>
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
-                <h3 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h3>
-                 <h4 style="color: #8e14e0;">SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})</h4>
+                <h4 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h4>
+                 <h5 style="color: #8e14e0;">SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})</h5>
             
-                <table style="font-size:10px;">
+                <table style="font-size:12px;">
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
                     <td><strong>Designation:</strong> ${designation} &emsp;&emsp;&emsp;
                     <strong>Gender:</strong> ${sex}</td></tr>
