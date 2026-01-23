@@ -26,11 +26,15 @@
 }
     /*watermark complete*/
     
-/*body{
-    font-family: Arial, sans-serif;
-    background:#f4f6f9;
-    padding:20px;
-}*/
+body {
+      font-family: 'Bookman Old Style', serif;
+      background-color: rgb(241, 252, 251);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+}
+    
 h2{color:#333}
 
 #search_section{
@@ -69,6 +73,7 @@ table{
     border-collapse:collapse;
     margin-top:20px;
     background:white;
+    padding:20px;
 }
 th,td{
     border:1px solid #ccc;
@@ -78,6 +83,7 @@ th,td{
 th{
     background:#1971c2;
     color:white;
+    border-bottom: 2px solid blue;
 }
 
 .summary{
@@ -104,6 +110,7 @@ th{
     border-left: 5px solid #ff8400;
     border-right: 5px solid #ff8400;
     text-align: center;
+    left: 37%;
 }
 .infobox h3 {
     margin-top: 0;
@@ -180,22 +187,13 @@ th{
     }
 }
 
-    body {
-      font-family: 'Bookman Old Style', serif;
-      background-color: rgb(241, 252, 251);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    
     .container {
       width: 100%;
      /* max-width: 900px;*/
     }
-  /*  
-    th {
-      border-bottom: 2px solid blue;
-    }
+  
+    
     .right-border {
       border-right: 2px solid blue;
       line-height: 1.3;
@@ -250,8 +248,13 @@ th{
      </div>
      <div id="table_container"></div>
     </div>
+
+
+
     
-/* tax calculator table start */
+    <!-- tax calculator table start -->
+    <div class="page-break"></div>
+    
  <div class="container">
     <h3 style="text-align: center; margin-bottom: 5px;">Income Tax calculation for the Financial Year 2025-26</h3>
     <h4 style="text-align: center; margin-top: 0;">(Assessment Year 2026-2027)</h4>
