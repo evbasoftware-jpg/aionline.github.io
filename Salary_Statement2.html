@@ -7,7 +7,8 @@
 
 <!-- ✅ SheetJS -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+    
 <style>
     .watermark{
     font-family: 'Orbitron', sans-serif;
@@ -183,27 +184,61 @@ th{
 </head>
 
 <body>
+<div id="loginBox" style="text-align:center;margin-top:100px;">
+  <h3>Login required</h3>
+  <div id="g_id_onload"
+       data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+  </div>
 
-<h1>Upload Excel file</h1>
-<input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
+  <div class="g_id_signin"
+       data-type="standard">
+  </div>
+</div>
 
-<!-- 🔍 SEARCH SECTION -->
-<div id="search_section">
-    <label><b>Search Employee</b></label>
-    <input type="text" id="searchBox" list="name_list" placeholder="Enter Name">
-    <datalist id="name_list"></datalist>
+    <div id="salaryContent" style="display:none;">
 
-    <div style="text-align:center">
+        <h1>Upload Excel file</h1>
+       <input type="file" id="excel_file" accept=".xlsx,.xls,.xlsm">
+
+       <!-- 🔍 SEARCH SECTION -->
+      <div id="search_section">
+        <label><b>Search Employee</b></label>
+        <input type="text" id="searchBox" list="name_list" placeholder="Enter Name">
+        <datalist id="name_list"></datalist>
+
+      <div style="text-align:center">
         <button id="search_btn">Search</button><br>
         <button id="prev_btn">← Previous</button>
         <button id="next_btn">Next →</button><br>
         <button id="printBtn" onclick="window.print()">Print / PDF</button>
+     </div>
+     </div>
+     <div id="table_container"></div>
     </div>
-</div>
 
-<div id="table_container"></div>
+
+
 
 <script>
+    //email id checking 
+    const allowedEmails = [
+  "example1@gmail.com",
+  "example2@gmail.com"
+];
+
+function handleCredentialResponse(response) {
+  const data = JSON.parse(atob(response.credential.split('.')[1]));
+  const email = data.email;
+
+  if (allowedEmails.includes(email)) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("salaryContent").style.display = "block";
+  } else {
+    alert("Access Denied ❌\nUnauthorized Email");
+  }
+}
+    //email id checking complete 
     
   // normalize text
 const norm = v =>
