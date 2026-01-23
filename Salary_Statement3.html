@@ -121,7 +121,7 @@ th{
     color: #007bff;
 }
 .infobox table {
-    width: 100%;
+    width: 80%;
     border-collapse: collapse;
 }
 .infobox td {
@@ -146,7 +146,17 @@ th{
     button, h1 {
         display: none !important;
     }
+    
+   @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
 
+    th, td {
+        padding: 4px;
+        word-break: break-word;
+    }
+    
     /* ✅ Clean page */
     body {
         background: white;
@@ -257,7 +267,6 @@ th{
 
     
     <!-- tax calculator table start -->
-    <div class="page-break"></div>
     
  <div class="container">
     <h3 style="text-align: center; margin-bottom: 5px;">Income Tax calculation for the Financial Year 2025-26</h3>
@@ -570,7 +579,10 @@ const otherRecord = otherSheetData.find(item =>
         </tr>
     </thead>
     <tbody>`;
-
+    
+<!-- table 2nd page -->
+    <div class="page-break"></div>
+    
     let found = false;
     let bonusAmount = 0;
     let arrearAmount = 0;
