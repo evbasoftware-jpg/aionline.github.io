@@ -192,21 +192,9 @@ th{
       width: 100%;
      /* max-width: 900px;*/
     }
-  /*  table {
-      width: 100%;
-      border-collapse: collapse;
-      outline: 2px solid blue;
-      background-color: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }*/
+  /*  
     th {
       border-bottom: 2px solid blue;
-      color: blue;
-      text-align: center;
     }
     .right-border {
       border-right: 2px solid blue;
@@ -263,7 +251,7 @@ th{
      <div id="table_container"></div>
     </div>
     
-//tax calculator table start
+/* tax calculator table start */
  <div class="container">
     <h3 style="text-align: center; margin-bottom: 5px;">Income Tax calculation for the Financial Year 2025-26</h3>
     <h4 style="text-align: center; margin-top: 0;">(Assessment Year 2026-2027)</h4>
@@ -277,7 +265,7 @@ th{
       </thead>
       <tbody>
         <tr>
-          <td class="right-border" style="text-align: left;">
+          <td style="text-align: left;" class="right-border">
             1) Gross Salary Income (Allowances, Bonus, Arrear):<br>
             2) Less: Standard Deduction U/S 16(Ia):<br>
             3) Net Salary income (1-2):
@@ -290,7 +278,7 @@ th{
         </tr>
 
         <tr>
-          <td class="right-border" style="text-align: left;">
+          <td style="text-align: left;" class="right-border" >
             4) Any other Income (Interest etc.):<br>
             <span class="sub-label">(i) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px;" placeholder="Mention Source of Income"></span> &emsp;&emsp;
             <input type="number" id="oi1" value="0" oninput="calculateAll()"><br>
@@ -312,7 +300,7 @@ th{
         </tr>
 
         <tr>
-          <td class="right-border" style="text-align: left;">
+          <td style="text-align: left;" class="right-border" >
             5) Gross Total Income (3+4):<br>
             <span style="color:red;">6) Less: Deduction U/S. 80CCD(2) NPS (Employer):</span><br>
             7) Taxable Income (5 - 6):<br>
@@ -327,7 +315,7 @@ th{
         </tr>
 
         <tr>
-          <td class="right-border" style="text-align: left;">
+          <td style="text-align: left;" class="right-border" >
             9) Tax on Total Income &emsp;(Salary Slab) &emsp;&emsp;&emsp;&emsp;&emsp; (Tax):<br>
             <small>Upto 4,00,000 (Nil):</small> &emsp;&emsp;&emsp;&emsp; <input type="number" id="sal1" disabled> &emsp;&emsp; <input type="number" id="Tax_slab1" disabled value="0" ><br>
             <small>4,00,001 - 8,00,000 (5%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal2" disabled> &emsp;&emsp; <input type="number" id="Tax_slab2" disabled value="0" ><br>
@@ -344,7 +332,7 @@ th{
         </tr>
 
         <tr>
-          <td class="right-border" style="text-align: left;">
+          <td style="text-align: left;" class="right-border" >
             10) <span style="color:red;">Less: Tax Exempt U/S 87A (Marginal Relief):</span><br>
             11) Tax Payable:<br>
             12) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
@@ -376,7 +364,7 @@ th{
             </div>
                 
 <script>
-    //email id checking 
+    /*email id checking */
     const allowedEmails = [
   "ujlmndl@gmail.com",
   "evbasoftware@gmail.com"
@@ -393,7 +381,7 @@ function handleCredentialResponse(response) {
     alert("Access Denied ❌\nUnauthorized Email");
   }
 }
-    //email id checking complete 
+    /*email id checking complete */
     
   // normalize text
 const norm = v =>
