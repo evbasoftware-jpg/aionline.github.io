@@ -721,12 +721,12 @@ const otherRecord = otherSheetData.find(item =>
                 <td>${ma}</td>
                 <td>${conv}</td>
                 <!-- <td>${daArr}</td> -->
-                <td style="background:#fcf568"><b>${gross.toFixed(2)}</b></td>
+                <td style="background:#fcf568"><b>${Math.round(gross)}</b></td>
                 <td>${gpf}</td>
                 <td>${gsli}</td>
                 <td>${ptax}</td>
                 <td>${itax}</td>
-                <td style="background:#c5faef"><b>${net.toFixed(2)}</b></td>
+                <td style="background:#c5faef"><b>${Math.round(net)}</b></td>
             </tr>`;
 
             if (monthName.toUpperCase() === "FEBRUARY") {
@@ -745,9 +745,9 @@ const otherRecord = otherSheetData.find(item =>
                     html += `<tr class="arrear-row">
                         <td><b>ARREAR</b></td>
                         <td colspan="6" style="text-align:right; padding-right:20px; font-style:italic;"></td>
-                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                        <td><b>${Math.round(arrearAmount)}</b></td>
                         <td colspan="4"></td>
-                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                        <td><b>${Math.round(arrearAmount)}</b></td>
                     </tr>`;
                     totalGross += arrearAmount;
                     totalNet += arrearAmount;
@@ -760,18 +760,18 @@ const otherRecord = otherSheetData.find(item =>
     html += `<tr class="summary">
         <td>TOTAL (YEARLY)</td>
         <td>${Math.round(totals.BASIC)}</td>
-        <td>${totals.ADDL.toFixed(2)}</td>
-        <td>${totals.DA.toFixed(2)}</td>
-        <td>${totals.HRA.toFixed(2)}</td>
-        <td>${totals.MA.toFixed(2)}</td>
-        <td>${totals.CONV.toFixed(2)}</td>
-       <!-- <td>${totals.DAARR.toFixed(2)}</td> -->
-        <td>${totalGross.toFixed(2)}</td>
-        <td>${totals.GPF.toFixed(2)}</td>
-        <td>${totals.GSLI.toFixed(2)}</td>
-        <td>${totals.PTAX.toFixed(2)}</td>
-        <td>${total_itax.toFixed(2)}</td>
-        <td>${totalNet.toFixed(2)}</td>
+        <td>${Math.round(totals.ADDL)}</td>
+        <td>${Math.round(totals.DA)}</td>
+        <td>${Math.round(totals.HRA)}</td>
+        <td>${Math.round(totals.MA)}</td>
+        <td>${Math.round(totals.CONV)}</td>
+       <!-- <td>${Math.round(totals.DAARR)}</td> -->
+        <td>${Math.round(totalGross)}</td>
+        <td>${Math.round(totals.GPF)}</td>
+        <td>${Math.round(totals.GSLI)}</td>
+        <td>${Math.round(totals.PTAX)}</td>
+        <td>${Math.round(total_itax)}</td>
+        <td>${Math.round(totalNet)}</td>
     </tr>
     </tbody>
     </table>`;
