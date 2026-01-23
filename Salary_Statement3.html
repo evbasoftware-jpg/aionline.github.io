@@ -81,11 +81,12 @@ th,td{
     border:1px solid #ccc;
     padding:6px;
     text-align:center;
-    word-break: break-word;
+    color: blue;
+   /* word-break: break-word;*/
 }
 th{
     background:#ffffff;
-    color:solid blue;
+    color: blue;
     border-bottom: 2px solid blue;
 }
 
@@ -806,8 +807,8 @@ const otherRecord = otherSheetData.find(item =>
             
                 <table>
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
-                    <td><strong>Designation:</strong> ${designation} &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-                    <strong>Sex:</strong> ${sex}</td></tr>
+                    <td><strong>Designation:</strong> ${designation} &emsp;&emsp;&emsp;
+                    <strong>Gender:</strong> ${sex}</td></tr>
                     <tr><td><strong>PAN:</strong> ${pan}</td>
                     <td><strong>Mobile:</strong> ${mobile}</td></tr>
                     <tr><td><strong>School Name:</strong> ${schoolName}</td>
@@ -1005,6 +1006,7 @@ setInterval(updateGrossFromStorage, 500);
     }
  
 </script>
+        
 <div class="watermark">https://aionline.in.net</div>
 </body>
 </html>
