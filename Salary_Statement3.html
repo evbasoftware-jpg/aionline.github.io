@@ -694,7 +694,165 @@ function navigateEmployee(direction) {
 
 document.getElementById("prev_btn").addEventListener("click", () => navigateEmployee('prev'));
 document.getElementById("next_btn").addEventListener("click", () => navigateEmployee('next'));
-            
+
+    // get gross total from salary statement
+  function updateGrossFromStorage() {
+    const gross = localStorage.getItem("TOTAL_GROSS");
+    const gsalInput = document.getElementById("gsal");
+    const itax_tot = localStorage.getItem("TOTAL_ITAX");
+    
+     //other income
+     const othInc1=localStorage.getItem("OI1");
+     const othInc1Rs = localStorage.getItem("OI1RS");
+     const othInc2 = localStorage.getItem("OI2");
+     const othInc2Rs = localStorage.getItem("OI2RS");
+     const savAccInt = localStorage.getItem("SAV_ACC_INT");
+     const famPen = localStorage.getItem("FAM_PEN");
+     const ccd80_2 = localStorage.getItem("CCD_80_2");
+    
+    if (gross && gsalInput) {
+        if (gsalInput.value !== gross) {
+            gsalInput.value = Number(gross) || 0;
+           // auto recalculation trigger
+            if (typeof calculateAll === "function") {
+                calculateAll();
+            }
+        }
+        if (itax_tot) document.getElementById("tds").value = Number(itax_tot) || 0;
+
+      // ===== AUTO FILL OTHER INCOME FROM SALARY PAGE =====
+      if (othInc1 !== null) {
+         document.getElementById("oi1_text").value = othInc1;
+      }
+
+      if (othInc2 !== null) {
+         document.getElementById("oi2_text").value = othInc2;
+      }
+
+      if (othInc1Rs) document.getElementById("oi1").value = Number(othInc1Rs) || 0;
+      if (othInc2Rs) document.getElementById("oi2").value = Number(othInc2Rs) || 0;
+      if (savAccInt) document.getElementById("oi3").value = Number(savAccInt) || 0;
+      if (famPen) document.getElementById("oi4").value = Number(famPen) || 0;
+      if (ccd80_2) document.getElementById("NPS").value = Number(ccd80_2) || 0;
+
+// trigger recalculation
+if (typeof calculateAll === "function") calculateAll();
+
+    }
+}
+
+// page load হলে একবার
+window.addEventListener("load", updateGrossFromStorage);
+
+// প্রতি 500ms পর চেক করবে (real-time sync)
+setInterval(updateGrossFromStorage, 500);
+  
+    function getVal(id) {
+      return parseFloat(document.getElementById(id).value) || 0;
+    }
+
+    function setVal(id, val) {
+      document.getElementById(id).value = val;
+    }
+
+    function calculateAll() {
+      // 1-3: Salary Calculation
+      let gsal = getVal('gsal');
+      let sd = getVal('sd');
+      let netSal = Math.max(0, gsal - sd);
+      setVal('net_sal', netSal);
+
+      // 4: Other Income & Family Pension
+      let oi1 = getVal('oi1');
+      let oi2 = getVal('oi2');
+      let oi3 = getVal('oi3');
+      let famPen = getVal('oi4');
+      
+      let famPenDeduct = Math.min(15000, Math.round(famPen / 3));
+      let famPenAfter = famPen - famPenDeduct;
+      setVal('oi4e', famPenDeduct);
+      setVal('oi4f', famPenAfter);
+
+      let totOther = oi1 + oi2 + oi3 + famPenAfter;
+      setVal('tot4', totOther);
+
+      // 5-8: Taxable Income
+      let gti = netSal + totOther;
+      setVal('tot5', gti);
+      
+      let nps = getVal('NPS');
+      let taxableInc = gti - nps;
+      let taxableIncRound = Math.round(taxableInc / 10) * 10;
+      setVal('Taxable_Inc', taxableInc);
+      setVal('Taxable_Inc_round', taxableIncRound);
+
+      // 9: Slab Calculation
+      let income = taxableIncRound;
+      let s1 = Math.min(income, 400000);
+      let s2 = Math.max(0, Math.min(income, 800000) - 400000);
+      let s3 = Math.max(0, Math.min(income, 1200000) - 800000);
+      let s4 = Math.max(0, Math.min(income, 1600000) - 1200000);
+      let s5 = Math.max(0, Math.min(income, 2000000) - 1600000);
+      let s6 = Math.max(0, Math.min(income, 2400000) - 2000000);
+      let s7 = Math.max(0, income - 2400000);
+
+      setVal('sal1', s1); setVal('Tax_slab1', 0);
+      setVal('sal2', s2); setVal('Tax_slab2', Math.round(s2 * 0.05));
+      setVal('sal3', s3); setVal('Tax_slab3', Math.round(s3 * 0.10));
+      setVal('sal4', s4); setVal('Tax_slab4', Math.round(s4 * 0.15));
+      setVal('sal5', s5); setVal('Tax_slab5', Math.round(s5 * 0.20));
+      setVal('sal6', s6); setVal('Tax_slab6', Math.round(s6 * 0.25));
+      setVal('sal7', s7); setVal('Tax_slab7', Math.round(s7 * 0.30));
+
+      let totalTax = Math.round((s2*0.05)+(s3*0.1)+(s4*0.15)+(s5*0.2)+(s6*0.25)+(s7*0.3));
+      setVal('TOTAL_Tax', totalTax);
+
+      // 10: 87A Rebate & Marginal Relief
+      let rebate87a = 0;
+      if (taxableIncRound <= 1200000) {
+        rebate87a = Math.min(totalTax, 60000);
+      } else {
+        // Marginal Relief logic
+        let diff = taxableIncRound - 1200000;
+        if (totalTax > diff) {
+          rebate87a = totalTax - diff;
+        }
+      }
+      setVal('a_87', Math.round(rebate87a));
+
+      let taxPayable = Math.round(totalTax - rebate87a);
+      setVal('Tax_Pay_able', taxPayable);
+
+      // 12-13: Capital Gains
+      let stcg = Math.round(getVal('st_cg1') * 0.20);
+      let ltcgVal = getVal('lt_cg1');
+      let ltcg = ltcgVal > 125000 ? Math.round((ltcgVal - 125000) * 0.125) : 0;
+      setVal('st_cg_2', stcg);
+      setVal('lt_cg_2', ltcg);
+
+      // 14-16: Total & Cess
+      let ttp14 = taxPayable + stcg + ltcg;
+      setVal('ttp14', ttp14);
+      let cess = Math.round(ttp14 * 0.04);
+      setVal('Edu_Cess', cess);
+      let ttp16 = ttp14 + cess;
+      setVal('TTP16', ttp16);
+
+      // 17-20: Final Result
+      let rebate89 = getVal('Rebt89i');
+      let ntp18 = ttp16 - rebate89;
+      setVal('NTP18', ntp18);
+      
+      let tds = getVal('tds');
+      if (ntp18 > tds) {
+        setVal('TP_Refund_Text', "20) Net Tax Payable:");
+        setVal('Final_Result', (ntp18 - tds));
+      } else {
+        setVal('TP_Refund_Text', "20) Amount Refundable:");
+        setVal('Final_Result', (tds - ntp18));
+      }
+    }
+ 
 </script>
 <div class="watermark">https://aionline.in.net</div>
 </body>
