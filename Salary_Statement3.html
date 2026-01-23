@@ -121,7 +121,7 @@ th{
     color: #007bff;
 }
 .infobox table {
-    width: 80%;
+    width: 100%;
     border-collapse: collapse;
 }
 .infobox td {
@@ -132,7 +132,7 @@ th{
 }
 .infobox td:first-child {
     font-weight: bold;
-    width: 450px;
+    width: 400px;
     color: #555;
     text-align:left;
 }
@@ -193,6 +193,10 @@ th{
         font-weight: bold;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+    
+    #container {
+        page-break-before: always;
     }
     
     .watermark{
@@ -579,9 +583,6 @@ const otherRecord = otherSheetData.find(item =>
         </tr>
     </thead>
     <tbody>`;
-    
-<!-- table 2nd page -->
- <!--   <div class="page-break"></div> -->
     
     let found = false;
     let bonusAmount = 0;
