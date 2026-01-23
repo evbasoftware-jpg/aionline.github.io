@@ -132,7 +132,7 @@ th{
 }
 .infobox td:first-child {
     font-weight: bold;
-    width: 400px;
+    width: 375px;
     color: #555;
     text-align:left;
 }
@@ -165,7 +165,7 @@ th{
         box-shadow: none;
         webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-        font-size: 12px;
+        /*font-size: 12px;*/
     }
 
     /* ✅ Infobox print friendly */
@@ -564,7 +564,7 @@ const otherRecord = otherSheetData.find(item =>
         GPF: 0, GSLI: 0, PTAX: 0, ITAX: 0
     };
 
-    let html = `<table>
+    let html = `<table style="font-size:10px;">
     <thead>
         <tr>
             <th>MONTH</th><th>BASIC PAY</th><th>ADDL ALLOW</th><th>DA</th><th>HRA</th>
