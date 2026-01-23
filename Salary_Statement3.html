@@ -217,7 +217,117 @@ th{
      <div id="table_container"></div>
     </div>
 
+ <div class="container">
+    <h3 style="text-align: center; margin-bottom: 5px;">Income Tax calculation for the Financial Year 2025-26</h3>
+    <h4 style="text-align: center; margin-top: 0;">(Assessment Year 2026-2027)</h4>
 
+    <table>
+      <thead>
+        <tr>
+          <th class="right-border">NEW REGIME TAX CALCULATION</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="right-border">
+            1) Gross Salary Income (Allowances, Bonus, Arrear):<br>
+            2) Less: Standard Deduction U/S 16(Ia):<br>
+            3) Net Salary income (1-2):
+          </td>
+          <td style="text-align: center;">
+            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
+            <input type="number" id="sd" value="75000" readonly><br>
+            <input type="number" id="net_sal" disabled value="0">
+          </td>
+        </tr>
+
+        <tr>
+          <td class="right-border">
+            4) Any other Income (Interest etc.):<br>
+            <span class="sub-label">(i) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px;" placeholder="Mention Source of Income"></span> &emsp;&emsp;
+            <input type="number" id="oi1" value="0" oninput="calculateAll()"><br>
+            <span class="sub-label">(ii) <input type="text" id="oi2_text" style="text-align: left; width: 170px;" placeholder="Mention Source of Income" ></span> &emsp;&emsp;
+            <input type="number" id="oi2" value="0" oninput="calculateAll()"><br>
+            <span class="sub-label">(iii) Savings Account Interest:</span> &ensp;&emsp;
+            <input type="number" id="oi3" value="0" oninput="calculateAll()"><br>
+            <span class="sub-label">(iv) Family Pension:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;
+            <input type="number" id="oi4" value="0" oninput="calculateAll()"><br>
+            <span class="sub-label" style="color: Red;">&emsp;Less: Deduction U/S 57(IIA):</span> &ensp;&emsp;
+            <input type="number" id="oi4e" disabled value="0"><br>
+            <span class="sub-label">&emsp;Family Pension after deduction:</span> 
+            <input type="number" id="oi4f" disabled value="0"><br>
+            <div style="text-align: right; padding-right: 10px;">Total Other Income (i to iv):</div>
+          </td>
+          <td style="vertical-align: bottom; text-align: center;">
+            <input type="number" id="tot4" disabled value="0">
+          </td>
+        </tr>
+
+        <tr>
+          <td class="right-border">
+            5) Gross Total Income (3+4):<br>
+            <span style="color:red;">6) Less: Deduction U/S. 80CCD(2) NPS (Employer):</span><br>
+            7) Taxable Income (5 - 6):<br>
+            8) Taxable Income (Rounded off U/S 288A):
+          </td>
+          <td style="text-align: center;">
+            <style="text-align: center;" type="number" id="tot5" disabled value="0"><br>
+            <input type="number" id="NPS" value="0" oninput="calculateAll()"><br>
+            <input type="number" id="Taxable_Inc" disabled value="0"><br>
+            <input type="number" id="Taxable_Inc_round" disabled value="0">
+          </td>
+        </tr>
+
+        <tr>
+          <td class="right-border">
+            9) Tax on Total Income &emsp;(Salary Slab) &emsp;&emsp;&emsp;&emsp;&emsp; (Tax):<br>
+            <small>Upto 4,00,000 (Nil):</small> &emsp;&emsp;&emsp;&emsp; <input type="number" id="sal1" disabled> &emsp;&emsp; <input type="number" id="Tax_slab1" disabled value="0" ><br>
+            <small>4,00,001 - 8,00,000 (5%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal2" disabled> &emsp;&emsp; <input type="number" id="Tax_slab2" disabled value="0" ><br>
+            <small>8,00,001 - 12,00,000 (10%):</small> &ensp;&emsp;<input type="number" id="sal3" disabled> &emsp;&emsp; <input type="number" id="Tax_slab3" disabled value="0" ><br>
+            <small>12,00,001 - 16,00,000 (15%):</small> &emsp;<input type="number" id="sal4" disabled> &emsp;&emsp; <input type="number" id="Tax_slab4" disabled value="0" ><br>
+            <small>16,00,001 - 20,00,000 (20%):</small> &emsp;<input type="number" id="sal5" disabled> &emsp;&emsp; <input type="number" id="Tax_slab5" disabled value="0"><br>
+            <small>20,00,001 - 24,00,000 (25%):</small> &emsp;<input type="number" id="sal6" disabled> &emsp;&emsp; <input type="number" id="Tax_slab6" disabled value="0"><br>
+            <small>Above 24,00,000 (30%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal7" disabled> &emsp;&emsp; <input type="number" id="Tax_slab7" disabled value="0"><br>
+            <div style="text-align: right; font-weight: bold; padding-right: 10px;">TOTAL TAX:</div>
+          </td>
+          <td style="vertical-align: bottom; text-align: center;">
+            <input type="number" id="TOTAL_Tax" disabled value="0">
+          </td>
+        </tr>
+
+        <tr>
+          <td class="right-border">
+            10) <span style="color:red;">Less: Tax Exempt U/S 87A (Marginal Relief):</span><br>
+            11) Tax Payable:<br>
+            12) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
+            13) <span style="color:purple;">L.T. Capital Gain (12.5% >1.25L):</span> &ensp;<input type="number" id="lt_cg1" value="0" oninput="calculateAll()"><br>
+            14) Total Tax Payable (11+12+13):<br>
+            15) Add: Education Cess @ 4%:<br>
+            16) Total Tax Payable (14+15):<br>
+            17) Less: Rebate u/s 89(i):<br>
+            18) Net Tax Payable:<br>
+            19) Tax already deducted (TDS):<br>
+            <input type="text" id="TP_Refund_Text" value="20) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
+          </td>
+          <td style="text-align: center;">
+            <input type="number" id="a_87" disabled value="0"><br>
+            <input type="number" id="Tax_Pay_able" disabled value="0"><br>
+            <input type="number" id="st_cg_2" disabled value="0"><br>
+            <input type="number" id="lt_cg_2" disabled value="0"><br>
+            <input type="number" id="ttp14" disabled value="0"><br>
+            <input type="number" id="Edu_Cess" disabled value="0"><br>
+            <input type="number" id="TTP16" disabled value="0"><br>
+            <input type="number" id="Rebt89i" value="0" oninput="calculateAll()"><br>
+            <input type="number" id="NTP18" disabled value="0"><br>
+            <input type="number" id="tds" value="0" oninput="calculateAll()"><br>
+            <input type="number" id="Final_Result" disabled value="0">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+            </div>
+                
 <script>
     //email id checking 
     const allowedEmails = [
