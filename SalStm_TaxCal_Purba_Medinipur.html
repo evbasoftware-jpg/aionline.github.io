@@ -273,16 +273,16 @@ th{
     <table>
       <thead>
         <tr>
-          <th class="right-border">NEW REGIME TAX CALCULATION</th>
-          <th>Amount</th>
+          <th class="right-border">Particulars</th>
+          <th>Amount (Rs.)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="text-align: left;" class="right-border">
-            1) Gross Salary Income (Allowances, Bonus, Arrear):<br>
+            1) Gross Salary Income (March,2025 to February 2026):<br>
             2) Less: Standard Deduction U/S 16(Ia):<br>
-            3) Net Salary income (1-2):
+            3) Income chargeable under the head salaries (1-2):
           </td>
           <td style="text-align: center;">
             <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
@@ -293,14 +293,19 @@ th{
 
         <tr>
           <td style="text-align: left;" class="right-border" >
-            4) Any other Income (Interest etc.):<br>
-            <span class="sub-label">(i) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px; height: 7px;" placeholder="Mention Source of Income"></span> &emsp;
+            4) Add.: Any other Income reported by the employee:<br>
+            <span class="sub-label">(a) Income from House property u/s 26 to 27:</span> &ensp;&emsp;
+            <input type="number" id="oia" value="0" oninput="calculateAll()"><br>
+            <span class="sub-label">(b) Income from capital gain (less Income from exempted u/s 10(38):</span> &ensp;&emsp;
+            <input type="number" id="oib" value="0" oninput="calculateAll()"><br>
+        
+            <span class="sub-label">(c) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px; height: 7px;" placeholder="Mention Source of Income"></span> &emsp;
             <input type="number" id="oi1" value="0" oninput="calculateAll()"><br>
-            <span class="sub-label">(ii) <input type="text" id="oi2_text" style="text-align: left; width: 170px; height: 7px;" placeholder="Mention Source of Income" ></span> &emsp;
+            <span class="sub-label">(d) <input type="text" id="oi2_text" style="text-align: left; width: 170px; height: 7px;" placeholder="Mention Source of Income" ></span> &emsp;
             <input type="number" id="oi2" value="0" oninput="calculateAll()"><br>
-            <span class="sub-label">(iii) Savings Account Interest:</span> &ensp;&emsp;
+            <span class="sub-label">(e) Savings Account Interest:</span> &ensp;&emsp;
             <input type="number" id="oi3" value="0" oninput="calculateAll()"><br>
-            <span class="sub-label">(iv) Family Pension:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;
+            <span class="sub-label">(f) Family Pension:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;
             <input type="number" id="oi4" value="0" oninput="calculateAll()"><br>
             <span class="sub-label" style="color: Red;">&emsp;Less: Deduction U/S 57(IIA):</span> &ensp;&emsp;
             <input type="number" id="oi4e" disabled value="0"><br>
@@ -338,7 +343,7 @@ th{
             <small>16,00,001 - 20,00,000 (20%):</small> &emsp;<input type="number" id="sal5" disabled> &emsp;&emsp; <input type="number" id="Tax_slab5" disabled value="0"><br>
             <small>20,00,001 - 24,00,000 (25%):</small> &emsp;<input type="number" id="sal6" disabled> &emsp;&emsp; <input type="number" id="Tax_slab6" disabled value="0"><br>
             <small>Above 24,00,000 (30%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal7" disabled> &emsp;&emsp; <input type="number" id="Tax_slab7" disabled value="0"><br>
-            <div style="text-align: right; font-weight: bold; padding-right: 10px;">TOTAL TAX:</div>
+            <div style="text-align: Left; font-weight: bold; padding-right: 10px;">10) TOTAL TAX PAYABLE:</div>
           </td>
           <td style="vertical-align: bottom; text-align: center;">
             <input type="number" id="TOTAL_Tax" disabled value="0">
