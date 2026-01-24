@@ -311,7 +311,7 @@ th{
             <input type="number" id="oi4e" disabled value="0"><br>
             <span class="sub-label">&emsp;Family Pension after deduction:</span> 
             <input type="number" id="oi4f" disabled value="0"><br>
-            <div style="text-align: right; padding-right: 10px;">Total Other Income (i to iv):</div>
+            <div style="text-align: right; padding-right: 10px;">Total Other Income (a to f):</div>
           </td>
           <td style="vertical-align: bottom; text-align: center;">
             <input type="number" id="tot4" disabled value="0">
@@ -352,16 +352,16 @@ th{
 
         <tr>
           <td style="text-align: left;" class="right-border" >
-            10) <span style="color:red;">Less: Tax Exempt U/S 87A (Marginal Relief):</span><br>
-            11) Tax Payable:<br>
-            12) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
-            13) <span style="color:purple;">L.T. Capital Gain (12.5% >1.25L):</span> &ensp;<input type="number" id="lt_cg1" value="0" oninput="calculateAll()"><br>
-            14) Total Tax Payable (11+12+13):<br>
-            15) Add: Education Cess @ 4%:<br>
-            16) Total Tax Payable (14+15):<br>
-            17) Less: Rebate u/s 89(i):<br>
-            18) Net Tax Payable:<br>
-            19) Tax already deducted (TDS):<br>
+            11) <span style="color:red;">Less: Rebate u/s 87A maximum of Rs.60,000/- if Sl No. 8 above is below Rs. 12 lakhs:</span><br>
+            12) Tax Payable (10-11) :<br>
+            13) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
+            14) <span style="color:purple;">L.T. Capital Gain (12.5% >1.25L):</span> &ensp;<input type="number" id="lt_cg1" value="0" oninput="calculateAll()"><br>
+            15) Total Tax Payable (12+13+14):<br>
+            16) Add: Health & Education Cess @4% on Total Tax of Sl No.15:<br>
+            17) Total Tax Payable (15+16):<br>
+            18) Less: relief u/s 89 if any:<br>
+            19) Net Tax Payable (17-18):<br>
+            20) Less Tax deducted at source u/s 192(1) upto January,2026 (TDS):<br>
             <input type="text" id="TP_Refund_Text" value="20) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
           </td>
           <td style="text-align: center;">
