@@ -266,8 +266,8 @@ th{
     
  <div class="container">
      <h3 style="text-align: center; margin-bottom: 5px;">STATEMENT OF INCOME (SALARY & OTHER SOURCES) AND INCOME TAX</h3>
-    <h3 style="text-align: center; margin-bottom: 5px;">Computation Sheet For Financial Year-${year} - ${year+1} Assessment Year ${year+1}-${year+2}.</h3>
-    <h4 style="text-align: center; margin-top: 0;">Name of the Employee : ${teacherName}  PAN- ${pan} </h4>
+    <h3 id="fyTitle" style="text-align:center; margin-bottom:5px;"></h3>
+    <h4 id="name_Pan" style="text-align:center; margin-bottom:5px;"></h3>
     <h4 style="text-align: center; margin-top: 0;">Name of the Dept:- Education Deptt (Purba Medinipur D.P.S.C.), TAN-CALPO6464D </h4>                                                                  </h4>
      
     <table>
@@ -796,6 +796,11 @@ const otherRecord = otherSheetData.find(item =>
        }
            return String(v).trim();
        };
+    
+      localStorage.setItem("YEAR", safeText(year));
+      localStorage.setItem("TeacherName", safeText(teacherName));
+      localStorage.setItem("PAN", safeText(pan));
+    
       localStorage.setItem("OI1", safeText(othInc1));
       localStorage.setItem("OI2", safeText(othInc2));
 
@@ -861,6 +866,10 @@ document.getElementById("next_btn").addEventListener("click", () => navigateEmpl
 
     // get gross total from salary statement
   function updateGrossFromStorage() {
+    const year = Number(localStorage.getItem("YEAR"));
+    const teacher_Name = localStorage.getItem("TeacherName");
+    const pan = localStorage.getItem("PAN");
+      
     const gross = localStorage.getItem("TOTAL_GROSS");
     const gsalInput = document.getElementById("gsal");
     const itax_tot = localStorage.getItem("TOTAL_ITAX");
@@ -885,6 +894,17 @@ document.getElementById("next_btn").addEventListener("click", () => navigateEmpl
         if (itax_tot) document.getElementById("tds").value = Number(itax_tot) || 0;
 
       // ===== AUTO FILL OTHER INCOME FROM SALARY PAGE =====
+
+      if(year){
+    document.getElementById("fyTitle").innerText =
+        `Income Tax calculation for the Financial Year ${year}-${year+1}`;
+      }
+      
+      if(teacher_Name){
+    document.getElementById("name_Pan").innerText =
+        `Name of the Employee : ${teacher_Name}  PAN- ${pan}`;
+      }
+        
       if (othInc1 !== null) {
          document.getElementById("oi1_text").value = othInc1;
       }
