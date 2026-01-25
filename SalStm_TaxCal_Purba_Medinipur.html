@@ -824,10 +824,10 @@ const otherRecord = otherSheetData.find(item =>
 
     const container = document.getElementById("table_container");
    
-/*    if (found) {
+    if (found) {
         let infoboxHtml = '';
         if (otherRecord) {
-            infoboxHtml = `<div class="infobox">
+         /*   infoboxHtml = `<div class="infobox">
                      <h5 style="color: #8e14e0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h5>
             
                 <table style="font-size:12px;">
@@ -840,7 +840,7 @@ const otherRecord = otherSheetData.find(item =>
                     <td><strong>Circle Name:</strong> ${circleName}</td></tr>
                     
             </table>
-            </div>`;
+            </div>`; */
         } 
         container.innerHTML = infoboxHtml + html;
     } else {
@@ -848,7 +848,7 @@ const otherRecord = otherSheetData.find(item =>
             ❌ No records found for "<b>${key}</b>"
         </div>`;
     }
-}); */
+}); 
 
 function navigateEmployee(direction) {
     const searchBox = document.getElementById("searchBox");
