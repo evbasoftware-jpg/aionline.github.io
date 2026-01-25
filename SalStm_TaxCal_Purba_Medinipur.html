@@ -264,10 +264,10 @@ th{
     <!-- tax calculator table start -->
     
  <div class="container">
-     <h3 style="text-align: center; margin-bottom: 5px;">STATEMENT OF INCOME (SALARY & OTHER SOURCES) AND INCOME TAX</h3>
-    <h4 id="fyTitle" style="text-align:center; margin-bottom:2px;"></h4>
-    <h3 id="name_Pan" style="text-align:center; margin-bottom:2px;"></h3>
-    <h5 style="text-align: center; margin-bottom:2px;">Name of the Dept:- Education Deptt (Purba Medinipur D.P.S.C.), TAN-CALPO6464D </h5>                                                                  </h4>
+    <h3 style="text-align: center; margin-bottom: 0px;">STATEMENT OF INCOME (SALARY & OTHER SOURCES) AND INCOME TAX</h3>
+    <h4 id="fyTitle" style="text-align:center; margin-bottom:0px;"></h4>
+    <h3 id="name_Pan" style="text-align:center; margin-bottom:0px;"></h3>
+    <h5 style="text-align: center; margin-bottom:0px;">Name of the Dept:- Education Deptt (Purba Medinipur D.P.S.C.), TAN-CALPO6464D </h5>                                                                  </h4>
      
     <table>
       <thead>
@@ -578,7 +578,7 @@ const otherRecord = otherSheetData.find(item =>
 
     let html = `<table style="font-size:11px;">
     <thead>
-    <h3 style="color: #8e14e0; position: relative; left: 27px;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h3>
+    <h2 style="color: #8e14e0; position: relative; left: 7px;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h2>
        
         <tr>
             <th rowspan="2">MONTH</th>
@@ -594,10 +594,10 @@ const otherRecord = otherSheetData.find(item =>
             <th rowspan="2">NET PAY</th>
         </tr>
         <tr class="no-top-border">
-            <th >GPF</th>
-            <th >GSLI</th>
-            <th >P.TAX</th>
-            <th >I.TAX</th>
+            <th>GPF</th>
+            <th>GSLI</th>
+            <th>P.TAX</th>
+            <th>I.TAX</th>
         </tr>
     </thead>
     <tbody>`;
