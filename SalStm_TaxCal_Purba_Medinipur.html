@@ -18,7 +18,7 @@
     top: 98%;
     left: 37%;
     transform: translate(-50%, -50%) rotate(0deg);
-    font-size: 27px;
+    font-size: 17px;
     color: #fad457; 
     z-index: 0;
     pointer-events: none;
@@ -144,6 +144,10 @@ th{
     margin-top: 0;
     margin-bottom: 0;
     }
+    
+    h3{
+    margin-bottom: 0;
+    }
 
 /* ================= PRINT SETTINGS ================= */
     
@@ -170,7 +174,7 @@ th{
     /* ✅ Tables full width */
     table {
         width: 95% !important;
-        height: 77% !important;
+        height: 57% !important;
         box-shadow: none;
         webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -385,7 +389,7 @@ th{
       </tbody>
     </table>
      </div>
-    </div>    <br><br>
+    </div>    <br>
      
 <div id="table_container"></div> <!-- Salary Statement table -->
                 
@@ -582,7 +586,7 @@ const otherRecord = otherSheetData.find(item =>
 
     let html = `<table style="font-size:11px;">
     <thead>
-    <h2 style="color: #8e14e0; position: relative; left: 7px; margin-bottom: 0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h2>
+    <h3 style="color: #8e14e0; position: relative; left: 17px; margin-bottom: 0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h3>
        
         <tr>
             <th rowspan="2">MONTH</th>
@@ -810,8 +814,12 @@ const otherRecord = otherSheetData.find(item =>
         <td>${Math.round(totalNet)}</td>
     </tr>
     </tbody>
-    </table>`;
+    </table>`;<br><br><br><br>
 
+    
+Signature of DDO                                                     Signature of Employee									
+
+    
     // send other iformations in form 16 page
     const safeText = v => {
        if (v === null || v === undefined || String(v).trim() === "") {
