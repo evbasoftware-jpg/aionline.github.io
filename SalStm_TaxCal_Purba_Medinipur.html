@@ -84,7 +84,7 @@ table{
     width:100%;
     border-collapse:collapse;
     outline: 2px solid blue;
-    margin-top:7px;
+    margin-top:3px;
     background:white;
     padding:3px;
    
@@ -165,7 +165,7 @@ th{
     /* ❌ Hide upload & controls */
     input[type="file"],
     #search_section,
-    button, h1 {
+    button, h1,infobox {
         display: none !important;
     }
 
@@ -183,14 +183,13 @@ th{
     /* ✅ Tables full width */
     table {
         width: 100% !important;
-  /*      height: 57% !important;*/
         box-shadow: none;
         webkit-print-color-adjust: exact;
         print-color-adjust: exact;
         
     }
 
-    /* ✅ Infobox print friendly */
+    /* ✅ Infobox print friendly 
     .infobox {
         width: 91% !important;
         box-shadow: none;
@@ -199,7 +198,7 @@ th{
         page-break-inside: avoid;
         webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-    }
+    }*/
 
     /* ✅ Header color force */
     th {
@@ -239,7 +238,7 @@ th{
       color: black;
       font-weight: bold;
     }
-    .note { color: red; margin-bottom: 10px; }
+    .note { color: red; margin-bottom: 2px; }
     .sub-label { font-size: 0.9em; margin-left: 20px; }
     
  
@@ -248,7 +247,7 @@ th{
 
 <body>
 <div id="loginBox" style="text-align:center;margin-top:100px;">
-  <h2>Login required</h2>
+  <h2>Login with your e-mail</h2>
   <div id="g_id_onload"
        data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
        data-callback="handleCredentialResponse">
