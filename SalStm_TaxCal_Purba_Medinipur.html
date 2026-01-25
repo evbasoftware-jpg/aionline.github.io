@@ -150,7 +150,6 @@ th{
 
     th, td {
         padding: 4px;
-      /*  word-break: break-word;*/
     }
     
     /* ✅ Clean page */
@@ -201,7 +200,7 @@ th{
 
     .container {
       width: 100%;
-      page-break-before: always;
+  /*    page-break-before: always; */
     }
   
     .right-border {
@@ -579,7 +578,7 @@ const otherRecord = otherSheetData.find(item =>
 
     let html = `<table style="font-size:11px;">
     <thead>
-    <h5 style="color: #8e14e0; position: relative; left: 77px;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h5>
+    <h2 style="color: #8e14e0; position: relative; left: 177px;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h2>
        
         <tr>
             <th rowspan="2">MONTH</th>
@@ -591,7 +590,7 @@ const otherRecord = otherSheetData.find(item =>
             <th rowspan="2">CONV. ALW</th>
            <!-- <th rowspan="2">DA ARR</th> -->
             <th rowspan="2">GROSS TOTAL</th>
-            <th colspan="4">DEDUCTION</th> 
+            <th colspan="4" class="no-bottom-border">DEDUCTION</th> 
             <th rowspan="2">NET PAY</th>
         </tr>
         <tr>
