@@ -969,6 +969,8 @@ setInterval(updateGrossFromStorage, 500);
       setVal('net_sal', netSal);
 
       // 4: Other Income & Family Pension
+    let oia = getVal('oia');
+    let oib = getVal('oib');
       let oi1 = getVal('oi1');
       let oi2 = getVal('oi2');
       let oi3 = getVal('oi3');
@@ -979,7 +981,7 @@ setInterval(updateGrossFromStorage, 500);
       setVal('oi4e', famPenDeduct);
       setVal('oi4f', famPenAfter);
 
-      let totOther = oi1 + oi2 + oi3 + famPenAfter;
+      let totOther = oia + oib + oi1 + oi2 + oi3 + famPenAfter;
       setVal('tot4', totOther);
 
       // 5-8: Taxable Income
