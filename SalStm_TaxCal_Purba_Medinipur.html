@@ -580,12 +580,13 @@ const otherRecord = otherSheetData.find(item =>
     let html = `<table style="font-size:11px;">
     <thead>
     <h5 style="color: #8e14e0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h5>
-        <tr> <th></th> <th>DEDUCTION</th> </tr>
+       <tr> <th>DEDUCTION</th> </tr>
         <tr>
             <th>MONTH</th><th>BASIC PAY</th><th>ADDL ALW</th><th>DA</th><th>HRA</th>
             <th>MA</th><th>CONV. ALW</th>
            <!-- <th>DA ARR</th> -->
             <th>GROSS TOTAL</th>
+            <tr> <th>DEDUCTION</th> </tr>
             <th>GPF</th><th>GSLI</th><th>P.TAX</th><th>I.TAX</th><th>NET PAY</th>
         </tr>
     </thead>
@@ -823,7 +824,7 @@ const otherRecord = otherSheetData.find(item =>
 
     const container = document.getElementById("table_container");
    
-    if (found) {
+/*    if (found) {
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
@@ -840,14 +841,14 @@ const otherRecord = otherSheetData.find(item =>
                     
             </table>
             </div>`;
-        }
+        } 
         container.innerHTML = infoboxHtml + html;
     } else {
         container.innerHTML = `<div style="text-align:center; padding:20px; color:red; font-size:18px;">
             ❌ No records found for "<b>${key}</b>"
         </div>`;
     }
-});
+}); */
 
 function navigateEmployee(direction) {
     const searchBox = document.getElementById("searchBox");
