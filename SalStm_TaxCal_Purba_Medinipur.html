@@ -1038,7 +1038,7 @@ setInterval(updateGrossFromStorage, 500);
         setVal('TP_Refund_Text', "21) Tax Payable / Amount Refundable:");
         setVal('Final_Result', (ntp18 - tds));
         }
-      else if (ntp18 > tds) {
+      if (ntp18 > tds) {
         setVal('TP_Refund_Text', "21) Tax Payable (19-20):");
         setVal('Final_Result', (ntp18 - tds));
       } else {
