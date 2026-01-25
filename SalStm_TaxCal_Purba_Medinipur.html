@@ -579,11 +579,13 @@ const otherRecord = otherSheetData.find(item =>
 
     let html = `<table style="font-size:11px;">
     <thead>
+    <h5 style="color: #8e14e0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h5>
+        <tr> <th></th> <th>DEDUCTION</th> </tr>
         <tr>
             <th>MONTH</th><th>BASIC PAY</th><th>ADDL ALW</th><th>DA</th><th>HRA</th>
             <th>MA</th><th>CONV. ALW</th>
            <!-- <th>DA ARR</th> -->
-            <th>GROSS PAY</th>
+            <th>GROSS TOTAL</th>
             <th>GPF</th><th>GSLI</th><th>P.TAX</th><th>I.TAX</th><th>NET PAY</th>
         </tr>
     </thead>
@@ -825,8 +827,7 @@ const otherRecord = otherSheetData.find(item =>
         let infoboxHtml = '';
         if (otherRecord) {
             infoboxHtml = `<div class="infobox">
-                <h4 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h4>
-                 <h5 style="color: #8e14e0;">SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})</h5>
+                     <h5 style="color: #8e14e0;">STATEMENT OF SALARY FROM MARCH- ${year} TO FEBRUARY-${year+1} </h5>
             
                 <table style="font-size:12px;">
                     <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
