@@ -206,7 +206,7 @@ th{
   
     .right-border {
       border-right: 2px solid blue;
-      line-height: 1.2;
+      line-height: 1.3;
     }
     input[type="number"], input[type="text"] {
       width: 120px;
@@ -362,8 +362,7 @@ th{
             18) Less: relief u/s 89 if any:<br>
             19) Net Tax Payable (17-18):<br>
             20) Less Tax deducted at source u/s 192(1) upto January,2026 (TDS):<br>
-            
-            <input type="text" id="TP_Refund_Text" style="width: 250px; height: 10px; text-align: left; border:none; background:none;" disabled>
+            <input type="text" id="TP_Refund_Text" style="width: 250px; height: 15px; text-align: left; border:none; background:none;" disabled>
           </td>
           <td style="text-align: center;">
             <input type="number" id="a_87" disabled value="0"><br>
@@ -1035,10 +1034,10 @@ setInterval(updateGrossFromStorage, 500);
       
       let tds = getVal('tds');
       if (ntp18 > tds) {
-        setVal('TP_Refund_Text', "21) Net Tax Payable:");
+        setVal('TP_Refund_Text', "21) Tax Payable (19-20):");
         setVal('Final_Result', (ntp18 - tds));
       } else {
-        setVal('TP_Refund_Text', "21) Amount Refundable:");
+        setVal('TP_Refund_Text', "21) Amount Refundable (20-19):");
         setVal('Final_Result', (tds - ntp18));
       }
     }
