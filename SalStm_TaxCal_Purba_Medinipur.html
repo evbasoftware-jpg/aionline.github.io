@@ -620,8 +620,6 @@ const otherRecord = otherSheetData.find(item =>
         </tr>
     </thead>
     <tbody>`;
-	
-    <div class="sign">Signature of DDO  </div>
 
 	
     let found = false;
@@ -827,13 +825,12 @@ const otherRecord = otherSheetData.find(item =>
         <td>${Math.round(total_itax)}</td>
         <td>${Math.round(totalNet)}</td>
     </tr>
+	<tr> Signature of DDO </>
     </tbody>
     </table>`;
 
     
 								
-
-    
     // send other iformations in form 16 page
     const safeText = v => {
        if (v === null || v === undefined || String(v).trim() === "") {
