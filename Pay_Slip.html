@@ -62,8 +62,14 @@ button{
     font-size:14px;
     cursor:pointer;
 }
-.border{
-    border:1px solid #000;
+.outer-border{
+    border:2px solid #000;
+    border-collapse:collapse;
+}
+
+.outer-border td,
+.outer-border th{
+    border:none;
 }
     
 @media print{
@@ -97,7 +103,7 @@ button{
 </tr>
 </table>
 
-<table class="border">
+<table class="outer-border">
 <tr>
 <th class="section-title" colspan="2">EARNINGS(Rs)</th>
 <th class="section-title" colspan="2">DEDUCTIONS(Rs)</th>
