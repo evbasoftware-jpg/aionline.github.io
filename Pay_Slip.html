@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Editable Pay Slip</title>
 
+<style>
+body{
+    font-family: "Bookman Old Style", serif;
+    background:#f2f2f2;
+}
+.payslip{
+    width:800px;
+    margin:20px auto;
+    background:#fff;
+    padding:20px;
+    border:2px solid #000;
+}
+h2,h3{
+    text-align:center;
+    margin:5px 0;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+td,th{
+    border:1px solid #000;
+    padding:6px;
+    font-size:14px;
+}
+.no-border td{
+    border:none;
+    padding:4px;
+}
+input{
+    width:100%;
+    border:none;
+    outline:none;
+    font-family:inherit;
+    font-size:14px;
+}
+.section-title{
+    background:#ddd;
+    font-weight:bold;
+    text-align:center;
+}
+.footer{
+    margin-top:10px;
+    font-size:13px;
+}
+.print-btn{
+    text-align:center;
+    margin-top:15px;
+}
+button{
+    padding:6px 15px;
+    font-size:14px;
+    cursor:pointer;
+}
+@media print{
+    .print-btn{display:none;}
+    body{background:#fff;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="payslip">
+
+<h2>GOVT. OF WEST BENGAL</h2>
+<h3>PAY SLIP</h3>
+
+<table class="no-border">
+<tr>
+<td>EMPLOYEE NAME:</td>
+<td><input value="ANOAR ALI"></td>
+<td>EMPLOYEE ID:</td>
+<td><input value="VTME3361"></td>
+</tr>
+<tr>
+<td>SCHOOL NAME:</td>
+<td colspan="3"><input value="DARBARPUR PRIMARY SCHOOL (UDISE: 19080410101)"></td>
+</tr>
+<tr>
+<td>DESIGNATION:</td>
+<td><input value="HT"></td>
+<td>PAN:</td>
+<td><input value="AFCPA3135R"></td>
+</tr>
+<tr>
+<td>LEVEL:</td>
+<td><input value="LEVEL-9"></td>
+<td>CELL:</td>
+<td><input value="CELL-23"></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<th class="section-title">EARNINGS</th>
+<th class="section-title">AMOUNT</th>
+<th class="section-title">DEDUCTIONS</th>
+<th class="section-title">AMOUNT</th>
+</tr>
+
+<tr>
+<td>BASIC</td><td><input value="55400"></td>
+<td>GPF</td><td><input value="5500"></td>
+</tr>
+<tr>
+<td>ADDL. REMUN.</td><td><input value="400"></td>
+<td>PF LOAN</td><td><input value="0"></td>
+</tr>
+<tr>
+<td>DA</td><td><input value="9972"></td>
+<td>CPF DEDUCT</td><td><input value="0"></td>
+</tr>
+<tr>
+<td>HRA</td><td><input value="6648"></td>
+<td>PT</td><td><input value="200"></td>
+</tr>
+<tr>
+<td>MA</td><td><input value="0"></td>
+<td>IT</td><td><input value="0"></td>
+</tr>
+<tr>
+<td>CA</td><td><input value="0"></td>
+<td>GSLI</td><td><input value="60"></td>
+</tr>
+<tr>
+<td>CPF</td><td><input value="0"></td>
+<td>OVERDRAWN</td><td><input value="0"></td>
+</tr>
+<tr>
+<td>IR</td><td><input value="0"></td>
+<td></td><td></td>
+</tr>
+</table>
+
+<div class="footer">
+<strong>Payment Details:</strong><br>
+<input style="width:100%;" 
+value="Transferred to SBIN Account no 31841813872  IFS Code SBIN0008727">
+</div>
+
+<div class="print-btn">
+<button onclick="window.print()">Print / Save PDF</button>
+</div>
+
+</div>
+
+</body>
+</html>
