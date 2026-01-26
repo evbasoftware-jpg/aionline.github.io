@@ -45,7 +45,6 @@ input{
     background:#ddd;
     font-weight:bold;
     text-align:center;
-    border-right: none !important;
 }
 .footer{
     margin-top:10px;
@@ -60,6 +59,10 @@ button{
     font-size:14px;
     cursor:pointer;
 }
+.no-right-border{
+    border-right: none !important;
+}
+    
 @media print{
     .print-btn{display:none;}
     body{background:#fff;}
@@ -109,38 +112,38 @@ button{
 <th class="section-title" colspan="2">OUT/ACCT.DED (Rs)</th>
 </tr>
 
-<tr>
+<tr class="no-right-border">
 <td>BASIC</td><td><input value="55400"></td>
 <td>GPF</td><td><input value="5500"></td>
     <td>GPF</td><td><input value="5500"></td>
     <td>GPF</td><td><input value="5500"></td>
 </tr>
-<tr>
+<tr class="no-right-border">
 <td>ADDL. REMUN.</td><td><input value="400"></td>
 <td>PF LOAN</td><td><input value="0"></td>
     <td>GPF</td><td><input value="5500"></td>
     <td>GPF</td><td><input value="5500"></td>
 </tr>
-<tr>
+<tr class="no-right-border">
 <td>DA</td><td><input value="9972"></td>
 <td>CPF DEDUCT</td><td><input value="0"></td>
     <td>GPF</td><td><input value="5500"></td>
     <td>GPF</td><td><input value="5500"></td>
     
 </tr>
-<tr>
+<tr class="no-right-border">
 <td>HRA</td><td><input value="6648"></td>
 <td>PT</td><td><input value="200"></td>
 <td>GPF</td><td><input value="5500"></td>
 <td>GPF</td><td><input value="5500"></td>
 </tr>
-<tr>
+<tr class="no-right-border">
 <td>MA</td><td><input value="0"></td>
 <td>IT</td><td><input value="0"></td>
 <td>GPF</td><td><input value="5500"></td>
 <td>GPF</td><td><input value="5500"></td>
 </tr>
-<tr>
+<tr class="no-right-border">
 <td>CA</td><td><input value="0"></td>
 <td>GSLI</td><td><input value="60"></td>
 <td>GPF</td><td><input value="5500"></td>
