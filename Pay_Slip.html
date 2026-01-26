@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+p<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -71,7 +71,11 @@ button{
 .outer-border th{
     border:none;
 }
-    
+
+table td:nth-child(2),
+table th:nth-child(2){
+    border-right:2px solid black;
+}
 @media print{
     .print-btn{display:none;}
     body{background:#fff;}
