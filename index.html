@@ -90,15 +90,20 @@ box-shadow:0 4px 12px rgba(0,0,0,0.1);
 font-family:Arial, sans-serif;
 ">
 
-  <div style="font-size:18px;font-weight:bold;color:#333;">
-    👁️ Total Visitors
+  <div class="visitor-box">
+  👁️ Total Visitors: <span id="visitCount">Loading...</span>
   </div>
 
-  <div style="margin-top:8px;">
-    <img src="https://hitwebcounter.com/counter/counter.php?page=98765432&style=0006&nbdigits=6&type=page&initCount=0"
-         title="Website Visitors"
-         alt="Visitor Counter">
-  </div>
+  <script>
+fetch('https://api.countapi.xyz/hit/aionline.in.net/home')
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("visitCount").innerText = data.value;
+  })
+  .catch(() => {
+    document.getElementById("visitCount").innerText = "N/A";
+  });
+  </script>
 
   <div style="font-size:12px;color:#777;margin-top:6px;">
     Trusted Online AI Services
