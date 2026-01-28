@@ -77,6 +77,17 @@
   </a>
 </section>
 
+  <script>
+fetch("https://api.countapi.xyz/hit/aionline.in.net/home")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("visitCount").innerText = data.value;
+  })
+  .catch(() => {
+    document.getElementById("visitCount").innerText = "0";
+  });
+  </script>
+  
   <!-- Visitor Counter Start -->
 <div style="
 max-width:300px;
@@ -88,26 +99,16 @@ border-radius:10px;
 box-shadow:0 4px 12px rgba(0,0,0,0.1);
 font-family:Arial, sans-serif;
 ">
-
-  <div class="visitor-box">
   👁️ Total Visitors:
-  <span id="visitCount">
-    <img 
-      src="https://api.countapi.xyz/hit/aionline.in.net/home?read=1"
-      alt="visitor counter"
-      onerror="this.style.display='none';document.getElementById('visitCount').innerText='0';"
-    >
-  </span>
-  </div>
-  
-  
+  <span id="visitCount">Loading...</span>
 
   <div style="font-size:12px;color:#777;margin-top:6px;">
     Trusted Online AI Services
   </div>
-
 </div>
+  
 <!-- Visitor Counter End -->
+  
 <p style="text-align:center;font-size:14px;">
 Providing trusted AI online services across India
 </p>
