@@ -1,120 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta name="google-site-verification" content="GzROEisYubtTz5QIclpOt_ZkbXAGxZHDcg1Py-851ZQ" />
-  <meta charset="UTF-8">
-  <title>AI Online Services | Digital & AI Support India</title>
-
-<meta name="description" content="AI Online provides AI based digital services, online help, form assistance and paid UPI support in India.">
-<meta name="keywords" content="AI online services, digital help, UPI support, AI assistance India">
-<meta name="robots" content="index, follow">
-  
-<meta name="author" content="AI Online">
-
+<meta charset="UTF-8">
+<title>AI Online Services</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<header class="header">
-  <h1>AI Online</h1>
-  <p>Smart Digital & AI Based Services</p>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    
-    
-  </nav>
-</header>
+<h1 style="text-align:center;">AI Online</h1>
+<p style="text-align:center;">Smart Digital & AI Based Services</p>
 
-<section class="hero">
-  <h2>Welcome to AI Online Services</h2>
-  <p>
-    We provide AI based online services, digital help, form assistance,
-    and paid support for individuals and small businesses.
-  </p>
-  <a class="btn" href="#pay">Get Paid Support</a>
-</section>
+<hr>
 
-  <h2>Our Paid Services</h2>
+<h2>Welcome</h2>
+<p>We provide AI based digital services and paid online support.</p>
 
-<ul>
-  <li>
-    Salary Statement Help – ₹199
-    <a href="pay.html?service=salary&amt=199">
-      <button>Pay & View</button>
-    </a>
-  </li>
-</ul>
-  
-<section class="services">
-  <h2>Our Services</h2>
+<h3>Paid Service</h3>
+<p>Salary Statement Help – ₹199</p>
 
-  <div class="card">
-    <h3>AI Online Support</h3>
-    <p>Instant AI-based help and solutions.</p>
-  </div>
+<hr>
 
-  <div class="card">
-    <h3>Digital Assistance</h3>
-    <p>Forms, documents & online services.</p>
-  </div>
+<div style="text-align:center;">
+👁️ Total Visitors:
+<span id="visitCount">Loading...</span>
+</div>
 
-  <div class="card">
-    <h3>Paid Online Help</h3>
-    <p>Priority paid support via UPI.</p>
-  </div>
-</section>
-
-<section id="pay" class="payment">
-  <h2>Pay & Get Support</h2>
-  
-
-
-  <a class="btn whatsapp"
-     href="https://wa.me/919800074626?text=Payment%20Done%20for%20AI%20Online">
-     Payment Done → WhatsApp
-  </a>
-</section>
-
-  <script>
+<script>
 fetch("https://api.countapi.xyz/hit/aionline.in.net/home")
   .then(res => res.json())
   .then(data => {
     document.getElementById("visitCount").innerText = data.value;
   })
-  .catch(() => {
+  .catch(()=>{
     document.getElementById("visitCount").innerText = "0";
   });
-  </script>
-  
-  <!-- Visitor Counter Start -->
-<div style="
-max-width:300px;
-margin:30px auto;
-padding:15px;
-text-align:center;
-background:#ffffff;
-border-radius:10px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
-font-family:Arial, sans-serif;
-">
-  👁️ Total Visitors:
-  <span id="visitCount">Loading...</span>
+</script>
 
-  <div style="font-size:12px;color:#777;margin-top:6px;">
-    Trusted Online AI Services
-  </div>
-</div>
-  
-<!-- Visitor Counter End -->
-  
-<p style="text-align:center;font-size:14px;">
-Providing trusted AI online services across India
-</p>
-
-<footer>
-  © 2026 AI Online | All Rights Reserved
+<footer style="text-align:center;margin-top:30px;">
+© 2026 AI Online
 </footer>
 
 </body>
+</html>
