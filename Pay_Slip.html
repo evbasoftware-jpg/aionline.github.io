@@ -1,4 +1,4 @@
-p<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,10 +10,10 @@ body{
     background:#f2f2f2;
 }
 .payslip{
-    width:800px;
+    width:900px;
     margin:20px auto;
     background:#fff;
-    padding:20px;
+    padding:10px;
   
 }
 h2,h3{
@@ -29,20 +29,23 @@ table{
 }
 td,th{
     border:2px solid #000;
-    padding:6px;
+    padding:5px;
     font-size:14px;
 }
 .no-border td{
     border:none;
-    padding:4px;
+    padding:5px;
     white-space: nowrap;
 }
 input{
-    width:100%;
-    border:none;
+    width:90%;
+   /* border:none;*/
     outline:none;
+    
     font-family:inherit;
     font-size:14px;
+    height:auto;
+    
 }
 .section-title{
     font-weight:bold;
@@ -92,98 +95,147 @@ table th:nth-child(3){
 
 <table class="no-border">
     
+<tr><td colspan="2"><input value="GOVT. OF ____ _____" style="text-align: center; " ></td></tr>
+<tr><td colspan="2"><input value="OFFICE OF THE ___ _______ __ _______" style="text-align: center; "></td></tr>
+<tr><td colspan="2"><input value="AAAA CIRCLE, ______" style="text-align: center;"></td></tr>
+<tr><td colspan="2"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; "></td></tr>
     
-<tr><td><input value="GOVT. OF ____ _____" style="text-align: center;"></td></tr>
-<tr><td><input value="OFFICE OF THE ___ _______ __ _______" style="text-align: center;"></td></tr>
-<tr><td><input value="AAAA CIRCLE, ______" style="text-align: center;"></td></tr>
-<tr><td><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center;"></td></tr>
-    <tr></tr>
-    <tr></tr>
-    <tr></tr>
 <tr>
-<td style="width: 570px;"><b></b>EMPLOYEE NAME: </b><input value="ABCD EFGH"></td>
-<td>EMPLOYEE ID: <input value="AAAA1111"></td>
+<td ><b>EMPLOYEE NAME: </b><input value="ABCD EFGH" style="width: 347px;"></td>
+<td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 177px;"></td>
 </tr>
 <tr>
-<td>SCHOOL NAME: <input value="AAAA PRIMARY SCHOOL (UDISE: 11111111111)"></td>
-<td>DESIGNATION: <input value="HT"></td>
+<td><b>SCHOOL NAME: </b><input value="AAAA PRIMARY SCHOOL (UDISE: 11111111111)" style="width: 370px;"></td>
+<td style="border:none;"><b>DESIGNATION: </b><input value="HT" style="width: 174px;"></td>
 </tr>
 <tr>
-<td>LEVEL: <input value="LEVEL-9   CELL: CELL-23"></td>
-<td>PAN: <input value="ABCDE1234F"></td>
+<td><b>LEVEL: </b><input value="LEVEL-9   CELL: CELL-23" style="width: 430px;"></td>
+<td style="border:none;"><b>PAN: </b><input value="ABCDE1234F" style="width: 246px;"></td>
 </tr>
 </table>
 
 <table class="outer-border">
 <tr>
-<th class="section-title" colspan="2">EARNINGS(Rs)</th>
-<th class="section-title" colspan="2">DEDUCTIONS(Rs)</th>
-<th class="section-title" colspan="2">RECOVERIES OF LOAN(Rs)</th>
-<th class="section-title" colspan="2">OUT/ACCT.DED (Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">EARNINGS(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">DEDUCTIONS(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">RECOVERIES OF LOAN(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">OUT/ACCT.DED (Rs)</th>
 </tr>
     
 <tr >
 <td>BASIC</td><td><input value="55400" style="text-align:right;"></td>
 <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+    <td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
+    <td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
 <td>ADDL. REMUN.</td><td><input value="400" style="text-align:right;"></td>
 <td>PF LOAN</td><td><input value="0" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+    <td><input style="text-align:left;"></td>
+    <td><input style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
 <td>DA</td><td><input value="9972" style="text-align:right;"></td>
 <td>CPF DEDUCT</td><td><input value="0" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-    <td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-    
+    <td><input style="text-align:left;"></td>
+    <td><input style="text-align:right;"></td>
+ <td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
+   
 </tr>
 <tr >
 <td>HRA</td><td><input value="6648" style="text-align:right;"></td>
 <td>PT</td><td><input value="200" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td><input style="text-align:left;"></td>
+<td><input style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
 <td>MA</td><td><input value="0" style="text-align:right;"></td>
 <td>IT</td><td><input value="0" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td><input style="text-align:left;"></td>
+<td><input style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
 <td>CA</td><td><input value="0" style="text-align:right;"></td>
 <td>GSLI</td><td><input value="60" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td><input style="text-align:left;"></td>
+<td><input style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
 <td>CPF</td><td><input value="0" style="text-align:right;"></td>
 <td>OVERDRAWN</td><td><input value="0" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td><input style="text-align:left;"></td>
+<td><input style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
 <td>IR</td><td><input value="0" style="text-align:right;"></td>
 <td></td><td></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td ><input style="text-align:left;"></td>
+<td ><input style="text-align:right;" ></td>
+<td ><input style="text-align:left;"></td>
+    <td ><input style="text-align:right;"></td>
+</tr>
+<tr>
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">Total:</th>
+</tr>
+<tr>
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">GROSS PAY:</th>
+</tr>
+<tr >
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">NET PAY:</th>
+ </tr>
+<tr>
+   <td colspan="8"> <input value="Transferred to SBIN Account no 7777777  IFS Code SBIN0001111" style="text-align:left; font-weight:bold;" ></td>
 </tr>
 </table>
+    <br>
+    <p style="font-size:14px;"> 
+   GP: Grade Pay, DA: Dearness Allowance, HRA: House Rent Allowance, MA: Medical Allowance, CA: Conveyance Allowance,
 
-<div class="footer">
-<strong>Payment Details:</strong><br>
-<input style="width:100%;" 
-value="Transferred to SBIN Account no 31841813872  IFS Code SBIN0008727">
-</div>
+   <br><br>
+   CPF: Contributory Provident Fund, GPF: General Provident Fund, PT: Professional Tax, IT: Income Tax,
 
-<div class="print-btn">
-<button onclick="window.print()">Print / Save PDF</button>
-</div>
+   <br><br>
+   GSLI: Group Savings Linked Insurance, IR: Interim Relief
+    </p>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    
+     <table class="no-border">
+         <tr style="border-top:1px solid #000; >
+         <td colspan="8">Disclaimer: This is a computer generated Pay Slip and hence does not require any signature.
+             <br><br><br>
+         </tr>
+         <tr >
+         <td ><input value="osms.wbsed.gov.in" style="text-align:left; font-style:italic; width:137px;"></td>
+          <td style="border:none;"><input value="Page-1" style="text-align:center; font-style:italic; width:77px;"></td>
+          <td ><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-style:italic; "></td>
+         </tr >  
+         
+     </table>
+    
+   <div class="print-btn">
+       
+    <button onclick="window.print()">Print / Save PDF</button>
+          
+   </div>
 
-</div>
+   </div>
+
+ <footer>
+  © 2026 AI Online | All Rights Reserved
+</footer>
 
 </body>
 </html>
