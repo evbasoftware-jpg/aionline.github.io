@@ -91,9 +91,16 @@ font-family:Arial, sans-serif;
 ">
 
   <div class="visitor-box">
-  👁️ Total Visitors: <span id="visitCount">Loading...</span>
+  👁️ Total Visitors:
+  <span id="visitCount">
+    <img 
+      src="https://api.countapi.xyz/hit/aionline.in.net/home?read=1"
+      alt="visitor counter"
+      onerror="this.style.display='none';document.getElementById('visitCount').innerText='0';"
+    >
+  </span>
   </div>
-
+  
   <script>
 fetch('https://api.countapi.xyz/hit/aionline.in.net/home')
   .then(res => res.json())
