@@ -1,0 +1,22 @@
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<button id="payBtn">Pay Now</button>
+
+<script>
+var options = {
+  "key": "rzp_live_XXXXXXXXXX",
+  "amount": 100,
+  "currency": "INR",
+  "name": "AI Online Services",
+  "description": "Salary Service",
+  "handler": function (response){
+    window.location.href =
+    "success.php?pay_id=" + response.razorpay_payment_id;
+  }
+};
+
+document.getElementById("payBtn").onclick = function(){
+  var rzp = new Razorpay(options);
+  rzp.open();
+};
+</script>
