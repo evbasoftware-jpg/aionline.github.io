@@ -10,7 +10,7 @@ body{
     background:#f2f2f2;
 }
 .payslip{
-    width:800px;
+    width:750px;
     margin:20px auto;
     background:#fff;
     padding:10px;
@@ -34,12 +34,13 @@ td,th{
 }
 .no-border td{
     border:none;
-    padding:5px;
+    padding:0px;
     white-space: nowrap;
+    
 }
 input{
     width:90%;
-   /* border:none;*/
+    border:none;
     outline:none;
     
     font-family:inherit;
@@ -85,6 +86,7 @@ table th:nth-child(3){
 @media print{
     .print-btn{display:none;}
     body{background:#fff;}
+    .footer{display:none;}
 }
 </style>
 </head>
@@ -95,22 +97,22 @@ table th:nth-child(3){
 
 <table class="no-border">
     
-<tr><td colspan="2"><input value="GOVT. OF ____ _____" style="text-align: center; " ></td></tr>
-<tr><td colspan="2"><input value="OFFICE OF THE ___ _______ __ _______" style="text-align: center; "></td></tr>
-<tr><td colspan="2"><input value="AAAA CIRCLE, ______" style="text-align: center;"></td></tr>
-<tr><td colspan="2"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; "></td></tr>
+<tr><td colspan="2"><input value="GOVT. OF " style="text-align: center; font-weight:bold; font-size:16px" ></td></tr>
+<tr><td colspan="2"><input value="OFFICE OF THE " style="text-align: center; font-weight:bold;"></td></tr>
+<tr><td colspan="2"><input value="AAAA CIRCLE, NADIA" style="text-align: center; font-weight:bold;"></td></tr>
+<tr><td colspan="2" style="padding-bottom:37px;"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; font-weight:bold; "></td></tr>
     
 <tr>
 <td ><b>EMPLOYEE NAME: </b><input value="ABCD EFGH" style="width: 347px;"></td>
-<td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 177px;"></td>
+<td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 107px;"></td>
 </tr>
 <tr>
 <td><b>SCHOOL NAME: </b><input value="AAAA PRIMARY SCHOOL (UDISE: 11111111111)" style="width: 370px;"></td>
-<td style="border:none;"><b>DESIGNATION: </b><input value="HT" style="width: 174px;"></td>
+<td style="border:none;"><b>DESIGNATION: </b><input value="HT" style="width: 104px;"></td>
 </tr>
 <tr>
 <td><b>LEVEL: </b><input value="LEVEL-9   CELL: CELL-23" style="width: 430px;"></td>
-<td style="border:none;"><b>PAN: </b><input value="ABCDE1234F" style="width: 246px;"></td>
+<td style="border:none;"><b>PAN: </b><input value="ABCDE1234F" style="width: 177px;"></td>
 </tr>
 </table>
 
@@ -123,24 +125,24 @@ table th:nth-child(3){
 </tr>
     
 <tr >
-<td>BASIC</td><td><input value="55400" style="text-align:right;"></td>
-<td>GPF</td><td><input value="5500" style="text-align:right;"></td>
+<td><b>BASIC</td><td><input value="55400" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>GPF</td><td><input value="5500" style="text-align:right; width:57px;" class="deduction amount"></td>
     <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
     <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
-<td>ADDL. REMUN.</td><td><input value="400" style="text-align:right;"></td>
-<td>PF LOAN</td><td><input value="0" style="text-align:right;"></td>
+<td><b>ADDL. REMUN.</td><td><input value="400" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>PF LOAN</td><td><input value="0" style="text-align:right; width:57px;" class="deduction amount"></td>
     <td><input style="text-align:left;"></td>
     <td><input style="text-align:right;"></td>
 <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
-<td>DA</td><td><input value="9972" style="text-align:right;"></td>
-<td>CPF DEDUCT</td><td><input value="0" style="text-align:right;"></td>
+<td><b>DA</td><td><input value="9972" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>CPF DEDUCT</td><td><input value="0" style="text-align:right; width:57px;" class="deduction amount"></td>
     <td><input style="text-align:left;"></td>
     <td><input style="text-align:right;"></td>
  <td ><input style="text-align:left;"></td>
@@ -148,39 +150,39 @@ table th:nth-child(3){
    
 </tr>
 <tr >
-<td>HRA</td><td><input value="6648" style="text-align:right;"></td>
-<td>PT</td><td><input value="200" style="text-align:right;"></td>
+<td><b>HRA</td><td><input value="6648" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>PT</td><td><input value="200" style="text-align:right; width:57px;" class="deduction amount"></td>
 <td><input style="text-align:left;"></td>
 <td><input style="text-align:right;"></td>
 <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
-<td>MA</td><td><input value="0" style="text-align:right;"></td>
-<td>IT</td><td><input value="0" style="text-align:right;"></td>
+<td><b>MA</td><td><input value="0" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>IT</td><td><input value="0" style="text-align:right; width:57px;" class="deduction amount"></td>
 <td><input style="text-align:left;"></td>
 <td><input style="text-align:right;"></td>
 <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr >
-<td>CA</td><td><input value="0" style="text-align:right;"></td>
-<td>GSLI</td><td><input value="60" style="text-align:right;"></td>
+<td><b>CA</td><td><input value="0" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>GSLI</td><td><input value="60" style="text-align:right; width:57px;" class="deduction amount"></td>
 <td><input style="text-align:left;"></td>
 <td><input style="text-align:right;"></td>
 <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
-<td>CPF</td><td><input value="0" style="text-align:right;"></td>
-<td>OVERDRAWN</td><td><input value="0" style="text-align:right;"></td>
+<td><b>CPF</td><td><input value="0" style="text-align:right; width:57px;" class="earning amount"></td>
+<td><b>OVERDRAWN</td><td><input value="0" style="text-align:right; width:57px;" class="deduction amount"></td>
 <td><input style="text-align:left;"></td>
 <td><input style="text-align:right;"></td>
 <td ><input style="text-align:left;"></td>
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
-<td>IR</td><td><input value="0" style="text-align:right;"></td>
+<td><b>IR</td><td><input value="0" style="text-align:right; width:57px;" class="earning amount"></td>
 <td></td><td></td>
 <td ><input style="text-align:left;"></td>
 <td ><input style="text-align:right;" ></td>
@@ -188,20 +190,35 @@ table th:nth-child(3){
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">Total:</th>
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">Total:
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <input id="totalEarning" style="text-align:right; font-size:11px; width:55px; font-weight:bold;" readonly>        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+       
+        <input id="totalDeduction" style="text-align:right; font-size:11px; width:57px; font-weight:bold;" readonly>    </th>
 </tr>
 <tr>
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">GROSS PAY:</th>
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">GROSS PAY: 
+        <input id="grossPay" style="text-align:left; font-size:11px; width:47px; font-weight:bold;" readonly> 
+    </th>
 </tr>
 <tr >
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">NET PAY:</th>
+    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">NET PAY:
+        &emsp;
+        <input id="netPay" style="text-align:left; font-size:11px; width:47px; font-weight:bold;" readonly>
+        (
+        <span id="netPayWords"></span>
+        )
+    </th>
  </tr>
 <tr>
    <td colspan="8"> <input value="Transferred to SBIN Account no 7777777  IFS Code SBIN0001111" style="text-align:left; font-weight:bold;" ></td>
 </tr>
+
+   
+    
 </table>
     <br>
-    <p style="font-size:14px;"> 
+    <p style="font-size:12px;"> 
    GP: Grade Pay, DA: Dearness Allowance, HRA: House Rent Allowance, MA: Medical Allowance, CA: Conveyance Allowance,
 
    <br><br>
@@ -210,17 +227,17 @@ table th:nth-child(3){
    <br><br>
    GSLI: Group Savings Linked Insurance, IR: Interim Relief
     </p>
-    <br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br>
     
      <table class="no-border">
          <tr style="border-top:1px solid #000; >
-         <td colspan="8">Disclaimer: This is a computer generated Pay Slip and hence does not require any signature.
+         <td colspan="8"><b>Disclaimer:</b> This is a computer generated Pay Slip and hence does not require any signature.
              <br><br><br>
          </tr>
-         <tr >
-         <td ><input value="osms.wbsed.gov.in" style="text-align:left; font-style:italic; width:137px;"></td>
-          <td style="border:none;"><input value="Page-1" style="text-align:center; font-style:italic; width:77px;"></td>
-          <td ><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-style:italic; "></td>
+         <tr>
+         <td style="padding-top:0; padding-left:0;"><input value="https://aionline.in.net" style="text-align:left; font-size:11px; font-style:italic; width:167px; font-weight:bold;"></td>
+          <td style="border:none; padding-top:0;"><input value="Page-1" style="text-align:center; font-size:11px; font-style:italic; width:77px; font-weight:bold;"></td>
+          <td style="text-align:right; padding-right:0; padding-top:0;"><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-size:11px; font-style:italic; width:377px; font-weight:bold;"></td>
          </tr >  
          
      </table>
@@ -230,12 +247,111 @@ table th:nth-child(3){
     <button onclick="window.print()">Print / Save PDF</button>
           
    </div>
-
    </div>
 
  <footer>
   © 2026 AI Online | All Rights Reserved
 </footer>
+    
+    
+   <script>
+function calculatePay(){
+
+    let earningTotal = 0;
+    let deductionTotal = 0;
+
+    // Sum Earnings
+    document.querySelectorAll('.earning').forEach(el=>{
+        earningTotal += parseFloat(el.value) || 0;
+    });
+
+    // Sum Deductions
+    document.querySelectorAll('.deduction').forEach(el=>{
+        deductionTotal += parseFloat(el.value) || 0;
+    });
+
+    // Set values
+    document.getElementById('totalEarning').value   = earningTotal;
+    document.getElementById('totalDeduction').value = deductionTotal;
+    document.getElementById('grossPay').value       = earningTotal;
+    document.getElementById('netPay').value         = earningTotal - deductionTotal;
+}
+
+// Auto update on any input change
+document.addEventListener('input', calculatePay);
+
+// Initial calculation on page load
+calculatePay();
+    
+    function numberToWords(num) {
+    if (num === 0) return "Zero";
+
+    const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+               "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
+               "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty",
+               "Sixty", "Seventy", "Eighty", "Ninety"];
+
+    function twoDigits(n){
+        return n < 20 ? a[n] : b[Math.floor(n/10)] + (n%10 ? " " + a[n%10] : "");
+    }
+
+    function threeDigits(n){
+        return Math.floor(n/100)
+            ? a[Math.floor(n/100)] + " Hundred" + (n%100 ? " " + twoDigits(n%100) : "")
+            : twoDigits(n);
+    }
+
+    let words = "";
+
+    if (num >= 10000000){
+        words += threeDigits(Math.floor(num/10000000)) + " Crore ";
+        num %= 10000000;
+    }
+    if (num >= 100000){
+        words += threeDigits(Math.floor(num/100000)) + " Lakh ";
+        num %= 100000;
+    }
+    if (num >= 1000){
+        words += threeDigits(Math.floor(num/1000)) + " Thousand ";
+        num %= 1000;
+    }
+    if (num > 0){
+        words += threeDigits(num);
+    }
+
+    return words.trim();
+}
+
+// MODIFY your existing calculatePay()
+function calculatePay(){
+
+    let earningTotal = 0;
+    let deductionTotal = 0;
+
+    document.querySelectorAll('.earning').forEach(el=>{
+        earningTotal += parseFloat(el.value) || 0;
+    });
+
+    document.querySelectorAll('.deduction').forEach(el=>{
+        deductionTotal += parseFloat(el.value) || 0;
+    });
+
+    let net = earningTotal - deductionTotal;
+
+    document.getElementById('totalEarning').value   = earningTotal;
+    document.getElementById('totalDeduction').value = deductionTotal;
+    document.getElementById('grossPay').value       = earningTotal;
+    document.getElementById('netPay').value         = net;
+
+    // 👇 Net Pay in Words
+    document.getElementById('netPayWords').innerText =
+        "Rupees " + numberToWords(net) + " only";
+}
+
+document.addEventListener('input', calculatePay);
+calculatePay();
+</script>
 
 </body>
 </html>
