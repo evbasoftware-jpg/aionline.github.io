@@ -6,11 +6,11 @@
 
 <style>
 body{
-    font-family: "Bookman Old Style", serif;
+    font-family: "Times New Roman", Times, serif;
     background:#f2f2f2;
 }
 .payslip{
-    width:750px;
+    width:700px;
     margin:20px auto;
     background:#fff;
     padding:10px;
@@ -28,8 +28,11 @@ table{
     
 }
 td,th{
-    border:2px solid #000;
-    padding:5px;
+    border:1px solid #000;
+    padding-right:5px;
+    padding-left:5px;
+    padding-top:2px;
+    padding-bottom:2px;
     font-size:14px;
 }
 .no-border td{
@@ -66,7 +69,7 @@ button{
     cursor:pointer;
 }
 .outer-border{
-    border:2px solid #000;
+    border:1px solid #000;
     border-collapse:collapse;
 }
 
@@ -81,7 +84,7 @@ table td:nth-child(6),
 table th:nth-child(1),
 table th:nth-child(2),
 table th:nth-child(3){
-    border-right:2px solid black;
+    border-right:1px solid black;
 }
 @media print{
     .print-btn{display:none;}
@@ -97,10 +100,10 @@ table th:nth-child(3){
 
 <table class="no-border">
     
-<tr><td colspan="2"><input value="GOVT. OF " style="text-align: center; font-weight:bold; font-size:16px" ></td></tr>
-<tr><td colspan="2"><input value="OFFICE OF THE " style="text-align: center; font-weight:bold;"></td></tr>
-<tr><td colspan="2"><input value="AAAA CIRCLE, NADIA" style="text-align: center; font-weight:bold;"></td></tr>
-<tr><td colspan="2" style="padding-bottom:37px;"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; font-weight:bold; "></td></tr>
+<tr><td colspan="2"><input value="GOVT. OF WEST BENGAL" style="text-align: center; font-weight:bold; font-size:16px" ></td></tr>
+<tr><td colspan="2"><input value="OFFICE OF THE SUB INSPECTOR OF SCHOOLS" style="text-align: center; font-weight:bold;"></td></tr>
+<tr><td colspan="2"><input value="LABOUR CIRCLE, BIRBHUM" style="text-align: center; font-weight:bold; font-size:11px; color:#084870;"></td></tr>
+<tr><td colspan="2" style="padding-bottom:37px;"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; font-weight:bold; font-size:11px;"></td></tr>
     
 <tr>
 <td ><b>EMPLOYEE NAME: </b><input value="ABCD EFGH" style="width: 347px;"></td>
@@ -118,10 +121,10 @@ table th:nth-child(3){
 
 <table class="outer-border">
 <tr>
-<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">EARNINGS(Rs)</th>
-<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">DEDUCTIONS(Rs)</th>
-<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">RECOVERIES OF LOAN(Rs)</th>
-<th class="section-title" colspan="2" style="border-bottom:2px solid #000;">OUT/ACCT.DED (Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:1px solid #000;">EARNING(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:1px solid #000;">DEDUCTION(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:1px solid #000;">RECOVERIES OF LOAN(Rs)</th>
+<th class="section-title" colspan="2" style="border-bottom:1px solid #000;">OUT/ACCT.DED (Rs)</th>
 </tr>
     
 <tr >
@@ -190,21 +193,21 @@ table th:nth-child(3){
     <td ><input style="text-align:right;"></td>
 </tr>
 <tr>
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">Total:
+    <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">Total:
         &emsp;&emsp;&emsp;&emsp;&emsp;
-        <input id="totalEarning" style="text-align:right; font-size:11px; width:55px; font-weight:bold;" readonly>        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <input id="totalEarning" style="text-align:right; font-size:14px; width:55px; font-weight:bold;" readonly>        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
        
-        <input id="totalDeduction" style="text-align:right; font-size:11px; width:57px; font-weight:bold;" readonly>    </th>
+        <input id="totalDeduction" style="text-align:right; font-size:14px; width:57px; font-weight:bold;" readonly>    </th>
 </tr>
 <tr>
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">GROSS PAY: 
-        <input id="grossPay" style="text-align:left; font-size:11px; width:47px; font-weight:bold;" readonly> 
+    <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">GROSS PAY: 
+        <input id="grossPay" style="text-align:left; font-size:14px; width:47px; font-weight:bold;" readonly> 
     </th>
 </tr>
 <tr >
-    <th class="section-title" colspan="8" style="border-top:2px solid #000; text-align:left;">NET PAY:
+    <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">NET PAY:
         &emsp;
-        <input id="netPay" style="text-align:left; font-size:11px; width:47px; font-weight:bold;" readonly>
+        <input id="netPay" style="text-align:left; font-size:14px; width:47px; font-weight:bold;" readonly>
         (
         <span id="netPayWords"></span>
         )
@@ -227,17 +230,17 @@ table th:nth-child(3){
    <br><br>
    GSLI: Group Savings Linked Insurance, IR: Interim Relief
     </p>
-    <br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br>
     
      <table class="no-border">
-         <tr style="border-top:1px solid #000; >
-         <td colspan="8"><b>Disclaimer:</b> This is a computer generated Pay Slip and hence does not require any signature.
+         <tr style="border-bottom:1px solid #000;">
+         <td colspan="8" ><b>Disclaimer:</b> This is a computer generated Pay Slip and hence does not require any signature.
              <br><br><br>
          </tr>
          <tr>
          <td style="padding-top:0; padding-left:0;"><input value="https://aionline.in.net" style="text-align:left; font-size:11px; font-style:italic; width:167px; font-weight:bold;"></td>
-          <td style="border:none; padding-top:0;"><input value="Page-1" style="text-align:center; font-size:11px; font-style:italic; width:77px; font-weight:bold;"></td>
-          <td style="text-align:right; padding-right:0; padding-top:0;"><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-size:11px; font-style:italic; width:377px; font-weight:bold;"></td>
+          <td style="border:none; padding-top:0;" ><input value="Page-1" style="text-align:center; font-size:11px; font-style:italic; width:77px; font-weight:bold; "></td>
+          <td style="text-align:right; padding-right:0; padding-top:0;"><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-size:11px; font-style:italic; width:257px; font-weight:bold;"></td>
          </tr >  
          
      </table>
@@ -355,3 +358,4 @@ calculatePay();
 
 </body>
 </html>
+            
