@@ -21,7 +21,7 @@ h2,h3{
     margin:5px 0;
 }
 table{
-    width:85%;
+    width:90%;
     border-collapse:collapse;
     margin-top:10px;
     margin-left:30px;
@@ -31,8 +31,8 @@ table{
 }
 td,th{
     border:1px solid #000;
-    padding-right:5px;
-    padding-left:5px;
+    padding-right:10px;
+    padding-left:9px;
     padding-top:2px;
     padding-bottom:2px;
     font-size:13px;
@@ -48,11 +48,9 @@ input{
     width:80%;
     border:none;
     outline:none;
-    
     font-family:inherit;
     font-size:13px;
     height:auto;
-    
 }
 .section-title{
     font-weight:bold;
@@ -109,16 +107,16 @@ table th:nth-child(3){
 <tr><td colspan="15" style="padding-bottom:37px;"><input value="PAY SLIP FOR THE MONTH OF AUGUST, 2025" style="text-align: center; font-weight:bold; font-size:12px; width:710px;"></td></tr>
     
 <tr>
-<td ><b>EMPLOYEE NAME: </b><input value="ABCD EFGH" style="width: 347px;"></td>
-<td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 107px;"></td>
+<td ><b>EMPLOYEE NAME: </b><input value="ABCD EFGH" style="width: 414px;"></td>
+<td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 72px;"></td>
 </tr>
 <tr>
-<td><b>SCHOOL NAME: </b><input value="AAAA PRIMARY SCHOOL (UDISE: 11111111111)" style="width: 370px;"></td>
-<td style="border:none;"><b>DESIGNATION: </b><input value="HT" style="width: 104px;"></td>
+<td><b>SCHOOL NAME: </b><input value="AAAA PRIMARY SCHOOL (UDISE: 11111111111)" style="width: 432px;"></td>
+<td style="border:none;"><b>DESIGNATION: </b><input value="HT" style="width: 69px;"></td>
 </tr>
 <tr>
-<td><b>LEVEL: </b><input value="LEVEL-9   CELL: CELL-23" style="width: 430px;"></td>
-<td style="border:none;"><b>PAN: </b><input value="ABCDE1234F" style="width: 177px;"></td>
+<td><b>LEVEL: </b><input value="LEVEL-9   CELL: CELL-23" style="width: 490px;"></td>
+<td style="border:none;"><b>PAN: </b><input value="ABCDE1234F" style="width: 136px;"></td>
 </tr>
 </table>
 
@@ -197,20 +195,21 @@ table th:nth-child(3){
 </tr>
 <tr>
     <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">Total:
-        &emsp;&emsp;&emsp;&emsp;&emsp;
-        <input id="totalEarning" style="text-align:right; font-size:14px; width:55px; font-weight:bold;" readonly>        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <input id="totalEarning" style="text-align:right; font-size:14px; width:55px; font-weight:bold;" readonly>        
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
        
         <input id="totalDeduction" style="text-align:right; font-size:14px; width:57px; font-weight:bold;" readonly>    </th>
 </tr>
 <tr>
     <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">GROSS PAY: 
-        <input id="grossPay" style="text-align:left; font-size:14px; width:47px; font-weight:bold;" readonly> 
+        <input id="grossPay" style="text-align:right; font-size:14px; width:47px; font-weight:bold;" readonly> 
     </th>
 </tr>
 <tr >
     <th class="section-title" colspan="8" style="border-top:1px solid #000; text-align:left;">NET PAY:
         &emsp;
-        <input id="netPay" style="text-align:left; font-size:14px; width:47px; font-weight:bold;" readonly>
+        <input id="netPay" style="text-align:right; font-size:14px; width:47px; font-weight:bold;" readonly>
         (
         <span id="netPayWords"></span>
         )
@@ -237,15 +236,16 @@ table th:nth-child(3){
     
      <table class="no-border" >
          <tr style="border-bottom:1px solid #000; ">
-         <td colspan="15" ><b>Disclaimer:</b> This is a computer generated Pay Slip and hence does not require any signature.</td>
+         <td colspan="15" style="font-size:14px;"><b>Disclaimer:</b> This is a computer generated Pay Slip and hence does not require any signature. <br><br><br></td>
              
          </tr>
          
          <tr>
-             <br><br><br><br><br><br>
-         <td style="padding-top:0; padding-left:0;"><input value="https://aionline.in.net" style="text-align:left; font-size:12px; font-style:italic; width:167px; font-weight:bold;"></td>
-          <td style="border:none; padding-top:0;" ><input value="Page-1" style="text-align:center; font-size:12px; font-style:italic; width:77px; font-weight:bold; "></td>
-          <td style="text-align:right; padding-right:0; padding-top:0;"><input value="Date of Generation: 16th of January 2026" style="text-align:right; font-size:12px; font-style:italic; width:257px; font-weight:bold;"></td>
+             
+         <td style="padding-top:0; padding-left:0;"><input value="https://aionline.in.net" style="text-align:left; font-size:11px; font-style:italic; width:167px; font-weight:bold;"></td>
+          <td style="border:none; padding-top:0;" ><input value="Page-1" style="text-align:center; font-size:11px; font-style:italic; width:77px; font-weight:bold; "></td>
+          <td style="text-align:right; padding-right:0; padding-top:0;"><input id="todayDate" style="text-align:right; font-size:11px; font-style:italic; width:257px; font-weight:bold;"></td>
+             
          </tr >  
          
      </table>
@@ -359,6 +359,25 @@ function calculatePay(){
 
 document.addEventListener('input', calculatePay);
 calculatePay();
+    
+    //today date
+    function ordinal(n){
+    if (n > 3 && n < 21) return n + "th";
+    switch (n % 10){
+        case 1: return n + "st";
+        case 2: return n + "nd";
+        case 3: return n + "rd";
+        default: return n + "th";
+    }
+}
+
+const d = new Date();
+const day = ordinal(d.getDate());
+const month = d.toLocaleString('en-GB', { month: 'long' });
+const year = d.getFullYear();
+
+document.getElementById("todayDate").value =
+    `Date of Generation: ${day} of ${month} ${year}`;
 </script>
 
 </body>
