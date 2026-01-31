@@ -1,45 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>AI Online Services</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>AI Online</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body{
+            margin:0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:#ffe3fc;
+            color:#333;
+        }
+
+        /* Header */
+        header{
+            background:#0d6efd;
+            color:white;
+            padding:20px 40px;
+            text-align:center;
+            box-shadow:0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        header h1{
+            margin:0;
+            font-size:28px;
+        }
+
+        header p{
+            margin-top:5px;
+            font-size:14px;
+            opacity:0.9;
+        }
+
+        /* Main Content */
+        .container{
+            max-width:900px;
+            margin:40px auto;
+            background:white;
+            padding:30px;
+            border-radius:8px;
+            box-shadow:0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .container h2{
+            color:#0d6efd;
+            margin-bottom:15px;
+            border-bottom:2px solid #0d6efd;
+            padding-bottom:5px;
+        }
+
+        /* List Styling */
+        ul{
+            list-style-type:none;
+            padding-left:0;
+            
+        }
+
+        ul > li{
+            background:#f8eeff;
+            margin-bottom:12px;
+            padding:12px 15px;
+            border-radius:6px;
+            font-weight:600;
+            
+            
+        }
+
+        ul li ul{
+            margin-top:10px;
+            padding-left:20px;
+        }
+
+        ul li ul li{
+            background:#ffffff;
+            font-weight:normal;
+            border-left:4px solid #0d6efd;
+            padding:8px 12px;
+            margin-bottom:8px;
+            font-weight:600;
+        }
+
+        /* Footer */
+        footer{
+            background:#0d6efd;
+            color:white;
+            text-align:center;
+            padding:15px;
+            margin-top:40px;
+            font-size:14px;
+        }
+
+        footer span{
+            opacity:0.9;
+        }
+    </style>
 </head>
 
 <body>
 
-<h1 style="text-align:center;">AI Online</h1>
-<p style="text-align:center;">Smart Digital & AI Based Services</p>
+    <header>
+        <h1>AI Online</h1>
+        <p>Smart Digital & AI Based Services</p>
+    </header>
 
-<hr>
+    <div class="container">
+        <h2 >Index List</h2>
 
-<h2>Welcome</h2>
-<p>We provide AI based digital services and paid online support.</p>
+        <ul>
+            <li >
+                Income Tax
+                <ul>
+                    <li>Income Tax Calculation Software (Rs. 2000/-)</li>
+                    <li>Income Tax Calculator (Free)</li>
+                    <li>Form 16 (Under consruction)</li>
+                </ul>
+            </li>
 
-<h3>Paid Service</h3>
-<p>Salary Statement Help – ₹199</p>
+            <li>
+                Salary Data
+                <ul>
+                    <li><a href="https://aionline.in.net/Pay_Slip.html">Pay Slip</a> (FREE)</li>
+                    <li>Salary Statement one year (Under consruction)</li>
+                    
+                </ul>
+            </li>
 
-<hr>
+            <li>
+                Others
+                <ul>
+                    <li>Coming soon</li>
+                    
+                </ul>
+            </li>
+        </ul>
+    </div>
 
-<div style="text-align:center;">
-👁️ Total Visitors:
-<span id="visitCount">Loading...</span>
-</div>
-
-<script>
-fetch("https://api.countapi.xyz/hit/aionline.in.net/home")
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("visitCount").innerText = data.value;
-  })
-  .catch(()=>{
-    document.getElementById("visitCount").innerText = "0";
-  });
-</script>
-
-<footer style="text-align:center;margin-top:30px;">
-© 2026 AI Online
-</footer>
+    <footer>
+        <span>© 2026 AI Online | All Rights Reserved</span>
+    </footer>
 
 </body>
 </html>
