@@ -12,38 +12,61 @@
             background:#ffe3fc;
             color:#333;
         }
-
-        /* Header */
-        .site-header{
-    background:#0d6efd;
-    color:white;
-    padding:15px 40px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+ /* Header */
+.site-header{
+    background:#0b1c2d; /* Dark Navy – best for your logo */
+    padding:15px 20px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
 }
 
+/* Header container */
 .header-inner{
-    max-width:900px;
+    max-width:1100px;
     margin:auto;
+}
+
+/* Logo + Text */
+.logo-box{
     display:flex;
     align-items:center;
     gap:15px;
 }
 
+/* Logo */
 .logo{
-    height:50px;
+    height:55px;
     width:auto;
-    background:transparent;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
-.title h1{
+/* Brand text */
+.brand-text h1{
     margin:0;
     font-size:26px;
+    color:#ffffff;
+    letter-spacing:1px;
 }
 
-.title p{
-    margin:4px 0 0;
-    font-size:14px;
-    opacity:0.9;
+.brand-text p{
+    margin:2px 0 0;
+    font-size:13px;
+    color:#cfe2ff;
+}
+
+/* Mobile Responsive */
+@media (max-width:600px){
+    .logo-box{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .logo{
+        height:50px;
+    }
+
+    .brand-text h1{
+        font-size:22px;
+    }
 }
 
         /* Main Content */
@@ -112,15 +135,17 @@
 
 <body>
 
-    <header class="site-header">
+<header class="site-header">
     <div class="header-inner">
-        <img src="logo.png" class="logo" alt="AI Online Logo">
-        <div class="title">
-            <h1>AI Online</h1>
-            <p>Smart Digital & AI Based Services</p>
+        <div class="logo-box">
+            <img src="logo.png" alt="AI Online Logo" class="logo">
+            <div class="brand-text">
+                <h1>AI Online</h1>
+                <p>Smart Digital & AI Based Services</p>
+            </div>
         </div>
     </div>
-    </header>
+</header>
 
     <div class="container">
         <h2 >Index List</h2>
