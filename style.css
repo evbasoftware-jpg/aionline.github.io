@@ -17,11 +17,11 @@ body {
   margin: 0 10px;
   text-decoration: none;
   font-weight: 500;
-  text-align: right;
 }
 
 .header nav a.active {
   text-decoration: underline;
+  text-align: right;
 }
 
 .container {
