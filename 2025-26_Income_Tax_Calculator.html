@@ -47,9 +47,27 @@
       color: black;
       font-weight: bold;
     }
+.footer{
+    margin-top:10px;
+    font-size:13px;
+}
+.print-btn{
+    text-align:center;
+    margin-top:15px;
+}
+button{
+    padding:6px 15px;
+    font-size:14px;
+    cursor:pointer;
+}
     .note { color: red; margin-bottom: 10px; }
     .sub-label { font-size: 0.9em; margin-left: 20px; }
-    
+
+@media print{
+    .print-btn{display:none;}
+    body{background:#fff;}
+    footer{display:none;}
+    }
  
   </style>
 </head>
@@ -291,7 +309,19 @@ document.addEventListener('keydown', function(e) {
         setVal('Final_Result', (tds - ntp18));
       }
     }
- 
+    
+ <div class="print-btn">
+    <button onclick="window.print()">Print / Save PDF</button>  
+   </div>
+
+     <footer style="text-align:center;">
+  © 2026 AI Online | All Rights Reserved
+<br><br>
+   <a href='http://www.freevisitorcounters.com'>www.Freevisitorcounters.com</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f83d9ea8f7e0f023216f84889dffc3f28ec68da0'></script>
+<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1495444/t/1">
+  
+     </footer> 
+    
   </script>
  <a href='http://www.freevisitorcounters.com'>www.Freevisitorcounters.com</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f83d9ea8f7e0f023216f84889dffc3f28ec68da0'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1495444/t/1"></script>
