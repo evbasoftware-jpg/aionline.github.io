@@ -17,6 +17,9 @@
     .container {
       width: 90%;
     }
+  .container2 {
+      width: 90%;
+    }
     h4,h3{
     text-align:center;
     margin:0px;
@@ -96,7 +99,7 @@ button{
     body{background:#fff;}
     footer{display:none;}
   a{display:none;}
-  
+  container2{display:none;}
     }
  
   </style>
@@ -360,18 +363,13 @@ button{
         
       </tbody>
     </table>
+           
   </div>
   
-        
-  
-  <div class="print-btn">
-    <button onclick="window.print()">Print / Save PDF</button>  
-   </div>
-<br><br>
-     <footer style="text-align:center; width: 800px;">
-       <table style="width: 500px; ">
-         <tbody style="left: 51%;">
-    <tr>
+      <div class="container2">
+         <table style="width: 500px; ">
+        <tbody style="left: 51%;">
+       <tr>
           <td class="right-border" style="text-align: left; ">
             <small>Upto 4,00,000 (Nil):</small> &emsp;&emsp;&emsp;&emsp; <input type="number" id="sal1" disabled> &emsp; <input type="number" id="Tax_slab1" disabled value="0" ><br>
             <small>4,00,001 - 8,00,000 (5%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal2" disabled> &emsp; <input type="number" id="Tax_slab2" disabled value="0" ><br>
@@ -383,7 +381,18 @@ button{
             
           </td></tr>
        </tbody>
-    </table>
+      </table>
+       </div>
+        
+        
+  
+  <div class="print-btn">
+    <button onclick="window.print()">Print / Save PDF</button>  
+   </div>
+<br><br>
+     <footer style="text-align:center; width: 800px;">
+       
+         
   © 2026 AI Online | All Rights Reserved
      </footer> 
        
