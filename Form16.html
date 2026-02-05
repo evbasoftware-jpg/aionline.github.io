@@ -115,19 +115,19 @@ button{
 <tr> <th class="right-border" colspan="7">PART B</th> </tr>
 <tr> <th class="right-border" colspan="7">Certificate under Section 203 of the Income-tax Act, 1961 for tax deducted at source on salary</th> </tr>
 
-        <tr> <th class="right-border" colspan="4">Name and address of the Employer </th> 
-        <th class="right-border" colspan="3">Name and address of the Employee </th> </tr>
-    <tr> <th class="right-border" colspan="4"><input type="text" style="text-align: center; width: 400px;" value="__ District Primary School Council"></br>
+        <tr> <th class="right-border" colspan="3">Name and address of the Employer </th> 
+        <th class="right-border" colspan="4">Name and address of the Employee </th> </tr>
+    <tr> <th class="right-border" colspan="3"><input type="text" style="text-align: center; width: 400px;" value="__ District Primary School Council"></br>
                  <input type="text" style="text-align: center; width: 400px;" value="Balurghat, Dakshin Dinajpur, 733101"></br>
                  <input type="text" style="text-align: center; width: 400px;" value="__"></br>  </th> 
-    <th class="right-border" colspan="3"><input type="text" style="text-align: center; width: 400px;" value="UJJAL MONDAL"></br>
+    <th class="right-border" colspan="4"><input type="text" style="text-align: center; width: 400px;" value="UJJAL MONDAL"></br>
                  <input type="text" style="text-align: center; width: 400px;" value="S. EDUCATOR OF _ OFFICE"></br>
                  <input type="text" style="text-align: center; width: 400px;" value="PATIRAM, D/DINAJPUR"></br> </th> </tr>
 
      <tr> <th class="right-border" colspan="3">PAN of the Deductor<br>
        <input type="text" style="text-align: center; width: 300px;" value="CALB12345"></th>
      <th class="right-border" colspan="2">TAN of the Deductor<br>
-         <input type="text" style="text-align: center; width: 270px;" value="ABCDE1234F"></th>
+         <input type="text" style="text-align: center; width: 170px;" value="ABCDE1234F"></th>
      <th class="right-border" colspan="2">PAN of the Employee<br>
            <input type="text" style="text-align: center; width: 230px;" value="VWXY1234Z">
      </th> </tr>
@@ -137,10 +137,10 @@ button{
        <input type="text" style="text-align: center; width: 400px;" value="The Commissioner of Income Tax (TDS) 7th Floor,">
        <input type="text" style="text-align: center; width: 400px;" value="Middleton Row Kolkata - 700071"></th>
      <th class="right-border">Assessment Year<br>
-         <input type="text" style="text-align: center; width: 270px; height:30px;" value="2026-27"></th>
+       <input type="text" style="text-align: center; width: 170px; height:30px;" value="2026-27"></th>
      <th class="right-border" colspan="2">Period with the Employer<br> From &emsp;&emsp;&emsp;&emsp; To<br>
-           <input type="text" style="text-align: center; width: 100px;" value="April, 2025">
-<input type="text" style="text-align: center; width: 100px;" value="March, 2026">
+       <input type="text" style="text-align: center; width: 100px;" value="April, 2025">
+       <input type="text" style="text-align: center; width: 100px;" value="March, 2026">
      </th> </tr>
 
         <tr> <th class="right-border" style="text-align: Left;" colspan="7">Details of Salary Paid and any other income and tax deducted</th> </tr>
@@ -226,21 +226,72 @@ button{
             <input type="number" id="oi4" value="0" oninput="calculateAll()"><br>
             <span class="sub-label" style="color: Red;">&emsp;Less: Deduction U/S 57(IIA):</span> &ensp;&emsp;
             <input type="number" id="oi4e" disabled value="0"><br>
-            <span class="sub-label">&emsp;Family Pension after deduction:</span> 
+            &emsp;<span class="sub-label">Family Pension after deduction:</span> 
             <input type="number" id="oi4f" disabled value="0"><br>
-            <div style="text-align: right; padding-right: 10px;">Total Other Income (i to iv):</div>
+            8. Total amount of other income reported by the employee [7(a)+7(b)]<br>
+            &emsp;<span class="sub-label">Less : Interest on HBL  [U/S 24(b)]</span> <br>
+            9. Gross total income (6+8)			
+
+           
           </td>
           <td style="vertical-align: bottom; text-align: center;">
             <input type="number" id="tot4" disabled value="0">
           </td>
         </tr>
-
+    
+        <tr>
+          <td class="right-border" colspan="5" style="font-size:10.5px;">
+            <h3 style="text-align: left;">10. Deductions under Chapter VI-A	</h3>
+            &emsp;a) Deduction in respect of life insurance premia, contributions to provident fund etc. under section 80C	<br>
+            &emsp;b) Deduction in respect of contribution to certain pension funds under section 80CCC	<br>
+            &emsp;c) Deduction in respect of contribution by taxpayer to pension scheme under section 80CCD (1)	<br>
+            &emsp;d) Total deduction under section 80C, 80CCC and 80CCD(1)	<br>
+            &emsp;e) Deductions in respect of amount paid/deposited to notified pension scheme under section 80CCD (1B)	<br>
+            &emsp;f) Deduction in respect of contribution by Employer to pension scheme under section 80CCD (2) <br>
+            &emsp;g) i) Deduction in respect of health insurance premia under section 80D for self	<br>
+            &emsp;&emsp;ii) Deduction in respect of health insurance premia under section 80D for Parents <br>
+            &emsp;h) Deduction in respect of Maintenance including medical treatment of a dependent who is a person with disability under section 80DD <br>
+            &emsp;i) Deduction in respect of Medical treatment of specified disease under section 80DDB <br>
+            &emsp;j) Deduction in respect of interest on loan taken for higher education under section 80E <br>
+            &emsp;k) Deduction in respect of Interest on loan taken for residential house property under section 80EE <br>
+            &emsp;l) Deduction in respect of Deduction in respect of interest on loan taken for
+certain house property under section 80EEA <br>
+            &emsp;m) Deduction in respect of Deduction in respect of purchase of electric vehicle under section 80EEB <br>
+            </td>
+          
+          <td style="text-align: center;">
+            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
+            <input type="number" id="sd" value="75000"><br>
+            <input type="number" id="net_sal" disabled value="0">
+          </td>
+        </tr>
+        
+        <tr >
+          <td class="right-border" colspan="4"> </td>
+          <td class="right-border" style="text-align: center;">Gross Amount </td>
+          <td class="right-border" style="text-align: center;">Qualifying Amount </td>
+          <td class="right-border" style="text-align: center;">Deductible Amount </td>
+        </tr>
+        
+        <tr >
+          <td class="right-border" colspan="4" style="font-size:10.5px;"> 
+            &emsp;n) Total Deduction in respect of donations to certain funds, charitable institutions, etc. under section 80G	<br>
+            &emsp;o) House Rent paid 80GG	<br>
+            &emsp;p) Total Deduction in respect of Certain donations for scientific research or rural development under section 80GGA	<br>
+            &emsp;q) Total Deduction in respect of Donation to Political party under section 80GGC	<br>
+            &emsp;r) Total Deduction in respect of person with disability under section 80U		<br>
+            &emsp;s) Deduction in respect of interest on deposits in savings account under section 80TTA	<br>
+            &emsp;t) Amount Deductible under any other provision (s) of Chapter VI-A [Note: Break-up to be prepared by employer and issued to the employee, where applicable , before furnishing of Part B to the employee]	<br>
+            <b>Total of amount deductible under any other provision(s) of Chapter VI-A		
+</b>
+          </td>
+          </tr>
+        
         <tr>
           <td class="right-border" colspan="5">
-            5) Gross Total Income (3+4):<br>
-            <span style="color:red;">6) Less: Deduction U/S. 80CCD(2) NPS (Employer):</span><br>
-            7) Taxable Income (5 - 6):<br>
-            8) Taxable Income (Rounded off U/S 288A):
+            11) Aggregate of deductible amount under Chapter VI-A [10(d)+10(e)+10(f)+10(g)+10(h)+10(i)+10(j)+10(l)]	<br>
+            12) Total taxable income (9-11)	<br>
+            13) Taxable Income (Rounded off U/S 288A next ten)	
           </td>
           <td style="text-align: center;">
             <input style="text-align: right;" type="number" id="tot5" disabled value="0"><br>
@@ -252,7 +303,7 @@ button{
 
         <tr>
           <td class="right-border" colspan="5">
-            9) Tax on Total Income &emsp;(Salary Slab) &emsp;&emsp;&emsp;&emsp;&emsp; (Tax):<br>
+            14) Tax on Total Income (NEW TAX REGIME U/S 115BAC) &emsp;(Salary Slab) &emsp;&emsp;&emsp;&emsp;&emsp; (Tax):<br>
             <small>Upto 4,00,000 (Nil):</small> &emsp;&emsp;&emsp;&emsp; <input type="number" id="sal1" disabled> &emsp;&emsp; <input type="number" id="Tax_slab1" disabled value="0" ><br>
             <small>4,00,001 - 8,00,000 (5%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal2" disabled> &emsp;&emsp; <input type="number" id="Tax_slab2" disabled value="0" ><br>
             <small>8,00,001 - 12,00,000 (10%):</small> &ensp;&emsp;<input type="number" id="sal3" disabled> &emsp;&emsp; <input type="number" id="Tax_slab3" disabled value="0" ><br>
@@ -269,17 +320,17 @@ button{
 
         <tr>
           <td class="right-border" colspan="5">
-            10) <span style="color:red;">Less: Tax Exempt U/S 87A (Marginal Relief):</span><br>
-            11) Tax Payable:<br>
-            12) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
-            13) <span style="color:purple;">L.T. Capital Gain (12.5% >1.25L):</span> &ensp;<input type="number" id="lt_cg1" value="0" oninput="calculateAll()"><br>
-            14) Total Tax Payable (11+12+13):<br>
-            15) Add: Education Cess @ 4%:<br>
-            16) Total Tax Payable (14+15):<br>
-            17) Less: Rebate u/s 89(i):<br>
-            18) Net Tax Payable:<br>
-            19) Tax already deducted (TDS):<br>
-            <input type="text" id="TP_Refund_Text" value="20) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
+            15) <span style="color:red;">Less: Rebate under section 87A (With Marginal Relief) </span><br>
+            16) Total Tax	<br>
+            17) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
+            18) <span style="color:purple;">L.T. Capital Gain (12.5% >1.25L):</span> &ensp;<input type="number" id="lt_cg1" value="0" oninput="calculateAll()"><br>
+            19) Surcharge, wherever applicable	<br>
+            20) Health and education cess 4%	<br>
+            21) Tax payable (16+17+18+19+20)		<br>
+            22) Less: Relief under section 89 (attach details)	<br>
+            23) Tax payable (21-22)		<br>
+            24) Less : (a) Tax deducted at source  u/s 192(1) <br>
+            <input type="text" id="TP_Refund_Text" value="25) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
           </td>
           <td style="text-align: center;">
             <input type="number" id="a_87" disabled value="0"><br>
@@ -295,9 +346,31 @@ button{
             <input type="number" id="Final_Result" disabled value="0">
           </td>
         </tr>
+        
+        
+         <tr > <td class="right-border" colspan="7" style="text-align: center;"> Verification</td></tr>
+       <tr><td class="right-border" colspan="7"> 
+         <textarea style="width:800px; height:60px; white-space: pre-wrap;">
+           I, ___, son/daughter of ___, working in the capacity of ___ (Designation) do hereby certify that the information given above is true, complete and correct and is based on the books of account, documents, TDS statements, and other available records.
+         </textarea></td></tr>
+         <tr > <td class="right-border" style="text-align: center;">Place </td>
+          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  PATIRAM">
+         </tr>
+          <td class="right-border" style="text-align: center;">Date </td>
+        <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  07-04-2026">
+          <td class="right-border" colspan="4" style="text-align: center;">(Signature of person responsible for deduction of Tax) </td>
+        </tr>
+        <tr > <td class="right-border" style="text-align: center;">Designation </td>
+          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  DISTRICT INSPECTOR">
+          <td colspan="2" style="text-align: center;">Full Name : </td>
+          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  DISTRICT INSPECTOR">
+        </tr>
+        
       </tbody>
     </table>
   </div>
+  
+        
   
   <div class="print-btn">
     <button onclick="window.print()">Print / Save PDF</button>  
@@ -307,7 +380,7 @@ button{
   © 2026 AI Online | All Rights Reserved
      </footer> 
        
-  <script>
+   <script>
   
 /* Disable Right Click */
 document.addEventListener('contextmenu', e => e.preventDefault());
@@ -424,10 +497,10 @@ document.addEventListener('keydown', function(e) {
       
       let tds = getVal('tds');
       if (ntp18 > tds) {
-        setVal('TP_Refund_Text', "20) Net Tax Payable:");
+        setVal('TP_Refund_Text', "25) Net Tax Payable:");
         setVal('Final_Result', (ntp18 - tds));
       } else {
-        setVal('TP_Refund_Text', "20) Amount Refundable:");
+        setVal('TP_Refund_Text', "25) Amount Refundable:");
         setVal('Final_Result', (tds - ntp18));
       }
     }
@@ -440,4 +513,3 @@ document.addEventListener('keydown', function(e) {
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1495678/t/1"></script>
  </body>
 </html>
-
