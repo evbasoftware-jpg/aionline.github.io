@@ -573,12 +573,12 @@ const otherRecord = otherSheetData.find(item =>
                 <td>${ma}</td>
                 <td>${conv}</td>
                 <!-- <td>${daArr}</td> -->
-                <td style="background:#fcf568"><b>${gross.toFixed(2)}</b></td>
+                <td style="background:#fcf568"><b>${gross.toFixed(0)}</b></td>
                 <td>${gpf}</td>
                 <td>${gsli}</td>
                 <td>${ptax}</td>
                 <td>${itax}</td>
-                <td style="background:#c5faef"><b>${net.toFixed(2)}</b></td>
+                <td style="background:#c5faef"><b>${net.toFixed(0)}</b></td>
             </tr>`;
 
             if (monthName.toUpperCase() === "FEBRUARY") {
@@ -586,9 +586,9 @@ const otherRecord = otherSheetData.find(item =>
                     html += `<tr class="bonus-row">
                         <td><b>BONUS</b></td>
                         <td colspan="6" style="text-align:right; padding-right:20px; font-style:italic;"></td>
-                        <td><b>${bonusAmount.toFixed(2)}</b></td>
+                        <td><b>${bonusAmount.toFixed(0)}</b></td>
                         <td colspan="4"></td>
-                        <td><b>${bonusAmount.toFixed(2)}</b></td>
+                        <td><b>${bonusAmount.toFixed(0)}</b></td>
                     </tr>`;
                     totalGross += bonusAmount;
                     totalNet += bonusAmount;
@@ -597,9 +597,9 @@ const otherRecord = otherSheetData.find(item =>
                     html += `<tr class="arrear-row">
                         <td><b>ARREAR</b></td>
                         <td colspan="6" style="text-align:right; padding-right:20px; font-style:italic;"></td>
-                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                        <td><b>${arrearAmount.toFixed(0)}</b></td>
                         <td colspan="4"></td>
-                        <td><b>${arrearAmount.toFixed(2)}</b></td>
+                        <td><b>${arrearAmount.toFixed(0)}</b></td>
                     </tr>`;
                     totalGross += arrearAmount;
                     totalNet += arrearAmount;
@@ -612,17 +612,17 @@ const otherRecord = otherSheetData.find(item =>
     html += `<tr class="summary">
         <td>TOTAL (YEARLY)</td>
         <td>${totals.BASIC.toFixed(0)}</td>
-        <td>${totals.ADDL.toFixed(2)}</td>
-        <td>${totals.DA.toFixed(2)}</td>
-        <td>${totals.HRA.toFixed(2)}</td>
-        <td>${totals.MA.toFixed(2)}</td>
-        <td>${totals.CONV.toFixed(2)}</td>
-       <!-- <td>${totals.DAARR.toFixed(2)}</td> -->
+        <td>${totals.ADDL.toFixed(0)}</td>
+        <td>${totals.DA.toFixed(0)}</td>
+        <td>${totals.HRA.toFixed(0)}</td>
+        <td>${totals.MA.toFixed(0)}</td>
+        <td>${totals.CONV.toFixed(0)}</td>
+       <!-- <td>${totals.DAARR.toFixed(0)}</td> -->
         <td>${totalGross.toFixed(0)}</td>
-        <td>${totals.GPF.toFixed(2)}</td>
-        <td>${totals.GSLI.toFixed(2)}</td>
-        <td>${totals.PTAX.toFixed(2)}</td>
-        <td>${total_itax.toFixed(2)}</td>
+        <td>${totals.GPF.toFixed(0)}</td>
+        <td>${totals.GSLI.toFixed(0)}</td>
+        <td>${totals.PTAX.toFixed(0)}</td>
+        <td>${total_itax.toFixed(0)}</td>
         <td>${totalNet.toFixed(0)}</td>
     </tr>
     </tbody>
@@ -639,7 +639,7 @@ const otherRecord = otherSheetData.find(item =>
       localStorage.setItem("OI1", safeText(othInc1));
       localStorage.setItem("OI2", safeText(othInc2));
 
-    const safeNum = v => isNaN(Number(v)) ? "0.00" : Number(v).toFixed(2);
+    const safeNum = v => isNaN(Number(v)) ? "0.00" : Number(v).toFixed(0);
       localStorage.setItem("TOTAL_GROSS", safeNum(totalGross));
       localStorage.setItem("TOTAL_ITAX", safeNum(total_itax));
       localStorage.setItem("OI1RS", safeNum(othInc1Rs));
