@@ -15,7 +15,7 @@
     letter-spacing: 7px;
     font-style: italic;
     position: fixed;
-    top: 77%;
+    top: 81%;
     left: 27%;
     transform: translate(-50%, -50%) rotate(0deg);
     font-size: 21px;
@@ -222,7 +222,8 @@ th{
     //email id checking 
     const allowedEmails = [
   "ujlmndl@gmail.com",
-  "evbasoftware@gmail.com"
+  "evbasoftware@gmail.com",
+  "circlelabpur@gmail.com"
 ];
 
 function handleCredentialResponse(response) {
@@ -624,7 +625,10 @@ const otherRecord = otherSheetData.find(item =>
     </tr>
     </tbody>
     </table>`;
-
+    
+<br><br><br><br>
+    <p style="text-align: right; font-size:16px">Signature of Teacher</p>
+  
     // send other iformations in form 16 page
     const safeText = v => {
        if (v === null || v === undefined || String(v).trim() === "") {
@@ -696,8 +700,7 @@ document.getElementById("prev_btn").addEventListener("click", () => navigateEmpl
 document.getElementById("next_btn").addEventListener("click", () => navigateEmployee('next'));
             
 </script>
-    <br><br><br><br>
-    <p style="text-align: right; font-size:16px">Signature of Teacher</p>
+    
 <div class="watermark">https://aionline.in.net</div>
     
 </body>
