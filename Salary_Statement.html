@@ -611,19 +611,19 @@ const otherRecord = otherSheetData.find(item =>
 
     html += `<tr class="summary">
         <td>TOTAL (YEARLY)</td>
-        <td>${totals.BASIC.toFixed(2)}</td>
+        <td>${totals.BASIC.toFixed(0)}</td>
         <td>${totals.ADDL.toFixed(2)}</td>
         <td>${totals.DA.toFixed(2)}</td>
         <td>${totals.HRA.toFixed(2)}</td>
         <td>${totals.MA.toFixed(2)}</td>
         <td>${totals.CONV.toFixed(2)}</td>
        <!-- <td>${totals.DAARR.toFixed(2)}</td> -->
-        <td>${totalGross.toFixed(2)}</td>
+        <td>${totalGross.toFixed(0)}</td>
         <td>${totals.GPF.toFixed(2)}</td>
         <td>${totals.GSLI.toFixed(2)}</td>
         <td>${totals.PTAX.toFixed(2)}</td>
         <td>${total_itax.toFixed(2)}</td>
-        <td>${totalNet.toFixed(2)}</td>
+        <td>${totalNet.toFixed(0)}</td>
     </tr>
     </tbody>
     </table>`;
