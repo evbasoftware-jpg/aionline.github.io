@@ -112,10 +112,10 @@ table th:nth-child(3){
 <td style="border:none;"><b>EMPLOYEE ID: </b><input value="AAAA1111" style="width: 72px;"></td>
 </tr>
 <tr>
-<td ><b style="position: fixed; top: 10.1%; left: 10%;">SCHOOL NAME: </b>
-<textarea 
-style=" position: fixed; top: 9.9%; left: 23%; width:430px; height:15px; resize:none; display:inline-block; "
-oninput="this.style.height='auto';">
+<td ><b style="vertical-align:top; position:relative; top:3px;">SCHOOL NAME: </b>
+<textarea rows="1"
+style="border:none; width:430px; resize:none; overflow:hidden;"
+oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px';">
 AAAA PRIMARY SCHOOL (UDISE: 11111111111)
 </textarea>
 
@@ -390,4 +390,5 @@ document.getElementById("todayDate").value =
 </script>
 
 </body>
-</html>
+    </html>
+    
