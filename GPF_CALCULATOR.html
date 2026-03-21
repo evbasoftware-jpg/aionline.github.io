@@ -10,16 +10,16 @@ body{font-family:Arial;background:#eef2f7;padding:7px;}
 .container{max-width:1400px;margin:auto;background:#fff;padding:7px;border-radius:10px}
 h2{text-align:center}
 
-.controls{width:400px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-input{padding:5px}
+.controls{width:400px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:7px}
+input{padding:2px}
 
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #999;padding:6px;text-align:center}
+table{width:100%;border-collapse:collapse;margin-top:7px}
+th,td{border:2px solid #999;padding:2px;text-align:center}
 th{background:#ddd;position:sticky;top:0}
 td[contenteditable]{background:#f9f9ff}
 
 .total-row{background:#eee;font-weight:bold}
-button{padding:6px 7px;cursor:pointer}
+button{padding:2px 2px;cursor:pointer}
 
      /* Logo + Text */
 .logo-box{
@@ -36,7 +36,7 @@ button{padding:6px 7px;cursor:pointer}
     @media print{
 
     .print-page{
-        padding-top:7px;
+        padding-top:2px;
         page-break-after: always;
     }
 
@@ -74,8 +74,8 @@ button{padding:6px 7px;cursor:pointer}
 <h2>GPF Interest Calculator</h2>
 
 <div class="controls" >
-<b>Start (YEAR & MONTH) : <input type="month" id="start" style="color: Red; font-size:17px; font-weight: bold;"><br>
-End (YEAR & MONTH) &ensp;: <input type="month" id="end" style="color: blue; font-size:17px; font-weight: bold;">
+<b>Start (YEAR & MONTH) : <input type="month" id="start" style="color: Red; font-size:15px; font-weight: bold;"><br>
+End (YEAR & MONTH) &ensp;: <input type="month" id="end" style="color: blue; font-size:15px; font-weight: bold;">
 Opening Balance &ensp;&emsp;&emsp;: <input type="number" id="opening" value="0" style="width: 110px;"></b><br>
 
 <button onclick="generate()">Generate</button>
