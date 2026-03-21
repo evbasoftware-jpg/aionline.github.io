@@ -39,17 +39,17 @@ button{padding:6px 10px;cursor:pointer}
 }
      
     @media print{
-    @page {
-        margin-top: 30px;
-       /* margin-bottom: 20px;*/
+    .print-page{
+        padding-top:30px;
+        page-break-after: always; /* next page */
+    }
+    .print-page:last-child{
+        page-break-after: auto;
     }
     .print-btn,
     .controls,
     footer{
         display:none !important;
-    }
-    body{
-        background:#fff;
     }
     }
      
