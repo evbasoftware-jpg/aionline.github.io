@@ -38,10 +38,12 @@ button{padding:6px 10px;cursor:pointer}
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
     @media print{
+         @page {
+    margin-top: 30px;
+         }
     .print-btn{display:none;}
     body{
         background:#fff;
-        margin-top:30px;
     }
     footer{display:none;}
     .controls{display:none;}
