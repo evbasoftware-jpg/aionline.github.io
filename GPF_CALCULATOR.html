@@ -25,7 +25,7 @@ button{padding:6px 10px;cursor:pointer}
 .logo-box{
   position: fixed;
     top: 3%;
-    left: 40%;
+    left: 10%;
     display:flex;
     align-items:center;
   
@@ -37,16 +37,20 @@ button{padding:6px 10px;cursor:pointer}
     width:auto;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
+     
     @media print{
-         @page {
-    margin-top: 30px;
-         }
-    .print-btn{display:none;}
+    @page {
+        margin-top: 30px;
+       /* margin-bottom: 20px;*/
+    }
+    .print-btn,
+    .controls,
+    footer{
+        display:none !important;
+    }
     body{
         background:#fff;
     }
-    footer{display:none;}
-    .controls{display:none;}
     }
      
 </style>
