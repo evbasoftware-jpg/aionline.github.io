@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta you  name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GPF </title>
 
 <style>
@@ -39,18 +39,31 @@ button{padding:6px 10px;cursor:pointer}
 }
      
     @media print{
+
     .print-page{
         padding-top:30px;
-        page-break-after: always; /* next page */
+        page-break-after: always;
     }
+
     .print-page:last-child{
         page-break-after: auto;
     }
+
     .print-btn,
     .controls,
     footer{
         display:none !important;
     }
+
+    .logo-box{
+        position: static;
+        margin-bottom:10px;
+    }
+
+    table{
+        page-break-inside: avoid;
+    }
+
     }
      
 </style>
@@ -94,11 +107,11 @@ PF ACCOUNT NUMBER :	<input type="text" style="width: 280px;"><br>
  <div id="output"></div>
      
      
-<footer style="text-align:center; width: 800px;"><br>
+<footer style="text-align:center; width:100%;">
   © 2026 AI Online | All Rights Reserved <br>
      https://aionline.in.net
 </footer>
-     
+
 <script>
 
 // Interest Rate
