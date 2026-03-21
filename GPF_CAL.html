@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPF </title>
+
+<style>
+body{font-family:Arial;background:#eef2f7;padding:10px}
+.container{max-width:1400px;margin:auto;background:#fff;padding:7px;border-radius:10px}
+h2{text-align:center}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+input{padding:5px}
+
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #999;padding:6px;text-align:center}
+th{background:#ddd;position:sticky;top:0}
+td[contenteditable]{background:#f9f9ff}
+
+.total-row{background:#eee;font-weight:bold}
+button{padding:6px 10px;cursor:pointer}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>GPF Interest Calculator</h2>
+
+<div class="controls">
+Start (YEAR & MONTH) : <input type="month" id="start">
+End (YEAR & MONTH) : <input type="month" id="end">
+Opening Balance: <input type="number" id="opening" value="0" style="width: 170px;">
+<button onclick="generate()">Generate</button>
+<button onclick="saveData()">Save</button>
+<button onclick="loadData()">Load</button>
+<button onclick="downloadCSV()">Excel</button>
+<button onclick="window.print()">Print</button>
+</div>
+</div>
+
+    <br><br>
+EMPLOYEE NAME:	<input type="text" style="width: 200px;"><br>
+DESIGNATION :	&emsp;&ensp;<input type="text" style="width: 200px;"><br>
+PF ACCOUNT NUMBER :	<input type="text" style="width: 160px;"><br>
+
+ 1) Total GPF Deposited within 15th of the month:	&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+<input type="text" id="totalD1" style="width:160px;" readonly><br>
+
+2) Total GPF Deposited after 15th of the month:	&emsp;&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+<input type="text" id="totalD2" style="width:160px;" readonly>
+
+3) LAST CLOSING BALANCE (WITH INTEREST):	&emsp;&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;	&emsp;	&emsp;&emsp;&emsp;
+    <input type="text" id="tot_intD3" style="width:120px;" readonly>
+
+ <div id="output"></div>
+
+<script>
+
+// Interest Rate
+const rates = {};
+
+// ===== AUTO GENERATE ALL YEARS =====
+function setYear(year, monthlyRates){
+for(let m=0;m<12;m++){
+rates[year+"-"+m] = Array.isArray(monthlyRates) ? monthlyRates[m] : monthlyRates;
+}
+}
+
+// ===== 2025–2021 =====
+[2025,2024,2023,2022,2021].forEach(y=>setYear(y,7.1));
+
+// ===== 2020 =====
+setYear(2020,[7.9,7.9,7.9,7.1,7.1,7.1,7.1,7.1,7.1,7.1,7.1,7.1]);
+
+// ===== 2019 =====
+setYear(2019,[8,8,8,8,8,8,7.9,7.9,7.9,7.9,7.9,7.9]);
+
+// ===== 2018 =====
+setYear(2018,[7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,8,8,8]);
+
+// ===== 2017 =====
+setYear(2017,[8,8,8,7.9,7.9,7.9,7.8,7.8,7.8,7.8,7.8,7.8]);
+
+// ===== 2016 =====
+setYear(2016,[8.7,8.7,8.7,8.1,8.1,8.1,8.1,8.1,8.1,8,8,8]);
+
+// ===== 2015–2014 =====
+[2015,2014].forEach(y=>setYear(y,8.7));
+
+// ===== 2013 =====
+setYear(2013,[8.8,8.8,8.8,8.7,8.7,8.7,8.7,8.7,8.7,8.7,8.7,8.7]);
+
+// ===== 2012 =====
+setYear(2012,[8.6,8.6,8.6,8.8,8.8,8.8,8.8,8.8,8.8,8.8,8.8,8.8]);
+
+// ===== 2011 =====
+setYear(2011,[8,8,8,8,8,8,8,8,8,8,8,8.6]);
+
+// ===== 2010–2004 =====
+for(let y=2010;y>=2004;y--) setYear(y,8);
+
+// ===== 2003 =====
+setYear(2003,[9,9,9,8,8,8,8,8,8,8,8,8]);
+
+// ===== 2002 =====
+setYear(2002,[9.5,9.5,9.5,9,9,9,9,9,9,9,9,9]);
+
+// ===== 2001 =====
+setYear(2001,[11,11,11,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5]);
+
+// ===== 2000 =====
+setYear(2000,[12,12,12,11,11,11,11,11,11,11,11,11]);
+
+// ===== 1999–1990 =====
+for(let y=1999;y>=1990;y--) setYear(y,12);
+
+// ===== 1989–1987 =====
+for(let y=1989;y>=1987;y--) setYear(y,12);
+
+// ===== 1986 =====
+setYear(1986,[11,11,11,12,12,12,12,12,12,12,12,12]);
+
+// ===== 1985 =====
+setYear(1985,[10,10,10,11,11,11,11,11,11,11,11,11]);
+
+// ===== 1984 =====
+setYear(1984,[9.5,9.5,9.5,10,10,10,10,10,10,10,10,10]);
+
+// ===== 1983 =====
+setYear(1983,[9,9,9,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5]);
+
+// ===== 1982 =====
+setYear(1982,9);
+
+// ===== 1981 =====
+setYear(1981,[8.5,8.5,8.5,9,9,9,9,9,9,9,9,9]);
+
+// ===== 1980 =====
+setYear(1980,[8,8,8,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5]);
+
+// ===== 1979–1978 =====
+for(let y=1979;y>=1978;y--) setYear(y,8);
+
+// ===== 1977 =====
+setYear(1977,[7.5,7.5,7.5,8,8,8,8,8,8,8,8,8]);
+
+// ===== 1976 =====
+setYear(1976,7.5);
+
+// ===== 1975 =====
+setYear(1975,[6.5,6.5,6.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5]);
+
+// ===== 1974 =====
+setYear(1974,[6,6,6,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5]);
+
+// ===== 1973 =====
+setYear(1973,6);
+
+// ===== 1972 =====
+setYear(1972,[5.7,5.7,5.7,6,6,6,6,6,6,6,6,6]);
+
+// ===== 1971 =====
+setYear(1971,[5.5,5.5,5.5,5.7,5.7,5.7,5.7,5.7,5.7,5.7,5.7,5.7]);
+
+// ===== 1970 =====
+setYear(1970,[5.3,5.3,5.3,5.5,5.5,5.5,5.5,5.5,5.5,5.5,5.5,5.5]);
+
+// ===== 1969 =====
+setYear(1969,[5.1,5.1,5.1,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3]);
+
+// ===== 1968 =====
+setYear(1968,[4.8,4.8,4.8,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1]);
+
+// ===== 1967 (APRIL–DECEMBER only) =====
+for(let m=3;m<12;m++){
+rates["1967-"+m]=4.8;
+}
+  
+function getRate(year, month){
+return rates[year + "-" + month] || 7.1;
+}
+
+// ================= GENERATE =================
+function generate(){
+
+const s=new Date(document.getElementById('start').value);
+const e=new Date(document.getElementById('end').value);
+
+let out=document.getElementById('output');
+out.innerHTML="";
+
+let cur=new Date(s);
+let opening=parseFloat(document.getElementById('opening').value)||0;
+
+while(cur<=e){
+
+let table=document.createElement('table');
+
+let html=`
+<tr>
+<th>Month</th><th>Opening</th><th>Dep≤15</th><th>Dep>15</th>
+<th>Withdraw</th><th>Total</th><th>Rate</th><th>Interest</th><th>Closing</th>
+</tr>
+`;
+
+let yearlyInterest=0;
+
+while(cur<=e){
+
+let month=cur.getMonth();
+
+// row
+html+=`
+<tr>
+<td data-month="${month}" data-year="${cur.getFullYear()}">
+${cur.toLocaleString('default',{month:'short',year:'numeric'})}
+</td>
+<td class="opening"></td>
+<td contenteditable class="d1"></td>
+<td contenteditable class="d2"></td>
+<td contenteditable class="w"></td>
+<td class="total"></td>
+<td class="rate"></td>
+<td contenteditable class="interest"></td>
+<td class="closing"></td>
+</tr>
+`;
+
+if(month===2){ // March → stop table
+cur.setMonth(cur.getMonth()+1);
+break;
+}
+
+cur.setMonth(cur.getMonth()+1);
+
+}
+
+// Total Interest Row
+html+=`
+<tr class="total-row">
+<td colspan="2">Total Interest</td>
+<td colspan="2" class="yearInterest"></td>
+<td colspan="3">Closing Balance</td>
+<td colspan="2" class="closing"></td>
+</tr>
+`;
+
+table.innerHTML=html;
+out.appendChild(table);
+
+// EVENTS
+table.addEventListener("input",(e)=>{
+autoFill(e);
+recalcAll();
+});
+
+}
+    
+// first calc
+recalcAll();
+}
+
+    let grandFinalClosing = 0;
+// ================= CALCULATION =================
+function recalcAll(){
+
+let tables=document.querySelectorAll("table");
+let opening=parseFloat(document.getElementById('opening').value)||0;
+
+tables.forEach(table=>{
+
+let rows=table.querySelectorAll("tr");
+let yearlyInterest=0;
+let lastClosing=0;
+let hasMarch=false;
+
+rows.forEach((row,i)=>{
+
+if(i==0 || row.classList.contains('total-row')) return;
+
+let d1=parseFloat(row.querySelector('.d1').innerText)||0;
+let d2=parseFloat(row.querySelector('.d2').innerText)||0;
+let w=parseFloat(row.querySelector('.w').innerText)||0;
+
+let month=parseInt(row.children[0].dataset.month);
+let year=row.children[0].dataset.year;
+
+let rate=getRate(year, month);
+
+// TOTAL
+let total=opening + d1 + d2 - w;
+
+// INTEREST
+let interestBase=opening + d1 - w;
+let interest=(interestBase * rate /100)/12;
+
+let closing;
+
+// 🔥 GOVT RULE
+closing = total;
+yearlyInterest += interest;
+
+if(month===2){ // March
+hasMarch = true;
+}
+
+// fill
+row.querySelector('.opening').innerText=opening.toFixed(2);
+row.querySelector('.total').innerText=total.toFixed(2);
+row.querySelector('.rate').innerText=rate;
+row.querySelector('.interest').innerText=interest.toFixed(2);
+row.querySelector('.closing').innerText=closing.toFixed(2);
+
+opening=closing;
+lastClosing=closing;
+
+});
+
+// ✅ Total Interest show
+table.querySelector('.yearInterest').innerText=yearlyInterest.toFixed(2);
+
+// ✅ Final Closing Balance (March closing + interest)
+let finalClosing;
+
+if(hasMarch){
+    finalClosing = lastClosing + yearlyInterest;
+}else{
+    finalClosing = lastClosing + yearlyInterest;
+}
+  
+table.querySelector('.total-row .closing').innerText=finalClosing.toFixed(2);
+
+// ✅ Next table opening carry forward
+opening = finalClosing;
+grandFinalClosing = finalClosing;
+});
+
+    // ===== GRAND TOTAL CALCULATION =====
+let totalD1 = 0;
+let totalD2 = 0;
+let tot_intD3=0;
+
+document.querySelectorAll('.d1').forEach(cell=>{
+    totalD1 += parseFloat(cell.innerText) || 0;
+});
+
+document.querySelectorAll('.d2').forEach(cell=>{
+    totalD2 += parseFloat(cell.innerText) || 0;
+});
+
+
+// show in input box
+document.getElementById('totalD1').value = totalD1.toFixed(0);
+document.getElementById('totalD2').value = totalD2.toFixed(0);
+document.getElementById('tot_intD3').value = grandFinalClosing.toFixed(0);  
+}
+
+// ================= AUTO FILL + CURSOR FIX =================
+function autoFill(e){
+
+const cell=e.target;
+
+if(!cell.classList.contains('d1') && !cell.classList.contains('d2')) return;
+
+let value=cell.innerText;
+
+// cursor save
+let sel=window.getSelection();
+let pos=sel.focusOffset;
+
+let cls=cell.classList.contains('d1')?'d1':'d2';
+
+let allCells=document.querySelectorAll("."+cls);
+
+let start=false;
+
+allCells.forEach(c=>{
+if(c===cell) start=true;
+if(start){
+if(c!==cell) c.innerText=value;
+}
+});
+
+// restore cursor
+let range=document.createRange();
+
+if(cell.firstChild){
+range.setStart(cell.firstChild, Math.min(pos, cell.innerText.length));
+}else{
+range.setStart(cell,0);
+}
+
+range.collapse(true);
+sel.removeAllRanges();
+sel.addRange(range);
+
+}
+
+</script>
+
+</body>
+</html>
