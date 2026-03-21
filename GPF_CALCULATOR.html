@@ -24,7 +24,7 @@ button{padding:6px 10px;cursor:pointer}
      /* Logo + Text */
 .logo-box{
   position: fixed;
-    top: 5%;
+    top: 3%;
     left: 40%;
     display:flex;
     align-items:center;
@@ -38,23 +38,15 @@ button{padding:6px 10px;cursor:pointer}
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
     @media print{
-
-    .print-btn,
-    .controls,
-    footer {
-        display:none !important;
-    }
-
+    .print-btn{display:none;}
     body{
         background:#fff;
-        margin:20px;
+        margin-top:30px;
     }
-
-    table{
-        page-break-inside: avoid;
+    footer{display:none;}
+    .controls{display:none;}
     }
-
-    }
+     
 </style>
 
 </head>
