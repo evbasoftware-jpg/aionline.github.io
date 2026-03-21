@@ -30,9 +30,9 @@ button{padding:6px 10px;cursor:pointer}
 <h2>GPF Interest Calculator</h2>
 
 <div class="controls">
-Start (YEAR & MONTH) : <input type="month" id="start">
-End (YEAR & MONTH) : <input type="month" id="end">
-Opening Balance: <input type="number" id="opening" value="0" style="width: 170px;">
+Start (YEAR & MONTH) : <input type="month" id="start"><br>
+End (YEAR & MONTH) : <input type="month" id="end"><br>
+Opening Balance: <input type="number" id="opening" value="0" style="width: 170px;"><br>
 <button onclick="generate()">Generate</button>
 <button onclick="saveData()">Save</button>
 <button onclick="loadData()">Load</button>
@@ -46,13 +46,13 @@ EMPLOYEE NAME:	<input type="text" style="width: 200px;"><br>
 DESIGNATION :	&emsp;&ensp;<input type="text" style="width: 200px;"><br>
 PF ACCOUNT NUMBER :	<input type="text" style="width: 160px;"><br>
 
- 1) Total GPF Deposited within 15th of the month:	&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+ 1) Total GPF Deposited within 15th of the month:
 <input type="text" id="totalD1" style="width:160px;" readonly><br>
 
-2) Total GPF Deposited after 15th of the month:	&emsp;&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
-<input type="text" id="totalD2" style="width:160px;" readonly>
+2) Total GPF Deposited after 15th of the month:
+<input type="text" id="totalD2" style="width:160px;" readonly><br>
 
-3) LAST CLOSING BALANCE (WITH INTEREST):	&emsp;&emsp;	&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;	&emsp;	&emsp;&emsp;&emsp;
+3) LAST CLOSING BALANCE (WITH INTEREST):
     <input type="text" id="tot_intD3" style="width:120px;" readonly>
 
  <div id="output"></div>
