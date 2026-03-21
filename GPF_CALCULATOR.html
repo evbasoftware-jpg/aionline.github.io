@@ -20,11 +20,38 @@ td[contenteditable]{background:#f9f9ff}
 
 .total-row{background:#eee;font-weight:bold}
 button{padding:6px 10px;cursor:pointer}
+
+     /* Logo + Text */
+.logo-box{
+  position: fixed;
+    top: 20%;
+    right: 11%;
+    display:flex;
+    align-items:center;
+  
+}
+
+/* Logo */
+.logo{
+    height:67px;
+    width:auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+    @media print{
+    .print-btn{display:none;}
+    body{background:#fff;}
+    footer{display:none;}
+  a{display:none;}
+  .container2{display:none;}
+    }
 </style>
 
 </head>
 <body>
-
+<div class="logo-box">
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+     &emsp;&emsp; https://aionline.in.net
+</div>
 <div class="container">
 
 <h2>GPF Interest Calculator</h2>
