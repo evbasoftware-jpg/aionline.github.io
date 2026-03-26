@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Age Calculator</title>
+
+<title>Govt Office Master Calculator - Pro</title>
 
 <style>
 
@@ -17,15 +18,15 @@ padding:15px;
 background:#fff;
 padding:15px;
 margin:auto;
-max-width:900px;
+max-width:1100px;
 border-radius:8px;
 box-shadow:0 0 10px rgba(0,0,0,0.1);
 margin-bottom:20px;
 }
 
 h2{
-background:blue;
-color:white;
+background:orange;
+color:blue;
 padding:8px;
 font-size:18px;
 }
@@ -33,17 +34,16 @@ font-size:18px;
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
 }
 
 th,td{
 border:1px solid #ccc;
 padding:8px;
-text-align:left;
 }
 
 th{
-background:#fae3a2;
+background:#f6fc9a;
+text-align:left;
 }
 
 input{
@@ -53,32 +53,34 @@ width:95%;
 
 button{
 padding:8px 15px;
-background:red;
+background:blue;
 color:white;
 border:none;
-cursor:pointer;
 border-radius:4px;
+cursor:pointer;
+margin-top:5px;
 font-weight:bold;
 font-size:21px;
 }
 
 button:hover{
-background:#59ffe9;
-color:red; 
+background:#305496;
+}
+
+.print-btn{
+background:orange;
+}
+
+.reset-btn{
+background:#d9534f;
 }
 
 .result{
 font-weight:bold;
-color:#222;
+color:#000;
 }
-
-.print-btn{
-background:blue;
-margin-top:10px;
-color:white;
-}
-    
-   /* Logo + Text */
+  
+  /* Logo + Text */
 .logo-box{
   position: static;
 }
@@ -89,6 +91,7 @@ color:white;
     width:auto;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
+  
 @media print{
 
     .print-page{
@@ -104,26 +107,27 @@ color:white;
          
     a{display:none;}
     }
-    
+
 </style>
 
 </head>
 
 <body>
+
 <div class="logo-box" style="color: blue; font-size:20px">
      <img src="logo.png" alt="AI Online Logo" class="logo">
 &emsp;
      https://aionline.in.net
 </div>
-
+  
+<!-- Age Section -->
 <div class="container">
-
 <h2>Age Calculator</h2>
 
 <table>
 
 <tr>
-<th>Birth Date</th>
+<th>Date of Birth</th>
 <td><input type="date" id="dob"></td>
 </tr>
 
@@ -139,61 +143,192 @@ color:white;
 
 <tr>
 <th>Days Left</th>
-<td class="result" id="birthdayDays"></td>
+<td class="result" id="daysLeft"></td>
 </tr>
 
 </table>
 
-<br>
-
-<button onclick="calculateAge()">Calculate Age</button>
+<button onclick="ageCalc()">Calculate</button>
 
 </div>
 
 
+<!-- Date Difference -->
 
 <div class="container">
 
-<h2>Date Difference Calculator</h2>
+<h2>Date Difference</h2>
 
 <table>
 
 <tr>
 <th>From Date</th>
-<td><input type="date" id="date1"></td>
+<td><input type="date" id="d1"></td>
 </tr>
 
 <tr>
 <th>To Date</th>
-<td><input type="date" id="date2"></td>
+<td><input type="date" id="d2"></td>
 </tr>
 
 <tr>
 <th>Difference</th>
 <td class="result" id="difference"></td>
 </tr>
-
+  
 <tr>
 <th>Total Days</th>
-<td class="result" id="totalDays"></td>
+<td class="result" id="total"></td>
 </tr>
 
 <tr>
 <th>Working Days</th>
-<td class="result" id="workingDays"></td>
+<td class="result" id="working"></td>
 </tr>
 
 </table>
 
-<br>
-
-<button onclick="calculateDifference()">Calculate Difference</button>
-
-<br>
-
-<button class="print-btn" onclick="window.print()">Print / PDF</button>
+<button onclick="calculateDifference()">Calculate</button>
 
 </div>
+
+
+<!-- Service -->
+
+<div class="container">
+
+<h2>Service Length</h2>
+
+<table>
+
+<tr>
+<th>Joining Date</th>
+<td><input type="date" id="join"></td>
+</tr>
+
+<tr>
+<th>Service Length</th>
+<td class="result" id="service"></td>
+</tr>
+
+</table>
+
+<button onclick="serviceCalc()">Calculate</button>
+
+</div>
+
+
+<!-- Retirement -->
+
+<div class="container">
+
+<h2>Retirement Calculator</h2>
+
+<table>
+
+<tr>
+<th>Date of Birth</th>
+<td><input type="date" id="retDob"></td>
+</tr>
+
+<tr>
+<th>Retirement Age</th>
+<td><input type="number" id="retAge" value="60"></td>
+</tr>
+
+<tr>
+<th>Retirement Date</th>
+<td class="result" id="retDate"></td>
+</tr>
+
+<tr>
+<th>Remaining Time</th>
+<td class="result" id="retRemain"></td>
+</tr>
+
+</table>
+
+<button onclick="retCalc()">Calculate</button>
+
+</div>
+
+
+<!-- Leave Calculator -->
+
+<div class="container">
+
+<h2>Leave Calculator</h2>
+
+<table>
+
+<tr>
+<th>From</th>
+<td><input type="date" id="leaveFrom"></td>
+</tr>
+
+<tr>
+<th>To</th>
+<td><input type="date" id="leaveTo"></td>
+</tr>
+
+<tr>
+<th>Total Days</th>
+<td class="result" id="leaveTotal"></td>
+</tr>
+
+<tr>
+<th>Working Days</th>
+<td class="result" id="leaveWorking"></td>
+</tr>
+
+</table>
+
+<button onclick="leaveCalc()">Calculate</button>
+
+</div>
+
+
+<!-- Leave Management -->
+
+<div class="container">
+
+<h2>Leave Management</h2>
+
+<table>
+
+<tr>
+<th>Service Year</th>
+<td><input type="number" id="serviceYear"></td>
+<td class="result" id="earned"></td>
+</tr>
+
+<tr>
+<th>Casual Leave Taken</th>
+<td><input type="number" id="casual"></td>
+<td class="result" id="casualRemain"></td>
+</tr>
+
+<tr>
+<th>Half Pay Leave</th>
+<td><input type="number" id="half"></td>
+<td class="result" id="halfResult"></td>
+</tr>
+
+<tr>
+<th>Medical Leave Taken</th>
+<td><input type="number" id="medical"></td>
+<td class="result" id="medicalRemain"></td>
+</tr>
+
+</table>
+
+<button onclick="leaveManage()">Calculate</button>
+
+</div>
+
+
+<button class="print-btn" onclick="window.print()">Print</button>
+<button class="reset-btn" onclick="location.reload()">Reset</button>
 
 <footer style="text-align:center; width:100%;">
   © 2026 AI Online | All Rights Reserved <br>
@@ -201,58 +336,36 @@ color:white;
 
 <script>
 
-function calculateAge(){
+function ageCalc(){
 
-var dob = document.getElementById("dob").value;
+var dob=new Date(document.getElementById("dob").value);
+var today=new Date();
 
-if(!dob) return;
+var y=today.getFullYear()-dob.getFullYear();
+var m=today.getMonth()-dob.getMonth();
+var d=today.getDate()-dob.getDate();
 
-var birthDate = new Date(dob);
-var today = new Date();
+if(d<0){m--; d+=30;}
+if(m<0){y--; m+=12;}
 
-var years = today.getFullYear() - birthDate.getFullYear();
-var months = today.getMonth() - birthDate.getMonth();
-var days = today.getDate() - birthDate.getDate();
+document.getElementById("age").innerHTML=y+" Year "+m+" Month "+d+" Day";
 
-if(days < 0){
-months--;
-days += new Date(today.getFullYear(), today.getMonth(),0).getDate();
-}
+var next=new Date(today.getFullYear(),dob.getMonth(),dob.getDate());
 
-if(months < 0){
-years--;
-months += 12;
-}
+if(next<today) next.setFullYear(today.getFullYear()+1);
 
-document.getElementById("age").innerHTML =
-years+" Year "+months+" Month "+days+" Day";
+var diff=Math.ceil((next-today)/(1000*60*60*24));
 
-
-// Next Birthday
-
-var nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-
-if(nextBirthday < today){
-nextBirthday.setFullYear(today.getFullYear()+1);
-}
-
-var diff = nextBirthday - today;
-var daysLeft = Math.ceil(diff / (1000*60*60*24));
-
-document.getElementById("nextBirthday").innerHTML =
-nextBirthday.toDateString();
-
-document.getElementById("birthdayDays").innerHTML =
-daysLeft+" Days Left";
+document.getElementById("nextBirthday").innerHTML=next.toDateString();
+document.getElementById("daysLeft").innerHTML=diff+" Days";
 
 }
-
 
 
 function calculateDifference(){
 
-var d1 = new Date(document.getElementById("date1").value);
-var d2 = new Date(document.getElementById("date2").value);
+var d1 = new Date(document.getElementById("d1").value);
+var d2 = new Date(document.getElementById("d2").value);
 
 if(d1>d2){
 var temp=d1;
@@ -264,7 +377,7 @@ var diffTime = d2 - d1;
 
 var totalDays = Math.ceil(diffTime/(1000*60*60*24));
 
-document.getElementById("totalDays").innerHTML =
+document.getElementById("total").innerHTML =
 totalDays+" Days";
 
 
@@ -279,7 +392,7 @@ workingDays++;
 }
 }
 
-document.getElementById("workingDays").innerHTML =
+document.getElementById("working").innerHTML =
 workingDays+" Days";
 
 
@@ -304,8 +417,91 @@ years+" Year "+months+" Month "+days+" Day";
 
 }
 
+function serviceCalc(){
+
+var join=new Date(document.getElementById("join").value);
+var today=new Date();
+
+var y=today.getFullYear()-join.getFullYear();
+var m=today.getMonth()-join.getMonth();
+var d=today.getDate()-join.getDate();
+
+document.getElementById("service").innerHTML=y+" Year "+m+" Month "+d+" Day";
+
+}
+
+
+function retCalc(){
+
+var dob=new Date(document.getElementById("retDob").value);
+var age=document.getElementById("retAge").value;
+
+var ret=new Date(dob);
+ret.setFullYear(ret.getFullYear()+parseInt(age));
+
+document.getElementById("retDate").innerHTML=ret.toDateString();
+
+var today=new Date();
+
+var y=ret.getFullYear()-today.getFullYear();
+var m=ret.getMonth()-today.getMonth();
+var d=ret.getDate()-today.getDate();
+
+if(d<0){
+m--;
+d+=30;
+}
+
+if(m<0){
+y--;
+m+=12;
+}
+
+document.getElementById("retRemain").innerHTML=
+y+" Year "+m+" Month "+d+" Day";
+
+}
+
+
+function leaveCalc(){
+
+var f=new Date(document.getElementById("leaveFrom").value);
+var t=new Date(document.getElementById("leaveTo").value);
+
+var total=Math.ceil((t-f)/(1000*60*60*24))+1;
+
+document.getElementById("leaveTotal").innerHTML=total+" Days";
+
+var working=0;
+
+for(var d=new Date(f);d<=t;d.setDate(d.getDate()+1)){
+var day=d.getDay();
+if(day!=0 && day!=6) working++;
+}
+
+document.getElementById("leaveWorking").innerHTML=working+" Days";
+
+}
+
+
+function leaveManage(){
+
+var earned=document.getElementById("serviceYear").value*30;
+document.getElementById("earned").innerHTML=earned+" Days";
+
+var casual=14-document.getElementById("casual").value;
+document.getElementById("casualRemain").innerHTML=casual+" Days";
+
+var half=document.getElementById("half").value/2;
+document.getElementById("halfResult").innerHTML=half+" Days";
+
+var medical=20-document.getElementById("medical").value;
+document.getElementById("medicalRemain").innerHTML=medical+" Days";
+
+}
+
 </script>
-    
+  
 <a href='https://www.free-counters.org/'>Get free Counters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f1947b33d890e2a9a024bf1f9b5982cdcdea00ee'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1523485/t/1"></script>
 
