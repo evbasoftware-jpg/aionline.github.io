@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Age Calculator</title>
+
+<style>
+
+body{
+font-family:Calibri,Arial;
+background:#f4f6f9;
+padding:15px;
+}
+
+.container{
+background:#fff;
+padding:15px;
+margin:auto;
+max-width:900px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+h2{
+background:blue;
+color:white;
+padding:8px;
+font-size:18px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+text-align:left;
+}
+
+th{
+background:#fae3a2;
+}
+
+input{
+padding:6px;
+width:95%;
+}
+
+button{
+padding:8px 15px;
+background:red;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:4px;
+font-weight:bold;
+font-size:21px;
+}
+
+button:hover{
+background:#59ffe9;
+color:red; 
+}
+
+.result{
+font-weight:bold;
+color:#222;
+}
+
+.print-btn{
+background:blue;
+margin-top:10px;
+color:white;
+}
+    
+   /* Logo + Text */
+.logo-box{
+  position: static;
+}
+
+/* Logo */
+.logo{
+    height:67px;
+    width:auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+@media print{
+
+    .print-page{
+        padding-top:2px;
+        page-break-after: always;
+    }
+
+    .print-btn,
+    .controls,
+    footer{
+        display:none !important;
+    }
+         
+    a{display:none;}
+    }
+    
+</style>
+
+</head>
+
+<body>
+<div class="logo-box" style="color: blue; font-size:20px">
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+&emsp;
+     https://aionline.in.net
+</div>
+
+<div class="container">
+
+<h2>Age Calculator</h2>
+
+<table>
+
+<tr>
+<th>Birth Date</th>
+<td><input type="date" id="dob"></td>
+</tr>
+
+<tr>
+<th>Age</th>
+<td class="result" id="age"></td>
+</tr>
+
+<tr>
+<th>Next Birthday</th>
+<td class="result" id="nextBirthday"></td>
+</tr>
+
+<tr>
+<th>Days Left</th>
+<td class="result" id="birthdayDays"></td>
+</tr>
+
+</table>
+
+<br>
+
+<button onclick="calculateAge()">Calculate Age</button>
+
+</div>
+
+
+
+<div class="container">
+
+<h2>Date Difference Calculator</h2>
+
+<table>
+
+<tr>
+<th>From Date</th>
+<td><input type="date" id="date1"></td>
+</tr>
+
+<tr>
+<th>To Date</th>
+<td><input type="date" id="date2"></td>
+</tr>
+
+<tr>
+<th>Difference</th>
+<td class="result" id="difference"></td>
+</tr>
+
+<tr>
+<th>Total Days</th>
+<td class="result" id="totalDays"></td>
+</tr>
+
+<tr>
+<th>Working Days</th>
+<td class="result" id="workingDays"></td>
+</tr>
+
+</table>
+
+<br>
+
+<button onclick="calculateDifference()">Calculate Difference</button>
+
+<br>
+
+<button class="print-btn" onclick="window.print()">Print / PDF</button>
+
+</div>
+
+<footer style="text-align:center; width:100%;">
+  © 2026 AI Online | All Rights Reserved <br>
+</footer>
+
+<script>
+
+function calculateAge(){
+
+var dob = document.getElementById("dob").value;
+
+if(!dob) return;
+
+var birthDate = new Date(dob);
+var today = new Date();
+
+var years = today.getFullYear() - birthDate.getFullYear();
+var months = today.getMonth() - birthDate.getMonth();
+var days = today.getDate() - birthDate.getDate();
+
+if(days < 0){
+months--;
+days += new Date(today.getFullYear(), today.getMonth(),0).getDate();
+}
+
+if(months < 0){
+years--;
+months += 12;
+}
+
+document.getElementById("age").innerHTML =
+years+" Year "+months+" Month "+days+" Day";
+
+
+// Next Birthday
+
+var nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+
+if(nextBirthday < today){
+nextBirthday.setFullYear(today.getFullYear()+1);
+}
+
+var diff = nextBirthday - today;
+var daysLeft = Math.ceil(diff / (1000*60*60*24));
+
+document.getElementById("nextBirthday").innerHTML =
+nextBirthday.toDateString();
+
+document.getElementById("birthdayDays").innerHTML =
+daysLeft+" Days Left";
+
+}
+
+
+
+function calculateDifference(){
+
+var d1 = new Date(document.getElementById("date1").value);
+var d2 = new Date(document.getElementById("date2").value);
+
+if(d1>d2){
+var temp=d1;
+d1=d2;
+d2=temp;
+}
+
+var diffTime = d2 - d1;
+
+var totalDays = Math.ceil(diffTime/(1000*60*60*24));
+
+document.getElementById("totalDays").innerHTML =
+totalDays+" Days";
+
+
+// Working Days
+
+var workingDays=0;
+
+for(var d=new Date(d1); d<=d2; d.setDate(d.getDate()+1)){
+var day=d.getDay();
+if(day!=0 && day!=6){
+workingDays++;
+}
+}
+
+document.getElementById("workingDays").innerHTML =
+workingDays+" Days";
+
+
+// Year Month Day
+
+var years = d2.getFullYear() - d1.getFullYear();
+var months = d2.getMonth() - d1.getMonth();
+var days = d2.getDate() - d1.getDate();
+
+if(days < 0){
+months--;
+days += new Date(d2.getFullYear(), d2.getMonth(),0).getDate();
+}
+
+if(months < 0){
+years--;
+months += 12;
+}
+
+document.getElementById("difference").innerHTML =
+years+" Year "+months+" Month "+days+" Day";
+
+}
+
+</script>
+    
+<a href='https://www.free-counters.org/'>Get free Counters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f1947b33d890e2a9a024bf1f9b5982cdcdea00ee'></script>
+<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1523485/t/1"></script>
+
+</body>
+</html>
