@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Salary Statement</title>
+
+<style>
+
+body{
+font-family: Arial;
+padding:20px;
+}
+
+table{
+border-collapse: collapse;
+width:100%;
+}
+
+th,td{
+border:1px solid #000;
+padding:6px;
+text-align:center;
+}
+
+th{
+background:#f2f2f2;
+}
+
+input{
+width:100%;
+border:none;
+text-align:center;
+}
+  
+.info-table input{
+text-align:left;
+}
+  
+button{
+padding:8px 20px;
+margin-bottom:10px;
+font-size:16px;
+}
+
+@media print{
+button{
+display:none;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2 style="position:relative; left:97%; transform:translateX(-50%); width:max-content;">
+Salary Statement</h2>
+  
+ <table class="info-table"; style="margin-bottom:10px; width:100%; white-space:nowrap; ">
+<tr>
+<td>Name of Employee:</td>
+<td><input style="width:407px;"></td>
+</tr>
+
+<tr>
+<td>Name of the Office :</td>
+<td><input></td>
+</tr>
+   
+<tr>
+<td>Designation :</td>
+<td><input></td>
+</tr>
+   
+<tr>
+<td>PAN :</td>
+<td><input></td>
+</tr>
+   
+<tr>
+<td>Gender :</td>
+<td><input></td>
+</tr>
+   
+<tr>
+<td>Mobile :</td>
+<td><input></td>
+</tr>
+</table>
+  
+<table id="salaryTable">
+
+<tr>
+<th>Month</th>
+<th>Basic</th>
+<th>Addl Allow</th>
+<th>DA</th>
+<th>HRA</th>
+<th>MA</th>
+<th>Conv Allow</th>
+<th>Gross Pay</th>
+<th>GPF</th>
+<th>GSLI</th>
+<th>P.Tax</th>
+<th>I.Tax</th>
+<th>Net Pay</th>
+</tr>
+
+<tbody id="salaryBody"></tbody>
+
+<tr>
+<td>Bonus</td>
+<td colspan="6"></td>
+<td><input id="bonusGross" oninput="bonusCalc()"></td>
+<td colspan="4"></td>
+<td id="bonusNet">0</td>
+</tr>
+
+<tr>
+<td>Arrear</td>
+<td colspan="6"></td>
+<td><input id="arrearGross" oninput="bonusCalc()"></td>
+<td colspan="4"></td>
+<td id="arrearNet">0</td>
+</tr>
+
+<tr>
+<th>TOTAL</th>
+
+<th id="t1"></th>
+<th id="t2"></th>
+<th id="t3"></th>
+<th id="t4"></th>
+<th id="t5"></th>
+<th id="t6"></th>
+<th id="t7"></th>
+<th id="t8"></th>
+<th id="t9"></th>
+<th id="t10"></th>
+<th id="t11"></th>
+<th id="t12"></th>
+
+</tr>
+
+</table>
+  <br>
+<button onclick="window.print()">Print</button>
+
+<script>
+
+let months=[
+"March","April","May","June","July",
+"August","September","October",
+"November","December","January","February"
+];
+
+let year=2025;
+
+function createTable(){
+
+let tbody=document.getElementById("salaryBody");
+
+months.forEach((m,i)=>{
+
+let displayYear = year;
+
+if(i>=10){
+displayYear = year + 1;
+}
+
+let row=document.createElement("tr");
+
+row.innerHTML=`
+
+<td>
+<input value="${m}, ${displayYear}" onchange="updateYear(this)">
+</td>
+
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+
+<td class="gross">0</td>
+
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+<td><input oninput="copyDown(this)"></td>
+
+<td class="net">0</td>
+
+`;
+
+tbody.appendChild(row);
+
+});
+
+}
+
+createTable();
+
+
+function copyDown(el){
+
+let row=el.parentNode.parentNode;
+let index=row.rowIndex;
+let col=el.parentNode.cellIndex;
+
+document.querySelectorAll("#salaryBody tr").forEach((r,i)=>{
+if(i>=index-1){
+let cell=r.cells[col];
+if(cell && cell.querySelector("input")){
+cell.querySelector("input").value=el.value;
+}
+}
+});
+
+calcAll();
+
+}
+
+function updateYear(el){
+
+let y=parseInt(el.value.split(",")[1].trim());
+
+document.querySelectorAll("#salaryBody tr").forEach((r,i)=>{
+
+let yearValue=y;
+
+if(i>=10) yearValue=y+1;
+
+r.cells[0].children[0].value=months[i]+", "+yearValue;
+
+});
+
+}
+
+function calc(row){
+
+let inputs=row.querySelectorAll("input");
+
+let basic=Number(inputs[1].value)||0;
+let addl=Number(inputs[2].value)||0;
+let da=Number(inputs[3].value)||0;
+let hra=Number(inputs[4].value)||0;
+let ma=Number(inputs[5].value)||0;
+let conv=Number(inputs[6].value)||0;
+
+let gpf=Number(inputs[7].value)||0;
+let gsli=Number(inputs[8].value)||0;
+let ptax=Number(inputs[9].value)||0;
+let itax=Number(inputs[10].value)||0;
+
+let gross=basic+addl+da+hra+ma+conv;
+let net=gross-gpf-gsli-ptax-itax;
+
+row.querySelector(".gross").innerText=gross;
+row.querySelector(".net").innerText=net;
+
+}
+
+function calcAll(){
+document.querySelectorAll("#salaryBody tr").forEach(r=>calc(r));
+total();
+}
+
+function bonusCalc(){
+
+let b=Number(document.getElementById("bonusGross").value)||0;
+let a=Number(document.getElementById("arrearGross").value)||0;
+
+document.getElementById("bonusNet").innerText=b;
+document.getElementById("arrearNet").innerText=a;
+
+total();
+
+}
+
+function total(){
+
+let cols=12;
+
+for(let i=1;i<=cols;i++){
+
+let sum=0;
+
+document.querySelectorAll("#salaryBody tr").forEach(r=>{
+
+let val;
+
+if(i==7)
+val=Number(r.querySelector(".gross").innerText)||0;
+
+else if(i==12)
+val=Number(r.querySelector(".net").innerText)||0;
+
+else
+val=Number(r.cells[i].querySelector("input")?.value)||0;
+
+sum+=val;
+
+});
+
+if(i==7 || i==12){
+sum+=Number(document.getElementById("bonusGross").value)||0;
+sum+=Number(document.getElementById("arrearGross").value)||0;
+}
+
+document.getElementById("t"+i).innerText=sum;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
