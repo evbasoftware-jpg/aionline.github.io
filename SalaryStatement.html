@@ -227,6 +227,8 @@ function updateYear(el){
 
 let y=parseInt(el.value.split(",")[1].trim());
 
+year = y;   // <-- year update
+
 document.querySelectorAll("#salaryBody tr").forEach((r,i)=>{
 
 let yearValue=y;
@@ -236,6 +238,10 @@ if(i>=10) yearValue=y+1;
 r.cells[0].children[0].value=months[i]+", "+yearValue;
 
 });
+
+// Title Update
+document.getElementById("title").innerText=
+"Salary Statement for the Financial Year " + year + "-" + (year+1);
 
 }
 
