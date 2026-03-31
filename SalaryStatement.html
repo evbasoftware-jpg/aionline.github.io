@@ -54,8 +54,8 @@ display:none;
 
 <body>
 
-<h2 style="position:relative; left:50%; transform:translateX(-50%); width:max-content;">
-Salary Statement</h2>
+<h2 id="title" style="position:relative; left:50%; transform:translateX(-50%); width:max-content;">
+</h2>
   
  <table class="info-table"; style="margin-bottom:10px; width:100%; white-space:nowrap; ">
 <tr>
@@ -315,6 +315,9 @@ document.getElementById("t"+i).innerText=sum;
 }
 
 }
+  
+document.getElementById("title").innerText=
+"Salary Statement for the Financial Year " + year + "-" + (year+1);
 
 </script>
 
