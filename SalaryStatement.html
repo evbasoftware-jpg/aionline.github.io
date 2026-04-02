@@ -41,7 +41,19 @@ padding:8px 20px;
 margin-bottom:10px;
 font-size:16px;
 }
+  
+     /* Logo + Text */
+.logo-box{
+  position: static;
+}
 
+/* Logo */
+.logo{
+    height:67px;
+    width:auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+  
 @media print{
 button{
 display:none;
@@ -53,7 +65,10 @@ display:none;
 </head>
 
 <body>
-
+<div class="logo-box" style="color: blue; font-size:20px">
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+</div>
+  
 <h2 id="title" style="position:relative; left:50%; transform:translateX(-50%); width:max-content;">
 </h2>
   
@@ -147,7 +162,7 @@ display:none;
  <br>
  https://aionline.in.net/
   <br>
-<button onclick="window.print()">Print</button>
+<button onclick="window.print()">Print / PDF</button>
 
 <script>
 
@@ -328,6 +343,9 @@ document.getElementById("title").innerText=
 "Salary Statement for the Financial Year " + year + "-" + (year+1);
 
 </script>
+  
+ <a href='https://www.counters-free.net/'>Visitor Counters free</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=d62484d4ce500a8d82d94e4a4941a68071782ac3'></script>
+<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1529050/t/1"></script>
 
 </body>
 </html>
