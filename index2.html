@@ -87,7 +87,7 @@ margin-top:30px;
 
 .whatsapp{
 position:fixed;
-bottom:20px;
+bottom:50px;
 right:20px;
 background:#25D366;
 color:white;
@@ -133,7 +133,7 @@ font-size:12px;
   gtag('config', 'G-W1V6JZQYXC');
   -->
 </head>
-<body>
+<body onload="startChat()">
 <header>
   <div class="logo-box">
             <img src="logo.png" alt="AI Online Logo" class="logo">
@@ -168,7 +168,7 @@ GPF Calculator Excel (Free)</a>
 🎥 How to Use Video</a>
 </div>
 </div>
-   
+    
 <div class="section">
 <h2>Income Tax</h2>
 <div class="list">
@@ -178,7 +178,7 @@ GPF Calculator Excel (Free)</a>
 </div>
 </div>
     
-    <div class="section">
+<div class="section">
 <h2>Salary Data</h2>
 <div class="list-item">
 <a href="https://aionline.in.net/Pay_Slip.html">Pay Slip, Primary School Teachers, West Bengal (FREE)</a>
@@ -201,9 +201,103 @@ GPF Calculator Excel (Free)</a>
 <div class="list">
 <a href="#">Coming Soon</a>
 </div>
-</div></div><footer>
+</div></div>
+<footer>
 © 2026 AI Online | Digital Support India
-</footer><a class="whatsapp" href="https://wa.me/919800074626">Chat</a>
+</footer>
+    <a class="whatsapp" href="https://wa.me/919800074626">WhatsApp</a>
 
+    <!-- AI Chat Box -->
+<div id="chatBox" style="position:fixed;bottom:130px;right:20px;width:333px;background:white;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.2);display:none;overflow:hidden">
+<div style="background:#0B5ED7;color:white;padding:10px">AI Online Support</div>
+<div id="chatMessages" style="height:250px;overflow:auto;padding:10px;font-size:14px"></div>
+<div style="display:flex">
+<input id="chatInput" placeholder="Type message..." style="flex:1;padding:8px;border:none;border-top:1px solid #ddd">
+<button onclick="sendChat()" style="background:#0B5ED7;color:white;border:none;padding:8px 12px">Send</button>
+</div>
+</div>
+    <button onclick="toggleChat()" style="position:fixed;bottom:50px;left:20px;background:orange;color:white;border:none;padding:15px;font-weight: bold;border-radius:50%">Online<br> Support</button>
+
+<script>
+function toggleChat(){
+let box=document.getElementById('chatBox');
+box.style.display=box.style.display==='none'?'block':'none';
+}
+
+function startChat(){
+let messages=document.getElementById('chatMessages');
+
+let reply=`Welcome to AI Online 🤖<br>
+AI Online provides below support/services:<br>
+<br>
+🔵 1️⃣ Income Tax Software<br>
+🔷 2️⃣ GPF Calculator<br>
+🟢 3️⃣ Income Tax Calculator<br>
+🟠 4️⃣ Pay Slip<br>
+🟣 5️⃣ Salary Statement<br>
+🔴 6️⃣ Multiple Calculator<br>
+🟢 7️⃣ Contact`;
+
+messages.innerHTML+=`<div><b>AI:</b> ${reply}</div>`;
+}
+    
+ function sendChat(){
+let input=document.getElementById('chatInput');
+let msg=input.value;
+if(!msg) return;
+
+let messages=document.getElementById('chatMessages');
+
+messages.innerHTML+=`<div><b>You:</b> ${msg}</div>`;
+
+let reply=`Please choose: <br>
+<br>
+🔵 1️⃣ Income Tax Software<br>
+🔷 2️⃣ GPF Calculator<br>
+🟢 3️⃣ Income Tax Calculator<br>
+🟠 4️⃣ Pay Slip<br>
+🟣 5️⃣ Salary Statement<br>
+🔴 6️⃣ Multiple Calculator<br>
+🟢 7️⃣ Contact`;
+
+if(/income tax software|1/.test(msg.toLowerCase())){
+reply = "Income Tax Calculation Software price ₹2000/- (for Office of the Sub Inspector of Schools, West Bengal)";
+}
+
+if(/gpf calculator|2/.test(msg.toLowerCase())){
+reply="GPF Calculator is 100% free to use. ⭐";
+}
+
+if(/income tax calculator|3/.test(msg.toLowerCase())){
+reply="Income Tax Calculator is 100% free to use. ⭐";
+}
+
+if(/pay slip|4/.test(msg.toLowerCase())){
+reply="Pay Slip is 100% free to use. ⭐";
+}
+     
+if(/salary statement|5/.test(msg.toLowerCase())){
+reply="Salary Statement is 100% free to use. ⭐";
+}
+
+if(/multiple calculator|6/.test(msg.toLowerCase())){
+reply="Multiple Calculator is 100% free to use. ⭐";
+}
+     
+if(/contact|7/.test(msg.toLowerCase())){
+reply=`📩 Send your Query/Question/ Suggestion/Feedback to:<br><br>
+📧 Email: evbasoftware@gmail.com<br>
+💬 WhatsApp: 9800074626`;
+}
+     
+setTimeout(()=>{
+messages.innerHTML+=`<div><b>AI:</b> ${reply}</div>`;
+messages.scrollTop=messages.scrollHeight;
+},500);
+
+input.value='';
+}
+    
+ </script>
 </body>
 </html>
