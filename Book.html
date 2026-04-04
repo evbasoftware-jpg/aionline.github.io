@@ -92,15 +92,15 @@ transform-origin:0 0;
 <h2>📄 Select Document</h2>
 
 <button class="btn" onclick="openDoc(1)">
-1️⃣ Class - IV Math
+Class - IV Bhasha Path (Bengali)
 </button>
 
 <button class="btn" onclick="openDoc(2)">
-2️⃣ Class - V Math
+Class - IV Amader Paribesh (Bengali)
 </button>
 
 <button class="btn" onclick="openDoc(3)">
-3️⃣ Class - VI Math
+Class - IV Amar Ganit (Bengali)
 </button>
   <br><br>
 <div class="controls">
@@ -121,22 +121,29 @@ let zoom=1;
 
 function openDoc(option){
 
+  //PDF file view
 if(option==1){
 document.getElementById("viewer").src=
-"https://docs.google.com/document/d/1fIzzepN_mzoikHAeB2UGDdTokfsKRm9O/preview";
+"https://docs.google.com/file/d/1I1bgM88jV2HoaWga2bbzYbZ4L9LQfA78/preview";
 }
 
+    //PDF file view
 if(option==2){
 document.getElementById("viewer").src=
-"https://docs.google.com/document/d/1oBAZNYKznn9dvMXwNLAfgPMtM4ibfaZg/preview";
+"https://docs.google.com/file/d/12YMGWDo7uuZwXJx3KTBS9fm9tsDIR4tA/preview";
 }
   
+  //word file view
+//if(option==2){
+//document.getElementById("viewer").src=
+//"https://docs.google.com/document/d/1oBAZNYKznn9dvMXwNLAfgPMtM4ibfaZg/preview?usp=embed_google";
+//}
+  
+  //PDF file view
 if(option==3){
 document.getElementById("viewer").src=
 "https://drive.google.com/file/d/1Vz-ZcHz2Jg28453VT-AhCvqwSkpzTPeK/preview?usp=embed_google";
 }
-  
-
 }
 
 function zoomIn(){
