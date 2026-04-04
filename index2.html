@@ -22,11 +22,6 @@ border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-h2{
-color:#0B5ED7;
-margin-bottom:20px;
-}
-
 .option{
 display:block;
 background:#f1f6ff;
@@ -41,11 +36,19 @@ border-radius:6px;
 background:#e6efff;
 }
 
+/* Resizable Box */
+.viewer-box{
+resize:both;
+overflow:auto;
+border:2px solid #ddd;
+margin-top:20px;
+height:500px;
+}
+
 iframe{
 width:100%;
-height:80vh;
+height:100%;
 border:none;
-margin-top:20px;
 }
 
 </style>
@@ -70,7 +73,9 @@ margin-top:20px;
 3️⃣ Pay Slip Document
 </div>
 
+<div class="viewer-box">
 <iframe id="viewer"></iframe>
+</div>
 
 </div>
 
@@ -94,7 +99,7 @@ document.getElementById("viewer").src=
 }
 
 }
-//https://docs.google.com/document/d/1oBAZNYKznn9dvMXwNLAfgPMtM4ibfaZg/edit?usp=drivesdk&ouid=101374027253341521599&rtpof=true&sd=true
+
 </script>
 
 </body>
