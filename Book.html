@@ -22,18 +22,26 @@ border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-.option{
+/* Button Style */
+
+.btn{
 display:block;
-background:#f1f6ff;
+width:70%;
+background:linear-gradient(90deg,#d7820b,#00C2FF);  
+color:white;
 padding:12px;
 margin:10px 0;
-border-left:5px solid #0B5ED7;
+border:none;
+border-radius:8px;
 cursor:pointer;
-border-radius:6px;
+font-size:16px;
+font-weight:500;
+transition:.3s;
 }
 
-.option:hover{
-background:#e6efff;
+.btn:hover{
+transform:translateY(-2px);
+box-shadow:0 5px 15px rgba(0,0,0,0.2);
 }
 
 /* Zoom Controls */
@@ -82,17 +90,17 @@ transform-origin:0 0;
 
 <h2>📄 Select Document</h2>
 
-<div class="option" onclick="openDoc(1)">
-1️⃣ Special Education Document
-</div>
+<button class="btn" onclick="openDoc(1)">
+1️⃣ Class - IV Math
+</button>
 
-<div class="option" onclick="openDoc(2)">
-2️⃣ Income Tax Document
-</div>
+<button class="btn" onclick="openDoc(2)">
+2️⃣ Class - V Math
+</button>
 
-<div class="option" onclick="openDoc(3)">
-3️⃣ Pay Slip Document
-</div>
+<button class="btn" onclick="openDoc(3)">
+3️⃣ Class - VI Math
+</button>
 
 <div class="controls">
 <button onclick="zoomIn()">🔍 Zoom In</button>
