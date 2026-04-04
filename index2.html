@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Viewer</title>
+
+<style>
+
+body{
+font-family:Arial, sans-serif;
+background:#f4f7ff;
+padding:30px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+h2{
+color:#0B5ED7;
+margin-bottom:20px;
+}
+
+.option{
+display:block;
+background:#f1f6ff;
+padding:12px;
+margin:10px 0;
+border-left:5px solid #0B5ED7;
+cursor:pointer;
+border-radius:6px;
+}
+
+.option:hover{
+background:#e6efff;
+}
+
+iframe{
+width:100%;
+height:80vh;
+border:none;
+margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📄 Select Document</h2>
+
+<div class="option" onclick="openDoc(1)">
+1️⃣ Special Education Document
+</div>
+
+<div class="option" onclick="openDoc(2)">
+2️⃣ Income Tax Document
+</div>
+
+<div class="option" onclick="openDoc(3)">
+3️⃣ Pay Slip Document
+</div>
+
+<iframe id="viewer"></iframe>
+
+</div>
+
+<script>
+
+function openDoc(option){
+
+if(option==1){
+document.getElementById("viewer").src=
+"https://docs.google.com/document/d/1fIzzepN_mzoikHAeB2UGDdTokfsKRm9O/preview";
+}
+
+if(option==2){
+document.getElementById("viewer").src=
+"https://docs.google.com/document/d/1oBAZNYKznn9dvMXwNLAfgPMtM4ibfaZg/preview";
+}
+
+if(option==3){
+document.getElementById("viewer").src=
+"https://docs.google.com/document/d/YOUR_FILE_ID_3/preview";
+}
+
+}
+//https://docs.google.com/document/d/1oBAZNYKznn9dvMXwNLAfgPMtM4ibfaZg/edit?usp=drivesdk&ouid=101374027253341521599&rtpof=true&sd=true
+</script>
+
+</body>
+</html>
