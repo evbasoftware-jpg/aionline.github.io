@@ -36,19 +36,40 @@ border-radius:6px;
 background:#e6efff;
 }
 
-/* Resizable Box */
+/* Zoom Controls */
+
+.controls{
+margin-top:15px;
+}
+
+.controls button{
+padding:8px 15px;
+margin-right:5px;
+background:#0B5ED7;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.controls button:hover{
+background:#084298;
+}
+
+/* Viewer */
+
 .viewer-box{
-resize:both;
-overflow:auto;
+overflow:hidden;
 border:2px solid #ddd;
 margin-top:20px;
-height:500px;
+height:80vh;
 }
 
 iframe{
 width:100%;
 height:100%;
 border:none;
+transform-origin:0 0;
 }
 
 </style>
@@ -73,6 +94,12 @@ border:none;
 3️⃣ Pay Slip Document
 </div>
 
+<div class="controls">
+<button onclick="zoomIn()">🔍 Zoom In</button>
+<button onclick="zoomOut()">🔎 Zoom Out</button>
+<button onclick="resetZoom()">♻ Reset</button>
+</div>
+
 <div class="viewer-box">
 <iframe id="viewer"></iframe>
 </div>
@@ -80,6 +107,8 @@ border:none;
 </div>
 
 <script>
+
+let zoom=1;
 
 function openDoc(option){
 
@@ -98,6 +127,21 @@ document.getElementById("viewer").src=
 "https://docs.google.com/document/d/YOUR_FILE_ID_3/preview";
 }
 
+}
+
+function zoomIn(){
+zoom+=0.1;
+document.getElementById("viewer").style.transform="scale("+zoom+")";
+}
+
+function zoomOut(){
+zoom-=0.1;
+document.getElementById("viewer").style.transform="scale("+zoom+")";
+}
+
+function resetZoom(){
+zoom=1;
+document.getElementById("viewer").style.transform="scale(1)";
 }
 
 </script>
