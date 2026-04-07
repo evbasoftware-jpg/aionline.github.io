@@ -204,7 +204,7 @@ transform-origin:0 0;
 
 </tr>
 
-<tr onclick="toggleRow('row2',this)">
+<tr onclick="toggleRow('row2')">
 <th>Class 5</th>
 <th>Class 6</th>
 <th>Class 7</th>
@@ -253,7 +253,7 @@ transform-origin:0 0;
 
 </tr>
 
-<tr onclick="toggleRow('row3',this)">
+<tr onclick="toggleRow('row3')">
 <th>Class 9</th>
 <th>Class 10</th>
 <th>Class 11</th>
@@ -592,40 +592,17 @@ zoom=1;
 document.getElementById("viewer").style.transform="scale(1)";
 }
 
-  function toggleRow(id,element){
-
-let rows=document.querySelectorAll(".subject-row");
-let ths=document.querySelectorAll("th");
-
-rows.forEach(row=>{
-if(row.id!==id){
-row.style.display="none";
-row.classList.remove("open");
-}
-});
-
-ths.forEach(th=>{
-th.classList.remove("active");
-});
-
+  function toggleRow(id){
 let row=document.getElementById(id);
 
-if(row.style.display==="table-row"){
-row.style.display="none";
-row.classList.remove("open");
-}else{
+row.classList.toggle("open");
+
+if(row.classList.contains("open")){
 row.style.display="table-row";
-row.classList.add("open");
-
+}else{
 setTimeout(()=>{
-row.scrollIntoView({
-behavior:"smooth",
-block:"start"
-});
-},200)
-
-element.classList.add("active");
-
+row.style.display="none";
+},300);
 }
 
 }
