@@ -47,6 +47,14 @@ color:white;
 font-size:17px;
 }
 
+  .subject-row{
+display:none;
+}
+
+th{
+cursor:pointer;
+}
+  
 /* Buttons */
 
 .btn{
@@ -135,14 +143,14 @@ transform-origin:0 0;
 
 <table>
 
-<tr>
+<tr onclick="toggleRow('row1')">
 <th>Class 1</th>
 <th>Class 2</th>
 <th>Class 3</th>
 <th>Class 4</th>
 </tr>
 
-<tr>
+<tr id="row1" class="subject-row">
 
 <td>
 <button class="btn" onclick="openDoc(1)">আমার বই</button>
@@ -173,14 +181,14 @@ transform-origin:0 0;
 
 </tr>
 
-<tr>
+<tr onclick="toggleRow('row2')">
 <th>Class 5</th>
 <th>Class 6</th>
 <th>Class 7</th>
 <th>Class 8</th>
 </tr>
 
-<tr>
+<tr id="row2" class="subject-row">
 
 <td>
 <button class="btn" onclick="openDoc(16)">আমাদের পরিবেশ</button>
@@ -222,14 +230,14 @@ transform-origin:0 0;
 
 </tr>
 
-<tr>
+<tr onclick="toggleRow('row3')">
 <th>Class 9</th>
 <th>Class 10</th>
 <th>Class 11</th>
 <th>Class 12</th>
 </tr>
 
-<tr>
+<tr id="row3" class="subject-row">
 
 <td>
 <button class="btn" onclick="openDoc(42)">গণিত প্রকাশ</button>
@@ -273,7 +281,7 @@ transform-origin:0 0;
 </div>
 
 <script>
-
+  
 let zoom=1;
 
 function openDoc(option){
@@ -561,6 +569,27 @@ zoom=1;
 document.getElementById("viewer").style.transform="scale(1)";
 }
 
+  function toggleRow(id){
+
+let rows=document.querySelectorAll(".subject-row");
+let current=document.getElementById(id);
+
+// যদি already open থাকে তাহলে বন্ধ করুন
+if(current.style.display==="table-row"){
+current.style.display="none";
+return;
+}
+
+// সব row বন্ধ করুন
+rows.forEach(row=>{
+row.style.display="none";
+});
+
+// current row open করুন
+current.style.display="table-row";
+
+}
+  
 </script>
 
 </body>
