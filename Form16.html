@@ -1,181 +1,153 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FY 2025-26 Form 16_New Regime</title>
-  <style>
-    body {
-      font-family: 'Bookman Old Style', serif;
-      background-color: rgb(241, 252, 251);
-  /*    padding: 10px;*/
-      
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      width: 90%;
-    }
-  .container2 {
-      width: 90%;
-    }
-    h4,h3{
-    text-align:center;
-    margin:0px;
-}
-
-    /* Logo + Text */
-.logo-box{
-  position: fixed;
-    top: 90%;
-    left: 11%;
-    display:flex;
-    align-items:center;
-  
-}
-
-/* Logo */
-.logo{
-    height:67px;
-    width:auto;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-    
-    table {
-      width: 100%;
-      margin-left:30px;
-      margin-top:5px;
-      border-collapse: collapse;
-      outline: 2px solid blue;
-      background-color: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding-right:10px;
-      text-align: left;
-    }
-    th {
-      border-bottom: 2px solid blue;
-      color: blue;
-      text-align: center;
-    }
-    .right-border {
-      border-right: 2px solid blue;
+    <meta charset="UTF-8">
+    <title>Editable Form 16 Part B</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11px; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .form-page { width: 850px; background: white; margin: auto; border: 1px solid #000; padding: 1px; position: relative; }
+        .main-header { text-align: center; border-bottom: 1px solid #000; padding: 5px; font-weight: bold; font-size: 14px; }
+        .sub-header { text-align: center; border-bottom: 1px solid #000; padding: 5px; font-weight: bold; font-size: 12px; }
         
-      line-height: 1.3;
-    }
+        table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
+        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; }
+        
+        /* এডিটেবল ঘরগুলোর স্টাইল */
+        [contenteditable="true"] {
+            background-color: #fffde7; /* হালকা হলুদ আভা যাতে বোঝা যায় এডিট করা যাবে */
+            outline: none;
+            min-height: 14px;
+        }
+        [contenteditable="true"]:focus {
+            background-color: #fff9c4;
+            border: 1px dashed #2196F3;
+        }
+
+        .bg-gray { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .bg-yellow { background-color: #ffff00; font-weight: bold; }
+        .text-right { text-align: right; padding-right: 10px; }
+        .text-center { text-align: center; }
+        .bold { font-weight: bold; }
+        
+        .small-text { font-size: 9px; font-weight: normal; }
+        .verification { padding: 10px; line-height: 1.8; border: 1px solid #000; border-top: none; }
+        
+    /* Input specific style for numbers */
+        num-input {
+            border: none;
+            background: #fbffc9;
+            text-align: right;
+            width: 100px;
+            font-family: inherit;
+            font-weight: bold;
+        }
     input[type="number"], input[type="text"] {
-      width: 110px;
+      width:100px;
       text-align: right;
       font-weight: bold;
-      border:none;
+     /* border:none;*/
     }
-    input:disabled {
-      background-color: #fbffc9;
-      color: black;
-      font-weight: bold;
-    }
-.footer{
-    margin-top:5px;
-    font-size:13px;
-}
-.print-btn{
-    text-align:center;
-    margin-top:15px;
-    background:blue;
-    color: white;
-}
-button{
-    padding:6px 15px;
-    font-size:14px;
-    cursor:pointer;
-}
-    .note { color: red; margin-bottom: 10px; }
-    .sub-label { font-size: 0.9em; margin-left: 20px; }
-
-@media print{
-    .print-btn{display:none;}
-    body{background:#fff;}
-    footer{display:none;}
-  a{display:none;}
-  .container2{display:none;}
-    }
- 
-  </style>
+        @media print {
+            body { background: none; padding: 0; }
+            .form-page { border: none; width: 100%; }
+            .no-print { display: none; }
+            [contenteditable="true"] { background-color: transparent; }
+        }
+    </style>
 </head>
-
 <body>
-<div class="logo-box">
-     <img src="logo.png" alt="AI Online Logo" class="logo">
-     &emsp;&emsp; https://aionline.in.net
-</div>
-  
-  <div class="container">
+
+<div class="form-page">
+    <div class="main-header">FORM NO. 16</div>
+    <div class="sub-header">PART B</div>
+    <div class="text-center bold" style="padding: 5px; border-bottom: 1px solid #000;">
+        Certificate under Section 203 of the Income-tax Act, 1961 for tax deducted at source on salary
+    </div>
+
     <table>
-      <thead>
-<tr> <th class="right-border" colspan="7">FORM NO. 16</th> </tr>
-<tr> <th class="right-border" colspan="7">PART B</th> </tr>
-<tr> <th class="right-border" colspan="7">Certificate under Section 203 of the Income-tax Act, 1961 for tax deducted at source on salary</th> </tr>
+        <tr class="bg-gray">
+            <td style="width:50%">Name and address of the Employer</td>
+            <td style="width:50%">Name and address of the Employee</td>
+        </tr>
+        <tr style="height: 60px;">
+            <td class="text-center"><b contenteditable="true">Birbhum District Primary School Council</b><br><span contenteditable="true">Suri, Birbhum, 731101</span></td>
+            <td class="text-center"><b contenteditable="true">SHYAMAL CHANDRA MONDAL</b><br><span contenteditable="true">HT of XYZ PRIMARY SCHOOL<br>ABC CIRCLE</span></td>
+        </tr>
+    </table>
 
-        <tr> <th class="right-border" colspan="3">Name and address of the Employer </th> 
-        <th class="right-border" colspan="4">Name and address of the Employee </th> </tr>
-    <tr> <th class="right-border" colspan="3"><input type="text" style="text-align: center; width: 400px;" value="__ District Primary School Council"></br>
-                 <input type="text" style="text-align: center; width: 400px;" value="Balurghat, Dakshin Dinajpur, 733101"></br>
-                 <input type="text" style="text-align: center; width: 400px;" value="__"></br>  </th> 
-    <th class="right-border" colspan="4"><input type="text" style="text-align: center; width: 400px;" value="UJJAL MONDAL"></br>
-                 <input type="text" style="text-align: center; width: 400px;" value="S. EDUCATOR OF _ OFFICE"></br>
-                 <input type="text" style="text-align: center; width: 400px;" value="PATIRAM, D/DINAJPUR"></br> </th> </tr>
+    <table>
+        <tr class="bg-gray">
+            <td style="width:25%">PAN of the Deductor</td>
+            <td style="width:25%">TAN of the Deductor</td>
+            <td style="width:50%">PAN of the Employee</td>
+        </tr>
+        <tr class="text-center">
+            <td contenteditable="true"></td>
+            <td contenteditable="true">CALB07000S</td>
+            <td contenteditable="true">ABCDE1234F</td>
+        </tr>
+    </table>
 
-     <tr> <th class="right-border" colspan="3">PAN of the Deductor<br>
-       <input type="text" style="text-align: center; width: 300px;" value="CALB12345"></th>
-     <th class="right-border" colspan="2">TAN of the Deductor<br>
-         <input type="text" style="text-align: center; width: 170px;" value="ABCDE1234F"></th>
-     <th class="right-border" colspan="2">PAN of the Employee<br>
-           <input type="text" style="text-align: center; width: 230px;" value="VWXY1234Z">
-     </th> </tr>
+    <table>
+        <tr class="bg-gray">
+            <td style="width:50%">CIT (TDS)</td>
+            <td style="width:15%">Assessment Year</td>
+            <td colspan="2" style="width:35%">Period with the Employer</td>
+        </tr>
+        <tr class="text-center">
+            <td contenteditable="true">The Commissioner of Income Tax (TDS) 7th Floor, Middleton Row Kolkata - 700071</td>
+            <td class="bold" contenteditable="true">2026 - 2027</td>
+            <td class="bg-gray">From</td>
+            <td class="bg-gray">To</td>
+        </tr>
+        <tr class="text-center">
+            <td contenteditable="true"></td>
+            <td></td>
+            <td contenteditable="true">April, 2025</td>
+            <td contenteditable="true">March, 2026</td>
+        </tr>
+    </table>
 
-     <tr> <th class="right-border" colspan="4" >
-       <input type="text" style="text-align: center; width: 400px;" value="CIT (TDS)">
-       <input type="text" style="text-align: center; width: 400px;" value="The Commissioner of Income Tax (TDS) 7th Floor,">
-       <input type="text" style="text-align: center; width: 400px;" value="Middleton Row Kolkata - 700071"></th>
-     <th class="right-border">Assessment Year<br>
-       <input type="text" style="text-align: center; width: 170px; height:30px;" value="2026-27"></th>
-     <th class="right-border" colspan="2">Period with the Employer<br> From &emsp;&emsp;&emsp;&emsp; To<br>
-       <input type="text" style="text-align: center; width: 100px;" value="April, 2025">
-       <input type="text" style="text-align: center; width: 100px;" value="March, 2026">
-     </th> </tr>
+    <div class="bold" style="padding: 5px; border: 1px solid #000; border-top: none;">
+        Details of Salary Paid and any other income and tax deducted
+    </div>
 
-        <tr> <th class="right-border" style="text-align: Left;" colspan="7">Details of Salary Paid and any other income and tax deducted</th> </tr>
-        <tr> <th class="right-border" style="text-align: Left;" colspan="7">Whether opting for taxation u/s 115BAC : Yes</th> </tr>
+    <table>
+        <tr class="bg-yellow">
+            <td style="width:75%">Whether opting for taxation u/s 115BAC</td>
+            <td class="text-center" contenteditable="true">Yes</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr class="bold">
+            
+            <td style="width:700px"></td>
+            <td style="width:120px">Rs.</td>
+            <td style="width:120px">Rs.</td>
+        </tr>
         
-      </thead>
-      <tbody>
         <tr>
-          <th class="right-border" style="text-align: Left;" colspan="5">1. Gross Salary</th>
-          <th class="right-border">Rs.</th>
-          <th>Rs.</th>
+             
+            <td>1) Gross Salary<br>
+            (a) Salary as per provisions contained in section 17(1)<br>
+            b) Value of perquisites under section 17(2) (as per Form No. 12BA, wherever applicable)	<br>
+            c) Profits in lieu of salary under section 17(3) (as per Form No. 12BA, wherever applicable)		<br>
+            d) Total		<br>
+            e) Reported total amount of salary received from other employer(s)			
+            </td>
+            <td class="text-right"><input type="number" id="gsal" class="num-input" value="0" oninput="calculate()"><br>
+            <input type="number" id="b1" value="0"><br>
+            <input type="number" id="c1"  value="0"><br>
+            <br><br> </td>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="d1" value="0" disabled><br>
+            <input type="number" id="e1" value="0">
+            </td>
         </tr>
         <tr>
-          <td class="right-border" colspan="5">
-            &emsp;a) Salary as per provisions contained in section 17(1) (Allowances, Bonus, Arrear)<br>
-            &emsp;b) Value of perquisites under section 17(2) (as per Form No. 12BA, wherever applicable)	<br>
-            &emsp;c) Profits in lieu of salary under section 17(3) (as per Form No. 12BA, wherever applicable)		<br>
-            &emsp;d) Total		<br>
-            &emsp;e) Reported total amount of salary received from other employer(s)			
-
-          </td>
-          
-          <td style="text-align: center;">
-            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
-            <input type="number" id="sd" value="75000"><br>
-            <input type="number" id="net_sal" disabled value="0">
-          </td>
-        </tr>
-        
-        <tr>
-          <td class="right-border" colspan="5">
-            2. Less: Allowances to the extent exempt under section 10	<br>
+            
+            <td>2) Less: Allowances to the extent exempt under section 10	<br>
             &emsp;a) Travel concession or assistance under section 10(5)	<br>
             &emsp;b) Death-cum-retirement gratuity under section 10(10)	<br>
             &emsp;c) Commuted value of pension under section 10(10A)		<br>
@@ -187,64 +159,74 @@ button{
             &emsp;g) Total amount of any other exemption under section 10	<br>
             <b>Total amount of exemption claimed under section 10 [2(a)+2(b)+2(c)+2(d)+2(e)+2(g)]	</b>
            </td>
-          
-          <td style="text-align: center;">
-            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
-            <input type="number" id="sd" value="75000"><br>
-            <input type="number" id="net_sal" disabled value="0">
+            <td><input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" value="0" disabled><br>
+            <br>
           </td>
+            <td style="text-align: center; vertical-align:bottom;">
+               <input type="number" id="" disabled value="0">
         </tr>
-        
         <tr>
-          <td class="right-border" colspan="5">
-            3. Total amount of salary received from current employer [1(d)-2(h)]	<br>
-            4. Less: Deductions under section 16	<br>
+            
+            <td class="bold"> 
+            3) Total amount of salary received from current employer [1(d)-2(h)]	<br>
+            4) Less: Deductions under section 16	<br>
             &emsp;a) Standard deduction under section 16(ia)	<br>
             &emsp;b) Entertainment allowance under section 16(ii)	<br>
             &emsp;c) Tax on employment under section 16(iii)	<br>
-            5. Total amount of deductions under section 16 [4(a)+4(b)+4(c)] <br>
-            6. Income chargeable under the head "Salaries" [(3+1(e)-5]	<br>
+            5) Total amount of deductions under section 16 [4(a)+4(b)+4(c)] <br>
+            6) Income chargeable under the head "Salaries" [(3+1(e)-5]	<br>
            </td>
-          
-          <td style="text-align: center;">
-            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
-            <input type="number" id="sd" value="75000"><br>
-            <input type="number" id="net_sal" disabled value="0">
-          </td>
+            <td><input type="number" id="sd" value="75000"><br>
+            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" value="0" disabled><br>
+                
+            </td>
+            <td><input type="number" id="" value="0" disabled><br>
+            <br><br><br><br>
+            
+            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="" value="0" disabled><br>
+   </td>
         </tr>
-
         <tr>
-          <td class="right-border" colspan="5">
-            7. Add: Any other income reported by the employee under as per section 192 (2B)	<br>
+            
+            <td> 7) Add: Any other income reported by the employee under as per section 192 (2B)	<br>
             &emsp;a) Income (or loss) from house property reported by employee offered for TDS	<br>
             &emsp;b) Income under the head Other Sources offered for TDS	<br>
             
-            &emsp;<span class="sub-label">(i) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px;" placeholder="Mention Source of Income"></span> &emsp;&emsp;
+            &emsp;<span class="sub-label">(i) &ensp;<input type="text" id="oi1_text" style="text-align: left; width: 170px;" placeholder="Source of Income"></span> &emsp;&emsp;
             <input type="number" id="oi1" value="0" oninput="calculateAll()"><br>
-            &emsp;<span class="sub-label">(ii) <input type="text" id="oi2_text" style="text-align: left; width: 170px;" placeholder="Mention Source of Income" ></span> &emsp;&emsp;
+            &emsp;<span class="sub-label">(ii) <input type="text" id="oi2_text" style="text-align: left; width: 170px;" placeholder="Source of Income" ></span> &emsp;&emsp;
             <input type="number" id="oi2" value="0" oninput="calculateAll()"><br>
-            &emsp;<span class="sub-label">(iii) Savings Account Interest:</span> &ensp;&emsp;
+            &emsp;<span class="sub-label">(iii) Savings Account Interest:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
             <input type="number" id="oi3" value="0" oninput="calculateAll()"><br>
-            &emsp;<span class="sub-label">(iv) Family Pension:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;
+            &emsp;<span class="sub-label">(iv) Family Pension:</span> &emsp;&emsp;&emsp;
             <input type="number" id="oi4" value="0" oninput="calculateAll()"><br>
-            <span class="sub-label" style="color: Red;">&emsp;Less: Deduction U/S 57(IIA):</span> &ensp;&emsp;
+            <span class="sub-label" style="color: Red;">&emsp;Less: Deduction U/S 57(IIA):</span> 
             <input type="number" id="oi4e" disabled value="0"><br>
-            &emsp;<span class="sub-label">Family Pension after deduction:</span> 
+            &emsp;<span class="sub-label">Family Pension after deduction:</span> &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
             <input type="number" id="oi4f" disabled value="0"><br>
-            8. Total amount of other income reported by the employee [7(a)+7(b)]<br>
+            8) Total amount of other income reported by the employee [7(a)+7(b)]<br>
             &emsp;<span class="sub-label">Less : Interest on HBL  [U/S 24(b)]</span> <br>
-            9. Gross total income (6+8)			
-
-           
-          </td>
-          <td style="vertical-align: bottom; text-align: center;">
-            <input type="number" id="tot4" disabled value="0">
-          </td>
+            9) Gross total income (6+8)			
+            </td>
+            <td class="text-right" style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="tot4" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0">
+</td>
+            <td></td>
         </tr>
-    
-        <tr>
-          <td class="right-border" colspan="5" style="font-size:10.5px;">
-            <h3 style="text-align: left;">10. Deductions under Chapter VI-A	</h3>
+        <tr class="bold">
+            
+            <td><h3 style="text-align: left;">
+            10) Deductions under Chapter VI-A	</h3>
             &emsp;a) Deduction in respect of life insurance premia, contributions to provident fund etc. under section 80C	<br>
             &emsp;b) Deduction in respect of contribution to certain pension funds under section 80CCC	<br>
             &emsp;c) Deduction in respect of contribution by taxpayer to pension scheme under section 80CCD (1)	<br>
@@ -261,60 +243,96 @@ button{
             certain house property under section 80EEA <br>
             &emsp;m) Deduction in respect of Deduction in respect of purchase of electric vehicle under section 80EEB <br>
             </td>
-          
-          <td style="text-align: center;">
-            <input type="number" id="gsal" oninput="calculateAll()" value="0" step="1" min="0"><br>
-            <input type="number" id="sd" value="75000"><br>
-            <input type="number" id="net_sal" disabled value="0">
-          </td>
+            <td><input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0">
+            </td>
+            <td></td>
         </tr>
-        
-        <tr >
-          <td class="right-border" colspan="4"> </td>
-          <td class="right-border" style="text-align: center;">Gross Amount </td>
+        </table>
+   
+    <table>
+        <tr class="bold">
+          
+          <td class="right-border" style="width:407px"> </td>
+          <td class="right-border" style="text-align: right;">Gross Amount </td>
           <td class="right-border" style="text-align: center;">Qualifying Amount </td>
           <td class="right-border" style="text-align: center;">Deductible Amount </td>
         </tr>
-        
-        <tr >
-          <td class="right-border" colspan="4" style="font-size:10.5px;"> 
+        <tr>
+            
+            <td style="width:454px">
             &emsp;n) Total Deduction in respect of donations to certain funds, charitable institutions, etc. under section 80G	<br>
             &emsp;o) House Rent paid 80GG	<br>
             &emsp;p) Total Deduction in respect of Certain donations for scientific research or rural development under section 80GGA	<br>
             &emsp;q) Total Deduction in respect of Donation to Political party under section 80GGC	<br>
             &emsp;r) Total Deduction in respect of person with disability under section 80U		<br>
             &emsp;s) Deduction in respect of interest on deposits in savings account under section 80TTA	<br>
-            &emsp;t) Amount Deductible under any other provision (s) of Chapter VI-A [Note: Break-up to be prepared by employer and issued to the employee, where applicable , before furnishing of Part B to the employee]	<br>
-            <b>Total of amount deductible under any other provision(s) of Chapter VI-A		
-</b>
+            &emsp;t) Amount Deductible under any other provision (s) of Chapter VI-A <br>
+            [Note: Break-up to be prepared by employer and issued to the employee, where applicable , before furnishing of Part B to the employee]	<br>
+            <b>Total of amount deductible under any other provision(s) of Chapter VI-A		</b>
+            </td>
+            <td>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
+            </td>
+            <td>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
+            </td>
+            <td style="text-align: center; vertical-align: bottom;">
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br><br>
+            <input type="number" id="" disabled value="0">
           </td>
-          </tr>
-        
+        </tr>
+        </table>
+   
+    <table>
         <tr>
-          <td class="right-border" colspan="5">
+            
+            <td style="width:710px">
             11) Aggregate of deductible amount under Chapter VI-A [10(d)+10(e)+10(f)+10(g)+10(h)+10(i)+10(j)+10(l)]	<br>
             12) Total taxable income (9-11)	<br>
             13) Taxable Income (Rounded off U/S 288A next ten)	
-          </td>
-          <td style="text-align: center;">
-            <input style="text-align: right;" type="number" id="tot5" disabled value="0"><br>
-            <input type="number" id="NPS" value="0" oninput="calculateAll()"><br>
-            <input type="number" id="Taxable_Inc" disabled value="0"><br>
-            <input type="number" id="Taxable_Inc_round" disabled value="0">
-          </td>
-        </tr>
-
-        <tr>
-          <td class="right-border" colspan="5">
-            14) Tax on Total Income (NEW TAX REGIME U/S 115BAC) &emsp;(Salary Slab) &emsp;&emsp;&emsp;&emsp;&emsp; (Tax):<br>
-                      </td>
-          <td style="vertical-align: bottom; text-align: center;">
-            <input type="number" id="TOTAL_Tax" disabled value="0">
+            </td>
+            
+            <td>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br>
           </td>
         </tr>
-
         <tr>
-          <td class="right-border" colspan="5">
+            
+            <td>
+            14) Tax on Total Income (NEW TAX REGIME U/S 115BAC) <br>
             15) <span style="color:red;">Less: Rebate under section 87A (With Marginal Relief) </span><br>
             16) Total Tax	<br>
             17) <span style="color:blue;">Short Term Capital Gain (20%):</span> &emsp;<input type="number" id="st_cg1" value="0" oninput="calculateAll()"><br>
@@ -326,8 +344,10 @@ button{
             23) Tax payable (21-22)		<br>
             24) Less : (a) Tax deducted at source  u/s 192(1) <br>
             <input type="text" id="TP_Refund_Text" value="25) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
-          </td>
-          <td style="text-align: center;">
+            </td>
+            
+            <td>
+            <input type="number" id="TOTAL_Tax" disabled value="0"><br>
             <input type="number" id="a_87" disabled value="0"><br>
             <input type="number" id="Tax_Pay_able" disabled value="0"><br>
             <input type="number" id="st_cg_2" disabled value="0"><br>
@@ -339,193 +359,37 @@ button{
             <input type="number" id="NTP18" disabled value="0"><br>
             <input type="number" id="tds" value="0" oninput="calculateAll()"><br>
             <input type="number" id="Final_Result" disabled value="0">
-          </td>
+            </td>
         </tr>
         
-        
-         <tr > <td class="right-border" colspan="7" style="text-align: center;"> Verification</td></tr>
-       <tr><td class="right-border" colspan="7"> 
-         <textarea style="width:800px; height:60px; white-space: pre-wrap;">
-           I, ___, son/daughter of ___, working in the capacity of ___ (Designation) do hereby certify that the information given above is true, complete and correct and is based on the books of account, documents, TDS statements, and other available records.
-         </textarea></td></tr>
-         <tr > <td class="right-border" style="text-align: center;">Place </td>
-          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  PATIRAM">
-         </tr>
-          <td class="right-border" style="text-align: center;">Date </td>
-        <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  07-04-2026">
-          <td class="right-border" colspan="4" style="text-align: center;">(Signature of person responsible for deduction of Tax) </td>
-        </tr>
-        <tr > <td class="right-border" style="text-align: center;">Designation </td>
-          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  DISTRICT INSPECTOR">
-          <td colspan="2" style="text-align: center;">Full Name : </td>
-          <td class="right-border" colspan="2"><input type="text" style="text-align: left; width: 300px;" value="  DISTRICT INSPECTOR">
-        </tr>
-        
-      </tbody>
     </table>
-           
-  </div>
-  
-      <div class="container2">
-         <table style="width: 500px; ">
-        <tbody style="left: 51%;">
-       <tr>
-          <td class="right-border" style="text-align: left; ">
-            <small>Upto 4,00,000 (Nil):</small> &emsp;&emsp;&emsp;&emsp; <input type="number" id="sal1" disabled> &emsp; <input type="number" id="Tax_slab1" disabled value="0" ><br>
-            <small>4,00,001 - 8,00,000 (5%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal2" disabled> &emsp; <input type="number" id="Tax_slab2" disabled value="0" ><br>
-            <small>8,00,001 - 12,00,000 (10%):</small> &ensp;&emsp;<input type="number" id="sal3" disabled> &emsp;<input type="number" id="Tax_slab3" disabled value="0" ><br>
-            <small>12,00,001 - 16,00,000 (15%):</small> &emsp;<input type="number" id="sal4" disabled> &emsp; <input type="number" id="Tax_slab4" disabled value="0" ><br>
-            <small>16,00,001 - 20,00,000 (20%):</small> &emsp;<input type="number" id="sal5" disabled> &emsp; <input type="number" id="Tax_slab5" disabled value="0"><br>
-            <small>20,00,001 - 24,00,000 (25%):</small> &emsp;<input type="number" id="sal6" disabled> &emsp; <input type="number" id="Tax_slab6" disabled value="0"><br>
-            <small>Above 24,00,000 (30%):</small> &ensp;&emsp;&emsp;<input type="number" id="sal7" disabled> &emsp; <input type="number" id="Tax_slab7" disabled value="0"><br>
-            
-          </td></tr>
-       </tbody>
-      </table>
-       </div>
-        
-        
-  
-  <div class="print-btn">
-    <button onclick="window.print()">Print / Save PDF</button>  
-   </div>
-<br><br>
-     <footer style="text-align:center; width: 800px;">
-       
-         
-  © 2026 AI Online | All Rights Reserved
-     </footer> 
-       
-   <script>
-  
-/* Disable Right Click */
-document.addEventListener('contextmenu', e => e.preventDefault());
 
-/* Disable key shortcuts */
-document.addEventListener('keydown', function(e) {
-  if (
-    e.keyCode === 123 || // F12
-    (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
-    (e.ctrlKey && e.key === 'U') ||
-    (e.ctrlKey && e.key === 'S')
-  ) {
-    e.preventDefault();
-    return false;
-  }
-});
-  
-  
-    function getVal(id) {
-      return parseFloat(document.getElementById(id).value) || 0;
-    }
+    <div class="verification">
+        <div class="text-center bold" style="text-decoration: underline; margin-bottom: 10px;">Verification</div>
+        I, <span contenteditable="true">............................</span>, 
+        son/daughter of <span contenteditable="true">............................</span>, 
+        working in the capacity of <span contenteditable="true">............................</span> (Designation) 
+        do hereby certify that the information given above is true, complete and correct and is based on the books 
+        of account, documents, TDS statements, and other available records.
+        <br><br>
+        <div style="display: flex; justify-content: space-between;">
+        <div>
+                Place: <span contenteditable="true">.................</span><br>
+                Date: <span contenteditable="true">..................</span><br>
+                Designation: <span contenteditable="true">......................</span>
+            </div>
+            <div class="text-right">
+                (Signature of person responsible for deduction of Tax)<br>
+                Full Name: <span contenteditable="true">............................................</span>
+            </div>
+        </div>
+    </div>
+</div>
 
-    function setVal(id, val) {
-      document.getElementById(id).value = val;
-    }
+<div class="no-print" style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+    <p style="color: #666;">* হলুদ আভা দেওয়া ঘরগুলোতে ক্লিক করে আপনি আপনার তথ্য টাইপ করতে পারেন।</p>
+    <button onclick="window.print()" style="padding: 12px 30px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Print / Save as PDF</button>
+</div>
 
-    function calculateAll() {
-      // 1-3: Salary Calculation
-      let gsal = getVal('gsal');
-      let sd = getVal('sd');
-      let netSal = Math.max(0, gsal - sd);
-      setVal('net_sal', netSal);
-
-      // 4: Other Income & Family Pension
-      let oi1 = getVal('oi1');
-      let oi2 = getVal('oi2');
-      let oi3 = getVal('oi3');
-      let famPen = getVal('oi4');
-      
-      let famPenDeduct = Math.min(25000, Math.round(famPen / 3));
-      let famPenAfter = famPen - famPenDeduct;
-      setVal('oi4e', famPenDeduct);
-      setVal('oi4f', famPenAfter);
-
-      let totOther = oi1 + oi2 + oi3 + famPenAfter;
-      setVal('tot4', totOther);
-
-      // 5-8: Taxable Income
-      let gti = netSal + totOther;
-      setVal('tot5', gti);
-      
-      let nps = getVal('NPS');
-      let taxableInc = gti - nps;
-      let taxableIncRound = Math.round(taxableInc / 10) * 10;
-      setVal('Taxable_Inc', taxableInc);
-      setVal('Taxable_Inc_round', taxableIncRound);
-
-      // 9: Slab Calculation
-      let income = taxableIncRound;
-      let s1 = Math.min(income, 400000);
-      let s2 = Math.max(0, Math.min(income, 800000) - 400000);
-      let s3 = Math.max(0, Math.min(income, 1200000) - 800000);
-      let s4 = Math.max(0, Math.min(income, 1600000) - 1200000);
-      let s5 = Math.max(0, Math.min(income, 2000000) - 1600000);
-      let s6 = Math.max(0, Math.min(income, 2400000) - 2000000);
-      let s7 = Math.max(0, income - 2400000);
-
-      setVal('sal1', s1); setVal('Tax_slab1', 0);
-      setVal('sal2', s2); setVal('Tax_slab2', Math.round(s2 * 0.05));
-      setVal('sal3', s3); setVal('Tax_slab3', Math.round(s3 * 0.10));
-      setVal('sal4', s4); setVal('Tax_slab4', Math.round(s4 * 0.15));
-      setVal('sal5', s5); setVal('Tax_slab5', Math.round(s5 * 0.20));
-      setVal('sal6', s6); setVal('Tax_slab6', Math.round(s6 * 0.25));
-      setVal('sal7', s7); setVal('Tax_slab7', Math.round(s7 * 0.30));
-
-      let totalTax = Math.round((s2*0.05)+(s3*0.1)+(s4*0.15)+(s5*0.2)+(s6*0.25)+(s7*0.3));
-      setVal('TOTAL_Tax', totalTax);
-
-      // 10: 87A Rebate & Marginal Relief
-      let rebate87a = 0;
-      if (taxableIncRound <= 1200000) {
-        rebate87a = Math.min(totalTax, 60000);
-      } else {
-        // Marginal Relief logic
-        let diff = taxableIncRound - 1200000;
-        if (totalTax > diff) {
-          rebate87a = totalTax - diff;
-        }
-      }
-      setVal('a_87', Math.round(rebate87a));
-
-      let taxPayable = Math.round(totalTax - rebate87a);
-      setVal('Tax_Pay_able', taxPayable);
-
-      // 12-13: Capital Gains
-      let stcg = Math.round(getVal('st_cg1') * 0.20);
-      let ltcgVal = getVal('lt_cg1');
-      let ltcg = ltcgVal > 125000 ? Math.round((ltcgVal - 125000) * 0.125) : 0;
-      setVal('st_cg_2', stcg);
-      setVal('lt_cg_2', ltcg);
-
-      // 14-16: Total & Cess
-      let ttp14 = taxPayable + stcg + ltcg;
-      setVal('ttp14', ttp14);
-      let cess = Math.round(ttp14 * 0.04);
-      setVal('Edu_Cess', cess);
-      let ttp16 = ttp14 + cess;
-      setVal('TTP16', ttp16);
-
-      // 17-20: Final Result
-      let rebate89 = getVal('Rebt89i');
-      let ntp18 = ttp16 - rebate89;
-      setVal('NTP18', ntp18);
-      
-      let tds = getVal('tds');
-      if (ntp18 > tds) {
-        setVal('TP_Refund_Text', "25) Net Tax Payable:");
-        setVal('Final_Result', (ntp18 - tds));
-      } else {
-        setVal('TP_Refund_Text', "25) Amount Refundable:");
-        setVal('Final_Result', (tds - ntp18));
-      }
-    }
- 
-  </script>
-
-   <br><br><br>
-    
-   <a href='https://www.counters-free.net/'>Get Counters Free!</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=5f1cbd3134fc3826f028df86839fe2af813999b8'></script>
-<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1495678/t/1"></script>
- </body>
+</body>
 </html>
