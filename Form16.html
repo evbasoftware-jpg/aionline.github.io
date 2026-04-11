@@ -10,7 +10,7 @@
         .sub-header { text-align: center; border-bottom: 1px solid #000; padding: 5px; font-weight: bold; font-size: 12px; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
-        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; line-height: 2.2;}
+        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; }
         
         /* এডিটেবল ঘরগুলোর স্টাইল */
         [contenteditable="true"] {
@@ -69,8 +69,8 @@
             <td style="width:52%">Name and address of the Employer</td>
             <td style="width:50%">Name and address of the Employee</td>
         </tr>
-        <tr style="height: 60px;">
-            <td class="text-center"><b contenteditable="true">Birbhum District Primary School Council</b><br><span contenteditable="true">Suri, Birbhum, 731101</span></td>
+        <tr style="height: 40px;">
+            <td class="text-center"><b contenteditable="true">____ District Primary School Council</b><br><span contenteditable="true">___, ___, 733133</span></td>
             <td class="text-center"><b contenteditable="true">SHYAMAL CHANDRA MONDAL</b><br><span contenteditable="true">HT of XYZ PRIMARY SCHOOL<br>ABC CIRCLE</span></td>
         </tr>
     </table>
@@ -118,36 +118,34 @@
             <td class="text-center" contenteditable="true">Yes</td>
         </tr>
     </table>
-
+    
     <table>
         <tr class="bold">
-            
             <td style="width:700px"></td>
             <td style="width:120px">Rs.</td>
             <td style="width:120px">Rs.</td>
         </tr>
-        
         <tr>
-             
-            <td>1) Gross Salary<br>
-            (a) Salary as per provisions contained in section 17(1)<br>
-            b) Value of perquisites under section 17(2) (as per Form No. 12BA, wherever applicable)	<br>
-            c) Profits in lieu of salary under section 17(3) (as per Form No. 12BA, wherever applicable)		<br>
-            d) Total		<br>
-            e) Reported total amount of salary received from other employer(s)			
-            </td><br>
+            <td style="line-height: 2;"> 
+            1) Gross Salary<br>
+            &emsp;(a) Salary as per provisions contained in section 17(1)<br>
+            &emsp;b) Value of perquisites under section 17(2) (as per Form No. 12BA, wherever applicable)	<br>
+            &emsp;c) Profits in lieu of salary under section 17(3) (as per Form No. 12BA, wherever applicable)		<br>
+            &emsp;d) Total		<br>
+            &emsp;e) Reported total amount of salary received from other employer(s)			
+            </td>
             <td class="text-right"><input type="number" id="gsal" class="num-input" value="0" oninput="calculate()"><br>
             <input type="number" id="b1" value="0"><br>
-            <input type="number" id="c1"  value="0"><br>
-            <br></td>
+            <input type="number" id="c1"  value="0"><br><br>
+            </td>
             <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="d1" value="0" disabled><br>
             <input type="number" id="e1" value="0">
             </td>
         </tr>
         <tr>
-            
-            <td>2) Less: Allowances to the extent exempt under section 10	<br>
+            <td style="line-height: 2;">
+               2) Less: Allowances to the extent exempt under section 10	<br>
             &emsp;a) Travel concession or assistance under section 10(5)	<br>
             &emsp;b) Death-cum-retirement gratuity under section 10(10)	<br>
             &emsp;c) Commuted value of pension under section 10(10A)		<br>
@@ -159,22 +157,20 @@
             &emsp;g) Total amount of any other exemption under section 10	<br>
             <b>Total amount of exemption claimed under section 10 [2(a)+2(b)+2(c)+2(d)+2(e)+2(g)]	</b>
            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+           <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" value="0" disabled><br>
-            <br><br>
-            <input type="number" id="" value="0" disabled><br><br>
-            
+            <input type="number" id="" value="0" disabled><br><br><br><br>
+            <input type="number" id="" value="0" disabled><br><br><br>
           </td>
             <td style="text-align: center; vertical-align:bottom;">
                <input type="number" id="" disabled value="0">
-        </tr>
+            </td></tr>
         <tr>
-            <td> 
+           <td style="line-height: 2;"> 
             3) Total amount of salary received from current employer [1(d)-2(h)]	<br>
             4) Less: Deductions under section 16	<br>
             &emsp;a) Standard deduction under section 16(ia)	<br>
@@ -183,21 +179,21 @@
             5) Total amount of deductions under section 16 [4(a)+4(b)+4(c)] <br>
             6) Income chargeable under the head "Salaries" [(3+1(e)-5]	<br>
            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+           <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="sd" value="75000"><br>
             <input type="number" id="" value="0" disabled><br>
-            <input type="number" id="" value="0" disabled><br><br><br>
-            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" value="0" disabled><br><br><br><br><br>
+           </td>
+           <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" value="0" disabled><br>
-            <br><br><br><br>
-            
+            <br><br><br><br><br><br><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" value="0" disabled><br>
-        </td>
+           </td>
         </tr>
         <tr>
-            <td> 7) Add: Any other income reported by the employee under as per section 192 (2B)	<br>
+           <td style="line-height: 2;"> 
+                7) Add: Any other income reported by the employee under as per section 192 (2B)	<br>
             &emsp;a) Income (or loss) from house property reported by employee offered for TDS	<br>
             &emsp;b) Income under the head Other Sources offered for TDS	<br>
             
@@ -216,18 +212,16 @@
             8) Total amount of other income reported by the employee [7(a)+7(b)]<br>
             &emsp;<span class="sub-label">Less : Interest on HBL  [U/S 24(b)]</span> <br>
             9) Gross total income (6+8)			
-            </td>
-            <td class="text-right" style="text-align: center; vertical-align:bottom;">
+           </td>
+           <td class="text-right" style="text-align: center; vertical-align:bottom;">
             <input type="number" id="tot4" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0">
-</td>
+           </td>
             <td></td>
         </tr>
-            
         <tr>
-            
-            <td>
+           <td style="line-height: 1.92;">
             10) Deductions under Chapter VI-A	<br>
             &emsp;a) Deduction in respect of life insurance premia, contributions to provident fund etc. under section 80C	<br>
             &emsp;b) Deduction in respect of contribution to certain pension funds under section 80CCC	<br>
@@ -244,8 +238,8 @@
             &emsp;l) Deduction in respect of interest on loan taken for
             certain house property under section 80EEA <br>
             &emsp;m) Deduction in respect of Deduction in respect of purchase of electric vehicle under section 80EEB <br>
-            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+           </td>
+           <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
@@ -260,22 +254,19 @@
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0">
-            </td>
-            <td></td>
+           </td>
+           <td></td>
         </tr>
         </table>
-   
-    <table>
+        <table>
         <tr class="bold">
-          
-          <td class="right-border" style="width:407px"> </td>
-          <td class="right-border" style="text-align: right;">Gross Amount </td>
+          <td class="right-border" style="width:454px"> </td>
+          <td class="right-border" style="text-align: center;">Gross Amount </td>
           <td class="right-border" style="text-align: center;">Qualifying Amount </td>
           <td class="right-border" style="text-align: center;">Deductible Amount </td>
         </tr>
         <tr>
-            
-            <td style="width:454px">
+           <td style="line-height: 2;">
             &emsp;n) Deduction in respect of donations to certain funds, charitable institutions, etc. u/s 80G	<br>
             &emsp;o) House Rent paid 80GG	<br>
             &emsp;p) Deduction for donations for scientific research or rural development u/s 80GGA	<br>
@@ -285,56 +276,52 @@
             &emsp;t) Amount Deductible under any other provision (s) of Chapter VI-A <br>
             [Note: Break-up to be prepared by employer and issued to the employee, where applicable , before furnishing of Part B to the employee]	<br>
             <b>Total of amount deductible under any other provision(s) of Chapter VI-A		</b>
-            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+           </td>
+           <td style="text-align: center; vertical-align:top;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br><br>
-            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" disabled value="0">
+           </td>
+           <td style="text-align: center; vertical-align:top;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br><br>
-            </td>
-            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" disabled value="0">
+           </td>
+          <td style="text-align: center; vertical-align:top;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
+            <input type="number" id="" disabled value="0"><br><br><br><br><br>
             <input type="number" id="" disabled value="0">
           </td>
         </tr>
         </table>
-   
-    <table>
+        <table>
         <tr>
-            
-            <td style="width:710px">
+           <td style="width:710px; line-height: 2;">
             11) Aggregate of deductible amount under Chapter VI-A [10(d)+10(e)+10(f)+10(g)+10(h)+10(i)+10(j)+10(l)]	<br>
             12) Total taxable income (9-11)	<br>
             13) Taxable Income (Rounded off U/S 288A next ten)	
-            </td>
-            
-            <td style="text-align: center; vertical-align:bottom;">
+           </td>
+          <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0">
           </td>
         </tr>
         <tr>
-            
-            <td>
+           <td style="line-height: 2;">
             14) Tax on Total Income (NEW TAX REGIME U/S 115BAC) <br>
             15) <span style="color:red;">Less: Rebate under section 87A (With Marginal Relief) </span><br>
             16) Total Tax	<br>
@@ -347,9 +334,8 @@
             23) Tax payable (21-22)		<br>
             24) Less : (a) Tax deducted at source  u/s 192(1) <br>
             <input type="text" id="TP_Refund_Text" value="25) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
-            </td>
-            
-            <td style="text-align: center; vertical-align:bottom;">
+           </td>
+           <td style="text-align: center; vertical-align:middle;">
             <input type="number" id="TOTAL_Tax" disabled value="0"><br>
             <input type="number" id="a_87" disabled value="0"><br>
             <input type="number" id="Tax_Pay_able" disabled value="0"><br>
@@ -362,10 +348,9 @@
             <input type="number" id="NTP18" disabled value="0"><br>
             <input type="number" id="tds" value="0" oninput="calculateAll()"><br>
             <input type="number" id="Final_Result" disabled value="0">
-            </td>
+           </td>
         </tr>
-        
-    </table>
+      </table>
 
     <div class="verification">
         <div class="text-center bold" style="text-decoration: underline; margin-bottom: 10px;">Verification</div>
