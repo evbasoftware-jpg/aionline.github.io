@@ -10,7 +10,7 @@
         .sub-header { text-align: center; border-bottom: 1px solid #000; padding: 5px; font-weight: bold; font-size: 12px; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; }
-        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; }
+        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; line-height: 2.2;}
         
         /* এডিটেবল ঘরগুলোর স্টাইল */
         [contenteditable="true"] {
@@ -45,7 +45,7 @@
       width:100px;
       text-align: right;
       font-weight: bold;
-      border:none;
+     /* border:none;*/
     }
         @media print {
             body { background: none; padding: 0; }
@@ -66,7 +66,7 @@
 
     <table>
         <tr class="bg-gray">
-            <td style="width:50%">Name and address of the Employer</td>
+            <td style="width:52%">Name and address of the Employer</td>
             <td style="width:50%">Name and address of the Employee</td>
         </tr>
         <tr style="height: 60px;">
@@ -78,7 +78,7 @@
     <table>
         <tr class="bg-gray">
             <td style="width:25%">PAN of the Deductor</td>
-            <td style="width:25%">TAN of the Deductor</td>
+            <td style="width:27%">TAN of the Deductor</td>
             <td style="width:50%">PAN of the Employee</td>
         </tr>
         <tr class="text-center">
@@ -90,14 +90,14 @@
 
     <table>
         <tr class="bg-gray">
-            <td style="width:50%">CIT (TDS)</td>
+            <td style="width:43%">CIT (TDS)</td>
             <td style="width:15%">Assessment Year</td>
-            <td colspan="2" style="width:35%">Period with the Employer</td>
+            <td colspan="2" style="width:25%">Period with the Employer</td>
         </tr>
         <tr class="text-center">
             <td contenteditable="true">The Commissioner of Income Tax (TDS) 7th Floor, Middleton Row Kolkata - 700071</td>
             <td class="bold" contenteditable="true">2026 - 2027</td>
-            <td class="bg-gray">From</td>
+            <td class="bg-gray" style="width:13%">From</td>
             <td class="bg-gray">To</td>
         </tr>
         <tr class="text-center">
@@ -114,7 +114,7 @@
 
     <table>
         <tr class="bg-yellow">
-            <td style="width:75%">Whether opting for taxation u/s 115BAC</td>
+            <td style="width:582px">Whether opting for taxation u/s 115BAC</td>
             <td class="text-center" contenteditable="true">Yes</td>
         </tr>
     </table>
@@ -135,11 +135,11 @@
             c) Profits in lieu of salary under section 17(3) (as per Form No. 12BA, wherever applicable)		<br>
             d) Total		<br>
             e) Reported total amount of salary received from other employer(s)			
-            </td>
+            </td><br>
             <td class="text-right"><input type="number" id="gsal" class="num-input" value="0" oninput="calculate()"><br>
             <input type="number" id="b1" value="0"><br>
             <input type="number" id="c1"  value="0"><br>
-            <br><br> </td>
+            <br></td>
             <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="d1" value="0" disabled><br>
             <input type="number" id="e1" value="0">
@@ -159,21 +159,22 @@
             &emsp;g) Total amount of any other exemption under section 10	<br>
             <b>Total amount of exemption claimed under section 10 [2(a)+2(b)+2(c)+2(d)+2(e)+2(g)]	</b>
            </td>
-            <td><input type="number" id="" value="0" disabled><br>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" value="0" disabled><br>
-            <input type="number" id="" value="0" disabled><br>
-            <br>
+            <br><br>
+            <input type="number" id="" value="0" disabled><br><br>
+            
           </td>
             <td style="text-align: center; vertical-align:bottom;">
                <input type="number" id="" disabled value="0">
         </tr>
         <tr>
-            
-            <td class="bold"> 
+            <td> 
             3) Total amount of salary received from current employer [1(d)-2(h)]	<br>
             4) Less: Deductions under section 16	<br>
             &emsp;a) Standard deduction under section 16(ia)	<br>
@@ -182,20 +183,20 @@
             5) Total amount of deductions under section 16 [4(a)+4(b)+4(c)] <br>
             6) Income chargeable under the head "Salaries" [(3+1(e)-5]	<br>
            </td>
-            <td><input type="number" id="sd" value="75000"><br>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="sd" value="75000"><br>
             <input type="number" id="" value="0" disabled><br>
-            <input type="number" id="" value="0" disabled><br>
-                
+            <input type="number" id="" value="0" disabled><br><br><br>
             </td>
-            <td><input type="number" id="" value="0" disabled><br>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" value="0" disabled><br>
             <br><br><br><br>
             
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="" value="0" disabled><br>
-   </td>
+        </td>
         </tr>
         <tr>
-            
             <td> 7) Add: Any other income reported by the employee under as per section 192 (2B)	<br>
             &emsp;a) Income (or loss) from house property reported by employee offered for TDS	<br>
             &emsp;b) Income under the head Other Sources offered for TDS	<br>
@@ -223,10 +224,11 @@
 </td>
             <td></td>
         </tr>
-        <tr class="bold">
             
-            <td><h3 style="text-align: left;">
-            10) Deductions under Chapter VI-A	</h3>
+        <tr>
+            
+            <td>
+            10) Deductions under Chapter VI-A	<br>
             &emsp;a) Deduction in respect of life insurance premia, contributions to provident fund etc. under section 80C	<br>
             &emsp;b) Deduction in respect of contribution to certain pension funds under section 80CCC	<br>
             &emsp;c) Deduction in respect of contribution by taxpayer to pension scheme under section 80CCD (1)	<br>
@@ -235,26 +237,27 @@
             &emsp;f) Deduction in respect of contribution by Employer to pension scheme under section 80CCD (2) <br>
             &emsp;g) i) Deduction in respect of health insurance premia under section 80D for self	<br>
             &emsp;&emsp;ii) Deduction in respect of health insurance premia under section 80D for Parents <br>
-            &emsp;h) Deduction in respect of Maintenance including medical treatment of a dependent who is a person with disability under section 80DD <br>
+            &emsp;h) Deduction for Maintenance and medical treatment of a dependent who is a person with disability u/s 80DD <br>
             &emsp;i) Deduction in respect of Medical treatment of specified disease under section 80DDB <br>
             &emsp;j) Deduction in respect of interest on loan taken for higher education under section 80E <br>
             &emsp;k) Deduction in respect of Interest on loan taken for residential house property under section 80EE <br>
-            &emsp;l) Deduction in respect of Deduction in respect of interest on loan taken for
+            &emsp;l) Deduction in respect of interest on loan taken for
             certain house property under section 80EEA <br>
             &emsp;m) Deduction in respect of Deduction in respect of purchase of electric vehicle under section 80EEB <br>
             </td>
-            <td><input type="number" id="" disabled value="0"><br>
+            <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0">
             </td>
@@ -273,9 +276,9 @@
         <tr>
             
             <td style="width:454px">
-            &emsp;n) Total Deduction in respect of donations to certain funds, charitable institutions, etc. under section 80G	<br>
+            &emsp;n) Deduction in respect of donations to certain funds, charitable institutions, etc. u/s 80G	<br>
             &emsp;o) House Rent paid 80GG	<br>
-            &emsp;p) Total Deduction in respect of Certain donations for scientific research or rural development under section 80GGA	<br>
+            &emsp;p) Deduction for donations for scientific research or rural development u/s 80GGA	<br>
             &emsp;q) Total Deduction in respect of Donation to Political party under section 80GGC	<br>
             &emsp;r) Total Deduction in respect of person with disability under section 80U		<br>
             &emsp;s) Deduction in respect of interest on deposits in savings account under section 80TTA	<br>
@@ -283,32 +286,32 @@
             [Note: Break-up to be prepared by employer and issued to the employee, where applicable , before furnishing of Part B to the employee]	<br>
             <b>Total of amount deductible under any other provision(s) of Chapter VI-A		</b>
             </td>
-            <td>
+            <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
-            </td>
-            <td>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
-            </td>
-            <td style="text-align: center; vertical-align: bottom;">
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
-            <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br><br>
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br><br><br><br>
+            </td>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br><br>
+            </td>
+            <td style="text-align: center; vertical-align:bottom;">
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br>
+            <input type="number" id="" disabled value="0"><br><br><br>
             <input type="number" id="" disabled value="0">
           </td>
         </tr>
@@ -323,10 +326,10 @@
             13) Taxable Income (Rounded off U/S 288A next ten)	
             </td>
             
-            <td>
+            <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" disabled value="0"><br>
             <input type="number" id="" disabled value="0"><br>
-            <input type="number" id="" disabled value="0"><br><br>
+            <input type="number" id="" disabled value="0">
           </td>
         </tr>
         <tr>
@@ -346,7 +349,7 @@
             <input type="text" id="TP_Refund_Text" value="25) Tax Payable/Refund" disabled style="width: 250px; text-align: left; border:none; background:none;">
             </td>
             
-            <td>
+            <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="TOTAL_Tax" disabled value="0"><br>
             <input type="number" id="a_87" disabled value="0"><br>
             <input type="number" id="Tax_Pay_able" disabled value="0"><br>
@@ -373,12 +376,13 @@
         of account, documents, TDS statements, and other available records.
         <br><br>
         <div style="display: flex; justify-content: space-between;">
-        <div>
+            <div>
                 Place: <span contenteditable="true">.................</span><br>
                 Date: <span contenteditable="true">..................</span><br>
                 Designation: <span contenteditable="true">......................</span>
             </div>
             <div class="text-right">
+                <br>
                 (Signature of person responsible for deduction of Tax)<br>
                 Full Name: <span contenteditable="true">............................................</span>
             </div>
