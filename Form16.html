@@ -157,13 +157,14 @@
             &emsp;d) Total		<br>
             &emsp;e) Reported total amount of salary received from other employer(s)			
             </td>
-            <td class="text-right"><input type="number" id="gsal" class="num-input" value="0" oninput="calculateAll()"><br>
-            <input type="number" id="b1" value="0"><br>
-            <input type="number" id="c1"  value="0"><br><br>
+            <td class="text-right">
+            <input type="number" id="gsal" class="num-input" value="0" oninput="calculateAll()"><br>
+            <input type="number" id="b1" value="0" oninput="calculateAll()"><br>
+            <input type="number" id="c1"  value="0" oninput="calculateAll()"><br><br>
             </td>
             <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="d1" value="0" disabled><br>
-            <input type="number" id="e1" value="0">
+            <input type="number" id="e1" value="0" oninput="calculateAll()">
             </td>
         </tr>
         <tr>
@@ -178,7 +179,7 @@
             <br>&emsp;&emsp;<b>[Note: Break-up to be prepared by employer and issued to the employee, 
             <br>&emsp;&emsp; where applicable, before furnishing of Part B to the employee]	</b><br>
             &emsp;g) Total amount of any other exemption under section 10	<br>
-            <b>Total amount of exemption claimed under section 10 [2(a)+2(b)+2(c)+2(d)+2(e)+2(g)]	</b>
+            &emsp;<b>h) Total amount of exemption claimed under section 10 [2(a)+2(b)+2(c)+2(d)+2(e)+2(g)]	</b>
            </td>
            <td style="text-align: center; vertical-align:bottom;">
             <input type="number" id="" value="0" disabled><br>
@@ -190,7 +191,7 @@
             <input type="number" id="" value="0" disabled><br><br><br>
           </td>
             <td style="text-align: center; vertical-align:bottom;">
-               <input type="number" id="" disabled value="0">
+               <input type="number" id="h2" disabled value="0">
             </td></tr>
         <tr>
            <td style="line-height: 2;"> 
@@ -208,7 +209,7 @@
             <input type="number" id="" value="0" disabled><br><br><br><br><br>
            </td>
            <td style="text-align: center; vertical-align:bottom;">
-            <input type="number" id="" value="0" disabled><br>
+            <input type="number" id="tot_sal3" value="0" disabled><br>
             <br><br><br><br><br><br><br>
             <input type="number" id="" value="0" disabled><br>
             <input type="number" id="net_sal" value="0" disabled><br>
@@ -453,8 +454,16 @@ document.addEventListener('keydown', function(e) {
     function calculateAll() {
       // 1-3: Salary Calculation
       let gsal = getVal('gsal');
+      let b_1 = getVal('b1');
+      let c_1 = getVal('c1');
+      let d_1 = gsal + b_1 + c_1;
+       setVal('d1', d_1); 
+      let e_1 = getVal('e1');
+      let h_2 = getVal('h2');
+      let totsal3 = d_1 - h_2
+        setVal('tot_sal3',totsal3); 
       let sd = getVal('sd');
-      let netSal = Math.max(0, gsal - sd);
+      let netSal = Math.max(0, totsal3 + e_1 - sd);
       setVal('net_sal', netSal);
 
       // 4: Other Income & Family Pension
@@ -549,7 +558,8 @@ document.addEventListener('keydown', function(e) {
  
   </script>
     
-     <a href='https://www.counters-free.net/'>Counters-free.net</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=2e3fbdc0b1bdcb4f69dc87b04ffa9b024e5e0a7b'></script>
+       <a href='https://www.counters-free.net/'>Counters-free.net</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=2e3fbdc0b1bdcb4f69dc87b04ffa9b024e5e0a7b'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1533500/t/1"></script>
-</body>
+      
+    </body>
 </html>
