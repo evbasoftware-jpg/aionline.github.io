@@ -23,7 +23,7 @@
         
         .btn-group { display: flex; gap: 10px; margin-top: 20px; }
         button { flex: 2; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-print { flex: 1; background: var(--success); display: none; }
+        .btn-print { flex: 1; background: yellow; display: none; }
         button:hover { opacity: 0.9; }
         
         .result-area { margin-top: 25px; display: none; }
@@ -38,10 +38,10 @@
             body { background: white; padding: 0; }
             .calc-container { box-shadow: none; border: none; max-width: 100%; }
           /*  .grid-row, .section-title, .flex-row, .btn-group, .note, label, input, select { display: none !important; }*/
-            h2 { font-size: 20px; margin-bottom: 10px; }
+            h2 { font-size: 20px; margin-bottom: 5px; }
             .result-area { display: block !important; margin-top: 0; }
             .res-card { border: 1px solid #ccc; background: white !important; }
-            .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 15px; }
+            .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 10px; }
             .btn-group { display: none !important; }
         }
     </style>
@@ -53,7 +53,7 @@
     
     <div class="grid-row">
         <div>
-            <label>শেষ বেসিক পে:</label>
+            <label>শেষ বেসিক পে (Last Basic Pay):</label>
             <input type="number" id="basic" placeholder="যেমন: 58800">
         </div>
         <div>
@@ -69,7 +69,7 @@
         <input type="number" id="dd" placeholder="দিন">
     </div>
 
-    <div class="section-title">অতিরিক্ত অপশন</div>
+    <div class="section-title">অতিরিক্ত অপশন (Extra Options)</div>
     
     <div class="flex-row">
         <label>কমিউটেশন (Max 40%):</label>
