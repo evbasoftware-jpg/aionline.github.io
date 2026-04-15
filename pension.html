@@ -77,7 +77,7 @@
 
     <div class="flex-row">
         <label>মেডিকেল অ্যালাউন্স (Medical Allowance):</label>
-        <select id="medAllow">
+        <select id="medAllow" style="width:130px;">
             <option value="500">হ্যাঁ (500 টাকা)</option>
             <option value="0">না (0 টাকা)</option>
         </select>
@@ -99,18 +99,18 @@
             <div class="res-line"><span>মোট হাফ-ইয়ারলি পিরিয়ড (Total Half Yearly Period):</span> <span id="rPeriods"></span></div>
             <div class="res-line"><span>গ্র্যাচুইটি (Gratuity) (DCRG):</span> <span id="rGratuity"></span></div>
             <div class="res-line"><span>কমিউটেশন ফ্যাক্টর (Commutation Factor):</span> <span id="rFactor"></span></div>
-            <div class="res-line"><span>কমিউটেড ভ্যালু (commuted value) (CVP):</span> <span id="rCvp"></span></div>
+            <div class="res-line"><span>কমিউটেড ভ্যালু (Commuted value) (CVP):</span> <span id="rCvp"></span></div>
             <div class="res-line"><span><b>মোট এককালীন প্রাপ্য (Total Lumpsum) (DCRG+CVP):</b></span> <span id="rTotalLump" class="highlight"></span></div>
         </div>
 
         <div class="res-card" style="background: #ecfdf5; border-left: 5px solid var(--success);">
-            <div class="section-title" style="margin-top:0;">মাসিক পেনশন (Monthly)</div>
-            <div class="res-line"><span>মূল পেনশন (Gross):</span> <span id="rGrossPen"></span></div>
-            <div class="res-line"><span>কমিউটেশন কর্তন (-):</span> <span id="rCommCut"></span></div>
-            <div class="res-line"><span>ডিএ (Gross এর ওপর):</span> <span id="rDaAmt"></span></div>
-            <div class="res-line"><span>মেডিকেল অ্যালাউন্স (+):</span> <span id="rMed"></span></div>
+            <div class="section-title" style="margin-top:0;">মাসিক পেনশন (Monthly Pension)</div>
+            <div class="res-line"><span>মূল পেনশন (Gross Pension):</span> <span id="rGrossPen"></span></div>
+            <div class="res-line"><span>কমিউটেশন কর্তন (Commutation Deduction) (-):</span> <span id="rCommCut"></span></div>
+            <div class="res-line"><span>মূল পেনশনের ওপর ডিএ (DA on Gross Pension):</span> <span id="rDaAmt"></span></div>
+            <div class="res-line"><span>মেডিকেল অ্যালাউন্স (Medical Allowance) (+):</span> <span id="rMed"></span></div>
             <div class="res-line" style="border-top: 1px solid #16a34a; margin-top: 10px; padding-top: 10px;">
-                <span><b>মাসিক নিট পেনশন:</b></span> <span id="rNetPen" class="highlight"></span>
+                <span><b>মাসিক নিট পেনশন (Total Net Pension):</b></span> <span id="rNetPen" class="highlight"></span>
             </div>
         </div>
     </div>
