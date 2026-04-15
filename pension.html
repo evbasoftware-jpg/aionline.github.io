@@ -20,8 +20,11 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
         
         .section-title { font-size: 16px; font-weight: bold; color: var(--secondary); margin: 20px 0 10px; padding-left: 10px; border-left: 4px solid var(--primary); }
-        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 2; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-print { flex: 1; background: var(--success); display: none; }
+        button:hover { opacity: 0.9; }
         
         .result-area { margin-top: 25px; display: none; }
         .res-card { background: #f1f5f9; padding: 10px; border-radius: 10px; margin-bottom: 15px; }
@@ -29,6 +32,17 @@
         .res-line span:last-child { font-weight: bold; color: var(--primary); }
         .highlight { color: #d132e6 !important; font-size: 18px; }
         .note { font-size: 12px; color: #64748b; line-height: 1.5; margin-top: 15px; background: #fff7ed; padding: 10px; border-radius: 8px; border: 1px solid #fed7aa; }
+
+        /* প্রিন্ট করার জন্য স্পেশাল ডিজাইন */
+        @media print {
+            body { background: white; padding: 0; }
+            .calc-container { box-shadow: none; border: none; max-width: 100%; }
+            .grid-row, .section-title, .flex-row, .btn-group, .note, label, input, select { display: none !important; }
+            h2 { font-size: 20px; margin-bottom: 10px; }
+            .result-area { display: block !important; margin-top: 0; }
+            .res-card { border: 1px solid #ccc; background: white !important; }
+            .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -38,11 +52,11 @@
     
     <div class="grid-row">
         <div>
-            <label>শেষ বেসিক পে <br>(Last Basic Pay):</label>
+            <label>শেষ বেসিক পে:</label>
             <input type="number" id="basic" placeholder="যেমন: 58800">
         </div>
         <div>
-            <label><br>ডিএ (DA) %:</label>
+            <label>ডিএ (DA) %:</label>
             <input type="number" id="da" placeholder="যেমন: 22">
         </div>
     </div>
@@ -54,43 +68,46 @@
         <input type="number" id="dd" placeholder="দিন">
     </div>
 
-    <div class="section-title">অতিরিক্ত অপশন (Extra Options)</div>
+    <div class="section-title">অতিরিক্ত অপশন</div>
     
     <div class="flex-row">
-        <label>কমিউটেশন (সর্বোচ্চ ৪০%):<br>Commutation (Max 40%):</label>
+        <label>কমিউটেশন (Max 40%):</label>
         <input type="number" id="commPct" value="40" max="40">
     </div>
 
     <div class="flex-row">
-        <label>মেডিকেল অ্যালাউন্স:<br>Medical Allowance</label>
-        <select id="medAllow" >
+        <label>মেডিকেল অ্যালাউন্স:</label>
+        <select id="medAllow">
             <option value="500">হ্যাঁ (500 টাকা)</option>
             <option value="0">না (0 টাকা)</option>
         </select>
     </div>
     
     <div class="flex-row">
-        <label>পরবর্তী জন্মদিনে বয়স (কমিউটেশন ফ্যাক্টরের জন্য):<br>Age on next birthday:</label>
-        <input type="number" id="age" value="61" placeholder="যেমন: 61">
+        <label>পরবর্তী জন্মদিনে বয়স:</label>
+        <input type="number" id="age" value="61">
     </div>
 
-    <button onclick="calculateAll()">সঠিক হিসাব দেখুন</button>
+    <div class="btn-group">
+        <button onclick="calculateAll()">হিসাব করুন</button>
+        <button id="btnPrint" class="btn-print" onclick="window.print()">প্রিন্ট করুন</button>
+    </div>
 
     <div id="resultBox" class="result-area">
         <div class="res-card">
             <div class="section-title" style="margin-top:0;">এককালীন প্রাপ্য (Lumpsum)</div>
-            <div class="res-line"><span>গণনার জন্য পিরিয়ড:</span> <span id="rPeriods"></span></div>
+            <div class="res-line"><span>মোট হাফ-ইয়ারলি পিরিয়ড:</span> <span id="rPeriods"></span></div>
             <div class="res-line"><span>গ্র্যাচুইটি (DCRG):</span> <span id="rGratuity"></span></div>
-            <div class="res-line"><span>কমিউটেশন ফ্যাক্টর <br>(বয়স অনুযায়ী):</span> <span id="rFactor"></span></div>
+            <div class="res-line"><span>কমিউটেশন ফ্যাক্টর:</span> <span id="rFactor"></span></div>
             <div class="res-line"><span>কমিউটেড ভ্যালু (CVP):</span> <span id="rCvp"></span></div>
-            <div class="res-line"><span><b>মোট এককালীন:</b></span> <span id="rTotalLump" class="highlight"></span></div>
+            <div class="res-line"><span><b>মোট এককালীন (DCRG+CVP):</b></span> <span id="rTotalLump" class="highlight"></span></div>
         </div>
 
         <div class="res-card" style="background: #ecfdf5; border-left: 5px solid var(--success);">
             <div class="section-title" style="margin-top:0;">মাসিক পেনশন (Monthly)</div>
             <div class="res-line"><span>মূল পেনশন (Gross):</span> <span id="rGrossPen"></span></div>
             <div class="res-line"><span>কমিউটেশন কর্তন (-):</span> <span id="rCommCut"></span></div>
-            <div class="res-line"><span>ডিএ (পুরো পেনশনের ওপর):</span> <span id="rDaAmt"></span></div>
+            <div class="res-line"><span>ডিএ (Gross এর ওপর):</span> <span id="rDaAmt"></span></div>
             <div class="res-line"><span>মেডিকেল অ্যালাউন্স (+):</span> <span id="rMed"></span></div>
             <div class="res-line" style="border-top: 1px solid #16a34a; margin-top: 10px; padding-top: 10px;">
                 <span><b>মাসিক নিট পেনশন:</b></span> <span id="rNetPen" class="highlight"></span>
@@ -99,8 +116,7 @@
     </div>
 
     <div class="note">
-        * <b>সঠিক নিয়ম:</b> গ্র্যাচুইটির জন্য ৩ মাস বা তার বেশি সময়কে ১টি হাফ-ইয়ারলি পিরিয়ড ধরা হয়েছে। ৯ মাস বা তার বেশি হলে ২ টি পিরিয়ড (১ বছর) ধরা হয়েছে। <br>
-        * <b>কমিউটেশন:</b> পরবর্তী জন্মদিনের বয়স অনুযায়ী অফিসিয়াল ডাইনামিক ফ্যাক্টর ব্যবহার করা হয়েছে।
+        * ৩-৯ মাসের নিয়ম এবং ROPA 2019 এর ফ্যাক্টর টেবিল অনুযায়ী হিসাব করা হয়েছে।
     </div>
 </div>
 
@@ -115,33 +131,26 @@
         const age = parseInt(document.getElementById('age').value) || 61;
 
         if (basic <= 0 || yy < 10) {
-            alert("Basic Pay, DA এবং Service Period লিখুন, পেনশনের জন্য ন্যূনতম ১০ বছর সার্ভিস প্রয়োজন।");
+            alert("Basic Pay, DA এবং Service Period লিখুন। পেনশনের জন্য ন্যূনতম ১০ বছর সার্ভিস প্রয়োজন।");
             return;
         }
 
-        // ১. গ্র্যাচুইটির জন্য হাফ-ইয়ারলি পিরিয়ড লজিক
         let totalPeriods = yy * 2;
-        if (mm >= 3 && mm < 9) {
-            totalPeriods += 1;
-        } else if (mm >= 9) {
-            totalPeriods += 2;
-        }
+        if (mm >= 3 && mm < 9) totalPeriods += 1;
+        else if (mm >= 9) totalPeriods += 2;
         let cappedPeriods = totalPeriods > 66 ? 66 : totalPeriods;
 
-        // ২. গ্র্যাচুইটি (DCRG) হিসাব
         const daOnPay = (basic * daRate) / 100;
         const emoluments = basic + daOnPay;
         let gratuity = (emoluments * cappedPeriods) / 4;
         if (gratuity > 1200000) gratuity = 1200000;
 
-        // ৩. মাসিক পেনশন হিসাব
         const grossPension = basic / 2;
         const commutedAmt = grossPension * (commPct / 100);
         const reducedPension = grossPension - commutedAmt;
         const daOnPension = (grossPension * daRate) / 100;
         const netMonthly = reducedPension + daOnPension + med;
 
-        // ৪. বয়স অনুযায়ী কমিউটেশন ফ্যাক্টর টেবিল (ROPA 2019 / Central Rules)
         const factorTable = {
             20: 9.188, 21: 9.187, 22: 9.186, 23: 9.185, 24: 9.184, 25: 9.183,
             26: 9.182, 27: 9.180, 28: 9.178, 29: 9.176, 30: 9.173, 31: 9.169,
@@ -155,20 +164,15 @@
             74: 6.085, 75: 5.872, 76: 5.657, 77: 5.443, 78: 5.229, 79: 5.018,
             80: 4.812, 81: 4.611
         };
-
-        // ইউজারের দেওয়া বয়স অনুযায়ী ফ্যাক্টর নির্বাচন (ডিফল্ট ৮.১৯৪)
+            
         const factor = factorTable[age] || 8.194;
-
-        // CVP ফর্মুলা: Commuted Amount * 12 * Factor
         const cvp = commutedAmt * 12 * factor;
 
-        // ফলাফল প্রদর্শন
-        document.getElementById('rPeriods').innerText = totalPeriods + " টি হাফ-ইয়ারলি";
+        document.getElementById('rPeriods').innerText = totalPeriods;
         document.getElementById('rGratuity').innerText = "₹ " + Math.round(gratuity).toLocaleString('en-IN');
         document.getElementById('rFactor').innerText = factor;
         document.getElementById('rCvp').innerText = "₹ " + Math.round(cvp).toLocaleString('en-IN');
         document.getElementById('rTotalLump').innerText = "₹ " + Math.round(gratuity + cvp).toLocaleString('en-IN');
-        
         document.getElementById('rGrossPen').innerText = "₹ " + grossPension.toLocaleString('en-IN');
         document.getElementById('rCommCut').innerText = "₹ " + Math.round(commutedAmt).toLocaleString('en-IN');
         document.getElementById('rDaAmt').innerText = "₹ " + Math.round(daOnPension).toLocaleString('en-IN');
@@ -176,8 +180,10 @@
         document.getElementById('rNetPen').innerText = "₹ " + Math.round(netMonthly).toLocaleString('en-IN');
 
         document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('btnPrint').style.display = 'block';
     }
 </script>
 
 </body>
 </html>
+
