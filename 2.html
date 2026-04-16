@@ -10,23 +10,23 @@
         .calc-container { max-width: 850px; margin: auto; background: white; padding: 10px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         h2 { text-align: center; color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
         
-        .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px; }
         
-        .flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 5px; }
         .flex-row label { flex: 2; margin-bottom: 0; font-weight: 600; font-size: 17px; line-height: 1.2; }
         .flex-row input, .flex-row select { flex: 1; max-width: 150px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 17px; }
 
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 17px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 17px; }
         input, select { width: 100%; padding: 5px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 17px; box-sizing: border-box; }
         
-        .section-title { font-size: 17px; font-weight: bold; color: var(--secondary); margin: 10px 0 10px; padding-left: 10px; border-left: 4px solid var(--primary); }
+        .section-title { font-size: 17px; font-weight: bold; color: var(--secondary); margin: 5px 0 5px; padding-left: 10px; border-left: 4px solid var(--primary); }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
         button { flex: 2; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 21px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-print { flex: 1; background: yellow; color: black; display: none; }
         button:hover { opacity: 0.9; }
         
-        .result-area { margin-top: 15px; display: none; }
+        .result-area { margin-top: 10px; display: none; }
         .res-card { background: #f1f5f9; padding: 5px; border-radius: 10px; margin-bottom: 5px; }
         .res-line { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
         .res-line span:last-child { font-weight: bold; color: var(--primary); }
@@ -38,7 +38,7 @@
         /* প্রিন্ট করার জন্য স্পেশাল ডিজাইন */
         @media print {
             body {max-width: 850px; background: white; padding: 20; margin: 5px;}
-            .calc-container {height: 75%; box-shadow: none; border: none; max-width: 100%; }
+            .calc-container { box-shadow: none; border: none; max-width: 100%; }
             .result-area { display: block !important; margin-top: 0; }
             .res-card { border: 1px solid #ccc; background: white !important; }
             .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 5px; }
