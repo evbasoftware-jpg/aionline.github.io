@@ -37,7 +37,7 @@
         
         /* প্রিন্ট করার জন্য স্পেশাল ডিজাইন */
         @media print {
-            body { background: white; padding: 0; margin: 5px;}
+            body {max-width: 850px; background: white; padding: 0; margin: 5px;}
             .calc-container { box-shadow: none; border: none; max-width: 100%; }
             .result-area { display: block !important; margin-top: 0; }
             .res-card { border: 1px solid #ccc; background: white !important; }
@@ -116,7 +116,7 @@
             <div class="res-line"><span>মূল পেনশনের ওপর ডিএ (DA on Gross Pension):</span> <span id="rDaAmt"></span></div>
             <div class="res-line"><span>মেডিকেল অ্যালাউন্স (Medical Allowance) (+):</span> <span id="rMed"></span></div>
             <div class="res-line" style="border-top: 1px solid #16a34a; margin-top: 10px; padding-top: 10px;">
-                <span><b>মাসিক নিট পেনশন (Total Net Pension):</b></span> <span id="rNetPen" class="highlight"></span>
+                <span><b>মাসিক নিট পেনশন (Monthly Net Pension):</b></span> <span id="rNetPen" class="highlight"></span>
             </div>
         </div>
     </div>
