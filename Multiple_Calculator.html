@@ -3,508 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Multiple Calculator</title>
-
+<title>AI Online - Multi Calculator</title>
 <style>
-
-body{
-font-family:Calibri,Arial;
-background:#f4f6f9;
-padding:15px;
-}
-
-.container{
-background:#fff;
-padding:15px;
-margin:auto;
-max-width:1100px;
-border-radius:8px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
-margin-bottom:20px;
-}
-
-h2{
-background:orange;
-color:blue;
-padding:8px;
-font-size:18px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
-border:1px solid #ccc;
-padding:8px;
-}
-
-th{
-background:#f6fc9a;
-text-align:left;
-}
-
-input{
-padding:6px;
-width:95%;
-}
-
-button{
-padding:8px 15px;
-background:blue;
-color:white;
-border:none;
-border-radius:4px;
-cursor:pointer;
-margin-top:5px;
-font-weight:bold;
-font-size:21px;
-}
-
-button:hover{
-background:#305496;
-}
-
-.print-btn{
-background:orange;
-  color: blue;
-}
-
-.reset-btn{
-background:#d9534f;
-}
-
-.result{
-font-weight:bold;
-color:#000;
-}
-  
-  /* Logo + Text */
-.logo-box{
-  position: static;
-}
-
-/* Logo */
-.logo{
-    height:67px;
-    width:auto;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-  
-@media print{
-
-    .print-page{
-        padding-top:2px;
-        page-break-after: always;
-    }
-
-    .print-btn,
-     button,
-    .reset-btn,
-    .controls,
-    footer{
-        display:none !important;
-    }
-         
-    a{display:none;}
-    }
-
+    body{ font-family: 'Segoe UI', Calibri, Arial; background:#f4f6f9; padding:15px; }
+    .container{ background:#fff; padding:15px; margin:auto; max-width:1100px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); margin-bottom:20px; }
+    h2{ background: linear-gradient(90deg, #F44336,#FF9800 ); color:white; padding:12px; font-size:18px; margin-top:0; border-radius: 8px; }
+    table{ width:100%; border-collapse:collapse; }
+    th,td{ border:1px solid #ccc; padding:10px; }
+    th{ background:#f6fc9a; text-align:left; width: 30%; }
+    input{ padding:8px; width:95%; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+    .result{ font-weight:bold; color:#1a73e8; font-size: 17px; }
+    .logo-box{ margin-bottom: 20px; font-size:22px; color: blue; display: flex; align-items: center; justify-content: center; }
+    .logo{ height:50px; width:auto; margin-right: 15px; }
+    .controls { margin: 20px auto; max-width: 1100px; display: flex; gap: 10px; }
+    button{ padding:10px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; transition: 0.3s; }
+    .print-btn{ background:orange; color: blue; }
+    .reset-btn{ background:#d9534f; color: white; }
+    footer { text-align: center; padding: 20px; color: #666; }
+    @media print{ .controls, footer, button { display:none !important; } .container { box-shadow: none; border: 1px solid #ccc; } }
 </style>
-
 </head>
-
 <body>
 
-<div class="logo-box" style="color: blue; font-size:20px">
-     <img src="logo.png" alt="AI Online Logo" class="logo">
-&emsp;
-     https://aionline.in.net
+<div class="logo-box">
+     <img src="logo.png" alt="Logo" class="logo">
+     <span>https://aionline.in.net</span>
 </div>
   
-<!-- Age Section -->
 <div class="container">
-<h2>Age Calculator</h2>
-
-<table>
-
-<tr>
-<th>Date of Birth</th>
-<td><input type="date" id="dob"></td>
-</tr>
-
-<tr>
-<th>Age</th>
-<td class="result" id="age"></td>
-</tr>
-
-<tr>
-<th>Next Birthday</th>
-<td class="result" id="nextBirthday"></td>
-</tr>
-
-<tr>
-<th>Days Left</th>
-<td class="result" id="daysLeft"></td>
-</tr>
-
-</table>
-
-<button onclick="ageCalc()">Calculate</button>
-
+    <h2>Age Calculator (বয়স ক্যালকুলেটর)</h2>
+    <table>
+        <tr><th>Date of Birth</th><td><input type="date" id="dob" oninput="calculateAll()"></td></tr>
+        <tr><th>Calculate Up To</th><td><input type="date" id="ageAt" oninput="calculateAll()"></td></tr>
+        <tr><th>Total Age</th><td class="result" id="ageRes">---</td></tr>
+        <tr><th>Next Birthday</th><td class="result" id="nextRes">---</td></tr>
+    </table>
 </div>
 
-
-<!-- Date Difference -->
-
 <div class="container">
-
-<h2>Date Difference</h2>
-
-<table>
-
-<tr>
-<th>From Date</th>
-<td><input type="date" id="d1"></td>
-</tr>
-
-<tr>
-<th>To Date</th>
-<td><input type="date" id="d2"></td>
-</tr>
-
-<tr>
-<th>Difference</th>
-<td class="result" id="difference"></td>
-</tr>
-  
-<tr>
-<th>Total Days</th>
-<td class="result" id="total"></td>
-</tr>
-
-<tr>
-<th>Working Days</th>
-<td class="result" id="working"></td>
-</tr>
-
-</table>
-
-<button onclick="calculateDifference()">Calculate</button>
-
+    <h2>Date Difference (তারিখের পার্থক্য)</h2>
+    <table>
+        <tr><th>From Date</th><td><input type="date" id="d1" oninput="calculateAll()"></td></tr>
+        <tr><th>To Date</th><td><input type="date" id="d2" oninput="calculateAll()"></td></tr>
+        <tr><th>Difference</th><td class="result" id="diffRes">---</td></tr>
+        <tr><th>Total Days</th><td class="result" id="totalDaysRes">---</td></tr>
+    </table>
 </div>
 
-
-<!-- Service -->
-
 <div class="container">
-
-<h2>Service Length</h2>
-
-<table>
-
-<tr>
-<th>Joining Date</th>
-<td><input type="date" id="join"></td>
-</tr>
-
-<tr>
-<th>Service Length</th>
-<td class="result" id="service"></td>
-</tr>
-
-</table>
-
-<button onclick="serviceCalc()">Calculate</button>
-
+    <h2>Service Length (চাকুরিকাল গণনা)</h2>
+    <table>
+        <tr><th>Joining Date</th><td><input type="date" id="join" oninput="calculateAll()"></td></tr>
+        <tr><th>Ending/Current Date</th><td><input type="date" id="end" oninput="calculateAll()"></td></tr>
+        <tr><th>Total Service</th><td class="result" id="serviceRes">---</td></tr>
+    </table>
 </div>
 
-
-<!-- Retirement -->
-
 <div class="container">
-
-<h2>Retirement Calculator</h2>
-
-<table>
-
-<tr>
-<th>Date of Birth</th>
-<td><input type="date" id="retDob"></td>
-</tr>
-
-<tr>
-<th>Retirement Age</th>
-<td><input type="number" id="retAge" value="60"></td>
-</tr>
-
-<tr>
-<th>Retirement Date</th>
-<td class="result" id="retDate"></td>
-</tr>
-
-<tr>
-<th>Remaining Time</th>
-<td class="result" id="retRemain"></td>
-</tr>
-
-</table>
-
-<button onclick="retCalc()">Calculate</button>
-
+    <h2>Retirement Calculator (অবসর গণনা)</h2>
+    <table>
+        <tr><th>Date of Birth</th><td><input type="date" id="retDob" oninput="calculateAll()"></td></tr>
+        <tr><th>Retirement Age</th><td><input type="number" id="retAge" value="60" oninput="calculateAll()"></td></tr>
+        <tr><th>Retirement Date</th><td class="result" id="retDateRes">---</td></tr>
+        <tr><th>Remaining Time</th><td class="result" id="retRemainRes">---</td></tr>
+    </table>
 </div>
 
-
-<!-- Leave Calculator -->
-
 <div class="container">
-
-<h2>Leave Calculator</h2>
-
-<table>
-
-<tr>
-<th>From</th>
-<td><input type="date" id="leaveFrom"></td>
-</tr>
-
-<tr>
-<th>To</th>
-<td><input type="date" id="leaveTo"></td>
-</tr>
-
-<tr>
-<th>Total Days</th>
-<td class="result" id="leaveTotal"></td>
-</tr>
-
-<tr>
-<th>Working Days</th>
-<td class="result" id="leaveWorking"></td>
-</tr>
-
-</table>
-
-<button onclick="leaveCalc()">Calculate</button>
-
+    <h2>Leave Management</h2>
+    <table>
+        <tr><th>Service Year</th><td><input type="number" id="serviceYear" oninput="calculateAll()"></td><td class="result" id="earnedRes">---</td></tr>
+        <tr><th>Casual Leave Taken</th><td><input type="number" id="casual" oninput="calculateAll()"></td><td class="result" id="casualRes">---</td></tr>
+        <tr><th>Half Pay Leave (Days)</th><td><input type="number" id="half" oninput="calculateAll()"></td><td class="result" id="halfRes">---</td></tr>
+        <tr><th>Medical Leave Taken</th><td><input type="number" id="medical" oninput="calculateAll()"></td><td class="result" id="medicalRes">---</td></tr>
+    </table>
 </div>
 
-
-<!-- Leave Management -->
-
-<div class="container">
-
-<h2>Leave Management</h2>
-
-<table>
-
-<tr>
-<th>Service Year</th>
-<td><input type="number" id="serviceYear"></td>
-<td class="result" id="earned"></td>
-</tr>
-
-<tr>
-<th>Casual Leave Taken</th>
-<td><input type="number" id="casual"></td>
-<td class="result" id="casualRemain"></td>
-</tr>
-
-<tr>
-<th>Half Pay Leave</th>
-<td><input type="number" id="half"></td>
-<td class="result" id="halfResult"></td>
-</tr>
-
-<tr>
-<th>Medical Leave Taken</th>
-<td><input type="number" id="medical"></td>
-<td class="result" id="medicalRemain"></td>
-</tr>
-
-</table>
-
-<button onclick="leaveManage()">Calculate</button>
-
+<div class="controls">
+    <button class="print-btn" onclick="window.print()">Print Report</button>
+    <button class="reset-btn" onclick="location.reload()">Reset All</button>
 </div>
 
-
-<button class="print-btn" onclick="window.print()">Print</button>
-<button class="reset-btn" onclick="location.reload()">Reset</button>
-
-<footer style="text-align:center; width:100%;">
-  © 2026 AI Online | All Rights Reserved <br>
+<footer>
+  © 2026 AI Online | All Rights Reserved
 </footer>
 
 <script>
+/**
+ * আপনার দেওয়া সঠিক লজিক ফাংশন
+ * এখানে ১ দিন যোগ করার রুলসটি সব জায়গায় প্রয়োগ করা হয়েছে।
+ */
+function getPreciseDifference(startDate, endDate, includeLastDay = true) {
+    let start = new Date(startDate);
+    let end = new Date(endDate);
 
-function ageCalc(){
+    if (isNaN(start) || isNaN(end)) return null;
+    if (end < start) [start, end] = [end, start]; // তারিখ অদলবদল হলেও সঠিক হিসাব দিবে
 
-var dob=new Date(document.getElementById("dob").value);
-var today=new Date();
+    let years = end.getFullYear() - start.getFullYear();
+    let months = end.getMonth() - start.getMonth();
+    let days = end.getDate() - start.getDate();
 
-var y=today.getFullYear()-dob.getFullYear();
-var m=today.getMonth()-dob.getMonth();
-var d=today.getDate()-dob.getDate();
+    if (days < 0) {
+        months--;
+        const lastMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+        days += lastMonth.getDate();
+    }
 
-if(d<0){m--; d+=30;}
-if(m<0){y--; m+=12;}
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
 
-document.getElementById("age").innerHTML=y+" Year "+m+" Month "+d+" Day";
+    // আপনার রুলস অনুযায়ী +১ দিন যোগ করা
+    if (includeLastDay) {
+        days += 1;
+        if (days >= 30) {
+            months++;
+            days -= 30;
+        }
+        if (months >= 12) {
+            years++;
+            months -= 12;
+        }
+    }
 
-var next=new Date(today.getFullYear(),dob.getMonth(),dob.getDate());
-
-if(next<today) next.setFullYear(today.getFullYear()+1);
-
-var diff=Math.ceil((next-today)/(1000*60*60*24));
-
-document.getElementById("nextBirthday").innerHTML=next.toDateString();
-document.getElementById("daysLeft").innerHTML=diff+" Days";
-
+    return { years, months, days };
 }
 
+function calculateAll() {
+    // ১. Age Calculation
+    const dob = document.getElementById('dob').value;
+    const ageAt = document.getElementById('ageAt').value;
+    if (dob && ageAt) {
+        const res = getPreciseDifference(dob, ageAt, true);
+        document.getElementById('ageRes').innerText = `${res.years} Year, ${res.months} Month, ${res.days} Day`;
+        
+        // Next Birthday
+        let today = new Date();
+        let bDay = new Date(dob);
+        let next = new Date(today.getFullYear(), bDay.getMonth(), bDay.getDate());
+        if (next < today) next.setFullYear(today.getFullYear() + 1);
+        document.getElementById('nextRes').innerText = next.toDateString();
+    }
 
-function calculateDifference(){
+    // ২. Date Difference
+    const d1 = document.getElementById('d1').value;
+    const d2 = document.getElementById('d2').value;
+    if (d1 && d2) {
+        const res = getPreciseDifference(d1, d2, true);
+        document.getElementById('diffRes').innerText = `${res.years} Year, ${res.months} Month, ${res.days} Day`;
+        let total = Math.round(Math.abs(new Date(d2) - new Date(d1)) / (1000*60*60*24)) + 1;
+        document.getElementById('totalDaysRes').innerText = total + " Days";
+    }
 
-var d1 = new Date(document.getElementById("d1").value);
-var d2 = new Date(document.getElementById("d2").value);
+    // ৩. Service Length
+    const join = document.getElementById('join').value;
+    const end = document.getElementById('end').value;
+    if (join && end) {
+        const res = getPreciseDifference(join, end, true);
+        document.getElementById('serviceRes').innerText = `${res.years} Year, ${res.months} Month, ${res.days} Day`;
+    }
 
-if(d1>d2){
-var temp=d1;
-d1=d2;
-d2=temp;
+    // ৪. Retirement
+    const rDob = document.getElementById('retDob').value;
+    const rAge = document.getElementById('retAge').value;
+    if (rDob && rAge) {
+        let bDay = new Date(rDob);
+        let retDate = new Date(bDay.getFullYear() + parseInt(rAge), bDay.getMonth(), bDay.getDate());
+        document.getElementById('retDateRes').innerText = retDate.toDateString();
+        
+        let today = new Date();
+        if (retDate > today) {
+            const res = getPreciseDifference(today, retDate, true);
+            document.getElementById('retRemainRes').innerText = `${res.years} Year, ${res.months} Month, ${res.days} Day`;
+        } else {
+            document.getElementById('retRemainRes').innerText = "Already Retired";
+        }
+    }
+
+    // ৫. Leave Management
+    let sYear = parseFloat(document.getElementById('serviceYear').value) || 0;
+    let cTaken = parseFloat(document.getElementById('casual').value) || 0;
+    let hPay = parseFloat(document.getElementById('half').value) || 0;
+    let mTaken = parseFloat(document.getElementById('medical').value) || 0;
+
+    document.getElementById('earnedRes').innerText = (sYear * 30) + " Days Earned";
+    document.getElementById('casualRes').innerText = (14 - cTaken) + " Days Left";
+    document.getElementById('halfRes').innerText = (hPay / 2) + " Full Days";
+    document.getElementById('medicalRes').innerText = (20 - mTaken) + " Days Left";
 }
 
-var diffTime = d2 - d1;
-
-var totalDays = Math.ceil(diffTime/(1000*60*60*24));
-
-document.getElementById("total").innerHTML =
-totalDays+" Days";
-
-
-// Working Days
-
-var workingDays=0;
-
-for(var d=new Date(d1); d<=d2; d.setDate(d.getDate()+1)){
-var day=d.getDay();
-if(day!=0 && day!=6){
-workingDays++;
-}
-}
-
-document.getElementById("working").innerHTML =
-workingDays+" Days";
-
-
-// Year Month Day
-
-var years = d2.getFullYear() - d1.getFullYear();
-var months = d2.getMonth() - d1.getMonth();
-var days = d2.getDate() - d1.getDate();
-
-if(days < 0){
-months--;
-days += new Date(d2.getFullYear(), d2.getMonth(),0).getDate();
-}
-
-if(months < 0){
-years--;
-months += 12;
-}
-
-document.getElementById("difference").innerHTML =
-years+" Year "+months+" Month "+days+" Day";
-
-}
-
-function serviceCalc(){
-
-var join=new Date(document.getElementById("join").value);
-var today=new Date();
-
-var y=today.getFullYear()-join.getFullYear();
-var m=today.getMonth()-join.getMonth();
-var d=today.getDate()-join.getDate();
-
-document.getElementById("service").innerHTML=y+" Year "+m+" Month "+d+" Day";
-
-}
-
-
-function retCalc(){
-
-var dob=new Date(document.getElementById("retDob").value);
-var age=document.getElementById("retAge").value;
-
-var ret=new Date(dob);
-ret.setFullYear(ret.getFullYear()+parseInt(age));
-
-document.getElementById("retDate").innerHTML=ret.toDateString();
-
-var today=new Date();
-
-var y=ret.getFullYear()-today.getFullYear();
-var m=ret.getMonth()-today.getMonth();
-var d=ret.getDate()-today.getDate();
-
-if(d<0){
-m--;
-d+=30;
-}
-
-if(m<0){
-y--;
-m+=12;
-}
-
-document.getElementById("retRemain").innerHTML=
-y+" Year "+m+" Month "+d+" Day";
-
-}
-
-
-function leaveCalc(){
-
-var f=new Date(document.getElementById("leaveFrom").value);
-var t=new Date(document.getElementById("leaveTo").value);
-
-var total=Math.ceil((t-f)/(1000*60*60*24))+1;
-
-document.getElementById("leaveTotal").innerHTML=total+" Days";
-
-var working=0;
-
-for(var d=new Date(f);d<=t;d.setDate(d.getDate()+1)){
-var day=d.getDay();
-if(day!=0 && day!=6) working++;
-}
-
-document.getElementById("leaveWorking").innerHTML=working+" Days";
-
-}
-
-
-function leaveManage(){
-
-var earned=document.getElementById("serviceYear").value*30;
-document.getElementById("earned").innerHTML=earned+" Days";
-
-var casual=14-document.getElementById("casual").value;
-document.getElementById("casualRemain").innerHTML=casual+" Days";
-
-var half=document.getElementById("half").value/2;
-document.getElementById("halfResult").innerHTML=half+" Days";
-
-var medical=20-document.getElementById("medical").value;
-document.getElementById("medicalRemain").innerHTML=medical+" Days";
-
-}
-
+// পেজ লোড হওয়ার সময় ডিফল্ট তারিখ সেট করা
+window.onload = function() {
+    let today = new Date().toISOString().split('T')[0];
+    document.getElementById('ageAt').value = today;
+    document.getElementById('end').value = today;
+};
 </script>
-  
+    
 <a href='https://www.free-counters.org/'>Get free Counters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f1947b33d890e2a9a024bf1f9b5982cdcdea00ee'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1523485/t/1"></script>
 
