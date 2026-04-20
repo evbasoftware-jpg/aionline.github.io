@@ -87,21 +87,28 @@ let historyData = [];
 
 async function fetchData(){
     try{
-        let res = await fetch(
-        "https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=5m&range=1d"
-        );
+        let res = await fetch("https://stooq.com/q/d/l/?s=%5Enifty&i=5");
+        let text = await res.text();
 
-        let data = await res.json();
+        let rows = text.split("\n").slice(1); // header বাদ
+        let closePrices = [];
 
-        let close = data.chart.result[0].indicators.quote[0].close;
+        rows.forEach(r=>{
+            let cols = r.split(",");
+            let price = parseFloat(cols[4]); // Close price
+            if(!isNaN(price)) closePrices.push(price);
+        });
 
-        prices = close.filter(x => x !== null);
+        if(closePrices.length === 0){
+            throw "No data";
+        }
 
+        prices = closePrices;
         calculate();
 
     }catch(e){
-        console.log("Data error", e);
-        document.getElementById("price").innerText = "API ERROR";
+        console.log("Data error:", e);
+        document.getElementById("price").innerText = "NO DATA";
     }
 }
 
@@ -146,7 +153,15 @@ function calculate(){
     updateUI(current, rsi, signal);
 }
 
+let lastSignal = "";
+
 function updateUI(price, rsi, signal){
+
+    if(signal !== lastSignal && signal !== "WAIT"){
+        addHistory(price, signal);
+        lastSignal = signal;
+    }
+
     document.getElementById("price").innerText = price.toFixed(2);
     document.getElementById("rsi").innerText = rsi.toFixed(2);
 
@@ -156,10 +171,6 @@ function updateUI(price, rsi, signal){
     el.className = "value " +
         (signal==="BUY"?"buy":
         signal==="SELL"?"sell":"wait");
-
-    if(signal !== "WAIT"){
-        addHistory(price, signal);
-    }
 }
 
 function addHistory(price, signal){
