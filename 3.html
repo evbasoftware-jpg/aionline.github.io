@@ -1,100 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Excel to Single HTML Table (12 Sheets)</title>
+<meta charset="UTF-8">
+<title>Nifty AI Signal Dashboard</title>
 
-    <!-- SheetJS Library -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+body{
+    font-family: Arial;
+    background:#0f172a;
+    color:#fff;
+    padding:20px;
+}
+h1{text-align:center;}
 
-    <style>
-        table { 
-            border-collapse: collapse; 
-            width: 100%; 
-            margin-top: 20px; 
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-        }
-        th { 
-            background-color: #f2f2f2; 
-            position: sticky;
-            top: 0;
-        }
-    </style>
+.card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:10px;
+    margin:10px 0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+    gap:10px;
+}
+
+.value{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.buy{color:#22c55e;}
+.sell{color:#ef4444;}
+.wait{color:#facc15;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+td,th{
+    padding:8px;
+    border-bottom:1px solid #334155;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Upload Excel (12 Sheets → 1 Table)</h2>
-<input type="file" id="excel_file" accept=".xlsx, .xls, .xlsm" />
+<h1>📊 NIFTY AI SIGNAL DASHBOARD</h1>
 
-<div id="table_container"></div>
+<div class="grid">
+    <div class="card">
+        <div>Nifty Price</div>
+        <div class="value" id="price">--</div>
+    </div>
+
+    <div class="card">
+        <div>RSI</div>
+        <div class="value" id="rsi">--</div>
+    </div>
+
+    <div class="card">
+        <div>Signal</div>
+        <div class="value" id="signal">--</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>📜 Signal History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Price</th>
+                <th>Signal</th>
+            </tr>
+        </thead>
+        <tbody id="history"></tbody>
+    </table>
+</div>
 
 <script>
-document.getElementById('excel_file').addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
+let prices = [];
+let historyData = [];
 
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+async function fetchData(){
+    try{
+        // Yahoo Finance unofficial API proxy
+        let res = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=5m&range=1d");
+        let data = await res.json();
 
-        const container = document.getElementById('table_container');
-        container.innerHTML = "";
+        let close = data.chart.result[0].indicators.quote[0].close;
+        prices = close.filter(x => x !== null);
 
-        let tableHTML = '<table>';
+        calculate();
+    }catch(e){
+        console.log("Data error", e);
+    }
+}
 
-        /* ===== SINGLE FIXED HEADER ===== */
-        tableHTML += `
-            <tr>
-                <th>SHEET</th>
-                <th>MONTHS</th>
-                <th>BASIC</th>
-                <th>ADDL. ALLOW</th>
-                <th>DA</th>
-                <th>HRA</th>
-                <th>MA</th>
-                <th>CONV ALLOW</th>
-                <th>DA ARREAR</th>
-                <th>GROSS PAY</th>
-                <th>GPF</th>
-                <th>GSLI</th>
-                <th>P. TAX</th>
-                <th>I.TAX</th>
-                <th>NET PAY</th>
-            </tr>
-        `;
+function calculateRSI(prices, period=14){
+    if(prices.length < period) return 50;
 
-        /* ===== LOOP THROUGH 12 SHEETS ===== */
-        workbook.SheetNames.slice(6, 18).forEach(sheetName => {
-            const worksheet = workbook.Sheets[sheetName];
-            const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    let gains = 0, losses = 0;
 
-            /* ===== ROWS 8 TO 22 FROM EACH SHEET ===== */
-            for (let i = 3; i < 200; i++) {
-                tableHTML += '<tr>';
+    for(let i=prices.length-period; i<prices.length; i++){
+        let diff = prices[i] - prices[i-1];
+        if(diff>0) gains += diff;
+        else losses -= diff;
+    }
 
-                // Sheet name column
-                tableHTML += `<td>${sheetName}</td>`;
+    let rs = gains / losses;
+    return 100 - (100/(1+rs));
+}
 
-                // 14 columns of data
-                for (let j = 0; j < 14; j++) {
-                    const value = (sheetData[i] && sheetData[i][j]) ? sheetData[i][j] : "";
-                    tableHTML += `<td>${value}</td>`;
-                }
+function calculate(){
+    let current = prices[prices.length-1];
 
-                tableHTML += '</tr>';
-            }
-        });
+    let rsi = calculateRSI(prices);
 
-        tableHTML += '</table>';
-        container.innerHTML = tableHTML;
-    };
+    // Bollinger
+    let slice = prices.slice(-20);
+    let avg = slice.reduce((a,b)=>a+b,0)/20;
 
-    reader.readAsArrayBuffer(file);
-});
+    let std = Math.sqrt(slice.map(x=>Math.pow(x-avg,2)).reduce((a,b)=>a+b)/20);
+
+    let upper = avg + 2*std;
+    let lower = avg - 2*std;
+
+    let signal = "WAIT";
+
+    if(current <= lower && rsi < 35){
+        signal = "BUY";
+    }
+    else if(current >= upper && rsi > 65){
+        signal = "SELL";
+    }
+
+    updateUI(current, rsi, signal);
+}
+
+function updateUI(price, rsi, signal){
+    document.getElementById("price").innerText = price.toFixed(2);
+    document.getElementById("rsi").innerText = rsi.toFixed(2);
+
+    let el = document.getElementById("signal");
+    el.innerText = signal;
+
+    el.className = "value " +
+        (signal==="BUY"?"buy":
+        signal==="SELL"?"sell":"wait");
+
+    if(signal !== "WAIT"){
+        addHistory(price, signal);
+    }
+}
+
+function addHistory(price, signal){
+    let time = new Date().toLocaleTimeString();
+
+    historyData.unshift({time, price, signal});
+
+    if(historyData.length > 20) historyData.pop();
+
+    let html = "";
+    historyData.forEach(row=>{
+        html += `
+        <tr>
+            <td>${row.time}</td>
+            <td>${row.price.toFixed(2)}</td>
+            <td class="${row.signal==='BUY'?'buy':'sell'}">${row.signal}</td>
+        </tr>`;
+    });
+
+    document.getElementById("history").innerHTML = html;
+}
+
+// Auto refresh
+setInterval(fetchData, 60000);
+fetchData();
+
 </script>
 
 </body>
