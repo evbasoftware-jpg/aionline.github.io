@@ -85,22 +85,23 @@ td,th{
 let prices = [];
 let historyData = [];
 
+// ✅ YOUR BACKEND API
+const API = "https://nifty-backend-0ij2.onrender.com/api/price";
+
 async function fetchData(){
     try{
-        let res = await fetch("https://api.polygon.io/v2/aggs/ticker/I:NDX/prev?adjusted=true&apiKey=demo");
-
+        // ✅ backend call
+        let res = await fetch(API);
         let data = await res.json();
 
-        // fallback demo data convert (since demo key limited)
-        let price = data.results?.[0]?.c;
+        // ধরে নিচ্ছি backend return করছে { price: 22000 }
+        let price = data.price;
 
         if(!price){
-            throw "No data";
+            throw "No data from backend";
         }
 
-        // fake history create (for indicators)
         prices.push(price);
-
         if(prices.length > 50) prices.shift();
 
         calculate();
@@ -108,7 +109,7 @@ async function fetchData(){
     }catch(e){
         console.log("Error:", e);
 
-        // fallback (so UI never breaks)
+        // fallback (UI break না হওয়ার জন্য)
         let fake = 22000 + Math.random()*100;
         prices.push(fake);
 
@@ -129,7 +130,7 @@ function calculateRSI(prices, period=14){
         else losses -= diff;
     }
 
-    let rs = gains / losses;
+    let rs = gains / (losses || 1); // divide by zero fix
     return 100 - (100/(1+rs));
 }
 
@@ -138,11 +139,12 @@ function calculate(){
 
     let rsi = calculateRSI(prices);
 
-    // Bollinger
     let slice = prices.slice(-20);
-    let avg = slice.reduce((a,b)=>a+b,0)/20;
+    let avg = slice.reduce((a,b)=>a+b,0)/slice.length;
 
-    let std = Math.sqrt(slice.map(x=>Math.pow(x-avg,2)).reduce((a,b)=>a+b)/20);
+    let std = Math.sqrt(
+        slice.map(x=>Math.pow(x-avg,2)).reduce((a,b)=>a+b)/slice.length
+    );
 
     let upper = avg + 2*std;
     let lower = avg - 2*std;
@@ -183,7 +185,6 @@ function addHistory(price, signal){
     let time = new Date().toLocaleTimeString();
 
     historyData.unshift({time, price, signal});
-
     if(historyData.length > 20) historyData.pop();
 
     let html = "";
@@ -199,11 +200,9 @@ function addHistory(price, signal){
     document.getElementById("history").innerHTML = html;
 }
 
-// Auto refresh
+// refresh
 setInterval(fetchData, 60000);
 fetchData();
-
 </script>
-
 </body>
 </html>
