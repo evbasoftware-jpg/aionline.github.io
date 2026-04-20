@@ -1,208 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Nifty AI Signal Dashboard</title>
+<title>PRO Trading Dashboard</title>
 
 <style>
-body{
-    font-family: Arial;
-    background:#0f172a;
-    color:#fff;
-    padding:20px;
-}
+body{background:#0f172a;color:#fff;font-family:Arial;padding:20px;}
 h1{text-align:center;}
 
-.card{
-    background:#1e293b;
-    padding:15px;
-    border-radius:10px;
-    margin:10px 0;
-}
-
 .grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-    gap:10px;
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+ gap:15px;
 }
 
-.value{
-    font-size:22px;
-    font-weight:bold;
+.card{
+ background:#1e293b;
+ padding:15px;
+ border-radius:10px;
 }
 
 .buy{color:#22c55e;}
 .sell{color:#ef4444;}
 .wait{color:#facc15;}
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-td,th{
-    padding:8px;
-    border-bottom:1px solid #334155;
-}
+.value{font-size:20px;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<h1>📊 NIFTY AI SIGNAL DASHBOARD</h1>
+<h1>🚀 PRO TRADING DASHBOARD</h1>
 
-<div class="grid">
-    <div class="card">
-        <div>Nifty Price</div>
-        <div class="value" id="price">--</div>
-    </div>
-
-    <div class="card">
-        <div>RSI</div>
-        <div class="value" id="rsi">--</div>
-    </div>
-
-    <div class="card">
-        <div>Signal</div>
-        <div class="value" id="signal">--</div>
-    </div>
-</div>
-
-<div class="card">
-    <h3>📜 Signal History</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Price</th>
-                <th>Signal</th>
-            </tr>
-        </thead>
-        <tbody id="history"></tbody>
-    </table>
-</div>
+<div class="grid" id="data"></div>
 
 <script>
-let prices = [];
-let historyData = [];
 
-// ✅ YOUR BACKEND API
-const API = "https://nifty-backend-0ij2.onrender.com/api/price";
+const API = "https://YOUR-RENDER-URL/api/market";
 
-async function fetchData(){
-    try{
-        // ✅ backend call
-        let res = await fetch(API);
-        let data = await res.json();
-
-        // ধরে নিচ্ছি backend return করছে { price: 22000 }
-        let price = data.price;
-
-        if(!price){
-            throw "No data from backend";
-        }
-
-        prices.push(price);
-        if(prices.length > 50) prices.shift();
-
-        calculate();
-
-    }catch(e){
-        console.log("Error:", e);
-
-        // fallback (UI break না হওয়ার জন্য)
-        let fake = 22000 + Math.random()*100;
-        prices.push(fake);
-
-        if(prices.length > 50) prices.shift();
-
-        calculate();
-    }
-}
-
-function calculateRSI(prices, period=14){
-    if(prices.length < period) return 50;
-
-    let gains = 0, losses = 0;
-
-    for(let i=prices.length-period; i<prices.length; i++){
-        let diff = prices[i] - prices[i-1];
-        if(diff>0) gains += diff;
-        else losses -= diff;
-    }
-
-    let rs = gains / (losses || 1); // divide by zero fix
-    return 100 - (100/(1+rs));
-}
-
-function calculate(){
-    let current = prices[prices.length-1];
-
-    let rsi = calculateRSI(prices);
-
-    let slice = prices.slice(-20);
-    let avg = slice.reduce((a,b)=>a+b,0)/slice.length;
-
-    let std = Math.sqrt(
-        slice.map(x=>Math.pow(x-avg,2)).reduce((a,b)=>a+b)/slice.length
-    );
-
-    let upper = avg + 2*std;
-    let lower = avg - 2*std;
-
-    let signal = "WAIT";
-
-    if(current <= lower && rsi < 35){
-        signal = "BUY";
-    }
-    else if(current >= upper && rsi > 65){
-        signal = "SELL";
-    }
-
-    updateUI(current, rsi, signal);
-}
-
-let lastSignal = "";
-
-function updateUI(price, rsi, signal){
-
-    if(signal !== lastSignal && signal !== "WAIT"){
-        addHistory(price, signal);
-        lastSignal = signal;
-    }
-
-    document.getElementById("price").innerText = price.toFixed(2);
-    document.getElementById("rsi").innerText = rsi.toFixed(2);
-
-    let el = document.getElementById("signal");
-    el.innerText = signal;
-
-    el.className = "value " +
-        (signal==="BUY"?"buy":
-        signal==="SELL"?"sell":"wait");
-}
-
-function addHistory(price, signal){
-    let time = new Date().toLocaleTimeString();
-
-    historyData.unshift({time, price, signal});
-    if(historyData.length > 20) historyData.pop();
+async function load(){
+    let res = await fetch(API);
+    let data = await res.json();
 
     let html = "";
-    historyData.forEach(row=>{
+
+    data.forEach(d=>{
         html += `
-        <tr>
-            <td>${row.time}</td>
-            <td>${row.price.toFixed(2)}</td>
-            <td class="${row.signal==='BUY'?'buy':'sell'}">${row.signal}</td>
-        </tr>`;
+        <div class="card">
+            <h3>${d.symbol}</h3>
+            <div>Price: <span class="value">${d.price.toFixed(2)}</span></div>
+            <div>RSI: ${d.rsi.toFixed(2)}</div>
+            <div class="value ${d.signal.toLowerCase()}">${d.signal}</div>
+        </div>
+        `;
     });
 
-    document.getElementById("history").innerHTML = html;
+    document.getElementById("data").innerHTML = html;
 }
 
-// refresh
-setInterval(fetchData, 60000);
-fetchData();
+setInterval(load, 10000);
+load();
+
 </script>
+
 </body>
 </html>
