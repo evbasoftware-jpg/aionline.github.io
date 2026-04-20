@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel to Single HTML Table (12 Sheets)</title>
+
+    <!-- SheetJS Library -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+    <style>
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #f2f2f2; 
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Upload Excel (12 Sheets → 1 Table)</h2>
+<input type="file" id="excel_file" accept=".xlsx, .xls, .xlsm" />
+
+<div id="table_container"></div>
+
+<script>
+document.getElementById('excel_file').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const container = document.getElementById('table_container');
+        container.innerHTML = "";
+
+        let tableHTML = '<table>';
+
+        /* ===== SINGLE FIXED HEADER ===== */
+        tableHTML += `
+            <tr>
+                <th>SHEET</th>
+                <th>MONTHS</th>
+                <th>BASIC</th>
+                <th>ADDL. ALLOW</th>
+                <th>DA</th>
+                <th>HRA</th>
+                <th>MA</th>
+                <th>CONV ALLOW</th>
+                <th>DA ARREAR</th>
+                <th>GROSS PAY</th>
+                <th>GPF</th>
+                <th>GSLI</th>
+                <th>P. TAX</th>
+                <th>I.TAX</th>
+                <th>NET PAY</th>
+            </tr>
+        `;
+
+        /* ===== LOOP THROUGH 12 SHEETS ===== */
+        workbook.SheetNames.slice(6, 18).forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+            /* ===== ROWS 8 TO 22 FROM EACH SHEET ===== */
+            for (let i = 3; i < 200; i++) {
+                tableHTML += '<tr>';
+
+                // Sheet name column
+                tableHTML += `<td>${sheetName}</td>`;
+
+                // 14 columns of data
+                for (let j = 0; j < 14; j++) {
+                    const value = (sheetData[i] && sheetData[i][j]) ? sheetData[i][j] : "";
+                    tableHTML += `<td>${value}</td>`;
+                }
+
+                tableHTML += '</tr>';
+            }
+        });
+
+        tableHTML += '</table>';
+        container.innerHTML = tableHTML;
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+</script>
+
+</body>
+</html>
