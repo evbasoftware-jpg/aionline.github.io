@@ -87,16 +87,21 @@ let historyData = [];
 
 async function fetchData(){
     try{
-        // Yahoo Finance unofficial API proxy
-        let res = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=5m&range=1d");
+        let res = await fetch(
+        "https://api.allorigins.win/raw?url=https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=5m&range=1d"
+        );
+
         let data = await res.json();
 
         let close = data.chart.result[0].indicators.quote[0].close;
+
         prices = close.filter(x => x !== null);
 
         calculate();
+
     }catch(e){
         console.log("Data error", e);
+        document.getElementById("price").innerText = "API ERROR";
     }
 }
 
