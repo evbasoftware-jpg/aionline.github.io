@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WB Salary Calculation</title>
+
+<style>
+body{font-family:Arial;background:#f5f5f5;padding:15px;}
+h2{text-align:center;}
+.controls{background:#fff;padding:10px;margin-bottom:10px;}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:12px;}
+th,td{border:1px solid #ccc;padding:4px;text-align:center;}
+th{background:#222;color:#fff;}
+.ropa-header {background:#444; color:#fff; font-weight:bold; text-align:left; padding:8px 15px;}
+/* ইনপুট ফিল্ডের স্টাইল */
+.edit-input {width: 60px; text-align: center; border: 1px solid transparent; background: transparent;}
+.edit-input:focus {border: 1px solid #007bff; background: #fff; outline: none;}
+</style>
+</head>
+
+<body>
+
+<h2>WB Salary Calculator</h2>
+
+<div class="controls">
+
+DOJ: <input type="date" id="dojInput">
+DOR: <input type="date" id="dorInput">
+Starting Basic: <input type="number" id="basicInput" value="0">
+<br><br>
+<b>Category :</b>
+<select id="category">
+<option value="A">A</option>
+<option value="B">B</option>
+<option value="C">C</option>
+</select>
+ <br>
+A Category Date: <input type="date" id="aDate">
+Promotion Date: <input type="date" id="pDate">
+<br><br>
+
+ROPA Option Dates:
+1981 <input type="date" id="r1981" value="1981-04-01">
+1990 <input type="date" id="r1990" value="1986-01-01">
+1998 <input type="date" id="r1998" value="1996-01-01">
+2009 <input type="date" id="r2009" value="2006-01-01">
+2019 <input type="date" id="r2019" value="2020-01-01">
+
+<br><br>
+
+ <b>Career Increment (Select):</b><br>
+<label><input type="checkbox" class="incOpt" value="8"> 8Y</label>
+<label><input type="checkbox" class="incOpt" value="10"> 10Y</label>
+<label><input type="checkbox" class="incOpt" value="16"> 16Y</label>
+<label><input type="checkbox" class="incOpt" value="18"> 18Y</label>
+<label><input type="checkbox" class="incOpt" value="20"> 20Y</label>
+<label><input type="checkbox" class="incOpt" value="25"> 25Y</label>
+<label><input type="checkbox" class="incOpt" value="30"> 30Y</label>
+    <br><br>
+<button onclick="generate()">Generate</button>
+
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Basic</th>
+<th>DA%</th>
+<th>HRA%</th>
+<th>Addl Alw</th>
+<th>DA</th>
+<th>HRA</th>
+<th>MA</th>
+<th>IR</th>
+<th>Gross</th>
+<th>GPF</th>
+<th>PTAX</th>
+<th>GI</th>
+<th>Net</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<script>
+
+function formatDate(dateObj) {
+    let d = dateObj.getDate();
+    let m = dateObj.getMonth() + 1;
+    let y = dateObj.getFullYear();
+    return (d < 10 ? '0' + d : d) + '/' + (m < 10 ? '0' + m : m) + '/' + y;
+}
+
+const SCALE = {
+    1981:{ A:[300,10,400,15,565,20,685], B:[280,8,304,10,394,12,442,15,557,20,617], C:[260,7,295,8,311,10,421,12,481,14,597] },
+    1990:{ A:[1040,25,1215,30,1485,35,2590,40,1670,50,1920], B:[980,25,1230,30,1500,35,1675,40,1755], C:[920,21,1067,25,1242,30,1512,35,1617] },
+    1998:{ A:[3350,90,3800,100,4700,125,6325], B:[3150,80,3390,90,4380,100,5680], C:[3000,75,3450,80,4330,90,5230] }
+};
+
+const FITMENT = {1990:1.1, 1998:1.25, 2009:1.86, 2019:2.57};
+function el(id){ return document.getElementById(id); }
+
+function getScaleIncrement(basic, ropaYear) {
+    let cat = document.getElementById("category").value;
+    if (ropaYear >= 2009) return Math.round(basic * 1.03);
+    let scale = SCALE[ropaYear] ? SCALE[ropaYear][cat] : null;
+    if (!scale) return basic;
+    for (let i = 0; i < scale.length - 2; i += 2) {
+        if (basic >= scale[i] && basic < scale[i + 2]) return basic + scale[i + 1];
+    }
+    return basic;
+}
+
+// 🔥 FULL DA TABLE (DATE-WISE)
+const DA_DATA = [
+["1987-03-01",4],["1987-12-01",8],
+["1988-06-01",13],
+["1989-02-01",18],["1989-06-01",23],["1989-11-01",29],
+["1990-06-01",34],["1990-12-01",38],
+["1991-04-01",43],
+["1992-01-01",51],["1992-11-01",60],
+["1993-07-01",71],["1993-12-01",83],
+["1994-05-01",92],["1994-11-01",97],
+["1995-02-01",104],["1995-06-01",114],["1995-12-01",125],
+["1996-04-01",136],["1996-10-01",148],
+["1997-08-01",159],["1997-12-01",170],
+["1998-04-01",182.4],
+
+// ROPA 1998 reset
+["1997-04-01",0],["1997-08-01",4],["1997-12-01",8],
+["1998-04-01",13],["1998-11-01",22],
+["1999-08-01",32],
+["2000-04-01",37],["2000-10-01",38],
+["2001-07-01",41],
+["2003-07-01",45],
+["2004-09-01",49],
+["2005-04-01",52],["2005-09-01",55],["2005-12-01",59],
+["2006-03-01",61],["2006-07-01",64],["2006-09-01",67],
+["2007-01-01",71],
+["2007-04-01",24], // post merger usable DA
+["2008-01-01",29],["2008-06-01",35],["2008-11-01",41],
+["2009-03-01",47],
+
+// ROPA 2009 reset
+["2008-04-01",2],["2008-06-01",6],["2008-11-01",9],
+["2009-03-01",12],["2009-04-01",16],
+["2009-12-01",22],
+["2010-04-01",27],["2010-12-01",35],
+["2012-01-01",45],
+["2013-01-01",52],
+["2014-01-01",58],
+["2015-01-01",65],
+["2016-01-01",75],
+["2017-01-01",85],
+["2018-01-01",100],
+["2019-01-01",125],
+
+// ROPA 2019 reset
+["2020-01-01",0],
+["2021-01-01",3],
+["2023-03-01",6],
+["2024-01-01",10],
+["2024-04-01",14],
+["2025-04-01",18],
+["2026-04-01",22]
+];
+
+// 🔥 GET DA (FINAL VERSION)
+function getDA(date){
+
+let d = new Date(date);
+let rate = 0;
+
+for(let i=0;i<DA_DATA.length;i++){
+let eff = new Date(DA_DATA[i][0]);
+
+if(d >= eff){
+rate = DA_DATA[i][1];
+}
+}
+
+return rate/100;
+}
+
+
+
+// পুনরায় ক্যালকুলেট করার ফাংশন (Editable fields এর জন্য)
+function reCalcRow(row) {
+    row.DA = Math.round(row.basic * row.daRate);
+    row.gross = row.basic + row.DA + row.HRA + row.MA + row.ADD + row.IR;
+    // PTAX ক্যালকুলেশন এখান থেকে সরিয়ে দেওয়া হয়েছে যাতে ম্যানুয়াল এডিট কাজ করে
+    row.net = row.gross - (row.GPF + row.PTAX + row.GI);
+}
+
+let rows = [];
+
+function generate() {
+    const dojInput = new Date(el("dojInput").value);
+    const dorInput = new Date(el("dorInput").value);
+    let currentBasic = +el("basicInput").value;
+
+    if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
+
+    rows = [];
+    const ROPA_CONFIG = [
+        { name: "ROPA 1981", start: el("r1981").value, end: "1990-02-28", year: 1981 },
+        { name: "ROPA 1990", start: el("r1990").value, end: "1999-02-28", year: 1990 },
+        { name: "ROPA 1998", start: el("r1998").value, end: "2009-03-31", year: 1998 },
+        { name: "ROPA 2009", start: el("r2009").value, end: "2019-12-31", year: 2009 },
+        { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019 }
+    ];
+
+    let hasStarted = false;
+
+    ROPA_CONFIG.forEach((config, idx) => {
+        let ropaStart = new Date(config.start);
+        let ropaEnd = new Date(config.end);
+        if (ropaEnd > dorInput) ropaEnd = dorInput;
+        if (dojInput > ropaEnd) return;
+
+        let actualStart = new Date(ropaStart);
+        if (!hasStarted) {
+            if (dojInput >= ropaStart) { actualStart = new Date(dojInput); hasStarted = true; } 
+            else { actualStart = new Date(ropaStart); hasStarted = true; }
+        }
+
+        rows.push({ isHeader: true, title: config.name });
+
+        let currentLoopDate = new Date(actualStart);
+        let isFirstInRopa = true;
+
+        while (currentLoopDate <= ropaEnd) {
+            let activeDate = new Date(currentLoopDate);
+            if (config.year === 1981) { activeDate.setDate(dojInput.getDate()); } 
+            else if (config.year === 1990) {
+                if (isFirstInRopa && actualStart.getTime() === dojInput.getTime()) { activeDate.setDate(dojInput.getDate()); } 
+                else { activeDate.setDate(1); activeDate.setMonth(dojInput.getMonth()); }
+            } 
+            else if (config.year === 1998) {
+                let optDate = new Date(config.start);
+                if (isFirstInRopa && actualStart.getTime() === ropaStart.getTime()) { activeDate = new Date(optDate); } 
+                else { activeDate.setDate(optDate.getDate()); activeDate.setMonth(optDate.getMonth()); }
+            }
+            else if (config.year >= 2009) {
+                if (isFirstInRopa && actualStart.getTime() === ropaStart.getTime()) { activeDate = new Date(config.start); } 
+                else { activeDate.setDate(1); activeDate.setMonth(6); }
+            }
+
+            if (!isFirstInRopa && activeDate <= ropaEnd) {
+                currentBasic = getScaleIncrement(currentBasic, config.year);
+            }
+
+            for (let m = 0; m < 12; m++) {
+                let monthDate = new Date(activeDate);
+                monthDate.setMonth(activeDate.getMonth() + m);
+                if (monthDate > ropaEnd || monthDate > dorInput) break;
+
+                let daRate = getDA(monthDate);
+                let hraRate = (monthDate >= new Date("2020-01-01")) ? 0.12 : (monthDate >= new Date("2006-03-01")) ? 0.15 : 0;
+                let MA = 500, ADD = 0, IR = 0, GI = 60;
+                let DA = Math.round(currentBasic * daRate);
+                let HRA = Math.round(currentBasic * hraRate);
+                let GPF = Math.round(currentBasic * 0.06);
+                
+                let rowObj = {
+                    date: monthDate,
+                    basic: currentBasic,
+                    daRate, hraRate, ADD, DA, HRA, MA, IR, GPF, GI,
+                    ropaYear: config.year
+                };
+                reCalcRow(rowObj);
+                rows.push(rowObj);
+            }
+            isFirstInRopa = false;
+            currentLoopDate.setFullYear(currentLoopDate.getFullYear() + 1);
+        }
+
+        if (idx < ROPA_CONFIG.length - 1) {
+            let nextRopaYear = ROPA_CONFIG[idx+1].year;
+            currentBasic = Math.round((currentBasic * FITMENT[nextRopaYear]) / 100) * 100 + 100;
+        }
+    });
+    render();
+}
+
+// ইনপুট হ্যান্ডলার: ভ্যালু চেঞ্জ হলে নিচের ঘরগুলো আপডেট করবে
+function updateValue(index, field, value) {
+    let val = parseFloat(value) || 0;
+    let oldBasic = rows[index].basic;
+
+    for (let i = index; i < rows.length; i++) {
+        if (rows[i].isHeader) continue;
+
+        if (i === index) {
+            rows[i][field] = val;
+        } else {
+            if (field === 'basic') {
+                if (rows[i].ropaYear === rows[i-1].ropaYear) {
+                    if (rows[i].basic > oldBasic) {
+                        rows[i].basic = getScaleIncrement(rows[i-1].basic, rows[i].ropaYear);
+                    } else {
+                        rows[i].basic = rows[i-1].basic;
+                    }
+                    oldBasic = rows[i].basic;
+                } else {
+                    let fit = FITMENT[rows[i].ropaYear] || 1;
+                    rows[i].basic = Math.round((rows[i-1].basic * fit) / 100) * 100 + 100;
+                }
+            } else {
+                // HRA, MA, GPF, GI, PTAX এর জন্য সরাসরি ভ্যালু কপি হবে নিচের ঘরগুলোতে
+                rows[i][field] = val;
+            }
+        }
+        reCalcRow(rows[i]);
+    }
+    render();
+}
+
+function render(){
+    let tbody = el("tbody");
+    tbody.innerHTML = "";
+    rows.forEach((r, idx) => {
+        let tr = document.createElement("tr");
+        if(r.isHeader) {
+            tr.innerHTML = `<td colspan="14" class="ropa-header">${r.title}</td>`;
+        } else {
+            tr.innerHTML = `
+                <td>${formatDate(r.date)}</td>
+                <td><input type="number" class="edit-input" value="${r.basic}" onchange="updateValue(${idx}, 'basic', this.value)"></td>
+                <td>${(r.daRate*100).toFixed(0)}%</td>
+                <td>${(r.hraRate*100).toFixed(0)}%</td>
+                <td>${r.ADD}</td>
+                <td>${r.DA}</td>
+                <td><input type="number" class="edit-input" value="${r.HRA}" onchange="updateValue(${idx}, 'HRA', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.MA}" onchange="updateValue(${idx}, 'MA', this.value)"></td>
+                <td>${r.IR}</td>
+                <td>${r.gross}</td>
+                <td><input type="number" class="edit-input" value="${r.GPF}" onchange="updateValue(${idx}, 'GPF', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.PTAX}" onchange="updateValue(${idx}, 'PTAX', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.GI}" onchange="updateValue(${idx}, 'GI', this.value)"></td>
+                <td>${r.net}</td>`;
+        }
+        tbody.appendChild(tr);
+    });
+}
+</script>
+
+</body>
+</html>
