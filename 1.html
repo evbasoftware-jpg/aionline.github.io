@@ -1,300 +1,628 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>WB Salary Calculation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Online - Smart Digital & AI Based Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B5ED7;
+            --secondary: #00C2FF;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --text: #2d3436;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
 
-<style>
-body{font-family:Arial;background:#f5f5f5;padding:15px;}
-h2{text-align:center;}
-.controls{background:#fff;padding:10px;margin-bottom:10px;}
-table{width:100%;border-collapse:collapse;background:#fff;font-size:12px;}
-th,td{border:1px solid #ccc;padding:4px;text-align:center;}
-th{background:#222;color:#fff;}
-.ropa-header {background:#444; color:#fff; font-weight:bold; text-align:left; padding:8px 15px;}
-/* ইনপুট ফিল্ডের স্টাইল */
-.edit-input {width: 60px; text-align: center; border: 1px solid transparent; background: transparent;}
-.edit-input:focus {border: 1px solid #007bff; background: #fff; outline: none;}
-</style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; }
+
+        /* Modern Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-box { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .logo { height: 60px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        header h1 { font-size: 28px; letter-spacing: 1px; text-transform: uppercase; }
+        header p { font-weight: 300; opacity: 0.9; }
+
+        /* Search Section */
+        .search-container {
+            max-width: 600px;
+            margin: -25px auto 30px;
+            padding: 0 20px;
+        }
+        .search-box {
+            display: flex;
+            background: var(--white);
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            outline: none;
+            font-size: 16px;
+        }
+        .search-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .search-box button:hover { background: #0849a3; }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        /* Modern Section Cards */
+        .section {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .section:hover { transform: translateY(-5px); }
+        .section h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h2 i { font-size: 18px; opacity: 0.8; }
+
+        /* List Items Styling */
+        .list-item, .list a {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f9fbff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            border-left: 5px solid var(--primary);
+            transition: 0.3s;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        .list-item:hover, .list a:hover { background: #eef4ff; }
+
+        .list-item .link-text { flex: 1; color: #333; text-decoration: none; margin-bottom: 5px; display: block; }
+
+        /* Video Button */
+        .video {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #ff4757;
+            color: white !important;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            width: fit-content;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .video:hover { background: #ff2e44; transform: scale(1.05); }
+
+        /* Floating Buttons */
+        .whatsapp {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-decoration: none;
+            z-index: 1000;
+        }
+        .support-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #ff9f43;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        /* Chatbox Design */
+        #chatBox {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            display: none;
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid #eee;
+        }
+        .chat-header { background: var(--primary); color: white; padding: 15px; font-weight: 600; display: flex; justify-content: space-between; }
+        #chatMessages { height: 300px; overflow-y: auto; padding: 15px; font-size: 13px; background: #fdfdfd; }
+        .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #eee; }
+        .chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; outline: none; }
+        .chat-input-area button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 50%; margin-left: 5px; cursor: pointer; }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: #2d3436;
+            color: white;
+            margin-top: 50px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .section { animation: fadeIn 0.5s ease forwards; }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+            header h1 { font-size: 22px; }
+        }
+    
+    /* FAQ Styling */
+.faq-item {
+    margin-bottom: 10px;
+    border: 1px solid #eef2f7;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.faq-question {
+    width: 100%;
+    padding: 15px 20px;
+    background: #f9fbff;
+    border: none;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+.faq-question:hover { background: #eef4ff; }
+.faq-answer {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: white;
+}
+.faq-answer p {
+    padding: 15px 0;
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+.faq-question i {
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+.faq-question.active i {
+    transform: rotate(180deg);
+}
+
+    .whatsapp-btn-container {
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+}
+
+.whatsapp-btn-container p {
+    margin-bottom: 15px;
+    color: #636e72;
+    font-weight: 400;
+}
+
+.custom-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #25D366;
+    color: white !important;
+    padding: 12px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.custom-wa-btn:hover {
+    background: #1eb956;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+.custom-wa-btn i {
+    font-size: 22px;
+}
+
+/* পালস অ্যানিমেশন (বাটনটি হালকা কাঁপবে নজর কাড়ার জন্য) */
+@keyframes pulse-wa {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.custom-wa-btn {
+    animation: pulse-wa 2s infinite;
+}
+
+    </style>
 </head>
 
-<body>
+<body onload="startChat()">
 
-<h2>WB Salary Calculator</h2>
+<header>
+    <div class="logo-box">
+        <img src="logo.png" alt="AI Online Logo" class="logo">
+    </div>
+    <h1>AI ONLINE</h1>
+    <p><i class="fas fa-robot"></i> Smart Digital & AI Based Services</p>
+</header>
 
-<div class="controls">
+<div class="search-container">
+    <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="searchFunction()" placeholder="Search services (e.g. Tax, GPF, Salary)...">
+        <button><i class="fas fa-search"></i></button>
+    </div>
+</div>
 
-DOJ: <input type="date" id="dojInput">
-, DOR: <input type="date" id="dorInput">
-, Starting Basic: <input type="number" id="basicInput" value="0">
-<br><br>
-<b>Category (Joining):</b>
-<select id="category" style="text-align: center;">
-<option value="A">A &emsp;</option>
-<option value="B">B</option>
-<option value="C">C</option>
-</select>
- <br>
-A Category Date: <input type="date" id="aDate">
-, Promotion Date: <input type="date" id="pDate">
-<br><br>
+<div class="container" id="servicesGrid">
+    
+    <div class="section">
+        <h2><i class="fas fa-book-open"></i> Books</h2>
+        <div class="list">
+            <a href="https://aionline.in.net/WBTextBook.html">School Text Books, West Bengal (FREE)</a>
+        </div>
+    </div>
 
-ROPA Option Dates:
-1981 <input type="date" id="r1981" value="1981-04-01">
-, 1990 <input type="date" id="r1990" value="1986-01-01">
-, 1998 <input type="date" id="r1998" value="1996-01-01">
-, 2009 <input type="date" id="r2009" value="2006-01-01">
-, 2019 <input type="date" id="r2019" value="2020-01-01">
+    <div class="section">
+        <h2><i class="fas fa-calculator"></i> Calculators</h2>
+        <div class="list">
+            <a href="https://aionline.in.net/Multiple_Calculator.html">
+                Age, Date, Service Length, Retirement & Leave Calculator (Free)
+            </a>
+        </div>
+        <div class="list-item">
+            <a href="https://aionline.in.net/GPF_CALCULATOR.html" class="link-text">GPF Calculator Online (Free)</a>
+            <a href="https://youtube.com/shorts/Lg_YwrBwq4g?si=KlSRy-m89_RG_O5S" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+        
+        <div class="list-item">
+            <a href="https://docs.google.com/spreadsheets/d/1uC4LBw_IuJ3fPu1vgIXM7t_fLyASGi9r/edit?usp=drivesdk" class="link-text">GPF Calculator Excel (Free)</a>
+            <a href="https://youtu.be/9bJ5WKuQTc8?si=zsfbID-EjOImn-Kj" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+        <div class="list">
+            <a href="https://aionline.in.net/pension_Gratuity_Commutation.html">Pension, Gratuity & Commutation Calculator (Free)</a>
+        </div>
+    </div>
 
-<br><br>
+    <div class="section">
+        <h2><i class="fas fa-file-invoice-dollar"></i> Income Tax</h2>
+        <div class="list">
+            <a href="https://aionline.in.net/income_tax_software.html">Income Tax Software for Office of the Sub-Inspector of Schools (Rs. 2000/-)</a>
+            <a href="https://aionline.in.net/2025-26_Income_Tax_Calculator.html">2025-26 Income Tax Calculator (New Regime)</a>
+            <a href="https://aionline.in.net/Form16.html">Form 16 (Free)</a>
+        </div>
+    </div>
 
- <b>Career Increment (Select):</b><br>
-<label><input type="checkbox" class="incOpt" value="10"> 10Y</label>
-<label><input type="checkbox" class="incOpt" value="18"> 18Y</label>
-<label><input type="checkbox" class="incOpt" value="20"> 20Y</label>
-    <br><br>
-<button onclick="generate()">Generate</button>
+    <div class="section">
+        <h2><i class="fas fa-wallet"></i> Salary Data</h2>
+        <div class="list-item">
+            <a href="https://aionline.in.net/Pay_Slip.html" class="link-text">Pay Slip, Primary Teachers, WB (FREE)</a>
+            <a href="https://youtube.com/shorts/PHELTnVVteg?si=QmhU-nMQJxHO86_b" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+        <div class="list-item">
+            <a href="" class="link-text">Salary Calculation for the Entire Service Life (Coming Soon)</a>
+            <a href="" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+        <div class="list">
+            <a href="https://aionline.in.net/SalaryStatement.html">Salary Statement (FREE)</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><i class="fas fa-graduation-cap"></i> Special Education</h2>
+        <div class="list">
+            <a href="https://aionline.in.net/SpecialEducationTET.html">Special TET Syllabus</a>
+            <a href="https://aionline.in.net/SplEdMcqDemo.html">MCQ Practice - Set (Free)</a>
+            <a href="https://aionline.in.net/SplEdMcq.html">Full MCQ Version (Rs.100/-)</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><i class="fas fa-ellipsis-h"></i> Others</h2>
+        <div class="list">
+            <a href="#">More Services Coming Soon...</a>
+        </div>
+    </div>
 
 </div>
 
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Basic</th>
-<th>DA%</th>
-<th>HRA%</th>
-<th>Addl Alw</th>
-<th>DA</th>
-<th>HRA</th>
-<th>MA</th>
-<th>IR</th>
-<th>Gross</th>
-<th>GPF</th>
-<th>PTAX</th>
-<th>GI</th>
-<th>Net</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+    <div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        জিপিএফ (GPF) ক্যালকুলেটর ব্যবহারের ভিডিও নির্দেশিকা (ক্লিকেবল সময়)
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <div style="padding: 10px 0;">
+            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">নিচের সময়গুলোর ওপর ক্লিক করলে ভিডিওর সেই অংশটি সরাসরি দেখতে পাবেন:</p>
+            <ul style="list-style: none; padding-left: 0; font-size: 13px; line-height: 2.2;">
+                <li>
+                    <a href="https://youtu.be/Lg_YwrBwq4g?t=9" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:09</a> 
+                    <b>সময় নির্বাচন:</b> Start ও End মাস সিলেক্ট করে 'Set' করুন।
+                </li>
+                <li>
+                    <a href="https://youtu.be/Lg_YwrBwq4g?t=30" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:30</a> 
+                    <b>ব্যালেন্স ও ফরম্যাট:</b> ওপেনিং ব্যালেন্স লিখে 'Generate' করুন।
+                </li>
+                <li>
+                    <a href="https://youtu.be/Lg_YwrBwq4g?t=40" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:40</a> 
+                    <b>ডিপোজিট এন্ট্রি:</b> জিপিএফ জমার টাকা কলামে লিখুন।
+                </li>
+                <li>
+                    <a href="https://youtu.be/Lg_YwrBwq4g?t=163" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">02:43</a> 
+                    <b>লোন/উইথড্রয়াল:</b> টাকা তোলার হিসাব এই অংশে দেখুন।
+                </li>
+                <li>
+                    <a href="https://youtu.be/Lg_YwrBwq4g?t=51" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:51</a> 
+                    <b>প্রিন্ট ও সেভ:</b> হিসাবটি ডাউনলোড করার পদ্ধতি।
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        পেনশন ও গ্র্যাচুইটি ক্যালকুলেটর কি নতুন নিয়ম অনুযায়ী আপডেট করা? 
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <p>হ্যাঁ, আমাদের পেনশন, গ্র্যাচুইটি এবং কমিউটেশন ক্যালকুলেটরটি সর্বশেষ সরকারি রুলস (ROPA) অনুযায়ী আপডেট করা হয়েছে। আপনি বর্তমান বেসিক পে ইনপুট দিয়ে নির্ভুল হিসাব পেতে পারেন।</p>
+    </div>
+</div>
+
+<div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        ট্যাক্স ক্যালকুলেটরে কি Old এবং New Regime—উভয় সুবিধা আছে? 
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <p>হ্যাঁ, আমাদের ২০২৫-২৬ অর্থবর্ষের ইনকাম ট্যাক্স ক্যালকুলেটরে Old এবং New Tax Regime তুলনা করার সুবিধা রয়েছে। এতে আপনি সহজেই বুঝতে পারবেন কোন স্কিমে আপনার ট্যাক্স সাশ্রয় হবে।</p>
+    </div>
+</div>
+
+<div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        লিঙ্ক কাজ না করলে বা ভুল ডাটা দেখালে কী করব? 
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <p>মাঝে মাঝে সার্ভার সমস্যার কারণে লিঙ্ক ওপেন হতে দেরি হতে পারে। সেক্ষেত্রে পেজটি রিফ্রেশ করুন। যদি কোনো টুলে ডাটা ভুল আসে, তবে স্ক্রিনশটসহ আমাদের হোয়াটসঅ্যাপে জানান, আমরা দ্রুত সমাধান করব।</p>
+    </div>
+</div>
+
+<div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        প্রাইমারি শিক্ষকদের পে-স্লিপ জেনারেট করতে কী কী তথ্য লাগে? 
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <p>আপনার নাম, বিদ্যালয়ের নাম, বর্তমান বেসিক পে এবং এইচআরএ (HRA) সংক্রান্ত তথ্য দিলেই কয়েক সেকেন্ডে একটি প্রফেশনাল পে-স্লিপ তৈরি হয়ে যাবে।</p>
+    </div>
+</div>
+
+<div class="faq-item">
+    <button class="faq-question" onclick="toggleFAQ(this)">
+        স্পেশাল এডুকেশন MCQ প্র্যাকটিস সেটে কি উত্তরমালা দেওয়া আছে? 
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+        <p>হ্যাঁ, ফ্রি ডেমো এবং ফুল ভার্সন—উভয় ক্ষেত্রেই প্রতিটি প্রশ্নের সঠিক উত্তর এবং ব্যাখ্যা (প্রয়োজন সাপেক্ষে) দেওয়া আছে যাতে আপনার প্রস্তুতি মজবুত হয়।</p>
+    </div>
+    <div class="faq-container">
+    </div>
+
+<div class="whatsapp-btn-container">
+    <p>আপনার কি আরও কোনো প্রশ্ন আছে?</p>
+    <a href="https://wa.me/919800074626" target="_blank" class="custom-wa-btn">
+        <i class="fab fa-whatsapp"></i> সরাসরি হোয়াটসঅ্যাপ সাপোর্ট নিন
+    </a>
+</div>
+
+
+</div>
+
+<footer>
+    <p>© 2026 AI Online | Digital Support India</p>
+    <div style="margin-top: 15px;">
+        <!--    <a href="https://www.freecounterstat.com" title="free web counter"><img src="https://counter1.optistats.ovh/private/freecounterstat.php?c=g8hw1rubbf2fkm6uxc5hs24wrbmyh4wx" border="0" alt="counter"></a>
+        -->
+    </div>
+</footer>
+
+<a class="whatsapp" href="https://wa.me/919800074626" target="_blank"><i class="fab fa-whatsapp"></i></a>
+<button class="support-btn" onclick="toggleChat()"><i class="fas fa-headset"></i> AI Support</button>
+
+<div id="chatBox">
+    <div class="chat-header">
+        <span>AI Online Support</span>
+        <i class="fas fa-times" onclick="toggleChat()" style="cursor:pointer"></i>
+    </div>
+    <div id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input id="chatInput" onkeypress="if(event.key === 'Enter') sendChat()" placeholder="Type here...">
+        <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
 
 <script>
-
-function formatDate(dateObj) {
-    let d = dateObj.getDate();
-    let m = dateObj.getMonth() + 1;
-    let y = dateObj.getFullYear();
-    return (d < 10 ? '0' + d : d) + '/' + (m < 10 ? '0' + m : m) + '/' + y;
-}
-
-const SCALE = {
-    1981:{ A:[300,10,400,15,565,20,685], B:[280,8,304,10,394,12,442,15,557,20,617], C:[260,7,295,8,311,10,421,12,481,14,597] },
-    1990:{ A:[1040,25,1215,30,1485,35,2590,40,1670,50,1920], B:[980,25,1230,30,1500,35,1675,40,1755], C:[920,21,1067,25,1242,30,1512,35,1617] },
-    1998:{ A:[3350,90,3800,100,4700,125,6325], B:[3150,80,3390,90,4380,100,5680], C:[3000,75,3450,80,4330,90,5230] }
-};
-
-const FITMENT = {1990:1.1, 1998:1.25, 2009:1.86, 2019:2.57};
-function el(id){ return document.getElementById(id); }
-
-function getScaleIncrement(basic, ropaYear) {
-    let cat = document.getElementById("category").value;
-    if (ropaYear >= 2009) return Math.round(basic * 1.03);
-    let scale = SCALE[ropaYear] ? SCALE[ropaYear][cat] : null;
-    if (!scale) return basic;
-    for (let i = 0; i < scale.length - 2; i += 2) {
-        if (basic >= scale[i] && basic < scale[i + 2]) return basic + scale[i + 1];
-    }
-    return basic;
-}
-
-const DA_DATA = [
-    ["1987-03-01",4],["1987-12-01",8],["1988-06-01",13],["1989-02-01",18],["1989-06-01",23],["1989-11-01",29],["1990-06-01",34],["1990-12-01",38],["1991-04-01",43],["1992-01-01",51],["1992-11-01",60],["1993-07-01",71],["1993-12-01",83],["1994-05-01",92],["1994-11-01",97],["1995-02-01",104],["1995-06-01",114],["1995-12-01",125],["1996-04-01",136],["1996-10-01",148],["1997-08-01",159],["1997-12-01",170],["1998-04-01",182.4],["1997-04-01",0],["1997-08-01",4],["1997-12-01",8],["1998-04-01",13],["1998-11-01",22],["1999-08-01",32],["2000-04-01",37],["2000-10-01",38],["2001-07-01",41],["2003-07-01",45],["2004-09-01",49],["2005-04-01",52],["2005-09-01",55],["2005-12-01",59],["2006-03-01",61],["2006-07-01",64],["2006-09-01",67],["2007-01-01",71],["2007-04-01",24],["2008-01-01",29],["2008-06-01",35],["2008-11-01",41],["2009-03-01",47],["2008-04-01",2],["2008-06-01",6],["2008-11-01",9],["2009-03-01",12],["2009-04-01",16],["2009-12-01",22],["2010-04-01",27],["2010-12-01",35],["2012-01-01",45],["2013-01-01",52],["2014-01-01",58],["2015-01-01",65],["2016-01-01",75],["2017-01-01",85],["2018-01-01",100],["2019-01-01",125],["2020-01-01",0],["2021-01-01",3],["2023-03-01",6],["2024-01-01",10],["2024-04-01",14],["2025-04-01",18],["2026-04-01",22]
-];
-
-function getDA(date){
-    let d = new Date(date);
-    let rate = 0;
-    for(let i=0;i<DA_DATA.length;i++){
-        let eff = new Date(DA_DATA[i][0]);
-        if(d >= eff) rate = DA_DATA[i][1];
-    }
-    return rate/100;
-}
-
-// ডিফল্ট PTAX ক্যালকুলেশন লজিক
-function getDefaultPTAX(gross) {
-    if (gross <= 6000) return 40;
-    if (gross <= 7000) return 45;
-    if (gross <= 8000) return 50;
-    if (gross <= 9000) return 90;
-    if (gross <= 15000) return 110;
-    if (gross <= 25000) return 130;
-    if (gross <= 40000) return 150;
-    return 200;
-}
-
-function reCalcRow(row, useDefaultPTAX = false) {
-    row.DA = Math.round(row.basic * row.daRate);
-    row.gross = row.basic + row.DA + row.HRA + row.MA + row.ADD + row.IR;
-    if (useDefaultPTAX) {
-        row.PTAX = getDefaultPTAX(row.gross);
-    }
-    row.net = row.gross - (row.GPF + row.PTAX + row.GI);
-}
-
-let rows = [];
-
-function generate() {
-    const dojInput = new Date(el("dojInput").value);
-    const dorInput = new Date(el("dorInput").value);
-    let currentBasic = +el("basicInput").value;
-
-    if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
-
-    rows = [];
-    const ROPA_CONFIG = [
-        { name: "ROPA 1981", start: el("r1981").value, end: "1990-02-28", year: 1981 },
-        { name: "ROPA 1990", start: el("r1990").value, end: "1999-02-28", year: 1990 },
-        { name: "ROPA 1998", start: el("r1998").value, end: "2009-03-31", year: 1998 },
-        { name: "ROPA 2009", start: el("r2009").value, end: "2019-12-31", year: 2009 },
-        { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019 }
-    ];
-
-    let hasStarted = false;
-
-    ROPA_CONFIG.forEach((config, idx) => {
-        let ropaStart = new Date(config.start);
-        let ropaEnd = new Date(config.end);
-        if (ropaEnd > dorInput) ropaEnd = dorInput;
-        if (dojInput > ropaEnd) return;
-
-        let actualStart = new Date(ropaStart);
-        if (!hasStarted) {
-            if (dojInput >= ropaStart) { actualStart = new Date(dojInput); hasStarted = true; } 
-            else { actualStart = new Date(ropaStart); hasStarted = true; }
-        }
-
-        rows.push({ isHeader: true, title: config.name });
-
-        let currentLoopDate = new Date(actualStart);
-        let isFirstInRopa = true;
-
-        while (currentLoopDate <= ropaEnd) {
-            let activeDate = new Date(currentLoopDate);
-            if (config.year === 1981) { activeDate.setDate(dojInput.getDate()); } 
-            else if (config.year === 1990) {
-                if (isFirstInRopa && actualStart.getTime() === dojInput.getTime()) { activeDate.setDate(dojInput.getDate()); } 
-                else { activeDate.setDate(1); activeDate.setMonth(dojInput.getMonth()); }
-            } 
-            else if (config.year === 1998) {
-                let optDate = new Date(config.start);
-                if (isFirstInRopa && actualStart.getTime() === ropaStart.getTime()) { activeDate = new Date(optDate); } 
-                else { activeDate.setDate(optDate.getDate()); activeDate.setMonth(optDate.getMonth()); }
-            }
-            else if (config.year >= 2009) {
-                if (isFirstInRopa && actualStart.getTime() === ropaStart.getTime()) { activeDate = new Date(config.start); } 
-                else { activeDate.setDate(1); activeDate.setMonth(6); }
-            }
-
-            if (!isFirstInRopa && activeDate <= ropaEnd) {
-                currentBasic = getScaleIncrement(currentBasic, config.year);
-            }
-
-            for (let m = 0; m < 12; m++) {
-                let monthDate = new Date(activeDate);
-                monthDate.setMonth(activeDate.getMonth() + m);
-                if (monthDate > ropaEnd || monthDate > dorInput) break;
-
-                let daRate = getDA(monthDate);
-                let hraRate = (monthDate >= new Date("2020-01-01")) ? 0.12 : (monthDate >= new Date("2006-03-01")) ? 0.15 : 0;
-                let MA = 500, ADD = 0, IR = 0, GI = 60;
-                
-                let rowObj = {
-                    date: monthDate,
-                    basic: currentBasic,
-                    daRate, hraRate, ADD, DA: 0, HRA: 0, MA, IR, GPF: Math.round(currentBasic * 0.06), GI,
-                    PTAX: 0, 
-                    ropaYear: config.year
-                };
-                reCalcRow(rowObj, true); // জেনারেট করার সময় ডিফল্ট PTAX ব্যবহার করবে
-                rows.push(rowObj);
-            }
-            isFirstInRopa = false;
-            currentLoopDate.setFullYear(currentLoopDate.getFullYear() + 1);
-        }
-
-        if (idx < ROPA_CONFIG.length - 1) {
-            let nextRopaYear = ROPA_CONFIG[idx+1].year;
-            currentBasic = Math.round((currentBasic * FITMENT[nextRopaYear]) / 100) * 100 + 100;
-        }
-    });
-    render();
-}
-
-function updateValue(index, field, value) {
-    let val = parseFloat(value) || 0;
-    let oldBasic = rows[index].basic;
-
-    for (let i = index; i < rows.length; i++) {
-        if (rows[i].isHeader) continue;
-
-        if (i === index) {
-            rows[i][field] = val;
-        } else {
-            if (field === 'basic') {
-                if (rows[i].ropaYear === rows[i-1].ropaYear) {
-                    if (rows[i].basic > oldBasic) {
-                        rows[i].basic = getScaleIncrement(rows[i-1].basic, rows[i].ropaYear);
-                    } else {
-                        rows[i].basic = rows[i-1].basic;
-                    }
-                    oldBasic = rows[i].basic;
-                } else {
-                    let fit = FITMENT[rows[i].ropaYear] || 1;
-                    rows[i].basic = Math.round((rows[i-1].basic * fit) / 100) * 100 + 100;
-                }
-            } else {
-                // HRA, MA, GPF, GI, PTAX - সবগুলোর জন্যই নিচের ঘরে একই ভ্যালু যাবে
-                rows[i][field] = val;
-            }
-        }
+    // Search Functionality
+    function searchFunction() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let sections = document.getElementsByClassName('section');
         
-        // PTAX এবং basic ছাড়া অন্য কোনো ফিল্ড আপডেট হলে ডিফল্ট PTAX অটোমেটিক আপডেট হবে না
-        // শুধুমাত্র শুরুতে এবং basic পরিবর্তনের ক্ষেত্রে ডিফল্ট PTAX লজিক কাজ করবে
-        let applyDefaultPTAX = (field === 'basic'); 
-        reCalcRow(rows[i], applyDefaultPTAX);
+        for (let i = 0; i < sections.length; i++) {
+            let text = sections[i].innerText.toLowerCase();
+            if (text.includes(input)) {
+                sections[i].style.display = "";
+            } else {
+                sections[i].style.display = "none";
+            }
+        }
     }
-    render();
+
+    function toggleChat(){
+        let box = document.getElementById('chatBox');
+        box.style.display = box.style.display === 'none' || box.style.display === '' ? 'block' : 'none';
+    }
+
+    function startChat(){
+        let messages = document.getElementById('chatMessages');
+        let intro = `<div style="margin-bottom:10px"><b>AI:</b> Welcome! 🤖<br>How can I help you today?</div>
+        <div style="color:#0B5ED7">1. Income Tax Software<br>2. GPF Calculator<br>3. Tax Calculator<br>4. Pay Slip<br>5. Salary Statement<br>6. Contact</div>`;
+        messages.innerHTML = intro;
+    }
+        
+    function sendChat(customMsg = null) {
+    let input = document.getElementById('chatInput');
+    let msg = customMsg || input.value; // বাটন বা ইনপুট থেকে ডাটা নেওয়া
+    if (!msg) return;
+
+    let messages = document.getElementById('chatMessages');
+    messages.innerHTML += `<div style="text-align:right; margin:10px 0"><b>You:</b> ${msg}</div>`;
+
+    let reply = "দুঃখিত, আমি বুঝতে পারিনি। দয়া করে নিচের অপশন থেকে একটি বেছে নিন বা সঠিক কিওয়ার্ড লিখুন।";
+
+    // উন্নত কিওয়ার্ড লজিক
+    let lowerMsg = msg.toLowerCase();
+    
+    if (lowerMsg.includes('1') || lowerMsg.includes('income tax software')) {
+        reply = "<b>Income Tax Software:</b><br>অফিস অফ দ্য সাব-ইন্সপেক্টর অফ স্কুলস (পশ্চিমবঙ্গ) -এর অধীনে কর্মরত সকল প্রাথমিক বিদ্যালয়ের শিক্ষক-শিক্ষিকাগণের ট্যাক্সের হিসাব করার জন্য বিশেষভাবে তৈরি ইনকাম ট্যাক্স সফটওয়্যার। এটি নির্ভুলভাবে ট্যাক্স ক্যালকুলেশন ও ফর্ম ১৬ তৈরি করতে সক্ষম।<br>💰 মূল্য: ₹২০০০/- (প্রতি বছর)";
+    } 
+    else if (lowerMsg.includes('2') || lowerMsg.includes('gpf')) {
+        reply = "<b>GPF Calculator:</b><br>পশ্চিমবঙ্গ সরকারি কর্মচারীদের জিপিএফ ইন্টারেস্ট হিসাব করার সহজ অনলাইন টুল। আপনি GPF লোন বা উইথড্রয়ালের হিসাবও করতে পারবেন। ভিডিও নির্দেশিকা দেখতে FAQ সেকশন চেক করুন। ⭐";
+    } 
+    else if (lowerMsg.includes('3') || lowerMsg.includes('tax calculator')) {
+        reply = "<b>Income Tax Calculator:</b><br>নতুন ও পুরাতন রিজিমে ট্যাক্সের হিসাব করুন সম্পূর্ণ বিনামূল্যে। আপনার জন্য কোনটি লাভজনক তা যাচাই করুন। ⭐";
+    } 
+    else if (lowerMsg.includes('4') || lowerMsg.includes('pay slip')) {
+        reply = "<b>Pay Slip:</b><br>পশ্চিমবঙ্গের প্রাথমিক শিক্ষকদের জন্য মাসিক পে-স্লিপ তৈরির অনলাইন পোর্টাল। আপনার ডাটা ইনপুট দিয়ে মুহূর্তেই পে-স্লিপ ডাউনলোড করুন। ⭐";
+    } 
+    else if (lowerMsg.includes('5') || lowerMsg.includes('salary statement')) {
+        reply = "<b>Salary Statement:</b><br>পুরো বছরের বেতনের বিবরণী বা স্যালারি স্টেটমেন্ট তৈরি করুন সম্পূর্ণ বিনামূল্যে। এটি ইনকাম ট্যাক্সের হিসাব করার কাজে সহায়ক। ⭐";
+    } 
+    else if (lowerMsg.includes('6') || lowerMsg.includes('pension')) {
+        reply = "<b>Pension:</b><br>অবসর পরবর্তী পেনশন, গ্র্যাচুইটি এবং কমিউটেশন ভ্যালু কত হবে তা সর্বশেষ সরকারি নিয়ম (ROPA) অনুযায়ী হিসাব করুন। ⭐";
+    } 
+    else if (lowerMsg.includes('7') || lowerMsg.includes('book')) {
+        reply = "<b>Books:</b><br>পশ্চিমবঙ্গ মধ্যশিক্ষা পর্ষদ ও প্রাথমিক শিক্ষা পর্ষদ অনুমোদিত প্রথম থেকে দ্বাদশ শ্রেণীর সব পাঠ্যপুস্তক (PDF) অনলাইনে পড়ুন। ⭐";
+    } 
+    else if (lowerMsg.includes('8') || lowerMsg.includes('contact') || lowerMsg.includes('যোগাযোগ')) {
+        reply = `📩 <b>যোগাযোগ করুন:</b><br>📧 evbasoftware@gmail.com<br>
+                <a href="https://wa.me/919800074626" target="_blank" style="display:inline-block; margin-top:5px; background:#25D366; color:white; padding:5px 10px; border-radius:5px; text-decoration:none; font-size:12px;">
+                <i class="fab fa-whatsapp"></i> WhatsApp Chat</a>`;
+    }
+
+    setTimeout(() => {
+        messages.innerHTML += `<div style="margin:10px 0; background:#f1f1f1; padding:10px; border-radius:10px;"><b>AI:</b> ${reply}</div>`;
+        
+        // চ্যাট শেষ হওয়ার পর কুইক বাটনগুলো আবার দেখানো (ঐচ্ছিক)
+        showQuickButtons();
+        
+        messages.scrollTop = messages.scrollHeight;
+    }, 500);
+    input.value = '';
 }
 
-function render(){
-    let tbody = el("tbody");
-    tbody.innerHTML = "";
-    rows.forEach((r, idx) => {
-        let tr = document.createElement("tr");
-        if(r.isHeader) {
-            tr.innerHTML = `<td colspan="14" class="ropa-header">${r.title}</td>`;
-        } else {
-            tr.innerHTML = `
-                <td>${formatDate(r.date)}</td>
-                <td><input type="number" class="edit-input" value="${r.basic}" onchange="updateValue(${idx}, 'basic', this.value)"></td>
-                <td>${(r.daRate*100).toFixed(0)}%</td>
-                <td>${(r.hraRate*100).toFixed(0)}%</td>
-                <td>${r.ADD}</td>
-                <td>${r.DA}</td>
-                <td><input type="number" class="edit-input" value="${r.HRA}" onchange="updateValue(${idx}, 'HRA', this.value)"></td>
-                <td><input type="number" class="edit-input" value="${r.MA}" onchange="updateValue(${idx}, 'MA', this.value)"></td>
-                <td>${r.IR}</td>
-                <td>${r.gross}</td>
-                <td><input type="number" class="edit-input" value="${r.GPF}" onchange="updateValue(${idx}, 'GPF', this.value)"></td>
-                <td><input type="number" class="edit-input" value="${r.PTAX}" onchange="updateValue(${idx}, 'PTAX', this.value)"></td>
-                <td><input type="number" class="edit-input" value="${r.GI}" onchange="updateValue(${idx}, 'GI', this.value)"></td>
-                <td>${r.net}</td>`;
-        }
-        tbody.appendChild(tr);
-    });
+// কুইক রিপ্লাই বাটন দেখানোর ফাংশন
+function showQuickButtons() {
+    let messages = document.getElementById('chatMessages');
+    let buttonsHTML = `
+        <div class="quick-btns" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+            <button onclick="sendChat('1')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Income Tax Software</button>
+            <button onclick="sendChat('2')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">GPF Calculator</button>
+            <button onclick="sendChat('3')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Income Tax Calculator</button>
+            <button onclick="sendChat('4')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Pay Slip</button>
+            <button onclick="sendChat('5')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Salary Statement</button>
+            <button onclick="sendChat('6')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Pension, Gratuity, Commutation</button>
+            <button onclick="sendChat('7')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Text Book</button>
+            <button onclick="sendChat('8')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Contact</button>
+        </div>`;
+    messages.innerHTML += buttonsHTML;
 }
+
+// শুরুতে চ্যাটবক্স লোড হলে বাটন দেখাবে
+function startChat() {
+    let messages = document.getElementById('chatMessages');
+    messages.innerHTML = `<div style="margin-bottom:10px"><b>AI:</b> নমস্কার! আমি আপনাকে কীভাবে সাহায্য করতে পারি?</div>`;
+    showQuickButtons();
+}
+    
+    function toggleFAQ(button) {
+    // অ্যাক্টিভ ক্লাস টগল করা
+    button.classList.toggle("active");
+    
+    // উত্তর দেখানো বা লুকানো
+    let answer = button.nextElementSibling;
+    if (answer.style.maxHeight) {
+        answer.style.maxHeight = null;
+    } else {
+        answer.style.maxHeight = answer.scrollHeight + "px";
+    }
+}
+
 </script>
 
 </body>
