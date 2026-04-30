@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://aionline.in.net/sitemap.xml
