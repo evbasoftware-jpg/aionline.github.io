@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Income Tax Calculator</title>
+  <style>
+    /* Style for the entire body, centering the Income_Tax_Calculator */
+    body {
+      font-family: Bookman Old Style;
+      display: flex;
+      justify-content: center;
+      align-items: left;
+      height: 100vh;
+      background-color: rgb(253, 252, 172);
+    }
+   
+    div.a { /*table line gap*/
+      line-height: 1.3;
+    }
+  </style>
+</head>
+
+<body >
+  <script>
+
+  function one_three() {
+      let Tot_abcd1;
+      let Net_Sal;
+      let Tot_2abcdef;
+    
+      if (parseFloat(old_Regime.f_2.value)<=200000){
+        document.getElementById("f2").value = parseFloat(old_Regime.f_2.value);
+      } else{
+        document.getElementById("f2").value = 200000;
+      }
+
+      Tot_abcd1=parseFloat(old_Regime.g_sal.value)+parseFloat(old_Regime.section_17_2.value)+parseFloat(old_Regime.section_17_3.value)+parseFloat(old_Regime.Sal_Oth_Emp.value)
+      if (Tot_abcd1 < parseFloat(old_Regime.abcdef_2.value)) {
+        Net_Sal=0;
+      }else {
+      Tot_2abcdef=parseFloat(old_Regime.a_2.value)+parseFloat(old_Regime.b_2.value)+parseFloat(old_Regime.c_2.value)+parseFloat(old_Regime.d_2.value)+parseFloat(old_Regime.e_2.value)+parseFloat(old_Regime.f_2.value)
+      Net_Sal=Tot_abcd1-Tot_2abcdef;
+      }
+      
+      document.getElementById("abcdef2").value = Tot_2abcdef; 
+      document.getElementById("net_sal").value = Net_Sal;
+      five()
+     
+    }
+
+    function Other_Income() {
+      let oth_inc;
+
+      oth_inc=parseFloat(old_Regime.oi4_a.value)+parseFloat(old_Regime.oi1.value) + parseFloat(old_Regime.oi2.value) + parseFloat(old_Regime.oi3.value) + parseFloat(old_Regime.oi6.value) ;
+
+     document.getElementById("tot4").value = oth_inc;
+
+     if (parseFloat(old_Regime.oi3.value)<=10000){ /*80TTA*/
+        document.getElementById("tta80").value = parseFloat(old_Regime.oi3.value);
+        
+        } else{
+        document.getElementById("tta80").value = 10000;
+        
+      }
+
+     five()
+     eightyC()
+     six()
+    }
+    
+    function Family_Pension() {
+      let fam_pen_deduct;
+      let fam_pen_aft_deduct;
+      let total_oth_inco; 
+      let Gross_Tot_Inco;
+      
+    if (Math.round(parseFloat(old_Regime.oi4.value)/3)<15000) {
+      fam_pen_deduct = Math.round(parseFloat(old_Regime.oi4.value)/3);
+      fam_pen_aft_deduct=parseFloat(old_Regime.oi4.value)-parseFloat(fam_pen_deduct);
+      total_oth_inco=parseFloat(old_Regime.oi4_a.value)+parseFloat(old_Regime.oi1.value) + parseFloat(old_Regime.oi2.value) + parseFloat(old_Regime.oi3.value) + parseFloat(fam_pen_aft_deduct);
+      Gross_Tot_Inco=parseFloat(old_Regime.Net_Salary.value) + parseFloat(total_oth_inco);
+    } else {
+      fam_pen_deduct = 15000; 
+       fam_pen_aft_deduct=parseFloat(old_Regime.oi4.value)-parseFloat(fam_pen_deduct);
+       total_oth_inco=parseFloat(old_Regime.oi4_a.value) +parseFloat(old_Regime.oi1.value) + parseFloat(old_Regime.oi2.value) + parseFloat(old_Regime.oi3.value) + parseFloat(fam_pen_aft_deduct);
+      Gross_Tot_Inco=parseFloat(old_Regime.Net_Salary.value)+ parseFloat(total_oth_inco);
+      }
+      document.getElementById("oi4e").value = fam_pen_deduct;
+      document.getElementById("oi4f").value = fam_pen_aft_deduct;
+      document.getElementById("tot4").value = total_oth_inco;
+      document.getElementById("tot5").value = Gross_Tot_Inco;
+      five()
+    }
+
+    function five() {
+      let Gross_Tot_Inco;
+
+      Gross_Tot_Inco=parseFloat(old_Regime.Net_Salary.value) + parseFloat(old_Regime.tot_oth_in.value);
+     document.getElementById("tot5").value = Gross_Tot_Inco;
+     seven_eleven()
+    }
+
+    function seven_eleven() {
+      let Tax_able_Income;
+      let Tax_able_Inc_round;
+      let Actual_Taxable_Income;
+      let sal01;
+      let sal2;
+      let sal3;
+      let sal4;
+      
+      let tax_tot;
+      let A_87;
+      let TaxPayable;
+      let ttp_fourteen;
+
+      Tax_able_Income=parseFloat(old_Regime.Gross_Tot_In.value) - parseFloat(old_Regime.tot_6.value);
+      Tax_able_Inc_round=  Math.round(parseFloat(Tax_able_Income/10))*10; /*Taxable income round*/
+
+      /*actual taxable income*/
+      if (Tax_able_Income > Tax_able_Inc_round) {
+        Actual_Taxable_Income=Tax_able_Income;
+      }else if (Tax_able_Income <= Tax_able_Inc_round){
+        Actual_Taxable_Income=Tax_able_Inc_round;
+      }
+
+ /* 1st slab tax calculation */
+      if (parseFloat(Actual_Taxable_Income) <= 0) {
+        sal01=0;
+      } else if (Actual_Taxable_Income <=250000) {
+        sal01= Actual_Taxable_Income;
+      } else {
+        sal01= 250000;
+      }
+
+    /*  2nd slab tax calculation */
+      if (parseFloat(Actual_Taxable_Income) <= 250000) {
+        sal2=0;
+      } else if (Actual_Taxable_Income <=500000) {
+        sal2= Actual_Taxable_Income-sal01;
+      } else {
+        sal2= 500000-sal01;
+      }
+   
+      /*  3rd slab tax calculation */
+      if (parseFloat(Actual_Taxable_Income) <= 500000) {
+        sal3=0;
+      } else if (Actual_Taxable_Income <=1000000) {
+        sal3= Actual_Taxable_Income-sal01-sal2;
+      } else {
+        sal3= 1000000-sal01-sal2;
+      }
+
+/*  4th slab tax calculation */
+if (parseFloat(Actual_Taxable_Income) <= 1000000) {
+        sal4=0;
+      
+      } else {
+        sal4= Actual_Taxable_Income-1000000;
+      }
+
+    tax_tot=(sal2*5)/100+(sal3*20)/100+(sal4*30)/100 /* total tax*/
+
+/*  87A calculation */
+      if (Actual_Taxable_Income <= 500000) {
+        A_87=tax_tot; 
+      } else {
+        A_87= 0;      
+      }
+
+      TaxPayable=Math.round(tax_tot-A_87);
+    
+     document.getElementById("Taxable_Inc").value = Tax_able_Income;
+     document.getElementById("Taxable_Inc_round").value= Tax_able_Inc_round;
+     
+     document.getElementById("sal1").value= sal01;
+     document.getElementById("Tax_slab1").value= 0;
+     document.getElementById("sal2").value= sal2;
+     document.getElementById("Tax_slab2").value= Math.round((sal2*5)/100);
+     document.getElementById("sal3").value= sal3;
+     document.getElementById("Tax_slab3").value= Math.round((sal3*20)/100);
+     document.getElementById("sal4").value= sal4;
+     document.getElementById("Tax_slab4").value= Math.round((sal4*30)/100);
+     
+     document.getElementById("TOTAL_Tax").value= Math.round(tax_tot);/*  total tax*/
+     document.getElementById("87a").value= Math.round(A_87);/*  87a*/
+     document.getElementById("Tax_Payable").value= TaxPayable;/* TAX PAYABLE */
+     fourteen_sixteen()
+    }
+
+    function Short_TCG(){
+      document.getElementById("st_cg2").value = Math.round((parseFloat(old_Regime.st_cg1.value)*20)/100);
+      fourteen_sixteen()
+    }
+
+    function Long_TCG(){
+      if (parseFloat(old_Regime.lt_cg1.value)<=125000){
+        document.getElementById("lt_cg2").value = 0;
+        fourteen_sixteen()
+      } else{
+        document.getElementById("lt_cg2").value = Math.round(((parseFloat(old_Regime.lt_cg1.value)-125000)*12.5)/100);
+        fourteen_sixteen()
+      }
+    }
+
+    function fourteen_sixteen() {
+        document.getElementById("ttp14").value= parseFloat(old_Regime.Tax_Pay_able.value)+parseFloat(old_Regime.st_cg_2.value)+parseFloat(old_Regime.lt_cg_2.value);
+        document.getElementById("Edu_Cess").value= Math.round((old_Regime.ttp_14.value*4)/100); /* edu cess*/
+        document.getElementById("TTP16").value= parseFloat(old_Regime.ttp_14.value)+parseFloat(old_Regime.Education_Cess.value); /* Total Tax Payable */
+        eighteen_twenty()
+      }
+
+    function eighteen_twenty() {
+      let ntp_eighteen;
+
+      ntp_eighteen= parseFloat(old_Regime.TTP_16.value)-parseFloat(old_Regime.Rebt_89i.value);
+     document.getElementById("NTP18").value = ntp_eighteen;
+     document.getElementById("TTaxPay_Refund").value = parseFloat(old_Regime.NTP_18.value)+parseFloat(old_Regime.td_s.value);/* PAYABLE/REFUNDABLE */
+     taxPay_Refund()
+    }
+
+    function taxPay_Refund() {
+      let tp_refund_text;
+      let tp_refund;
+
+      if (parseFloat(old_Regime.NTP_18.value) > parseFloat(old_Regime.td_s.value)){
+        tp_refund_text="20) Tax Payable";
+        tp_refund=parseFloat(old_Regime.NTP_18.value) - parseFloat(old_Regime.td_s.value);
+
+      } else {
+       
+        tp_refund_text="20) Amount Refundable";
+        tp_refund= parseFloat(old_Regime.td_s.value) - parseFloat(old_Regime.NTP_18.value);
+      }
+      document.getElementById("TP_Refund").value = tp_refund_text;
+      document.getElementById("TTaxPay_Refund").value = tp_refund;
+    }
+
+    function six(){
+      document.getElementById("tot6").value = parseFloat(old_Regime.c80ccc_ccd1_2.value)+parseFloat(old_Regime.NPS_80CCD_1b2.value)+parseFloat(old_Regime.NPS_80CCD2_2.value)+parseFloat(old_Regime.d_80_2.value)+parseFloat(old_Regime.dp_80_2.value)+parseFloat(old_Regime.dd_802.value)+parseFloat(old_Regime.ddb_802.value)+parseFloat(old_Regime.e_802.value)+parseFloat(old_Regime.ee_802.value)+parseFloat(old_Regime.eea_802.value)+parseFloat(old_Regime.eeb_802.value)+parseFloat(old_Regime.g_802.value)+parseFloat(old_Regime.gg_802.value)+parseFloat(old_Regime.gga_802.value)+parseFloat(old_Regime.ggc_802.value)+parseFloat(old_Regime.u_802.value)+parseFloat(old_Regime.tta_80.value)+parseFloat(old_Regime.any_oth6.value);
+      seven_eleven()
+    }
+    
+    function eightyC(){
+      if (parseFloat(old_Regime.c80ccc_ccd1.value)<=150000){
+        document.getElementById("c80_ccc_ccd1_2").value = parseFloat(old_Regime.c80ccc_ccd1.value);
+        six()
+        } else{
+        document.getElementById("c80_ccc_ccd1_2").value = 150000;
+        six()
+      }
+
+      if (parseFloat(old_Regime.NPS_80CCD_1b.value)<=50000){
+        document.getElementById("NPS_self2").value = parseFloat(old_Regime.NPS_80CCD_1b.value);
+        six()
+        } else{
+        document.getElementById("NPS_self2").value = 50000;
+        six()
+      }
+
+      document.getElementById("NPS_emp2").value = parseFloat(old_Regime.NPS_80CCD2.value);
+
+      if (parseFloat(old_Regime.d_80.value)<=25000){
+        document.getElementById("d802").value = parseFloat(old_Regime.d_80.value);
+        six()
+        } else{
+        document.getElementById("d802").value = 25000;
+        six()
+      }
+
+      if (parseFloat(old_Regime.dp_80.value)<=50000){
+        document.getElementById("dp802").value = parseFloat(old_Regime.dp_80.value);
+        six()
+        } else{
+        document.getElementById("dp802").value = 50000;
+        six()
+      }
+
+      if (parseFloat(old_Regime.dd_80.value)<=39){
+        document.getElementById("dd802").value = 0;
+        six()
+        } else if (parseFloat(old_Regime.dd_80.value)<=80){
+        document.getElementById("dd802").value = 75000;
+        six()
+        } else if (parseFloat(old_Regime.dd_80.value)<=100){
+        document.getElementById("dd802").value = 125000;
+        six()
+        } else {
+        document.getElementById("dd802").value = 0;
+        six()
+        }
+
+      if (parseFloat(old_Regime.ddb_80.value)<=40000){
+        document.getElementById("ddb802").value = parseFloat(old_Regime.ddb_80.value);
+        six()
+        } else{
+        document.getElementById("ddb802").value = 40000;
+        six()
+      }
+
+      document.getElementById("e802").value = parseFloat(old_Regime.e_80.value);
+
+      if (parseFloat(old_Regime.ee_80.value)<=50000){
+        document.getElementById("ee802").value = parseFloat(old_Regime.ee_80.value);
+        six()
+        } else{
+        document.getElementById("ee802").value = 50000;
+        six()
+      }
+
+      if (parseFloat(old_Regime.eea_80.value)<=150000){
+        document.getElementById("eea802").value = parseFloat(old_Regime.eea_80.value);
+        six()
+        } else{
+        document.getElementById("eea802").value = 150000;
+        six()
+      }
+
+      if (parseFloat(old_Regime.eeb_80.value)<=150000){
+        document.getElementById("eeb802").value = parseFloat(old_Regime.eeb_80.value);
+        six()
+        } else{
+        document.getElementById("eeb802").value = 150000;
+        six()
+      }
+
+      document.getElementById("g802").value = parseFloat(old_Regime.g_80.value);
+      document.getElementById("gg802").value = parseFloat(old_Regime.gg_80.value);/*house rent*/
+      document.getElementById("gga802").value = parseFloat(old_Regime.gga_80.value);
+      document.getElementById("ggc802").value = parseFloat(old_Regime.ggc_80.value);
+
+      if (parseFloat(old_Regime.u_80.value)<=39){
+        document.getElementById("u802").value = 0;
+        six()
+        } else if (parseFloat(old_Regime.u_80.value)<=80){
+        document.getElementById("u802").value = 75000;
+        six()
+        } else if (parseFloat(old_Regime.u_80.value)<=100){
+        document.getElementById("u802").value = 125000;
+        six()
+        } else {
+        document.getElementById("u802").value = 0;
+        six()
+        }
+
+        
+
+
+    }
+
+    
+
+
+
+
+  </script>
+ 
+  <form name=old_Regime >     
+    
+  <font color ="red" >Special Note : This below Calculator is only for Individuals below 60 years.</font></br></br>
+  &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+	   Income Tax calculation for the Financial Year 2023-24 and onwards</br>
+     &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+          
+     <table style="width:100%; outline: 2px solid blue;" >
+      <tr >
+        
+          <th style="border-bottom: 2px solid blue; border-right: 2px solid blue;"><font color ="blue">OLD REGIME TAX CALCULATION</font></th>
+          <th style="border-bottom: 2px solid blue;"><font color ="blue">Amount</font></th>
+          <th style="border-bottom: 2px solid blue;"><font color ="blue">Amount</font></th>
+          <th style="border-bottom: 2px solid blue;"><font color ="blue">Amount</font></th>
+      </tr>
+      <tr><td style="border-right: 2px solid blue;">
+        
+        
+          <p style="line-height: 1.3;">
+        <label for="gsal"> 1) <font size="2">Gross Salary Income (Including Allowances, Bonus, Arrear)	:</font></label></br>
+        &emsp;<label for="17-2"> <font size="2"> Value of perquisites under section 17(2) :</font></label></br>
+        &emsp;<label for="17-3"> <font size="2"> Profits in lieu of salary under section 17(3) :</font></label></br>
+        &emsp;<label for="sal_oe"> <font size="2"> Total amount of salary received from other employer(s)	:</font></label></br>
+        <label for="2"> 2)<font size="2"> Less: from Salary from the followings </font></label></br>
+        &emsp;<label for="a2"> <font size="2">a)   Standard Deduction U/S 16(Ia)</font></label></br>
+        &emsp;<label for="b2"> <font size="2">b)   Entertainment allowance under section 16(ii) </font></label></br>
+        &emsp;<label for="c2"> <font size="2">c)   P.Tax U/S 16(III) </font></label></br>
+        &emsp;<label for="d2"> <font size="2">d)   HRA exemption U/S 10(13A) </font></label></br>
+        &emsp;<label for="e2"> <font size="2">e)  Any allowances u/s 10 </font></label></br>
+        &emsp;<label for="f2"> <font size="2">f)  Interest on HB Loan [U/S 24(b)]  </font></label></br>
+       &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <label for="abcdef2"> TOTAL (a+b+c+d+e+f) :</label></br>
+        <label for="net_sal"> 3) Net Salary income (1-2) :</label>
+         </p>
+         </td>
+      
+        <td style="border-right: 2px solid blue;"></td>
+
+        <td style="border-right: 2px solid blue;">
+        </br></br></br>
+          <input type="number" id="a2" name="a_2" value="50000" style="width: 80px; text-align:right;" ></br>
+          <input type="number" id="b2" name="b_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="c2" name="c_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="d2" name="d_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="e2" name="e_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="f2" name="f_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+        </td> 
+
+        <td>
+          <input type="number" id="gsal" name="g_sal" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="17-2" name="section_17_2" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="17-3" name="section_17_3" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br>
+          <input type="number" id="sal_oe" name="Sal_Oth_Emp" value="0" style="width: 80px; text-align:right;" oninput="one_three()" ></br></br>
+                </br></br></br></br></br></br></br>
+          <input type="number" id="abcdef2" name="abcdef_2"  value="0" style="width: 80px; text-align:right;" disabled ></br>
+          <input type="number" id="net_sal"  name="Net_Salary" style="width: 80px; text-align:right;" disabled>
+      </td></tr>
+
+        <tr><td style="border-right: 2px solid blue;">
+        <label for="oi4_a"> 4a) <font color ="blue"> Income (or admissible loss) from house property</br>
+          &ensp;&emsp;  reported by employee offered for TDS :</font></label> </br>
+        <label for="oi4b"> 4b) Any other Income (Interest etc.)	:</label></br> 
+        &emsp;&emsp;  
+        <label for="oi4a"> (i)  </label> &emsp;
+            <input type="text" id="oi4a" name="txt1"> </br>
+         &emsp;&emsp;
+        <label for="oi4b"> (ii) </label> &ensp;
+            <input type="text" id="oi4b" name="txt2"> </br>
+        &emsp;&emsp;
+        <label for="oi4c"> (iii) Savings Account Interest	</label></br>
+        &emsp;&emsp;
+        <label for="oi4d"> (iv) Family Pension = Rs.</label>
+        <input type="number" id="oi4d" name="oi4" value="" style="width: 80px; text-align:right;" oninput="Family_Pension()"> </br>
+        &emsp;&emsp;&ensp;
+        <label for="oi4e"><font size="2"> Less: Deduction U/S 57(IIA):	</font></label>
+        <input type="number" id="oi4e" name="oi5" value="" style="width: 80px; text-align:right;" disabled></br>
+        &emsp;&emsp;
+        <label for="oi4f"> <font color ="blue">Family Pension after deduction	: </font></label>
+        <input type="number" id="oi4f" name="oi6" style="width: 100px; text-align:right;" value="0" disabled ></br>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <label for="tot4"> Total (i+ii+iii+iv)	 :	</label> </br>
+        <label for="tot5"> 5) Gross Total Income (3+4a+4b)		 :	</label></br>
+      </td>
+      
+      <td style="border-right: 2px solid blue;"></td>
+
+      <td style="border-right: 2px solid blue;">
+       <input type="number" id="oi4_a" name="oi4_a" style="width: 80px; text-align:right;" value="0" oninput="Other_Income()"></br></br>
+       <input type="number" id="oi4a" name="oi1" value="0" style="width: 80px; text-align:right;" oninput="Other_Income()"></br>
+       <input type="number" id="oi4b" name="oi2" value="0" style="width: 80px; text-align:right;" oninput="Other_Income()"></br>
+       <input type="number" id="oi4c" name="oi3" value="0" style="width: 80px; text-align:right;" oninput="Other_Income()"></br></br></br></br></br>
+      </td>
+
+      <td >  
+        </br></br></br></br></br></br></br></br></br></br>
+          <input type="number" id="tot4" name="tot_oth_in" style="width: 80px; text-align:right;" value="0" disabled ></br>
+          <input type="number" id="tot5" name="Gross_Tot_In" style="width: 80px; text-align:right;" value="" disabled  ></br>
+        </td></tr>
+        
+        <tr><td style="border-right: 2px solid blue;" >
+          <p style="line-height: 1.3;">
+          <label for="c80_ccc_ccd1">6)<font size="2"> i) Deduction U/S [80C+80CCC+80CCD(1)] (upto Rs. 1,50,000) :</font></label></br>
+          &emsp;&emsp;<label> <font color=blue> Other Deductions :</font></label></br>
+          &emsp;<label for="NPS_self"> <font size="2">ii) 80CCD(1B) NPS (self Contribution) :</font></label></br>
+          &emsp;<label for="NPS_emp"><font size="2"> iii) 80CCD(2)  NPS (Employer Contribution) :</font></label></br>
+          &emsp;<label for="d80"><font size="2"> iv) 80D  (for Self) :</font></label></br>
+          &emsp;<label for="dp80"><font size="2"> v) 80D (for Parent) :</font></label></br>
+          &emsp;<label for="dd80"><font size="2"> vi) 80DD - Treatment of dependent who is person with disability </font></br>
+            &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label></br>
+          &emsp;<label for="ddb80"><font size="2"> vii) 80DDB - Medical treatment of specified disease :</font></label></br>
+          &emsp;<label for="e80"><font size="2"> viii) 80E - Interest on loan taken for higher education :</font></label></br>
+          &emsp;<label for="ee80"><font size="2"> ix) 80EE- Interest on loan taken for residential house property :</font></label></br>
+          &emsp;<label for="eea80"><font size="2"> x) 80EEA- Interest on loan taken for certain house property :</font></label></br>
+          &emsp;<label for="eeb80"><font size="2"> xi) 80EEB- Deduction in respect of purchase of electric vehicle :</font></label></br>
+          &emsp;<label for="g80"><font size="2"> xii) 80G - Donations to certain funds, charitable institutions :</font></label></br>
+          &emsp;<label for="gg80"><font size="2"> xiii) 80GG - House Rent paid :</font></label></br>
+          &emsp;<label for="gga80"><font size="2"> xiv) 80GGA - Donations for Scientific Research or Rural Dev. :</font></label></br>
+          &emsp;<label for="ggc80"><font size="2"> xv) 80GGC - Donation to Political party :</font></label></br>
+          &emsp;<label for="u80"><font size="2"> xvi) 80U - Deduction In case of a person with disability</font></br>
+            &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label></br>
+          &emsp;<label for="tta80"><font size="2"> xvii) 80TTA - Deduction against interest in savings account	:</font></label></br>
+          &emsp;<label for="6any_oth"><font size="2"> xviii) Any other deduction under provision(s) of Chapter VI-A :</font></label></br>
+                  
+       &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+          <label for="tot6"><font color=blue> Total Deduction (6i to 6xviii): </font></label></br></br></br></br></br>
+          <label for="Taxable_Inc"> 7)<font size="2"> Taxable Income (5 - 6):	</font></label></br>
+          <label for="Taxable_Inc_round"> 8) <font size="2">Taxable Income (Rounded off U/S 288A next ten)	:	</font></label>
+        </p>  
+        </td>
+
+          <td style="border-right: 2px solid blue;">
+            <input type="number" id="c80_ccc_ccd1" name="c80ccc_ccd1" style="width: 80px; text-align:right;" value="0" oninput="eightyC()" ></br></br>
+            <input type="number" id="NPS_self" name="NPS_80CCD_1b" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="NPS_emp" name="NPS_80CCD2" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="d80" name="d_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="dp80" name="dp_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br></br>
+            <input type="number" id="dd80" name="dd_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="ddb80" name="ddb_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="e80" name="e_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="ee80" name="ee_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="eea80" name="eea_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="eeb80" name="eeb_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="g80" name="g_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="gg80" name="gg_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="gga80" name="gga_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            <input type="number" id="ggc80" name="ggc_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br></br>
+            <input type="number" id="u80" name="u_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"></br>
+            </br></br></br></br></br></br></br></br></br></br>
+          </td> 
+
+          <td style="border-right: 2px solid blue;">
+            <input type="number" id="c80_ccc_ccd1_2" name="c80ccc_ccd1_2" style="width: 80px; text-align:right;" value="0" disabled></br></br>
+            <input type="number" id="NPS_self2" name="NPS_80CCD_1b2" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="NPS_emp2" name="NPS_80CCD2_2" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="d802" name="d_80_2" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="dp802" name="dp_80_2" style="width: 80px; text-align:right;" value="0" disabled></br></br>
+            <input type="number" id="dd802" name="dd_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="ddb802" name="ddb_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="e802" name="e_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="ee802" name="ee_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="eea802" name="eea_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="eeb802" name="eeb_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="g802" name="g_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="gg802" name="gg_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="gga802" name="gga_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="ggc802" name="ggc_802" style="width: 80px; text-align:right;" value="0" disabled></br></br>
+            <input type="number" id="u802" name="u_802" style="width: 80px; text-align:right;" value="0" disabled></br>
+            <input type="number" id="tta80" name="tta_80" style="width: 80px; text-align:right;" value="0" disabled></br>
+            
+            <input type="number" id="6any_oth" name="any_oth6" style="width: 80px; text-align:right;" value="0" oninput="eightyC()">
+            </br></br></br></br></br></br></br></br></br>
+            
+          </td>
+
+          <td >
+          </br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+          <input type="number" id="tot6" name="tot_6" style="width: 80px; text-align:right;" value="0" disabled  ></br></br></br></br></br>
+          <input type="number" id="Taxable_Inc" name="Taxable_Income" style="width: 80px; text-align:right;" value="" disabled  ></br>
+          <input type="number" id="Taxable_Inc_round" name="Tax_Inc_round" style="width: 80px; text-align:right;" value="" disabled  ></br>
+          </td></tr>
+
+        <tr><td style="border-right: 2px solid blue;">
+        <label for="Tax_slab"> 9) Tax on Total Income &emsp;&emsp;&emsp;<font color="blue">Salary Slab </font> &ensp;<font color="red"> Slab Tax </font> </label></br>
+        &emsp;<label for="Tax_slab1" > <font size="2">Upto Rs. 2,50,000/-&emsp;&emsp;&emsp;= 0</font></label>&emsp;
+          <input type="number" id="sal1" name="sal_1" style="width: 80px; text-align:right;" value="" disabled  >
+          <input type="number" id="Tax_slab1" name="Tax_1" style="width: 80px; text-align:right;" value="" disabled  ></br>
+        &emsp;<label for="Tax_slab2" > <font size="2">2,50,001/- to 5,00,000/-&ensp;= 5%</font> </label>&ensp;
+          <input type="number" id="sal2" name="sal_2" style="width: 80px; text-align:right;" value="" disabled  >
+          <input type="number" id="Tax_slab2" name="Tax_2" style="width: 80px; text-align:right;" value="" disabled  ></br>
+        &emsp;<label for="Tax_slab3" > <font size="2">5,00,001/- to 10,00,000/-= 20%</font></label> 
+          <input type="number" id="sal3" name="sal_3" style="width: 80px; text-align:right;" value="" disabled  >
+          <input type="number" id="Tax_slab3" name="Tax_3" style="width: 80px; text-align:right;" value="" disabled  ></br>
+        &emsp;<label for="Tax_slab4" > <font size="2">Above 10,00,000/- &ensp;&emsp;&emsp;&emsp;= 30% </font></label> 
+          <input type="number" id="sal4" name="sal_4" style="width: 80px; text-align:right;" value="" disabled  >
+          <input type="number" id="Tax_slab4" name="Tax_4" style="width: 80px; text-align:right;" value="" disabled  ></br>          
+        
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;     
+        <label for="TOTAL_Tax" > TOTAL TAX :</label>
+      </td>
+
+      <td style="border-right: 2px solid blue;">
+        
+      </td>
+
+      <td style="border-right: 2px solid blue;"></td>
+
+      <td >
+          </br></br></br></br></br>
+      <input type="number" id="TOTAL_Tax" name="TOT_Tax" style="width: 80px; text-align:right;" value="" disabled  >
+      </td></tr>
+
+      <tr><td style="border-right: 2px solid blue;">
+        <label for="87a"> 10) <font color="red" size="2"> Less :Tax Exempt U/S 87A </br>
+          &emsp;&emsp;(Taxable Income upto 5,00,000) upto Rs. 12,500/- </font> :	</label> </br>
+        <div class="a"><label for="Tax_Payable"> 11) Tax Payable	:	</label></br> 
+          
+        <label for="st_cg"> 12)<font color="blue" size="2">Short Term Capital Gain (Tax 20%)</font> :</label>&emsp;&emsp;&emsp;&emsp;
+          <input type="number" id="st_cg" name="st_cg1" value="0" style="width: 80px; text-align:right;" oninput="Short_TCG()"></br>
+        <label for="lt_cg"> 13)<font color="purple" size="2">Long Term Capital Gain (Tax 12.5% >125000)</font>:</label>
+          <input type="number" id="lt_cg" name="lt_cg1" value="0" style="width: 80px; text-align:right;" oninput="Long_TCG()"></br>
+   
+        <label for="ttp_14"> 14) Total Tax Payable	(11+12+13) :	</label> </br>
+        <label for="Edu_Cess"> 15) Add : Education Cess @ Rs. 4%	 :	</label> </br>
+        <label for="TTP16"> 16) Total Tax Payable (14+15)		:	</label> </br>
+        <label for="Rebt89i"> 17) Less : Rebate u/s 89(i)		:	</label> </br>
+        <label for="NTP18"> 18) Net Tax Payable	 :	</label> </br>
+        <label for="TDS"> 19) Tax already deducted from pay bill :	</label> </br>
+        <input type="text" id="TP_Refund" name="TaxPay_Refund" style="width: 300px;" value="" disabled>:</div>
+        </td>
+
+      <td style="border-right: 2px solid blue;">
+
+      </td>
+
+      <td style="border-right: 2px solid blue;"></td>
+      
+        <td > 
+          <input type="number" id="87a" name="a_87" style="width: 80px; text-align:right;" value="" disabled  ></br></br>
+          <input type="number" id="Tax_Payable" name="Tax_Pay_able" style="width: 80px; text-align:right;" value="" disabled ></br>
+          
+          <input type="number" id="st_cg2" name="st_cg_2" style="width: 80px; text-align:right;" value="0" disabled  ></br>
+          <input type="number" id="lt_cg2" name="lt_cg_2" style="width: 80px; text-align:right;" value="0" disabled  ></br>
+          <input type="number" id="ttp14" name="ttp_14" style="width: 80px; text-align:right;" value="" disabled></br>
+  
+          <input type="number" id="Edu_Cess" name="Education_Cess" style="width: 80px; text-align:right;" value="" disabled  ></br>
+          <input type="number" id="TTP16" name="TTP_16" style="width: 80px; text-align:right;" value="" disabled  ></br>
+          <input type="number" id="Rebt89i" name="Rebt_89i" style="width: 80px; text-align:right;" value="0" oninput="eighteen_twenty()"></br>
+          <input type="number" id="NTP18" name="NTP_18" style="width: 80px; text-align:right;" value="" disabled  ></br>
+          <input type="number" id="TDS" name="td_s" style="width: 80px; text-align:right;" value="0" oninput="taxPay_Refund()"></br>
+          <input type="number" id="TTaxPay_Refund" name="Tax_Pay_Refund" style="width: 80px; text-align:right;" value="" disabled >
+         </td></tr>
+
+    </table>
+    
+</form>
+</body> 
+</html>
