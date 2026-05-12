@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WB Salary Calculation</title>
+
+<style>
+/* পুরো পেজের মার্জিন এবং প্যাডিং ঠিক করা */
+body { font-family: Arial; background: #f5f5f5; margin: 0; padding: 0; }
+h2 { text-align: center; margin: 10px 0; }
+
+/* উপরের কন্ট্রোল সেকশনকে স্ক্রিনের শীর্ষে আটকে রাখার জন্য */
+.controls-container {
+    position: sticky;
+    top: 0;
+    z-index: 1001;
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-bottom: 2px solid #ccc;
+}
+
+.controls {
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* টেবিল কন্টেইনার */
+.table-container { padding: 15px; }
+
+table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    background: #fff; 
+    font-size: 12px; 
+}
+
+th, td { 
+    border: 1px solid #ccc; 
+    padding: 6px 4px; 
+    text-align: center; 
+}
+
+/* টেবিল হেডার স্টিকি করার লজিক */
+thead th {
+    position: sticky;
+    top: 0; /* JS দ্বারা ডাইনামিকালি আপডেট হবে */
+    background: #fcfcd9 !important;
+    z-index: 1000;
+    box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc;
+}
+
+.ropa-header { 
+    background: #d9fcf8; 
+    color: black; 
+    font-weight: bold; 
+    text-align: left; 
+    padding: 8px 15px; 
+}
+
+.edit-input { width: 60px; text-align: center; border: 1px solid transparent; background: transparent; }
+.edit-input:focus { border: 1px solid #007bff; background: #fff; outline: none; }
+</style>
+</head>
+
+<body>
+
+<div class="controls-container" id="topPanel">
+    <h2>WB Salary Calculator</h2>
+    <div class="controls">
+        DOJ: <input type="date" id="dojInput" onchange="autoFillBasicAndROPA()">
+        ,&emsp; DOR: <input type="date" id="dorInput">
+                
+        <b>,&emsp;Category (Joining):</b>
+        <select id="category" onchange="autoFillBasicAndROPA()" style="text-align: center;">
+            <option value="A">A &emsp;</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+        </select><br><br>
+         Starting Basic: <input type="number" id="basicInput" value="0">
+        ,&emsp;A Category Date: <input type="date" id="aDate">
+        ,&emsp;Promotion Date: <input type="date" id="pDate">
+        <br><br>
+
+        ROPA Option Dates:
+        1981 <input type="date" id="r1981" value="1981-04-01">
+        ,&emsp;1990 <input type="date" id="r1990" value="1986-01-01">
+        ,&emsp;1998 <input type="date" id="r1998" value="1996-01-01"><br>
+        &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 
+        2009 <input type="date" id="r2009" value="2006-01-01">
+        ,&emsp;2019 <input type="date" id="r2019" value="2020-01-01">
+
+        <br><br>
+        <b>Career Increment (Select):</b><br>
+        <label><input type="checkbox" class="incOpt" value="10">10Y,&emsp;</label>
+        <label><input type="checkbox" class="incOpt" value="18">18Y,&emsp;</label>
+        <label><input type="checkbox" class="incOpt" value="20">20Y</label>
+        <br><br>
+        <button onclick="generate()">Generate</button>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Basic</th>
+                <th>DA%</th>
+                <th>HRA%</th>
+                <th>Addl Alw</th>
+                <th>DA</th>
+                <th>HRA</th>
+                <th>MA</th>
+                <th>IR</th>
+                <th>Gross</th>
+                <th>GPF</th>
+                <th>PTAX</th>
+                <th>GI</th>
+                <th>Net</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</div>
+
+<script>
+// রোপা অনুযায়ী ক্যাটাগরিভিত্তিক এন্ট্রি পে
+const ENTRY_PAY = {
+    1981: { A: 300,  B: 280,  C: 260 },
+    1990: { A: 1040, B: 980,  C: 920 },
+    1998: { A: 3350, B: 3150, C: 3000 },
+    2009: { A: 8840, B: 8160, C: 7680 }, 
+    2019: { A: 28900, B: 27000, C: 21000 } 
+};
+
+window.addEventListener('load', updateHeaderTop);
+window.addEventListener('resize', updateHeaderTop);
+
+function updateHeaderTop() {
+    const topPanel = document.getElementById('topPanel');
+    if(topPanel){
+        const topHeight = topPanel.offsetHeight;
+        const ths = document.querySelectorAll('thead th');
+        ths.forEach(th => th.style.top = topHeight + 'px');
+    }
+}
+
+function autoFillBasicAndROPA() {
+    const dojStr = el("dojInput").value;
+    const cat = el("category").value;
+    if (!dojStr) return;
+
+    const doj = new Date(dojStr);
+    const ropaFields = [
+        { id: "r1981", date: new Date("1990-02-28"), year: 1981 },
+        { id: "r1990", date: new Date("1999-02-28"), year: 1990 },
+        { id: "r1998", date: new Date("2009-03-31"), year: 1998 },
+        { id: "r2009", date: new Date("2019-12-31"), year: 2009 },
+        { id: "r2019", date: new Date("2099-01-01"), year: 2019 }
+    ];
+
+    let currentRopaFound = false;
+    for (let i = 0; i < ropaFields.length; i++) {
+        let field = el(ropaFields[i].id);
+        if (!currentRopaFound && doj < ropaFields[i].date) {
+            field.value = dojStr;
+            el("basicInput").value = ENTRY_PAY[ropaFields[i].year][cat];
+            currentRopaFound = true;
+        } else if (!currentRopaFound) {
+            field.value = "";
+        }
+    }
+}
+
+function formatDate(dateObj) {
+    let d = dateObj.getDate();
+    let m = dateObj.getMonth() + 1;
+    let y = dateObj.getFullYear();
+    return (d < 10 ? '0' + d : d) + '/' + (m < 10 ? '0' + m : m) + '/' + y;
+}
+
+// স্কেল অনুযায়ী ইনক্রিমেন্ট লজিক
+const SCALE = {
+    1981: { 
+        A: [300, 10, 400, 15, 565, 20, 685], 
+        B: [280, 8, 304, 10, 394, 12, 442, 15, 557, 20, 617], 
+        C: [260, 7, 295, 8, 311, 10, 421, 12, 481, 14, 597],
+        high: [340, 10, 400, 15, 550, 20, 750]        
+    },
+    1990: { 
+        A: [1040, 25, 1215, 30, 1485, 35, 1590, 40, 1670, 50, 1920], 
+        B: [980, 25, 1230, 30, 1500, 35, 1675, 40, 1755], 
+        C: [920, 21, 1067, 25, 1242, 30, 1512, 35, 1617], 
+        high: [1140, 30, 1440, 35, 1580, 40, 1660, 50, 2160]
+    },
+    1998: { 
+        A: [3350, 90, 3800, 100, 4700, 125, 6325], 
+        B: [3150, 80, 3390, 90, 4380, 100, 5680], 
+        C: [3000, 75, 3450, 80, 4330, 90, 5230], 
+        high: [3600, 100, 4200, 125, 5700, 150, 7050] 
+    },
+    2019: {
+        A: [28900, 29800, 30700, 31600, 32500, 33500, 34500, 35500, 36600, 37700, 38800, 40000, 41200, 42400, 43700, 45000, 46400, 47800, 49200, 50700, 52200, 53800, 55400, 57100, 58800, 60600, 62400, 64300, 66200, 68200, 70200, 72300, 74500],
+        B: [27000, 27800, 28600, 29500, 30400, 31300, 32200, 33200, 34200, 35200, 36300, 37400, 38500, 39700, 40900, 42100, 43400, 44700, 46000, 47400, 48800, 50300, 51800, 53400, 55000, 56700, 58400, 60200, 62000, 63900, 65800, 67800, 69800],
+        C: [21000, 21600, 22200, 22900, 23600, 24300, 25000, 25800, 26600, 27400, 28200, 29000, 29900, 30800, 31700, 32700, 33700, 34700, 35700, 36800, 37900, 39000, 40200, 41400, 42600, 43900, 45200, 46600, 48000, 49400, 50900, 52400, 54000],
+        high: [32100, 33100, 34100, 35100, 36200, 37300, 38400, 39600, 40800, 42000, 43300, 44600, 45900, 47300, 48700, 50200, 51700, 53300, 54900, 56500, 58200, 59900, 61700, 63600, 65500, 67500, 69500, 71600, 73700, 75900, 78200, 80500, 82900]
+    }
+};
+
+const FITMENT = {1990:1.1, 1998:1.25, 2009:1.86, 2019:2.57};
+function el(id){ return document.getElementById(id); }
+
+function getScaleIncrement(basic, ropaYear) {
+    let cat = el("category").value; // A, B, C বা high
+    
+    // --- ROPA 2019 লজিক (ছবি অনুযায়ী পে-ম্যাট্রিক্স থেকে পরবর্তী ঘর নির্ধারণ) ---
+    if (ropaYear === 2019) {
+        let matrix = SCALE[2019][cat];
+        if (matrix) {
+            // চার্টে বর্তমান বেসিকটি খুঁজে বের করা
+            for (let i = 0; i < matrix.length - 1; i++) {
+                if (basic === matrix[i]) {
+                    return matrix[i + 1]; // ঠিক পরের ধাপটি রিটার্ন করবে
+                }
+            }
+            // যদি চার্টে বেসিকটি হুবহু না পাওয়া যায় (যেমন: মাঝখানে কেউ এডিট করলে)
+            // তাহলে ৩% করে পরবর্তী ১০০-তে রাউন্ড করবে
+            let nextBasic = Math.ceil((basic * 1.03) / 100) * 100;
+            return nextBasic;
+        }
+    }
+
+    // --- ROPA 2009 লজিক (৩% বৃদ্ধি এবং পরবর্তী ১০-এর গুণিতকে রাউন্ড) ---
+    if (ropaYear === 2009) {
+        // ROPA 2009 অনুযায়ী ইনক্রিমেন্ট সবসময় পরবর্তী ১০-এর গুণিতকে রাউন্ড হয় (Math.ceil)
+        return Math.ceil((basic * 1.03) / 10) * 10;
+    }
+
+    // --- পুরোনো ROPA (1981, 1990, 1998) লজিক ---
+    let currentScale = SCALE[ropaYear] ? SCALE[ropaYear][cat] : null;
+    if (!currentScale) return basic;
+
+    for (let i = 0; i < currentScale.length - 2; i += 2) {
+        let stageStart = currentScale[i];
+        let stageInc = currentScale[i + 1];
+        let stageEnd = currentScale[i + 2];
+        
+        if (basic >= stageStart && basic < stageEnd) {
+            return basic + stageInc;
+        }
+    }
+
+    // যদি স্কেলের একদম শেষ সীমায় থাকে বা কোনো রেঞ্জে না পড়ে
+    return basic;
+}
+
+
+const DA_DATA = [
+    ["1987-03-01",4],["1987-12-01",8],["1988-06-01",13],["1989-02-01",18],["1989-06-01",23],["1989-11-01",29],["1990-06-01",34],["1990-12-01",38],["1991-04-01",43],["1992-01-01",51],["1992-11-01",60],["1993-07-01",71],["1993-12-01",83],["1994-05-01",92],["1994-11-01",97],["1995-02-01",104],["1995-06-01",114],["1995-12-01",125],["1996-04-01",136],["1996-10-01",148],["1997-08-01",159],["1997-12-01",170],["1998-04-01",182.4],["1997-04-01",0],["1997-08-01",4],["1997-12-01",8],["1998-04-01",13],["1998-11-01",22],["1999-08-01",32],["2000-04-01",37],["2000-10-01",38],["2001-07-01",41],["2003-07-01",45],["2004-09-01",49],["2005-04-01",52],["2005-09-01",55],["2005-12-01",59],["2006-03-01",61],["2006-07-01",64],["2006-09-01",67],["2007-01-01",71],["2007-04-01",24],["2008-01-01",29],["2008-06-01",35],["2008-11-01",41],["2009-03-01",47],["2008-04-01",2],["2008-06-01",6],["2008-11-01",9],["2009-03-01",12],["2009-04-01",16],["2009-12-01",22],["2010-04-01",27],["2010-12-01",35],["2012-01-01",45],["2013-01-01",52],["2014-01-01",58],["2015-01-01",65],["2016-01-01",75],["2017-01-01",85],["2018-01-01",100],["2019-01-01",125],["2020-01-01",0],["2021-01-01",3],["2023-03-01",6],["2024-01-01",10],["2024-04-01",14],["2025-04-01",18],["2026-04-01",22]
+];
+
+function getDA(date){
+    let d = new Date(date);
+    let rate = 0;
+    for(let i=0;i<DA_DATA.length;i++){
+        let eff = new Date(DA_DATA[i][0]);
+        if(d >= eff) rate = DA_DATA[i][1];
+    }
+    return rate/100;
+}
+
+function getDefaultPTAX(gross) {
+    if (gross <= 6000) return 40;
+    if (gross <= 7000) return 45;
+    if (gross <= 8000) return 50;
+    if (gross <= 9000) return 90;
+    if (gross <= 15000) return 110;
+    if (gross <= 25000) return 130;
+    if (gross <= 40000) return 150;
+    return 200;
+}
+
+function reCalcRow(row, useDefaultPTAX = false) {
+    // HRA Calculation Logic
+    if (row.hraRate > 0) {
+        row.HRA = Math.round(row.basic * row.hraRate);
+        if (row.ropaYear === 2019 && row.HRA > 12000) row.HRA = 12000;
+        else if (row.ropaYear === 2009 && row.HRA > 6000) row.HRA = 6000;
+    } else {
+        row.HRA = 0;
+    }
+
+    row.DA = Math.round(row.basic * row.daRate);
+    row.gross = row.basic + row.DA + row.HRA + row.MA + row.ADD + row.IR;
+    if (useDefaultPTAX) row.PTAX = getDefaultPTAX(row.gross);
+    row.net = row.gross - (row.GPF + row.PTAX + row.GI);
+}
+
+let rows = [];
+
+function generate() {
+    const dojInput = new Date(el("dojInput").value);
+    const dorInput = new Date(el("dorInput").value);
+    let currentBasic = +el("basicInput").value;
+
+    if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
+
+    rows = [];
+    const ROPA_CONFIG = [
+        { name: "ROPA 1981", start: el("r1981").value, end: "1990-12-31", year: 1981, ma: 15 },
+        { name: "ROPA 1990", start: el("r1990").value, end: "1995-12-31", year: 1990, ma: 30 },
+        { name: "ROPA 1998", start: el("r1998").value, end: "2005-12-31", year: 1998, ma: 100 },
+        { name: "ROPA 2009", start: el("r2009").value, end: "2019-12-31", year: 2009, ma: 300 },
+        { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019, ma: 500 }
+    ];
+
+    let hasStarted = false;
+
+    ROPA_CONFIG.forEach((config, idx) => {
+        if (!config.start) return; 
+        let ropaStart = new Date(config.start);
+        let ropaEnd = new Date(config.end);
+        if (ropaEnd > dorInput) ropaEnd = dorInput;
+        if (dojInput > ropaEnd) return;
+
+        let actualStart = !hasStarted && dojInput >= ropaStart ? new Date(dojInput) : new Date(ropaStart);
+        hasStarted = true;
+
+        rows.push({ isHeader: true, title: config.name });
+
+        let currentLoopDate = new Date(actualStart);
+        
+        // জয়েনিং তথ্য
+        let dojMonth = dojInput.getMonth(); 
+        let dojYear = dojInput.getFullYear();
+
+        while (currentLoopDate <= ropaEnd) {
+            let monthDate = new Date(currentLoopDate);
+            let m = monthDate.getMonth();
+            let y = monthDate.getFullYear();
+
+            // --- ইনক্রিমেন্ট লজিক ---
+            // প্রথম মাসের রো জেনারেট হওয়ার পর থেকে চেক শুরু হবে
+            if (rows.length > 0 && !rows[rows.length-1].isHeader) {
+                
+                if (config.year >= 2009) {
+                    // জুলাই ইনক্রিমেন্ট (মাসে মাসে চেক)
+                    if (m === 6) { // জুলাই মাস (Index 6)
+                        
+                        // ১. যদি জয়েনিং Jan(0) থেকে July(6) এর মধ্যে হয়
+                        if (dojMonth <= 6) {
+                            // প্রথম বছরের জুলাই ইনক্রিমেন্টের জন্য অন্তত ৬ মাস সার্ভিস দরকার
+                            // সহজ হিসাব: যদি জয়েনিং বছর এবং বর্তমান জুলাইয়ের বছর এক হয়, তবে দিন বিয়োগ করে দেখা।
+                            // অন্যথায়, পরের বছরগুলোর প্রতি জুলাইয়ে ইনক্রিমেন্ট হবে।
+                            if (y === dojYear) {
+                                let diffDays = (monthDate - dojInput) / (1000 * 60 * 60 * 24);
+                                if (diffDays >= 181) { // প্রায় ৬ মাস (১৮২ দিন)
+                                    currentBasic = getScaleIncrement(currentBasic, config.year);
+                                }
+                            } else {
+                                currentBasic = getScaleIncrement(currentBasic, config.year);
+                            }
+                        } else {
+                            // যদি জুলাইয়ের পরে জয়েন করে, তবে প্রথম জুলাইয়ে পাবে না, পরের বছর থেকে পাবে
+                            if (y > dojYear) {
+                                currentBasic = getScaleIncrement(currentBasic, config.year);
+                            }
+                        }
+                    }
+                } else {
+                    // পুরোনো রোপার Anniversary Increment
+                    if (m === dojMonth && y > dojYear) {
+                        currentBasic = getScaleIncrement(currentBasic, config.year);
+                    }
+                }
+            }
+
+            let daRate = getDA(monthDate);
+            let hraRate = 0;
+            if (monthDate >= new Date("2020-01-01")) hraRate = 0.12;
+            else if (monthDate >= new Date("2009-04-01")) hraRate = 0.15;
+            else if (monthDate >= new Date("1998-01-01")) hraRate = 0.15;
+
+            let rowObj = {
+                date: new Date(monthDate),
+                basic: currentBasic,
+                daRate, hraRate, ADD: 0, DA: 0, HRA: 0, MA: config.ma, IR: 0, 
+                GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year
+            };
+            reCalcRow(rowObj, true);
+            rows.push(rowObj);
+
+            // পরের মাসে মুভ করা
+            currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
+            if (currentLoopDate > dorInput) break;
+        }
+
+        // রোপা চেঞ্জ হলে ফিটমেন্ট
+        if (idx < ROPA_CONFIG.length - 1) {
+            let nextRopaYear = ROPA_CONFIG[idx+1].year;
+            currentBasic = Math.round((currentBasic * FITMENT[nextRopaYear]) / 100) * 100;
+        }
+    });
+    render();
+}
+
+function updateValue(index, field, value) {
+    let val = parseFloat(value) || 0;
+    
+    // বর্তমান রো-তে ভ্যালু আপডেট
+    rows[index][field] = val;
+    reCalcRow(rows[index], (field === 'basic'));
+
+    // যদি Basic পরিবর্তন করা হয়, তবে নিচের সব ঘর আপডেট করতে হবে
+    if (field === 'basic') {
+        let lastBasic = val;
+        let dojMonth = new Date(el("dojInput").value).getMonth();
+        let dojYear = new Date(el("dojInput").value).getFullYear();
+        
+        for (let i = index + 1; i < rows.length; i++) {
+            if (rows[i].isHeader) {
+                // রোপা পরিবর্তন হলে নতুন বেসিক ফিটমেন্ট অনুযায়ী ক্যালকুলেট হবে
+                let nextRopaYear = rows[i+1]?.ropaYear;
+                if(nextRopaYear) {
+                    lastBasic = Math.round((lastBasic * FITMENT[nextRopaYear]) / 100) * 100;
+                }
+                continue;
+            }
+
+            let m = rows[i].date.getMonth();
+            let y = rows[i].date.getFullYear();
+
+            // --- ইনক্রিমেন্ট লজিক আপডেট (July Increment Fix) ---
+            if (rows[i].ropaYear === rows[i-1].ropaYear) {
+                
+                if (rows[i].ropaYear >= 2009) {
+                    // জুলাই মাস হলে ইনক্রিমেন্ট হবে
+                    if (m === 6) { 
+                        // প্রথম বছরের জুলাই ইনক্রিমেন্ট রুল চেক
+                        if (dojMonth <= 6) {
+                            if (y === dojYear) {
+                                let diffDays = (rows[i].date - new Date(el("dojInput").value)) / (1000 * 60 * 60 * 24);
+                                if (diffDays >= 181) lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                            } else {
+                                lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                            }
+                        } else if (y > dojYear) {
+                            lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                        }
+                    }
+                } else {
+                    // পুরোনো রোপার জন্য Anniversary Increment (একই মাস এবং বছর বেশি)
+                    if (m === dojMonth) {
+                        // মাসের শুরুতে একবারই ইনক্রিমেন্ট হবে
+                        if (rows[i-1].date.getMonth() !== m) {
+                            lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                        }
+                    }
+                }
+            }
+
+            rows[i].basic = lastBasic;
+            reCalcRow(rows[i], true); // PTAX এবং DA নতুন বেসিক অনুযায়ী আপডেট হবে
+        }
+    } else {
+        // Basic ছাড়া অন্য ফিল্ড (HRA, MA, GPF ইত্যাদি) হলে নিচের সব ঘরে কপি হবে
+        for (let i = index + 1; i < rows.length; i++) {
+            if (rows[i].isHeader) continue;
+            rows[i][field] = val;
+            reCalcRow(rows[i], false);
+        }
+    }
+    render();
+}
+
+
+
+function render(){
+    let tbody = el("tbody");
+    tbody.innerHTML = "";
+    rows.forEach((r, idx) => {
+        let tr = document.createElement("tr");
+        if(r.isHeader) {
+            tr.innerHTML = `<td colspan="14" class="ropa-header">${r.title}</td>`;
+        } else {
+            tr.innerHTML = `
+                <td>${formatDate(r.date)}</td>
+                <td><input type="number" class="edit-input" value="${r.basic}" onchange="updateValue(${idx}, 'basic', this.value)"></td>
+                <td>${(r.daRate*100).toFixed(0)}%</td>
+                <td>${(r.hraRate*100).toFixed(0)}%</td>
+                <td>${r.ADD}</td>
+                <td>${r.DA}</td>
+                <td><input type="number" class="edit-input" value="${r.HRA}" onchange="updateValue(${idx}, 'HRA', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.MA}" onchange="updateValue(${idx}, 'MA', this.value)"></td>
+                <td>${r.IR}</td>
+                <td>${r.gross}</td>
+                <td><input type="number" class="edit-input" value="${r.GPF}" onchange="updateValue(${idx}, 'GPF', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.PTAX}" onchange="updateValue(${idx}, 'PTAX', this.value)"></td>
+                <td><input type="number" class="edit-input" value="${r.GI}" onchange="updateValue(${idx}, 'GI', this.value)"></td>
+                <td>${r.net}</td>`;
+        }
+        tbody.appendChild(tr);
+    });
+}
+</script>
+
+
+</body>
+</html>
