@@ -112,7 +112,6 @@ th{
     position: relative;
     margin: 30px auto;
     width: 800px;
-    height: 237px;
     border-left: 5px solid #ff8400;
     border-right: 5px solid #ff8400;
     text-align: center;
@@ -162,30 +161,25 @@ th{
 
     /* ✅ Tables full width */
     table {
-    width: 95% !important;
-    margin: 0 auto !important;
-    box-sizing: border-box !important;
-
-    box-shadow: none;
-
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+        width: 95% !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
     }
 
     /* ✅ Infobox print friendly */
 .infobox {
-    width: 95% !important;
-    margin: 0 auto !important;
-    box-sizing: border-box !important;
-
-    box-shadow: none;
-    border-left: 5px solid #ff8400;
-    border-right: 5px solid #ff8400;
-
-    page-break-inside: avoid;
-
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+        width: 95% !important;
+        margin: 20px auto 10px auto !important;
+        box-sizing: border-box !important;
+        height: auto !important;   /* ✅ গুরুত্বপূর্ণ */
+        padding: 20px;
+        overflow: hidden;
+        border-left: 5px solid #ff8400;
+        border-right: 5px solid #ff8400;
+        box-shadow: none;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
 }
 
     /* ✅ Header color force */
