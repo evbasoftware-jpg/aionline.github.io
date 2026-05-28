@@ -1014,7 +1014,7 @@ setInterval(updateGrossFromStorage, 500);
       
       let tds = getVal('tds');
       if (ntp18 > tds) {
-    document.getElementById("TP_Refund_Text").innerText = "20) Net Tax Payable:";
+    document.getElementById("TP_Refund_Text").innerText = "20) Final Tax Payable:";
     setVal('Final_Result', (ntp18 - tds));
     } else {
     document.getElementById("TP_Refund_Text").innerText = "20) Amount Refundable:";
