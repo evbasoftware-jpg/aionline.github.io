@@ -1016,10 +1016,13 @@ setInterval(updateGrossFromStorage, 500);
       if (ntp18 > tds) {
     document.getElementById("TP_Refund_Text").innerText = "20) Final Tax Payable:";
     setVal('Final_Result', (ntp18 - tds));
-    } else {
+    } else if (ntp18 < tds) {
     document.getElementById("TP_Refund_Text").innerText = "20) Amount Refundable:";
     setVal('Final_Result', (tds - ntp18));
-    }
+    } else {
+    document.getElementById("TP_Refund_Text").innerText = "20) Tax Payable/Refundable:";
+    setVal('Final_Result', (ntp18 - tds));
+      }
     }
  
 </script>
