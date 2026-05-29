@@ -548,13 +548,6 @@
         let box = document.getElementById('chatBox');
         box.style.display = box.style.display === 'none' || box.style.display === '' ? 'block' : 'none';
     }
-
-    function startChat(){
-        let messages = document.getElementById('chatMessages');
-        let intro = `<div style="margin-bottom:10px"><b>AI:</b> Welcome! 🤖<br>How can I help you today?</div>
-        <div style="color:#0B5ED7">1. Income Tax Software<br>2. GPF Calculator<br>3. Tax Calculator<br>4. Pay Slip<br>5. Salary Statement<br>6. Contact</div>`;
-        messages.innerHTML = intro;
-    }
         
     function sendChat(customMsg = null) {
     let input = document.getElementById('chatInput');
