@@ -544,9 +544,19 @@
         }
     }
 
-    function toggleChat(){
-        let box = document.getElementById('chatBox');
-        box.style.display = box.style.display === 'none' || box.style.display === '' ? 'block' : 'none';
+    function toggleChat() {
+    const box = document.getElementById('chatBox');
+
+    if (box.style.display === "block") {
+        box.style.display = "none";
+    } else {
+        box.style.display = "block";
+
+        // প্রথমবার ওপেন হলে intro message দেখাবে
+        if (document.getElementById('chatMessages').innerHTML.trim() === "") {
+            startChat();
+        }
+    }
     }
         
     function sendChat(customMsg = null) {
