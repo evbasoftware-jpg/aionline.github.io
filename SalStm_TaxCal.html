@@ -815,27 +815,15 @@ const otherRecord = otherSheetData.find(item =>
             infoboxHtml = `<div class="infobox">
                 <h4 style="color: #1414e0;"> Office of the Sub-Inspector of Schools, ${circleName} Circle, ${distName}</h4>
                  <h5 style="color: #8e14e0;">SALARY STATEMENT FOR THE FINANCIAL YEAR ${year} - ${year+1} (AY ${year+1}-${year+2})</h5>
-            <!--
-                <table style="font-size:12px;">
-                    <tr><td><strong>Teacher Name:</strong> ${teacherName}</td>
-                    <td><strong>Designation:</strong> ${designation}, &emsp;
-                    <strong>Gender:</strong> ${sex}</td></tr>
-                    <tr><td><strong>PAN:</strong> ${pan}</td>
-                    <td><strong>Mobile:</strong> ${mobile}</td></tr>
-                    <tr><td><strong>School Name:</strong> ${schoolName}</td>
-                    <td><strong>Circle Name:</strong> ${circleName}</td></tr>
-                    
-            </table> -->
             
        <table style="font-size:12px;">
          <tr><td><strong>Teacher Name:</strong> ${teacherName}, &emsp;
                  <strong>Designation:</strong> ${designation}</td></tr>
          <tr><td><strong>School Name:</strong> ${schoolName}</td></tr>
-         <tr><td>
-                 <strong>Gender:</strong> ${sex}, &emsp;
-                 <strong>PAN:</strong> ${pan}, &emsp;
-                 <strong>Mobile:</strong> ${mobile}, &emsp;
-                 <strong>Circle Name:</strong> ${circleName}</td></tr>
+         <tr><td><strong>Gender:</strong> ${sex}</td>
+             <td><strong>PAN:</strong> ${pan}</td>
+             <td><strong>Mobile:</strong> ${mobile}</td>
+             <td><strong>Circle Name:</strong> ${circleName}</td></tr>
        </table>
        
             </div>`;
