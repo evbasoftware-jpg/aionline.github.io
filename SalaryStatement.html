@@ -55,10 +55,35 @@ font-size:16px;
 }
   
 @media print{
+
 button{
 display:none;
 }
-  a{display:none;}
+
+a{
+display:none;
+}
+
+/* Month column */
+#salaryTable th:first-child,
+#salaryTable td:first-child{
+    width: 140px !important;
+    min-width: 140px !important;
+    white-space: nowrap;
+}
+
+/* Table auto size */
+#salaryTable{
+    table-layout: auto;
+    width: 100%;
+}
+
+/* Month input */
+#salaryTable td:first-child input{
+    text-align:left;
+    font-size:14px;
+}
+
 }
 
 </style>
