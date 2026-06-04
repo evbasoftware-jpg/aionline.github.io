@@ -21,3 +21,14 @@ else if(d >= new Date("2006-03-01")){
 return 0;
 
 }
+
+function getDefaultPTAX(gross) {
+    if (gross <= 6000) return 40;
+    if (gross <= 7000) return 45;
+    if (gross <= 8000) return 50;
+    if (gross <= 9000) return 90;
+    if (gross <= 15000) return 110;
+    if (gross <= 25000) return 130;
+    if (gross <= 40000) return 150;
+    return 200;
+}
