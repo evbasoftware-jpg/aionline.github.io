@@ -1,3 +1,6 @@
+// Interest Rate
+const rates = {};
+
 // ===== AUTO GENERATE ALL YEARS =====
 function setYear(year, monthlyRates){
 for(let m=0;m<12;m++){
@@ -113,4 +116,8 @@ setYear(1968,[4.8,4.8,4.8,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1]);
 // ===== 1967 (APRIL–DECEMBER only) =====
 for(let m=3;m<12;m++){
 rates["1967-"+m]=4.8;
+}
+
+function getRate(year, month){
+return rates[year + "-" + month] || 7.1;
 }
