@@ -70,7 +70,6 @@
 button{
 padding:8px 20px;
 margin-bottom:10px;
-font-size:16px;
 }
 
     .sub-label { font-size: 0.9em; margin-left: 20px; }
@@ -86,9 +85,12 @@ font-size:16px;
         display: none !important;
     }
 
-    tr {
-        page-break-inside: avoid;
-    }
+    /* Table auto size */
+#salaryTable{
+    table-layout: auto;
+    width: 100%;
+}
+  
 }
  
   </style>
