@@ -10,7 +10,7 @@
       background-color: rgb(241, 252, 251);
       display: flex;
       flex-direction: column;
-      align-items: centre;
+      align-items: center;
     }
     .container {
       width: 90%;
@@ -97,41 +97,82 @@
     .sub-label { font-size: 0.9em; margin-left: 20px; }
 
 @media print {
-    /* প্রিন্ট বোতাম, ফুটার এবং কাউন্টার লিঙ্ক হাইড করার জন্য */
-    .print-btn, footer, a, script {
+
+    @page {
+        size: Letter portrait;
+        margin: 5mm;
+    }
+
+    html, body {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    body {
+        background: white !important;
+        zoom: 72%;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .print-btn,
+    footer,
+    a,
+    script {
         display: none !important;
     }
-    
-    /* ব্যাকগ্রাউন্ড সাদা করা */
-    body {
-        background: #fff;
+
+    .container {
+        width: 100%;
         margin: 0;
         padding: 0;
     }
 
-    /* পুরো টেবিল ও কন্টেইনারকে ১টি পেজে ফিট করার ম্যাজিক কোড */
-    .container {
-        width: 100%;
-    }
-    
     table {
-        margin-left: 0px; /* বামের অতিরিক্ত জায়গা কমানো হলো */
-        margin-top: 0px;
-        font-size: 12px;  /* প্রিন্টের সময় ফন্ট সামান্য ছোট করে ১ পেজে আনা হলো */
-    }
-    
-    th, td {
-        padding: 4px 8px; /* টেবিলের ভেতরের খালি জায়গা (উচ্চতা) কমানো হলো */
+        width: 100%;
+        margin: 0;
+        font-size: 10px;
+        border-collapse: collapse;
     }
 
-    input[type="number"], input[type="text"] {
-        width: 100px; /* ইনপুট বক্সের সাইজ প্রিন্টে কিছুটা ছোট করা হলো */
+    th,
+    td {
+        padding: 2px 4px;
+        line-height: 1.05;
     }
 
-    /* ব্রাউজারকে জোরপূর্বক ১ পেজে প্রিন্ট করতে বাধ্য করার জন্য */
-    html, body {
+    input[type="number"],
+    input[type="text"] {
+        width: 75px !important;
+        font-size: 10px;
+        padding: 1px;
+        border: none;
+    }
+
+    .sub-label {
+        font-size: 9px;
+        margin-left: 5px;
+    }
+
+    h3 {
+        font-size: 14px;
+        margin: 0;
+    }
+
+    h4 {
+        font-size: 12px;
+        margin: 0;
+    }
+
+    .logo {
+        height: 25px;
+    }
+
+    tr {
         page-break-inside: avoid;
-        -webkit-region-break-inside: avoid;
     }
 }
  
