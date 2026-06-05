@@ -70,15 +70,30 @@
     margin-top:5px;
     font-size:13px;
 }
-.print-btn{
-    text-align:center;
-    margin-top:15px;
-    background:blue;
-    color: white;
-    padding:6px 15px;
-    font-size:14px;
-    cursor:pointer;
+    
+/* বাটনকে সুন্দরভাবে মাঝখানে এবং ব্যাকগ্রাউন্ড সেট করার জন্য */
+.print-btn {
+    text-align: center;
+    margin-top: 15px;
 }
+
+/* সরাসরি বাটন ট্যাগকে স্টাইল করা হলো */
+.print-btn button {
+    background-color: blue;
+    color: white;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;          /* ডিফল্ট বর্ডার সরানোর জন্য */
+    border-radius: 4px;   /* বাটনটি দেখতে আরেকটু প্রিমিয়াম করার জন্য (ঐচ্ছিক) */
+    font-weight: bold;
+}
+
+/* মাউস নিলে যেন বাটনের রঙ হালকা পরিবর্তন হয় (ঐচ্ছিক কিন্তু প্রফেশনাল দেখাবে) */
+.print-btn button:hover {
+    background-color: darkblue;
+}
+
     .note { color: red; margin-bottom: 10px; }
     .sub-label { font-size: 0.9em; margin-left: 20px; }
 
