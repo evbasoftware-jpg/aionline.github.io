@@ -144,8 +144,12 @@ button{
         document.getElementById("f2").value = 200000;
       }
 
-      Tot_abcd1=parseFloat(old_Regime.g_sal.value)+parseFloat(old_Regime.section_17_2.value)+parseFloat(old_Regime.section_17_3.value)+parseFloat(old_Regime.Sal_Oth_Emp.value)
-      if (Tot_abcd1 < parseFloat(old_Regime.abcdef_2.value)) {
+      Tot_abcd1 =
+             parseFloat(old_Regime.g_sal.value || 0) +
+             parseFloat(old_Regime.section_17_2.value || 0) +
+             parseFloat(old_Regime.section_17_3.value || 0) +
+             parseFloat(old_Regime.Sal_Oth_Emp.value || 0);
+	  if (Tot_abcd1 < parseFloat(old_Regime.abcdef_2.value)) {
         Net_Sal=0;
       }else {
       Tot_2abcdef=parseFloat(old_Regime.a_2.value)+parseFloat(old_Regime.b_2.value)+parseFloat(old_Regime.c_2.value)+parseFloat(old_Regime.d_2.value)+parseFloat(old_Regime.e_2.value)+parseFloat(old_Regime.f_2.value)
@@ -705,7 +709,7 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
          </td></tr>
     </table>
 	  <br>
-   <button onclick="window.print()" style="background-color: orange; color: blue; font-size:27px; font-weight: bold;">Print / PDF</button>
+   <button type="button" onclick="window.print()" style="background-color: orange; color: blue; font-size:27px; font-weight: bold;">Print / PDF</button>
      <br>
 	
      <footer style="text-align:center;">
