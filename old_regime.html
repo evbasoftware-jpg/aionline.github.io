@@ -562,24 +562,24 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
           &emsp;<label for="NPS_self"> <font size="2">ii) 80CCD(1B) NPS (self Contribution) :</font></label><br>
           &emsp;<label for="NPS_emp"><font size="2"> iii) 80CCD(2)  NPS (Employer Contribution) :</font></label><br>
           &emsp;<label for="d80"><font size="2"> iv) 80D  (for Self) :</font></label><br>
-          &emsp;<label for="dp80"><font size="2"> v) 80D (for Parent) :</font></label><br>
+          &emsp;<label for="dp80"><font size="2"> v) 80D (for Parent) :</font></label>
         </td>
-          <td style="border-right: 2px solid blue;">
+        <td style="border-right: 2px solid blue;">
             <input type="number" id="c80_ccc_ccd1" name="c80ccc_ccd1" style="width: 80px; text-align:right;" value="0" oninput="eightyC()" ><br><br>
             <input type="number" id="NPS_self" name="NPS_80CCD_1b" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="NPS_emp" name="NPS_80CCD2" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="d80" name="d_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
-            <input type="number" id="dp80" name="dp_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br><br>
-            </td>
+            <input type="number" id="dp80" name="dp_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()">
+        </td>
           <td style="border-right: 2px solid blue; ">
             <input type="number" id="c80_ccc_ccd1_2" name="c80ccc_ccd1_2" style="width: 80px; text-align:right;" value="0" disabled><br><br>
             <input type="number" id="NPS_self2" name="NPS_80CCD_1b2" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="NPS_emp2" name="NPS_80CCD2_2" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="d802" name="d_80_2" style="width: 80px; text-align:right;" value="0" disabled><br>
-            <input type="number" id="dp802" name="dp_80_2" style="width: 80px; text-align:right;" value="0" disabled><br><br>
+            <input type="number" id="dp802" name="dp_80_2" style="width: 80px; text-align:right;" value="0" disabled>
             </tr>
          
-       <tr><td style="border-right: 2px solid blue; line-height: 1.45; vertical-align:bottom;" >
+       <tr><td style="border-right: 2px solid blue; line-height: 1.4; vertical-align:bottom;" >
 		  &emsp;<label for="dd80"><font size="2"> vi) 80DD - Treatment of dependent who is person with disability </font><br>
           &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label><br>
      
@@ -594,7 +594,7 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
           &emsp;<label for="ggc80"><font size="2"> xv) 80GGC - Donation to Political party :</font></label><br>
  	   </td>
 		   
-       <td style="border-right: 2px solid blue;">
+       <td style="border-right: 2px solid blue; vertical-align:bottom;">
            <input type="number" id="dd80" name="dd_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
 		   
 		    <input type="number" id="ddb80" name="ddb_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
@@ -605,9 +605,9 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
             <input type="number" id="g80" name="g_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="gg80" name="gg_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="gga80" name="gga_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
-            <input type="number" id="ggc80" name="ggc_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br><br>
+            <input type="number" id="ggc80" name="ggc_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()">
 	     </td>
-         <td style="border-right: 2px solid blue;">
+         <td style="border-right: 2px solid blue; vertical-align:bottom;">
             <input type="number" id="dd802" name="dd_802" style="width: 80px; text-align:right;" value="0" disabled><br>
 			 
 			<input type="number" id="ddb802" name="ddb_802" style="width: 80px; text-align:right;" value="0" disabled><br>
@@ -618,7 +618,7 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
             <input type="number" id="g802" name="g_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="gg802" name="gg_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="gga802" name="gga_802" style="width: 80px; text-align:right;" value="0" disabled><br>
-            <input type="number" id="ggc802" name="ggc_802" style="width: 80px; text-align:right;" value="0" disabled><br><br>
+            <input type="number" id="ggc802" name="ggc_802" style="width: 80px; text-align:right;" value="0" disabled>
          </td></tr>
            
        <tr><td style="border-right: 2px solid blue; line-height: 1.5;" >
@@ -635,7 +635,7 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
         </td>
            
         <td style="border-right: 2px solid blue;"> 
-		<input type="number" id="u80" name="u_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
+		<input type="number" id="u80" name="u_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()">
 		</td>
          
         <td style="border-right: 2px solid blue;">  
