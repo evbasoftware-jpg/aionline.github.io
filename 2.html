@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PDF to Excel</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    padding:20px;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #000;
+    padding:5px;
+}
+
+button{
+    padding:8px 15px;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>PDF → Excel Converter</h2>
+
+<input type="file" id="pdfFile" accept=".pdf">
+<button onclick="readPDF()">Read PDF</button>
+<button onclick="downloadCSV()">Download CSV</button>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Extracted Text</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+
+async function readPDF() {
+
+    const file = document.getElementById("pdfFile").files[0];
+
+    if(!file){
+        alert("Select a PDF file");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async function() {
+
+        const typedArray = new Uint8Array(this.result);
+
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+        const tbody = document.querySelector("#dataTable tbody");
+        tbody.innerHTML = "";
+
+        for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+
+            const page = await pdf.getPage(pageNum);
+
+            const textContent = await page.getTextContent();
+
+            const text = textContent.items
+                .map(item => item.str)
+                .join(" ");
+
+            let row = tbody.insertRow();
+            row.insertCell(0).textContent = text;
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function downloadCSV(){
+
+    let csv = "";
+
+    const rows = document.querySelectorAll("table tr");
+
+    rows.forEach(row => {
+
+        const cols = row.querySelectorAll("td,th");
+
+        let rowData = [];
+
+        cols.forEach(col => {
+            rowData.push('"' + col.innerText.replace(/"/g,'""') + '"');
+        });
+
+        csv += rowData.join(",") + "\n";
+    });
+
+    const blob = new Blob([csv], {type:"text/csv"});
+
+    const a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+    a.download = "pdf_data.csv";
+
+    a.click();
+}
+
+</script>
+
+</body>
+</html>
