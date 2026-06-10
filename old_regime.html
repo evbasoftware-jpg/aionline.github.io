@@ -563,8 +563,6 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
           &emsp;<label for="NPS_emp"><font size="2"> iii) 80CCD(2)  NPS (Employer Contribution) :</font></label><br>
           &emsp;<label for="d80"><font size="2"> iv) 80D  (for Self) :</font></label><br>
           &emsp;<label for="dp80"><font size="2"> v) 80D (for Parent) :</font></label><br>
-          &emsp;<label for="dd80"><font size="2"> vi) 80DD - Treatment of dependent who is person with disability </font><br>
-          &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label><br>
         </td>
           <td style="border-right: 2px solid blue;">
             <input type="number" id="c80_ccc_ccd1" name="c80ccc_ccd1" style="width: 80px; text-align:right;" value="0" oninput="eightyC()" ><br><br>
@@ -572,18 +570,19 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
             <input type="number" id="NPS_emp" name="NPS_80CCD2" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="d80" name="d_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="dp80" name="dp_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br><br>
-            <input type="number" id="dd80" name="dd_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
-          </td>
+            </td>
           <td style="border-right: 2px solid blue; ">
             <input type="number" id="c80_ccc_ccd1_2" name="c80ccc_ccd1_2" style="width: 80px; text-align:right;" value="0" disabled><br><br>
             <input type="number" id="NPS_self2" name="NPS_80CCD_1b2" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="NPS_emp2" name="NPS_80CCD2_2" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="d802" name="d_80_2" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="dp802" name="dp_80_2" style="width: 80px; text-align:right;" value="0" disabled><br><br>
-            <input type="number" id="dd802" name="dd_802" style="width: 80px; text-align:right;" value="0" disabled><br>
-          </td></tr>
+            </tr>
          
        <tr><td style="border-right: 2px solid blue; line-height: 1.45; vertical-align:bottom;" >
+		  &emsp;<label for="dd80"><font size="2"> vi) 80DD - Treatment of dependent who is person with disability </font><br>
+          &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label><br>
+     
           &emsp;<label for="ddb80"><font size="2"> vii) 80DDB - Medical treatment of specified disease :</font></label><br>
           &emsp;<label for="e80"><font size="2"> viii) 80E - Interest on loan taken for higher education :</font></label><br>
           &emsp;<label for="ee80"><font size="2"> ix) 80EE- Interest on loan taken for residential house property :</font></label><br>
@@ -593,11 +592,12 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
           &emsp;<label for="gg80"><font size="2"> xiii) 80GG - House Rent paid :</font></label><br>
           &emsp;<label for="gga80"><font size="2"> xiv) 80GGA - Donations for Scientific Research or Rural Dev. :</font></label><br>
           &emsp;<label for="ggc80"><font size="2"> xv) 80GGC - Donation to Political party :</font></label><br>
-          &emsp;<label for="u80"><font size="2"> xvi) 80U - Deduction In case of a person with disability</font><br>
-          &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label><br>
-           
+ 	   </td>
+		   
        <td style="border-right: 2px solid blue;">
-            <input type="number" id="ddb80" name="ddb_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
+           <input type="number" id="dd80" name="dd_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
+		   
+		    <input type="number" id="ddb80" name="ddb_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="e80" name="e_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="ee80" name="ee_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="eea80" name="eea_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
@@ -606,10 +606,11 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
             <input type="number" id="gg80" name="gg_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="gga80" name="gga_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
             <input type="number" id="ggc80" name="ggc_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br><br>
-            <input type="number" id="u80" name="u_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
-          </td>
+	     </td>
          <td style="border-right: 2px solid blue;">
-            <input type="number" id="ddb802" name="ddb_802" style="width: 80px; text-align:right;" value="0" disabled><br>
+            <input type="number" id="dd802" name="dd_802" style="width: 80px; text-align:right;" value="0" disabled><br>
+			 
+			<input type="number" id="ddb802" name="ddb_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="e802" name="e_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="ee802" name="ee_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="eea802" name="eea_802" style="width: 80px; text-align:right;" value="0" disabled><br>
@@ -618,11 +619,13 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
             <input type="number" id="gg802" name="gg_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="gga802" name="gga_802" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="ggc802" name="ggc_802" style="width: 80px; text-align:right;" value="0" disabled><br><br>
-            <input type="number" id="u802" name="u_802" style="width: 80px; text-align:right;" value="0" disabled><br>
          </td></tr>
            
        <tr><td style="border-right: 2px solid blue; line-height: 1.5;" >
-          &emsp;<label for="tta80"><font size="2"> xvii) 80TTA - Deduction against interest in savings account	:</font></label><br>
+          &emsp;<label for="u80"><font size="2"> xvi) 80U - Deduction In case of a person with disability</font><br>
+          &emsp;&emsp;&emsp;<font color=red size="2">(Enter percentage of Disability. Example: 30, 80, 90 etc.) :</font></label><br>
+		   
+		  &emsp;<label for="tta80"><font size="2"> xvii) 80TTA - Deduction against interest in savings account	:</font></label><br>
           &emsp;<label for="6any_oth"><font size="2"> xviii) Any other deduction under provision(s) of Chapter VI-A :</font></label><br>
                   
        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
@@ -631,10 +634,14 @@ if (parseFloat(Actual_Taxable_Income) <= 1000000) {
           <label for="Taxable_Inc_round"> 8) <font size="2">Taxable Income (Rounded off U/S 288A next ten)	:	</font></label> 
         </td>
            
-        <td style="border-right: 2px solid blue;"> </td>
+        <td style="border-right: 2px solid blue;"> 
+		<input type="number" id="u80" name="u_80" style="width: 80px; text-align:right;" value="0" oninput="eightyC()"><br>
+		</td>
          
         <td style="border-right: 2px solid blue;">  
-            <input type="number" id="tta80" name="tta_80" style="width: 80px; text-align:right;" value="0" disabled><br>
+            <input type="number" id="u802" name="u_802" style="width: 80px; text-align:right;" value="0" disabled><br>
+			
+			<input type="number" id="tta80" name="tta_80" style="width: 80px; text-align:right;" value="0" disabled><br>
             <input type="number" id="6any_oth" name="any_oth6" style="width: 80px; text-align:right;" value="0" oninput="eightyC()">
         </td>
 
