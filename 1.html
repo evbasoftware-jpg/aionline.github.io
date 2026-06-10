@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF to Excel Converter</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+h2{
+    color:#0047AB;
+}
+
+input,button{
+    padding:10px;
+    margin:5px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:8px;
+}
+
+button{
+    background:#0047AB;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>PDF → Excel (.xlsx) Converter</h2>
+
+<input type="file" id="pdfFile" accept=".pdf">
+<button onclick="extractPDF()">Read PDF</button>
+<button onclick="downloadExcel()">Download Excel</button>
+
+<table id="previewTable">
+<thead>
+<tr>
+<th>Page</th>
+<th>Extracted Text</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+
+let extractedData = [];
+
+async function extractPDF(){
+
+    const file = document.getElementById("pdfFile").files[0];
+
+    if(!file){
+        alert("Please select PDF file");
+        return;
+    }
+
+    extractedData = [];
+
+    const reader = new FileReader();
+
+    reader.onload = async function(){
+
+        const typedArray = new Uint8Array(this.result);
+
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+        const tbody = document.querySelector("#previewTable tbody");
+        tbody.innerHTML = "";
+
+        for(let pageNo=1; pageNo<=pdf.numPages; pageNo++){
+
+            const page = await pdf.getPage(pageNo);
+
+            const content = await page.getTextContent();
+
+            const text = content.items
+                        .map(item => item.str)
+                        .join(" ");
+
+            extractedData.push({
+                Page: pageNo,
+                Text: text
+            });
+
+            let row = tbody.insertRow();
+
+            row.insertCell(0).innerText = pageNo;
+            row.insertCell(1).innerText = text;
+        }
+
+        alert("PDF Extraction Complete");
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function downloadExcel(){
+
+    if(extractedData.length===0){
+        alert("No data available");
+        return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(extractedData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "PDF Data"
+    );
+
+    XLSX.writeFile(
+        workbook,
+        "PDF_Data.xlsx"
+    );
+}
+
+</script>
+
+</body>
+</html>
