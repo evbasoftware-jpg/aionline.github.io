@@ -121,35 +121,31 @@ async function extractText(file){
 
 function parseKeyValue(text){
 
-    const obj={};
+    const obj = {};
 
-    const regex=
-    /([A-Za-z0-9()\/\-\.\s]+?)\s*:\s*([^:\n]+?)(?=\s+[A-Za-z0-9()\/\-\.\s]+?\s*:|$)/g;
+    const lines = text.split(/\n|\r/);
 
-    let match;
+    lines.forEach(line=>{
 
-    while(
-      (match=regex.exec(text))
-      !== null
-    ){
+        const matches = [...line.matchAll(
+            /([A-Za-z][A-Za-z0-9().\/\-\s]{1,80})\s*:\s*([^:]+?)(?=\s+[A-Za-z][A-Za-z0-9().\/\-\s]{1,80}\s*:|$)/g
+        )];
 
-        let key=
-        match[1]
-        .replace(/\s+/g,' ')
-        .trim();
+        matches.forEach(m=>{
 
-        let value=
-        match[2]
-        .replace(/\s+/g,' ')
-        .trim();
+            let key = m[1]
+                .replace(/\s+/g," ")
+                .trim();
 
-        if(
-          key.length>0 &&
-          value.length>0
-        ){
-            obj[key]=value;
-        }
-    }
+            let value = m[2]
+                .replace(/\s+/g," ")
+                .trim();
+
+            obj[key] = value;
+
+        });
+
+    });
 
     return obj;
 }
