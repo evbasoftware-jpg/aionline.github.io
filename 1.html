@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>PDF Heading Extractor</title>
+<meta charset="utf-8">
+<title>Multi PDF To Excel</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -16,127 +16,152 @@ body{
 table{
     border-collapse:collapse;
     width:100%;
-    margin-top:20px;
+    margin-top:15px;
 }
 
 th,td{
     border:1px solid #000;
-    padding:6px;
+    padding:5px;
 }
 
 button{
-    padding:8px 15px;
-    margin:5px;
+    padding:10px 15px;
+    margin-top:10px;
 }
 </style>
 </head>
+
 <body>
 
-<h2>PDF Heading to Excel</h2>
+<h2>Single / Multiple PDF → Excel</h2>
 
-<input type="file" id="pdfFile" accept=".pdf">
+<input type="file"
+       id="pdfFiles"
+       accept=".pdf"
+       multiple>
 
-<button onclick="readPDF()">Extract</button>
-<button onclick="downloadExcel()">Download Excel</button>
+<button onclick="processPDFs()">
+Extract
+</button>
 
-<div id="result"></div>
+<button onclick="downloadExcel()">
+Download Excel
+</button>
+
+<div id="preview"></div>
 
 <script>
 
-let finalData=[];
+let finalRows=[];
+let allHeaders=new Set();
 
-async function readPDF(){
+async function processPDFs(){
 
-    const file=document.getElementById("pdfFile").files[0];
+    const files=
+    document.getElementById("pdfFiles").files;
 
-    if(!file){
+    if(files.length===0){
         alert("Select PDF");
         return;
     }
 
-    const reader=new FileReader();
+    finalRows=[];
+    allHeaders.clear();
 
-    reader.onload=async function(){
+    for(const file of files){
 
-        const pdf=await pdfjsLib
-        .getDocument(new Uint8Array(this.result))
-        .promise;
+        let text=
+        await extractText(file);
 
-        let fullText="";
+        let row=
+        parseKeyValue(text);
 
-        for(let p=1;p<=pdf.numPages;p++){
+        row["PDF File"]=file.name;
 
-            const page=await pdf.getPage(p);
+        Object.keys(row)
+        .forEach(h=>allHeaders.add(h));
 
-            const content=await page.getTextContent();
-
-            fullText += content.items
-            .map(i=>i.str)
-            .join(" ");
-
-            fullText+="\n";
-        }
-
-        processText(fullText);
-    };
-
-    reader.readAsArrayBuffer(file);
-}
-
-function processText(text){
-
-    finalData=[];
-
-    const records=text
-        .split(/\n\s*\n/)
-        .filter(x=>x.trim()!="");
-
-    records.forEach(rec=>{
-
-        let obj={};
-
-        rec.split(/\n|(?=\w+\s*:)/)
-        .forEach(line=>{
-
-            let m=line.match(/^(.+?)\s*:\s*(.+)$/);
-
-            if(m){
-
-                let heading=m[1].trim();
-
-                let value=m[2].trim();
-
-                obj[heading]=value;
-            }
-        });
-
-        if(Object.keys(obj).length>0){
-            finalData.push(obj);
-        }
-    });
-
-    createTable();
-}
-
-function createTable(){
-
-    if(finalData.length==0){
-        document.getElementById("result").innerHTML=
-        "No structured data found";
-        return;
+        finalRows.push(row);
     }
 
-    let headers=[];
+    showTable();
+}
 
-    finalData.forEach(r=>{
-        Object.keys(r).forEach(h=>{
-            if(!headers.includes(h)){
-                headers.push(h);
-            }
-        });
-    });
+async function extractText(file){
 
-    let html="<table><tr>";
+    const buffer=
+    await file.arrayBuffer();
+
+    const pdf=
+    await pdfjsLib
+    .getDocument(
+      new Uint8Array(buffer)
+    ).promise;
+
+    let fullText="";
+
+    for(let p=1;p<=pdf.numPages;p++){
+
+        const page=
+        await pdf.getPage(p);
+
+        const content=
+        await page.getTextContent();
+
+        fullText +=
+        content.items
+        .map(x=>x.str)
+        .join(" ");
+
+        fullText+="\n";
+    }
+
+    return fullText;
+}
+
+function parseKeyValue(text){
+
+    const obj={};
+
+    const regex=
+    /([A-Za-z0-9()\/\-\.\s]+?)\s*:\s*([^:\n]+?)(?=\s+[A-Za-z0-9()\/\-\.\s]+?\s*:|$)/g;
+
+    let match;
+
+    while(
+      (match=regex.exec(text))
+      !== null
+    ){
+
+        let key=
+        match[1]
+        .replace(/\s+/g,' ')
+        .trim();
+
+        let value=
+        match[2]
+        .replace(/\s+/g,' ')
+        .trim();
+
+        if(
+          key.length>0 &&
+          value.length>0
+        ){
+            obj[key]=value;
+        }
+    }
+
+    return obj;
+}
+
+function showTable(){
+
+    let headers=
+    Array.from(allHeaders);
+
+    let html="<table>";
+
+    html+="<tr>";
 
     headers.forEach(h=>{
         html+="<th>"+h+"</th>";
@@ -144,13 +169,14 @@ function createTable(){
 
     html+="</tr>";
 
-    finalData.forEach(r=>{
+    finalRows.forEach(r=>{
 
         html+="<tr>";
 
         headers.forEach(h=>{
 
             html+="<td>"+(r[h]||"")+"</td>";
+
         });
 
         html+="</tr>";
@@ -158,29 +184,53 @@ function createTable(){
 
     html+="</table>";
 
-    document.getElementById("result").innerHTML=html;
+    document
+    .getElementById("preview")
+    .innerHTML=html;
 }
 
 function downloadExcel(){
 
-    if(finalData.length==0){
-        alert("No data");
+    if(finalRows.length===0){
+        alert("No Data");
         return;
     }
 
-    const ws=XLSX.utils.json_to_sheet(finalData);
+    let headers=
+    Array.from(allHeaders);
 
-    const wb=XLSX.utils.book_new();
+    let excelData=[];
+
+    finalRows.forEach(r=>{
+
+        let row={};
+
+        headers.forEach(h=>{
+
+            row[h]=r[h] || "";
+
+        });
+
+        excelData.push(row);
+    });
+
+    const ws=
+    XLSX.utils.json_to_sheet(
+        excelData
+    );
+
+    const wb=
+    XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(
         wb,
         ws,
-        "PDF Data"
+        "Employee Data"
     );
 
     XLSX.writeFile(
         wb,
-        "PDF_Extract.xlsx"
+        "Employee_Details.xlsx"
     );
 }
 
