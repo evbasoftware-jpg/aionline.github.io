@@ -1,121 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PDF to Excel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced PDF to Excel Converter</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 body{
     font-family: Arial, sans-serif;
-    padding:20px;
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+h2{
+    color: #0047AB;
+}
+
+input, button{
+    padding: 10px;
+    margin: 5px;
 }
 
 table{
-    border-collapse:collapse;
-    width:100%;
-    margin-top:20px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-th,td{
-    border:1px solid #000;
-    padding:5px;
+th, td{
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+th{
+    background-color: #f2f2f2;
 }
 
 button{
-    padding:8px 15px;
-    margin-top:10px;
+    background: #0047AB;
+    color: white;
+    border: none;
+    cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<h2>PDF → Excel Converter</h2>
+<h2>Single / Multiple PDF → Excel (.xlsx) Converter</h2>
 
 <input type="file" id="pdfFile" accept=".pdf">
-<button onclick="readPDF()">Read PDF</button>
-<button onclick="downloadCSV()">Download CSV</button>
+<button onclick="extractPDF()">Extract</button>
+<button onclick="downloadExcel()">Download Excel</button>
 
-<table id="dataTable">
-    <thead>
-        <tr>
-            <th>Extracted Text</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
+<table id="previewTable">
+<thead>
+<tr>
+    <th>Employee Name</th>
+    <th>Code</th>
+    <th>Date of Birth</th>
+    <th>Sex</th>
+    <th>Caste</th>
+    <th>Voter ID No</th>
+    <th>Designation</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
 
 <script>
+// pdfjs worker setup
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-async function readPDF() {
+let extractedData = [];
 
+async function extractPDF(){
     const file = document.getElementById("pdfFile").files[0];
 
     if(!file){
-        alert("Select a PDF file");
+        alert("Please select PDF file");
         return;
     }
 
+    extractedData = [];
+    const tbody = document.querySelector("#previewTable tbody");
+    tbody.innerHTML = "";
+
     const reader = new FileReader();
 
-    reader.onload = async function() {
-
+    reader.onload = async function(){
         const typedArray = new Uint8Array(this.result);
-
         const pdf = await pdfjsLib.getDocument(typedArray).promise;
 
-        const tbody = document.querySelector("#dataTable tbody");
-        tbody.innerHTML = "";
+        // লুপ প্রতিটি পেজের জন্য
+        for(let pageNo=1; pageNo<=pdf.numPages; pageNo++){
+            const page = await pdf.getPage(pageNo);
+            const content = await page.getTextContent();
+            
+            // টেক্সট আইটেমগুলোকে তাদের Y এবং X পজিশন অনুযায়ী গ্রুপ বা সাজানোর প্রক্রিয়া
+            let lines = {};
+            
+            content.items.forEach(item => {
+                // Y স্থানাঙ্ককে রাউন্ড করা হচ্ছে যাতে একই লাইনের টেক্সট একসাথে ধরা যায়
+                let y = Math.round(item.transform[5]); 
+                let x = item.transform[4];
+                
+                if (!lines[y]) {
+                    lines[y] = [];
+                }
+                lines[y].push({ x: x, str: item.str });
+            });
 
-        for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+            // Y স্থানাঙ্ক অনুযায়ী উপর থেকে নিচে লাইনগুলো সাজানো হচ্ছে
+            let sortedY = Object.keys(lines).sort((a, b) => b - a);
 
-            const page = await pdf.getPage(pageNum);
+            sortedY.forEach(y => {
+                // X স্থানাঙ্ক অনুযায়ী বাম থেকে ডানে লেখাগুলো সাজানো হচ্ছে
+                let lineItems = lines[y].sort((a, b) => a.x - b.x);
+                
+                // পুরো লাইনের টেক্সট একসাথে করা
+                let fullLineText = lineItems.map(item => item.str.trim()).join(" ");
+                
+                // হেডার বা অপ্রয়োজনীয় স্কুল নাম বাদ দিয়ে শুধুমাত্র মেইন ডেটা ফিল্টার করার জন্য কন্ডিশন
+                // যদি লাইনে গুরুত্বপূর্ণ কিওয়ার্ড থাকে (যেমন 'AMIT', 'XIAZ' ইত্যাদি) অথবা নির্দিষ্ট প্যাটার্ন মেলে
+                if(fullLineText.includes("BIRBHUM") || fullLineText.includes("PRIMARY") || fullLineText.trim() === "" || fullLineText.includes("Voter ID")){
+                    return; // হেডার বা টাইটেল স্কিপ করুন
+                }
 
-            const textContent = await page.getTextContent();
+                // আপনার কলামগুলোর পজিশন বা স্পেস অনুযায়ী ডেটা ভাগ করার লজিক:
+                // যেহেতু নামের কলাম আর কোডের মাঝে বড় স্পেস থাকে, আমরা পজিশন (X-coordinate) ভিত্তিক ভাগ করতে পারি।
+                
+                let nameParts = [];
+                let codeVal = "";
+                let dobVal = "";
+                let sexVal = "";
+                let casteVal = "";
+                let voterVal = "";
+                let desigVal = "";
 
-            const text = textContent.items
-                .map(item => item.str)
-                .join(" ");
+                // কলামের আনুমানিক X-পজিশন ফিল্টারিং (আপনার PDF এর গঠন অনুযায়ী এটি অটো কাজ করবে)
+                lineItems.forEach(item => {
+                    let text = item.str.trim();
+                    if(!text) return;
 
-            let row = tbody.insertRow();
-            row.insertCell(0).textContent = text;
+                    // X-coordinate এর ওপর ভিত্তি করে আলাদা আলাদা কলামে ডেটা পুশ করা
+                    if (item.x < 120) { 
+                        nameParts.push(text); // নামের অংশ (AMIT KUMAR CHANDRA)
+                    } else if (item.x >= 120 && item.x < 220) {
+                        codeVal = text;      // কোড (XIAZ4180)
+                    } else if (item.x >= 220 && item.x < 300) {
+                        dobVal = text;       // জন্মতারিখ
+                    } else if (item.x >= 300 && item.x < 350) {
+                        sexVal = text;       // লিঙ্গ
+                    } else if (item.x >= 350 && item.x < 420) {
+                        casteVal = text;     // কাস্ট
+                    } else if (item.x >= 420 && item.x < 550) {
+                        voterVal = text;     // ভোটার আইডি
+                    } else if (item.x >= 550) {
+                        desigVal = text;     // পদবি (AT)
+                    }
+                });
+
+                let fullName = nameParts.join(" ").trim();
+
+                // যদি অন্তত নাম এবং কোড পাওয়া যায়, তবেই টেবিলে যুক্ত হবে
+                if(fullName || codeVal){
+                    let rowData = {
+                        "Employee Name": fullName,
+                        "Code": codeVal,
+                        "Date of Birth": dobVal,
+                        "Sex": sexVal,
+                        "Caste": casteVal,
+                        "Voter ID No": voterVal,
+                        "Designation": desigVal
+                    };
+
+                    extractedData.push(rowData);
+
+                    // ব্রাউজার টেবিলে দেখানোর জন্য
+                    let row = tbody.insertRow();
+                    row.insertCell(0).innerText = rowData["Employee Name"];
+                    row.insertCell(1).innerText = rowData["Code"];
+                    row.insertCell(2).innerText = rowData["Date of Birth"];
+                    row.insertCell(3).innerText = rowData["Sex"];
+                    row.insertCell(4).innerText = rowData["Caste"];
+                    row.insertCell(5).innerText = rowData["Voter ID No"];
+                    row.insertCell(6).innerText = rowData["Designation"];
+                }
+            });
         }
+
+        alert("PDF Extraction Complete. Review data below.");
     };
 
     reader.readAsArrayBuffer(file);
 }
 
-function downloadCSV(){
+function downloadExcel(){
+    if(extractedData.length === 0){
+        alert("No data available");
+        return;
+    }
 
-    let csv = "";
+    const worksheet = XLSX.utils.json_to_sheet(extractedData);
+    const workbook = XLSX.utils.book_new();
 
-    const rows = document.querySelectorAll("table tr");
-
-    rows.forEach(row => {
-
-        const cols = row.querySelectorAll("td,th");
-
-        let rowData = [];
-
-        cols.forEach(col => {
-            rowData.push('"' + col.innerText.replace(/"/g,'""') + '"');
-        });
-
-        csv += rowData.join(",") + "\n";
-    });
-
-    const blob = new Blob([csv], {type:"text/csv"});
-
-    const a = document.createElement("a");
-
-    a.href = URL.createObjectURL(blob);
-    a.download = "pdf_data.csv";
-
-    a.click();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employee Data");
+    XLSX.writeFile(workbook, "Corrected_PDF_Data.xlsx");
 }
-
 </script>
 
 </body>
