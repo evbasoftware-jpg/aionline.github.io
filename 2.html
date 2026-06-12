@@ -429,7 +429,9 @@ async function downloadExcel(){
     const worksheet = workbook.addWorksheet("Employee Data");
 
     worksheet.addRow(headers);
-
+    worksheet.getRow(1).font = {bold:true};
+    worksheet.columns.forEach(col=>{col.width = 25;});
+    
     finalRows.forEach(r=>{
         worksheet.addRow(
             headers.map(h => r[h] || "")
