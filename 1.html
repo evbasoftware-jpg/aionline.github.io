@@ -345,11 +345,11 @@ if(schoolMatch){
         if(nextHeaders){
 
             regex = new RegExp(
-                current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
-                "\\s*:\\s*(.*?)\\s*(?=(" +nextHeaders +
-")\\s*:|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|$)",
-                "i"
-            );
+    current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+    "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
+")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|osms\\.wbsed\\.gov\\.in|$)",
+    "i"
+);
 
         }else{
 
