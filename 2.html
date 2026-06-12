@@ -430,14 +430,22 @@ async function downloadExcel(){
 
     worksheet.addRow(headers);
     worksheet.getRow(1).font = {bold:true};
-    worksheet.columns.forEach(col=>{col.width = 25;});
-    
+        
     finalRows.forEach(r=>{
         worksheet.addRow(
             headers.map(h => r[h] || "")
         );
     });
 
+    worksheet.eachRow(row => {
+    row.eachCell(cell => {
+        cell.alignment = {
+            wrapText: true,
+            vertical: "middle"
+        };
+    });
+});
+    
     worksheet.eachRow((row)=>{
         row.eachCell((cell)=>{
 
@@ -451,16 +459,19 @@ async function downloadExcel(){
         });
     });
 
-    const buffer =
-        await workbook.xlsx.writeBuffer();
+    worksheet.columns.forEach(column => {
+    let maxLength = 0;
+    column.eachCell({ includeEmpty: true }, cell => {
+        const value = cell.value
+            ? cell.value.toString(): "";
 
-    const blob = new Blob(
-        [buffer],
-        {
-            type:
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        }
-    );
+        maxLength = Math.max(maxLength,value.length);});
+        column.width = Math.max(maxLength + 2,10);});
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer],{type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 
     const link =
         document.createElement("a");
