@@ -460,14 +460,17 @@ async function downloadExcel(){
     });
 
     worksheet.columns.forEach(column => {
+
     let maxLength = 0;
+
     column.eachCell({ includeEmpty: true }, cell => {
-        const value = cell.value
-            ? cell.value.toString(): "";
 
-        maxLength = Math.max(maxLength,value.length);});
-        column.width = Math.max(maxLength + 2,10);});
+        const value = cell.value ? String(cell.value) : "";
 
+        maxLength = Math.max( maxLength,value.length ); });
+
+    column.width = Math.min(
+        Math.max(maxLength + 2, 10),30);});
     const buffer = await workbook.xlsx.writeBuffer();
 
     const blob = new Blob([buffer],{type:
