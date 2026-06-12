@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Techer data PDF To Excel</title>
+<title>Multi PDF To Excel</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Upload Single / Multiple PDF of Teacher DCF to download in Excel</h2>
+<h2>Single / Multiple PDF → Excel</h2>
 
 <input type="file"
        id="pdfFiles"
@@ -41,7 +41,7 @@ button{
        multiple>
 
 <button onclick="processPDFs()">
-Extract Data
+Extract
 </button>
 
 <button onclick="downloadExcel()">
@@ -310,11 +310,16 @@ if(permanentBlock){
     // Extra spaces clean
     text = text.replace(/\s+/g, " ").trim();
 
+    
+    
     // Circle
-    const circleMatch = text.match(
-/([A-Z]+(?:\s+[A-Z]+)*\s+CIRCLE,\s*[A-Z]+)\b/i
-);
+    const originalText = text;
 
+    const circleMatch = originalText.match(
+        /([A-Z0-9()\-]+(?:\s+[A-Z0-9()\-]+)*\s+CIRCLE,\s*[A-Z]+)/i);
+
+    text = text.replace(/\s+/g, " ").trim();
+    
 if(circleMatch){
 
     obj["Circle"] = circleMatch[1]
