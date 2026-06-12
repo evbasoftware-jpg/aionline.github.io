@@ -1,218 +1,477 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced PDF to Excel Converter</title>
+<meta charset="utf-8">
+<title>Teacher profile PDF To Excel</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    
 <style>
 body{
-    font-family: Arial, sans-serif;
-    max-width: 1000px;
-    margin: auto;
-    padding: 20px;
-}
-
-h2{
-    color: #0047AB;
-}
-
-input, button{
-    padding: 10px;
-    margin: 5px;
+    font-family:Arial;
+    padding:20px;
 }
 
 table{
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+    border-collapse:collapse;
+    width:100%;
+    margin-top:15px;
 }
 
-th, td{
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-}
-
-th{
-    background-color: #f2f2f2;
+th,td{
+    border:1px solid #000;
+    padding:5px;
 }
 
 button{
-    background: #0047AB;
-    color: white;
-    border: none;
-    cursor: pointer;
+    padding:10px 15px;
+    margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Single / Multiple PDF → Excel (.xlsx) Converter</h2>
+<h2>Upload Single / Multiple PDF of Teacher Prifile to download in Excel</h2>
 
-<input type="file" id="pdfFile" accept=".pdf">
-<button onclick="extractPDF()">Extract</button>
-<button onclick="downloadExcel()">Download Excel</button>
+<input type="file"
+       id="pdfFiles"
+       accept=".pdf"
+       multiple>
 
-<table id="previewTable">
-<thead>
-<tr>
-    <th>Employee Name</th>
-    <th>Code</th>
-    <th>Date of Birth</th>
-    <th>Sex</th>
-    <th>Caste</th>
-    <th>Voter ID No</th>
-    <th>Designation</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<button onclick="processPDFs()">
+Extract
+</button>
+
+<button onclick="downloadExcel()">
+Download Excel
+</button>
+
+<div id="preview"></div>
 
 <script>
-// pdfjs worker setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let extractedData = [];
+    const HEADERS = [
+"Circle",
+"School Name",
+"Name",
+"Code",
+"Date of Birth",
+"Sex",
+"Caste",
+"Voter ID No",
+"Designation",
+"Date of Retirement",
+"Date of first joining in this service",
+"Date of joining the present post",
+"Date Of First Joining In The Present School At Present Post",
+"Date of joining the present school",
+"Approval Qualification",
+"Additional Qualification",
+"Approval of Appointment Number",
+"Employee Group",
+"Approval of Appointment Date",
+"Basic Pay",
+"Level",
+"Cell",
+"Category Of Teacher",
+"Bank Name",
+"MICR No",
+"Bank Branch",
+"Bank Branch Code",
+"Bank Account No",
+"Bank IFSC Code",
+"Father's Name",
+"Mother's Name",
+"Religion",
+"Mother Tongue",
+"Opted For Swastha Sathi Scheme",
+"Marital status",
+"Spouse Name",
+"Employment Details",
+"Spouse pay",
+"Spouse HRA",
+"Spouse opted for enrolment in West Bengal Health Scheme",
+"Residential Status",
+"PAN no",
+"Aadhar ID no",
+"Assembly Constituency No.",
+"Assembly Part No",
+"Voter sl.No. in the part",
+"Blood Group",
+"Whether Differently Able",
+"State details",
+"Height (In Inch)",
+"Identification Mark",
 
-async function extractPDF(){
-    const file = document.getElementById("pdfFile").files[0];
+"Present State",
+"Present House No.",
+"Present Street",
+"Present Town/ Village",
+"Present Post Office",
+"Present PIN",
+"Present District",
+"Present Sub Division",
+"Present Block",
+"Present Police Station",
 
-    if(!file){
-        alert("Please select PDF file");
+"Permanent State",
+"Permanent House No.",
+"Permanent Street",
+"Permanent Town/ Village",
+"Permanent Post Office",
+"Permanent PIN",
+"Permanent District",
+"Permanent Sub Division",
+"Permanent Block",
+"Permanent Police Station",
+
+"Land Tel. No",
+"Mobile No.",
+"Email Id",
+
+"Professional Qualification",
+"Year of possessing the professional qualification",
+
+"Employment District",
+"Employment Circle",
+"Employment School",
+"Employment Designation",
+"Qualification",
+"From Date",
+"To Date",
+"Transfer Memo No.",
+"Transfer Memo No. Date",
+
+"PDF File"
+];
+    
+let finalRows=[];
+let allHeaders=new Set();
+
+async function processPDFs(){
+
+    const files=
+    document.getElementById("pdfFiles").files;
+
+    if(files.length===0){
+        alert("Select PDF");
         return;
     }
 
-    extractedData = [];
-    const tbody = document.querySelector("#previewTable tbody");
-    tbody.innerHTML = "";
+    finalRows=[];
+    allHeaders.clear();
 
-    const reader = new FileReader();
+    for(const file of files){
 
-    reader.onload = async function(){
-        const typedArray = new Uint8Array(this.result);
-        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        let text=
+        await extractText(file);
 
-        // লুপ প্রতিটি পেজের জন্য
-        for(let pageNo=1; pageNo<=pdf.numPages; pageNo++){
-            const page = await pdf.getPage(pageNo);
-            const content = await page.getTextContent();
-            
-            // টেক্সট আইটেমগুলোকে তাদের Y এবং X পজিশন অনুযায়ী গ্রুপ বা সাজানোর প্রক্রিয়া
-            let lines = {};
-            
-            content.items.forEach(item => {
-                // Y স্থানাঙ্ককে রাউন্ড করা হচ্ছে যাতে একই লাইনের টেক্সট একসাথে ধরা যায়
-                let y = Math.round(item.transform[5]); 
-                let x = item.transform[4];
-                
-                if (!lines[y]) {
-                    lines[y] = [];
-                }
-                lines[y].push({ x: x, str: item.str });
-            });
+        let row=
+        parseKeyValue(text);
 
-            // Y স্থানাঙ্ক অনুযায়ী উপর থেকে নিচে লাইনগুলো সাজানো হচ্ছে
-            let sortedY = Object.keys(lines).sort((a, b) => b - a);
+        row["PDF File"]=file.name;
 
-            sortedY.forEach(y => {
-                // X স্থানাঙ্ক অনুযায়ী বাম থেকে ডানে লেখাগুলো সাজানো হচ্ছে
-                let lineItems = lines[y].sort((a, b) => a.x - b.x);
-                
-                // পুরো লাইনের টেক্সট একসাথে করা
-                let fullLineText = lineItems.map(item => item.str.trim()).join(" ");
-                
-                // হেডার বা অপ্রয়োজনীয় স্কুল নাম বাদ দিয়ে শুধুমাত্র মেইন ডেটা ফিল্টার করার জন্য কন্ডিশন
-                // যদি লাইনে গুরুত্বপূর্ণ কিওয়ার্ড থাকে (যেমন 'AMIT', 'XIAZ' ইত্যাদি) অথবা নির্দিষ্ট প্যাটার্ন মেলে
-                if(fullLineText.includes("BIRBHUM") || fullLineText.includes("PRIMARY") || fullLineText.trim() === "" || fullLineText.includes("Voter ID")){
-                    return; // হেডার বা টাইটেল স্কিপ করুন
-                }
+        Object.keys(row)
+        .forEach(h=>allHeaders.add(h));
 
-                // আপনার কলামগুলোর পজিশন বা স্পেস অনুযায়ী ডেটা ভাগ করার লজিক:
-                // যেহেতু নামের কলাম আর কোডের মাঝে বড় স্পেস থাকে, আমরা পজিশন (X-coordinate) ভিত্তিক ভাগ করতে পারি।
-                
-                let nameParts = [];
-                let codeVal = "";
-                let dobVal = "";
-                let sexVal = "";
-                let casteVal = "";
-                let voterVal = "";
-                let desigVal = "";
+        finalRows.push(row);
+    }
 
-                // কলামের আনুমানিক X-পজিশন ফিল্টারিং (আপনার PDF এর গঠন অনুযায়ী এটি অটো কাজ করবে)
-                lineItems.forEach(item => {
-                    let text = item.str.trim();
-                    if(!text) return;
+    showTable();
+}
 
-                    // X-coordinate এর ওপর ভিত্তি করে আলাদা আলাদা কলামে ডেটা পুশ করা
-                    if (item.x < 120) { 
-                        nameParts.push(text); // নামের অংশ (AMIT KUMAR CHANDRA)
-                    } else if (item.x >= 120 && item.x < 220) {
-                        codeVal = text;      // কোড (XIAZ4180)
-                    } else if (item.x >= 220 && item.x < 300) {
-                        dobVal = text;       // জন্মতারিখ
-                    } else if (item.x >= 300 && item.x < 350) {
-                        sexVal = text;       // লিঙ্গ
-                    } else if (item.x >= 350 && item.x < 420) {
-                        casteVal = text;     // কাস্ট
-                    } else if (item.x >= 420 && item.x < 550) {
-                        voterVal = text;     // ভোটার আইডি
-                    } else if (item.x >= 550) {
-                        desigVal = text;     // পদবি (AT)
-                    }
-                });
+async function extractText(file){
 
-                let fullName = nameParts.join(" ").trim();
+    const buffer=
+    await file.arrayBuffer();
 
-                // যদি অন্তত নাম এবং কোড পাওয়া যায়, তবেই টেবিলে যুক্ত হবে
-                if(fullName || codeVal){
-                    let rowData = {
-                        "Employee Name": fullName,
-                        "Code": codeVal,
-                        "Date of Birth": dobVal,
-                        "Sex": sexVal,
-                        "Caste": casteVal,
-                        "Voter ID No": voterVal,
-                        "Designation": desigVal
-                    };
+    const pdf=
+    await pdfjsLib
+    .getDocument(
+      new Uint8Array(buffer)
+    ).promise;
 
-                    extractedData.push(rowData);
+    let fullText="";
 
-                    // ব্রাউজার টেবিলে দেখানোর জন্য
-                    let row = tbody.insertRow();
-                    row.insertCell(0).innerText = rowData["Employee Name"];
-                    row.insertCell(1).innerText = rowData["Code"];
-                    row.insertCell(2).innerText = rowData["Date of Birth"];
-                    row.insertCell(3).innerText = rowData["Sex"];
-                    row.insertCell(4).innerText = rowData["Caste"];
-                    row.insertCell(5).innerText = rowData["Voter ID No"];
-                    row.insertCell(6).innerText = rowData["Designation"];
-                }
-            });
+    for(let p=1;p<=pdf.numPages;p++){
+
+        const page=
+        await pdf.getPage(p);
+
+        const content=
+        await page.getTextContent();
+
+        fullText +=
+    content.items
+    .map(x => x.str)
+    .join("\n");
+
+        fullText+="\n";
+    }
+
+    return fullText;
+}
+
+function parseKeyValue(text){
+
+    
+    const presentBlock = text.match(
+/PRESENT ADDRESS(.*?)(?:PERMANENT ADDRESS|CONTACT DETAILS)/is
+);
+
+const permanentBlock = text.match(
+/PERMANENT ADDRESS(.*?)(?:CONTACT DETAILS|PROFESSIONAL DETAILS)/is
+);
+    
+    const obj = {};
+
+    // PRESENT ADDRESS
+if(presentBlock){
+
+    const pText = presentBlock[1];
+
+    const fields = [
+        "State",
+        "House No.",
+        "Street",
+        "Town/ Village",
+        "Post Office",
+        "PIN",
+        "District",
+        "Sub Division",
+        "Block",
+        "Police Station"
+    ];
+
+    fields.forEach((field,index)=>{
+
+        const next = fields.slice(index+1)
+            .map(f=>f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
+
+        const rx = new RegExp(
+            field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+            "\\s*:\\s*(.*?)\\s*(?=(" +
+            next +
+            ")\\s*:|$)",
+            "is"
+        );
+
+        const m = pText.match(rx);
+
+        if(m){
+            obj["Present " + field] = m[1].trim();
+        }
+    });
+}
+    
+  // PERMANENT ADDRESS
+if(permanentBlock){
+
+    const pText = permanentBlock[1];
+
+    const fields = [
+        "State",
+        "House No.",
+        "Street",
+        "Town/ Village",
+        "Post Office",
+        "PIN",
+        "District",
+        "Sub Division",
+        "Block",
+        "Police Station"
+    ];
+
+    fields.forEach((field,index)=>{
+
+        const next = fields.slice(index+1)
+            .map(f=>f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
+
+        const rx = new RegExp(
+            field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+            "\\s*:\\s*(.*?)\\s*(?=(" +
+            next +
+            ")\\s*:|$)",
+            "is"
+        );
+
+        const m = pText.match(rx);
+
+        if(m){
+            obj["Permanent " + field] = m[1].trim();
+        }
+    });
+}  
+    
+    // Extra spaces clean
+    text = text.replace(/\s+/g, " ").trim();
+
+    
+    
+    // Circle
+    const originalText = text;
+
+    const circleMatch = originalText.match(
+        /([A-Z0-9()\-]+(?:\s+[A-Z0-9()\-]+)*\s+CIRCLE,\s*[A-Z]+)/i);
+
+    text = text.replace(/\s+/g, " ").trim();
+    
+if(circleMatch){
+
+    obj["Circle"] = circleMatch[1]
+        .replace(/^OF\s+WB\s+/i,"")
+        .trim();
+}
+
+const schoolMatch = text.match(
+/CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH))/i
+);
+
+if(schoolMatch){
+    obj["School Name"] = schoolMatch[1].trim();
+}
+
+   
+    for(let i=0;i<HEADERS.length;i++){
+
+        const current = HEADERS[i];
+
+        const nextHeaders = HEADERS
+            .slice(i+1)
+            .map(h => h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
+
+        let regex;
+
+        if(nextHeaders){
+
+            regex = new RegExp(
+    current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+    "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
+")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|osms\\.wbsed\\.gov\\.in|$)",
+    "i"
+);
+
+        }else{
+
+            regex = new RegExp(
+                current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+                "\\s*:\\s*(.*)$",
+                "i"
+            );
         }
 
-        alert("PDF Extraction Complete. Review data below.");
-    };
+        const match = text.match(regex);
 
-    reader.readAsArrayBuffer(file);
+        if(match){
+
+            obj[current] = match[1]
+                .replace(/\s+/g," ")
+                .trim();
+        }
+    }
+
+    return obj;
 }
 
-function downloadExcel(){
-    if(extractedData.length === 0){
-        alert("No data available");
+function showTable(){
+
+    let headers = HEADERS.filter(
+    h => allHeaders.has(h));
+
+    let html="<table>";
+
+    html+="<tr>";
+
+    headers.forEach(h=>{
+        html+="<th>"+h+"</th>";
+    });
+
+    html+="</tr>";
+
+    finalRows.forEach(r=>{
+
+        html+="<tr>";
+
+        headers.forEach(h=>{
+
+            html+="<td>"+(r[h]||"")+"</td>";
+
+        });
+
+        html+="</tr>";
+    });
+
+    html+="</table>";
+
+    document
+    .getElementById("preview")
+    .innerHTML=html;
+}
+
+async function downloadExcel(){
+
+    if(finalRows.length===0){
+        alert("No Data");
         return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(extractedData);
-    const workbook = XLSX.utils.book_new();
+    let headers = HEADERS.filter(
+        h => allHeaders.has(h)
+    );
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employee Data");
-    XLSX.writeFile(workbook, "Corrected_PDF_Data.xlsx");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Employee Data");
+
+    worksheet.addRow(headers);
+
+    finalRows.forEach(r=>{
+        worksheet.addRow(
+            headers.map(h => r[h] || "")
+        );
+    });
+
+    worksheet.eachRow((row)=>{
+        row.eachCell((cell)=>{
+
+            cell.border = {
+                top:{style:'thin'},
+                left:{style:'thin'},
+                bottom:{style:'thin'},
+                right:{style:'thin'}
+            };
+
+        });
+    });
+
+    const buffer =
+        await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob(
+        [buffer],
+        {
+            type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    const link =
+        document.createElement("a");
+
+    link.href =
+        URL.createObjectURL(blob);
+
+    link.download =
+        "Teacher_profile_PDF_To_Excel.xlsx";
+
+    link.click();
 }
+
 </script>
 
 </body>
