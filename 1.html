@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Multi PDF To Excel</title>
+<title>Teacher profile PDF To Excel</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Single / Multiple PDF → Excel</h2>
+<h2>Upload Single / Multiple PDF with Teacher Prifile data to download in Excel</h2>
 
 <input type="file"
        id="pdfFiles"
@@ -454,7 +454,7 @@ function downloadExcel(){
 
     XLSX.writeFile(
         wb,
-        "Employee_Details.xlsx"
+        "Teacher_profile_PDF_To_Excel.xlsx"
     );
 }
 
