@@ -52,6 +52,101 @@ Download Excel
 
 <script>
 
+    const HEADERS = [
+"Circle",
+"School Name",
+"Name",
+"Code",
+"Date of Birth",
+"Sex",
+"Caste",
+"Voter ID No",
+"Designation",
+"Date of Retirement",
+"Date of first joining in this service",
+"Date of joining the present post",
+"Date Of First Joining In The Present School At Present Post",
+"Date of joining the present school",
+"Approval Qualification",
+"Additional Qualification",
+"Approval of Appointment Number",
+"Employee Group",
+"Approval of Appointment Date",
+"Basic Pay",
+"Level",
+"Cell",
+"Category Of Teacher",
+"Bank Name",
+"MICR No",
+"Bank Branch",
+"Bank Branch Code",
+"Bank Account No",
+"Bank IFSC Code",
+"Father's Name",
+"Mother's Name",
+"Religion",
+"Mother Tongue",
+"Opted For Swastha Sathi Scheme",
+"Marital status",
+"Spouse Name",
+"Employment Details",
+"Spouse pay",
+"Spouse HRA",
+"Spouse opted for enrolment in West Bengal Health Scheme",
+"Residential Status",
+"PAN no",
+"Aadhar ID no",
+"Assembly Constituency No.",
+"Assembly Part No",
+"Voter sl.No. in the part",
+"Blood Group",
+"Whether Differently Able",
+"State details",
+"Height (In Inch)",
+"Identification Mark",
+
+"Present State",
+"Present House No.",
+"Present Street",
+"Present Town/ Village",
+"Present Post Office",
+"Present PIN",
+"Present District",
+"Present Sub Division",
+"Present Block",
+"Present Police Station",
+
+"Permanent State",
+"Permanent House No.",
+"Permanent Street",
+"Permanent Town/ Village",
+"Permanent Post Office",
+"Permanent PIN",
+"Permanent District",
+"Permanent Sub Division",
+"Permanent Block",
+"Permanent Police Station",
+
+"Land Tel. No",
+"Mobile No.",
+"Email Id",
+
+"Professional Qualification",
+"Year of possessing the professional qualification",
+
+"Employment District",
+"Employment Circle",
+"Employment School",
+"Employment Designation",
+"Qualification",
+"From Date",
+"To Date",
+"Transfer Memo No.",
+"Transfer Memo No. Date",
+
+"PDF File"
+];
+    
 let finalRows=[];
 let allHeaders=new Set();
 
@@ -109,9 +204,9 @@ async function extractText(file){
         await page.getTextContent();
 
         fullText +=
-        content.items
-        .map(x=>x.str)
-        .join(" ");
+    content.items
+    .map(x => x.str)
+    .join("\n");
 
         fullText+="\n";
     }
@@ -121,39 +216,167 @@ async function extractText(file){
 
 function parseKeyValue(text){
 
+    
+    const presentBlock = text.match(
+/PRESENT ADDRESS(.*?)(?:PERMANENT ADDRESS|CONTACT DETAILS)/is
+);
+
+const permanentBlock = text.match(
+/PERMANENT ADDRESS(.*?)(?:CONTACT DETAILS|PROFESSIONAL DETAILS)/is
+);
+    
     const obj = {};
 
-    const lines = text.split(/\n|\r/);
+    // PRESENT ADDRESS
+if(presentBlock){
 
-    lines.forEach(line=>{
+    const pText = presentBlock[1];
 
-        const matches = [...line.matchAll(
-            /([A-Za-z][A-Za-z0-9().\/\-\s]{1,80})\s*:\s*([^:]+?)(?=\s+[A-Za-z][A-Za-z0-9().\/\-\s]{1,80}\s*:|$)/g
-        )];
+    const fields = [
+        "State",
+        "House No.",
+        "Street",
+        "Town/ Village",
+        "Post Office",
+        "PIN",
+        "District",
+        "Sub Division",
+        "Block",
+        "Police Station"
+    ];
 
-        matches.forEach(m=>{
+    fields.forEach((field,index)=>{
 
-            let key = m[1]
-                .replace(/\s+/g," ")
-                .trim();
+        const next = fields.slice(index+1)
+            .map(f=>f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
 
-            let value = m[2]
-                .replace(/\s+/g," ")
-                .trim();
+        const rx = new RegExp(
+            field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+            "\\s*:\\s*(.*?)\\s*(?=(" +
+            next +
+            ")\\s*:|$)",
+            "is"
+        );
 
-            obj[key] = value;
+        const m = pText.match(rx);
 
-        });
-
+        if(m){
+            obj["Present " + field] = m[1].trim();
+        }
     });
+}
+    
+  // PERMANENT ADDRESS
+if(permanentBlock){
+
+    const pText = permanentBlock[1];
+
+    const fields = [
+        "State",
+        "House No.",
+        "Street",
+        "Town/ Village",
+        "Post Office",
+        "PIN",
+        "District",
+        "Sub Division",
+        "Block",
+        "Police Station"
+    ];
+
+    fields.forEach((field,index)=>{
+
+        const next = fields.slice(index+1)
+            .map(f=>f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
+
+        const rx = new RegExp(
+            field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+            "\\s*:\\s*(.*?)\\s*(?=(" +
+            next +
+            ")\\s*:|$)",
+            "is"
+        );
+
+        const m = pText.match(rx);
+
+        if(m){
+            obj["Permanent " + field] = m[1].trim();
+        }
+    });
+}  
+    
+    // Extra spaces clean
+    text = text.replace(/\s+/g, " ").trim();
+
+    // Circle
+    const circleMatch = text.match(
+/([A-Z]+(?:\s+[A-Z]+)*\s+CIRCLE,\s*[A-Z]+)\b/i
+);
+
+if(circleMatch){
+
+    obj["Circle"] = circleMatch[1]
+        .replace(/^OF\s+WB\s+/i,"")
+        .trim();
+}
+
+const schoolMatch = text.match(
+/CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH))/i
+);
+
+if(schoolMatch){
+    obj["School Name"] = schoolMatch[1].trim();
+}
+
+   
+    for(let i=0;i<HEADERS.length;i++){
+
+        const current = HEADERS[i];
+
+        const nextHeaders = HEADERS
+            .slice(i+1)
+            .map(h => h.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))
+            .join("|");
+
+        let regex;
+
+        if(nextHeaders){
+
+            regex = new RegExp(
+                current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+                "\\s*:\\s*(.*?)\\s*(?=(" +nextHeaders +
+")\\s*:|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|$)",
+                "i"
+            );
+
+        }else{
+
+            regex = new RegExp(
+                current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+                "\\s*:\\s*(.*)$",
+                "i"
+            );
+        }
+
+        const match = text.match(regex);
+
+        if(match){
+
+            obj[current] = match[1]
+                .replace(/\s+/g," ")
+                .trim();
+        }
+    }
 
     return obj;
 }
 
 function showTable(){
 
-    let headers=
-    Array.from(allHeaders);
+    let headers = HEADERS.filter(
+    h => allHeaders.has(h));
 
     let html="<table>";
 
@@ -192,8 +415,8 @@ function downloadExcel(){
         return;
     }
 
-    let headers=
-    Array.from(allHeaders);
+    let headers = HEADERS.filter(
+    h => allHeaders.has(h));
 
     let excelData=[];
 
