@@ -6,7 +6,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    
 <style>
 body{
     font-family:Arial;
@@ -413,7 +414,7 @@ function showTable(){
     .innerHTML=html;
 }
 
-function downloadExcel(){
+async function downloadExcel(){
 
     if(finalRows.length===0){
         alert("No Data");
@@ -421,41 +422,70 @@ function downloadExcel(){
     }
 
     let headers = HEADERS.filter(
-    h => allHeaders.has(h));
+        h => allHeaders.has(h)
+    );
 
-    let excelData=[];
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Employee Data");
 
+    worksheet.addRow(headers);
+    worksheet.getRow(1).font = {bold:true};
+        
     finalRows.forEach(r=>{
-
-        let row={};
-
-        headers.forEach(h=>{
-
-            row[h]=r[h] || "";
-
-        });
-
-        excelData.push(row);
+        worksheet.addRow(
+            headers.map(h => r[h] || "")
+        );
     });
 
-    const ws=
-    XLSX.utils.json_to_sheet(
-        excelData
-    );
+    worksheet.eachRow(row => {
+    row.eachCell(cell => {
+        cell.alignment = {
+            wrapText: true,
+            vertical: "middle"
+        };
+    });
+});
+    
+    worksheet.eachRow((row)=>{
+        row.eachCell((cell)=>{
 
-    const wb=
-    XLSX.utils.book_new();
+            cell.border = {
+                top:{style:'thin'},
+                left:{style:'thin'},
+                bottom:{style:'thin'},
+                right:{style:'thin'}
+            };
 
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Employee Data"
-    );
+        });
+    });
 
-    XLSX.writeFile(
-        wb,
-        "Teacher_profile_PDF_To_Excel.xlsx"
-    );
+    worksheet.columns.forEach(column => {
+
+    let maxLength = 0;
+
+    column.eachCell({ includeEmpty: true }, cell => {
+
+        const value = cell.value ? String(cell.value) : "";
+
+        maxLength = Math.max( maxLength,value.length ); });
+
+    column.width = Math.min(
+        Math.max(maxLength + 2, 10),40);});
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer],{type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+
+    const link =
+        document.createElement("a");
+
+    link.href =
+        URL.createObjectURL(blob);
+
+    link.download =
+        "Teacher_profile_PDF_To_Excel.xlsx";
+
+    link.click();
 }
 
 </script>

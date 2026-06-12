@@ -135,17 +135,24 @@ Download Excel
 "Professional Qualification",
 "Year of possessing the professional qualification",
 
-"Employment District",
-"Employment Circle",
-"Employment School",
-"Employment Designation",
-"Qualification",
-"From Date",
-"To Date",
-"Transfer Memo No.",
-"Transfer Memo No. Date",
-
-"PDF File"
+"Previous District",
+"Previous Circle",
+"Previous School",
+"Previous Designation",
+"Previous Qualification",
+"Previous From Date",
+"Previous To Date",
+"Previous Transfer Memo No.",
+"Previous Transfer Memo No. Date",
+"Status of previous of employment, if any",
+"Opted Under DCRB Scheme", 
+"If opted under post 1981 pension",   
+ "Option Exercise Under",   
+ "Date of refund of employer's share of CPF to the Govt. Treasury",   
+ "Name of Treasury",   
+ "Amount Refunded",   
+ "Whether any Court Case filed by the employee in connection with his/her service is pending before the Hon'ble Court",
+ "PDF File"
 ];
     
 let finalRows=[];
@@ -353,7 +360,7 @@ if(schoolMatch){
             regex = new RegExp(
     current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
     "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
-")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|osms\\.wbsed\\.gov\\.in|$)",
+")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|Finalized By DPSC|osms\\.wbsed\\.gov\\.in|$)",
     "i"
 );
 
@@ -470,7 +477,7 @@ async function downloadExcel(){
         maxLength = Math.max( maxLength,value.length ); });
 
     column.width = Math.min(
-        Math.max(maxLength + 2, 10),30);});
+        Math.max(maxLength + 2, 10),40);});
     const buffer = await workbook.xlsx.writeBuffer();
 
     const blob = new Blob([buffer],{type:
