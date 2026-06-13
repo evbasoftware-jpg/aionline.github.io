@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title>Teacher profile PDF To Excel</title>
-
+    
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
@@ -33,7 +35,20 @@ button{
 </head>
 
 <body>
+<!-- Login SECTION -->
+    <div id="loginBox" style="text-align:center;margin-top:100px;">
+  <h3>Login required</h3>
+  <div id="g_id_onload"
+       data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+  </div>
 
+  <div class="g_id_signin"
+       data-type="standard">
+  </div>
+    </div>
+<!-- Login SECTION complete -->
+    
 <h2>Upload Single / Multiple PDF of Teacher Prifile to download in Excel</h2>
 
 <input type="file"
@@ -52,6 +67,27 @@ Download Excel
 <div id="preview"></div>
 
 <script>
+
+    //email id checking 
+    const allowedEmails = [
+  "ujlmndl@gmail.com",
+  "evbasoftware@gmail.com",
+  "circlelabpur@gmail.com"
+];
+
+function handleCredentialResponse(response) {
+  const data = JSON.parse(atob(response.credential.split('.')[1]));
+  const email = data.email;
+
+  if (allowedEmails.includes(email)) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("salaryContent").style.display = "block";
+  } else {
+    alert("Access Denied ❌\nUnauthorized Email");
+  }
+}
+    //email id checking complete 
+    
 
     const HEADERS = [
 "Circle",
