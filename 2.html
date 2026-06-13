@@ -30,10 +30,6 @@ th,td{
 button{
     padding:10px 20px;
     margin-top:10px;
-    background-color: orange; 
-    color: blue; 
-    font-size:27px; 
-    font-weight: bold;
 }
     
  /* Logo + Text */
@@ -83,12 +79,13 @@ button{
        id="pdfFiles"
        accept=".pdf"
        multiple>
-<br>
-<button onclick="processPDFs()">
+        
+<br><br><br>
+<button onclick="processPDFs()" style="background-color: orange; color: blue; font-size:27px; font-weight: bold;">
 Extract
 </button>
 
-<button onclick="downloadExcel()">
+<button onclick="downloadExcel()" style="background-color: blue; color: white; font-size:27px; font-weight: bold;">
 Download Excel
 </button>
 
