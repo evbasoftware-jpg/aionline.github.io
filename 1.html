@@ -451,8 +451,7 @@ if(schoolMatch){
 
 function showTable(){
 
-    let headers = HEADERS.filter(
-    h => allHeaders.has(h));
+    let headers = HEADERS;
 
     let html="<table>";
 
@@ -491,9 +490,7 @@ async function downloadExcel(){
         return;
     }
 
-    let headers = HEADERS.filter(
-        h => allHeaders.has(h)
-    );
+    let headers = HEADERS;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Employee Data");
