@@ -49,6 +49,8 @@ button{
     </div>
 <!-- Login SECTION complete -->
     
+    <div id="PDF upload content" style="display:none;">
+        
 <h2>Upload Single / Multiple PDF of Teacher Prifile to download in Excel</h2>
 
 <input type="file"
@@ -81,7 +83,7 @@ function handleCredentialResponse(response) {
 
   if (allowedEmails.includes(email)) {
     document.getElementById("loginBox").style.display = "none";
-    document.getElementById("salaryContent").style.display = "block";
+    document.getElementById("PdfUploadContent").style.display = "block";
   } else {
     alert("Access Denied ❌\nUnauthorized Email");
   }
