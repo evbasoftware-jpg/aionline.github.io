@@ -27,10 +27,31 @@ th,td{
     padding:5px;
 }
 
+#pdfFiles{
+    width: 100%;
+    font-size: 20px;
+    padding: 12px;
+    box-sizing: border-box;
+    }
+
 button{
-    padding:10px 15px;
+    padding:10px 20px;
     margin-top:10px;
+    font-size:16px;
 }
+    
+ /* Logo + Text */
+.logo-box{
+  position: static;
+}
+
+/* Logo */
+.logo{
+    height:57px;
+    width:auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+    
 </style>
 </head>
 
@@ -50,14 +71,19 @@ button{
 
     <div id="PdfUploadContent" style="display:none;">
 <!-- Login SECTION complete -->
-                
+
+<div class="logo-box" >
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+</div>
+  https://aionline.in.net/
+        
 <h2>Upload Single / Multiple PDF of Teacher Prifile to download in Excel</h2>
 
 <input type="file"
        id="pdfFiles"
        accept=".pdf"
        multiple>
-
+<br>
 <button onclick="processPDFs()">
 Extract
 </button>
