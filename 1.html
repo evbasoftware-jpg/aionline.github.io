@@ -135,17 +135,25 @@ Download Excel
 "Professional Qualification",
 "Year of possessing the professional qualification",
 
-"Employment District",
-"Employment Circle",
-"Employment School",
-"Employment Designation",
-"Qualification",
-"From Date",
-"To Date",
-"Transfer Memo No.",
-"Transfer Memo No. Date",
-
-"PDF File"
+"Previous District",
+"Previous Circle",
+"Previous School",
+"Previous Designation",
+"Previous Qualification",
+"Previous From Date",
+"Previous To Date",
+"Previous Transfer Memo No.",
+"Previous Transfer Memo No. Date",
+    
+"Status of previous of employment, if any",
+"Opted Under DCRB Scheme", 
+"If opted under post 1981 pension",   
+ "Option Exercise Under",   
+ "Date of refund of employer's share of CPF to the Govt. Treasury",   
+ "Name of Treasury",   
+ "Amount Refunded",   
+ "Whether any Court Case filed by the employee in connection with his/her service is pending before the Hon'ble Court",
+ "PDF File"
 ];
     
 let finalRows=[];
@@ -217,6 +225,68 @@ async function extractText(file){
 
 function parseKeyValue(text){
 
+    const obj = {};
+    
+    const previousBlock = text.match(
+/DETAILS OF PREVIOUS EMPLOYMENT(.*?)(?:Status of previous of employment, if any|Opted Under DCRB Scheme|$)/is);
+    
+    if(previousBlock){
+
+    let pText = previousBlock[1]
+        .replace(/\s+/g," ")
+        .trim();
+
+    console.log("PREVIOUS =", pText);
+
+    pText = pText.replace(
+        /^District\s+Circle\s+School\s+Designation\s+Qualification\s+From\s+Date\s+To\s+Date\s+Transfer\s+Memo\s+No\.\s+Transfer\s+Memo\s+No\.\s+Date\s*/i,
+        ""
+    );
+
+    console.log("AFTER CLEAN =", pText);
+const dateMatches = pText.match(/\d{2}-\d{2}-\d{4}/g);
+
+if(dateMatches && dateMatches.length >= 3){
+
+    obj["Previous From Date"] = dateMatches[0];
+    obj["Previous To Date"] = dateMatches[1];
+    obj["Previous Transfer Memo No. Date"] = dateMatches[2];
+
+    const beforeDates = pText.split(dateMatches[0])[0].trim();
+
+    const memoMatch = pText.match(
+        /([A-Z]+\/[A-Z]+\/[0-9()\/]+\/[0-9]+)/i
+    );
+
+    if(memoMatch){
+        obj["Previous Transfer Memo No."] = memoMatch[1];
+    }
+
+    const desigMatch = beforeDates.match(
+        /\b(AT|HM|AHM|TIC)\b/
+    );
+
+    if(desigMatch){
+
+        obj["Previous Designation"] = desigMatch[1];
+
+        const parts = beforeDates.split(desigMatch[1]);
+
+        const left = parts[0].trim();
+        const right = parts[1].trim();
+
+        const leftWords = left.split(/\s+/);
+
+        obj["Previous District"] = leftWords[0] || "";
+        obj["Previous Circle"] = leftWords[1] || "";
+
+        obj["Previous School"] =
+            leftWords.slice(2).join(" ");
+
+        obj["Previous Qualification"] = right;
+    }
+}
+}
     
     const presentBlock = text.match(
 /PRESENT ADDRESS(.*?)(?:PERMANENT ADDRESS|CONTACT DETAILS)/is
@@ -226,7 +296,7 @@ const permanentBlock = text.match(
 /PERMANENT ADDRESS(.*?)(?:CONTACT DETAILS|PROFESSIONAL DETAILS)/is
 );
     
-    const obj = {};
+    
 
     // PRESENT ADDRESS
 if(presentBlock){
@@ -353,7 +423,7 @@ if(schoolMatch){
             regex = new RegExp(
     current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
     "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
-")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|osms\\.wbsed\\.gov\\.in|$)",
+")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|DETAILS OF PREVIOUS EMPLOYMENT|Finalized By DPSC|osms\\.wbsed\\.gov\\.in|$)",
     "i"
 );
 
