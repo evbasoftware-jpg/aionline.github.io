@@ -201,12 +201,6 @@ display:inline-block;
 <label for="address">Address</label>
 <input id="address" placeholder="Enter Address">
 
-<a
-target="_blank"
-href="https://www.google.com/maps/search/?api=1&query=${item.location}">
-📍 View Location
-</a>
-
 <label for="description">Brief Description of your Product</label>
 <textarea id="description" placeholder="Product Description"></textarea>
 
@@ -218,17 +212,16 @@ href="https://www.google.com/maps/search/?api=1&query=${item.location}">
 
 <label for="productImage">Product Image</label>
 <input type="file" id="productImage" accept="image/*">  
+   
+<img id="preview"
+style="max-width:100%;display:none;margin-top:10px;">
     
-<button onclick="registerShop()">
-Register Product
-</button> <br><br>
+<input type="hidden" id="productId">
 
-<button onclick="editProduct('${item.id}')">
-✏️ Edit
+<button id="saveBtn" onclick="registerShop()">
+Register Product
 </button>
 
-<input type="hidden" id="productId">
-    
 <p id="msg"></p>
 
 </div>
@@ -249,11 +242,39 @@ onkeyup="searchProducts()">
 <script>
 
 const API_URL =
-"https://script.google.com/macros/s/AKfycbyspKhPEccKZz99xu2j5GUlWiCwEDOCIdtjURJ8J6HKYq8M9Gp5yzKE0fQQCPbOwd4C/exec";
+"https://script.google.com/macros/s/AKfycbzZtHte7obBPxzTpLKmAYXEpBbnVn4L9Mfu4IUTt3ScKUqhscHfMgcO-p64c1AQfJW6/exec";
 
 async function registerShop(){
 
+    let imageData = "";
+
+const file =
+document.getElementById("productImage").files[0];
+
+if(file){
+
+  imageData = await new Promise((resolve)=>{
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+      resolve(
+        e.target.result.split(",")[1]
+      );
+
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+}
+    
 const data = {
+
+id:
+document.getElementById("productId").value,
 
 shopName:
 document.getElementById("shopName").value,
@@ -294,7 +315,11 @@ document.getElementById("location").value,
 email:
 document.getElementById("email").value,
 
+imageData:imageData,
+
 };
+
+let action;
 
 if(document.getElementById("productId").value){
 
@@ -309,8 +334,8 @@ if(document.getElementById("productId").value){
 const res = await fetch(API_URL,{
 method:"POST",
 body:JSON.stringify({
-action:"registerShop",
-data:data
+action: action,
+data: data
 })
 });
 
@@ -319,6 +344,32 @@ const result = await res.json();
 document.getElementById("msg").innerHTML =
 result.message;
 
+    
+if(result.success){
+
+document.getElementById("productId").value = "";
+document.getElementById("shopName").value = "";
+document.getElementById("ownerName").value = "";
+document.getElementById("category").value = "";
+document.getElementById("productName").value = "";
+document.getElementById("price").value = "";
+document.getElementById("weight").value = "";
+document.getElementById("expiryDate").value = "";
+document.getElementById("mobile").value = "";
+document.getElementById("whatsapp").value = "";
+document.getElementById("address").value = "";
+document.getElementById("description").value = "";
+document.getElementById("location").value = "";
+document.getElementById("email").value = "";
+document.getElementById("productImage").value = "";
+document.getElementById("saveBtn").innerText = "Register Product";   
+document.getElementById("preview").style.display = "none";
+document.getElementById("preview").src = "";
+    
+    loadProducts();
+
+}
+    
 }
 
 async function loadProducts(){
@@ -363,7 +414,18 @@ data.forEach(item=>{
 
 html += `
 <div class="product">
-
+    
+${item.imageUrl ? `
+<img
+src="${item.imageUrl}"
+style="
+width:100%;
+max-height:250px;
+object-fit:cover;
+border-radius:10px;
+margin-bottom:10px;">
+` : ""}
+    
 <h3>${item.productName}</h3>
 
 <p><b>Shop:</b> ${item.shopName}</p>
@@ -379,12 +441,17 @@ new Date(item.expiryDate).toLocaleDateString('en-GB')
 }</p>
 
 <p><b>Address:</b> ${item.address}</p>
-
+    
+<p><b>Description:</b> ${item.description || ""}</p>   
+    
 <a
 class="callBtn"
-href="tel:${item.mobile}">
-Call
+target="_blank"
+href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}">
+📍 Map
 </a>
+    
+<a class="callBtn" href="tel:${item.mobile}">Call</a>
 
 <a
 class="waBtn"
@@ -399,6 +466,10 @@ href="mailto:${item.email}">
 📧 Email
 </a>
 
+<button onclick="loadProduct('${item.id}')">
+✏️ Edit
+</button>
+    
 </div>
 `;
 
@@ -411,6 +482,79 @@ html;
 
 loadProducts();
 
+async function loadProduct(id){
+
+const res = await fetch(API_URL,{
+method:"POST",
+body:JSON.stringify({
+action:"getProductById",
+id:id
+})
+});
+
+const result = await res.json();
+
+if(!result.success) return;
+
+const p = result.product;
+
+document.getElementById("productId").value = p.id;
+document.getElementById("shopName").value = p.shopName;
+document.getElementById("ownerName").value = p.ownerName;
+document.getElementById("category").value = p.category;
+document.getElementById("productName").value = p.productName;
+document.getElementById("price").value = p.price;
+document.getElementById("weight").value = p.weight;
+    
+document.getElementById("expiryDate").value =
+p.expiryDate
+? new Date(p.expiryDate).toISOString().split("T")[0]
+: "";
+    
+document.getElementById("mobile").value = p.mobile;
+document.getElementById("whatsapp").value = p.whatsapp;
+document.getElementById("address").value = p.address;
+document.getElementById("description").value = p.description;
+document.getElementById("location").value = p.location;
+document.getElementById("email").value = p.email;
+
+window.scrollTo(0,0);
+
+document.getElementById("saveBtn").innerText =
+"Update Product";
+
+if(p.imageUrl){
+document.getElementById("preview").src =
+p.imageUrl;
+document.getElementById("preview").style.display =
+"block";
+}
+    
+}
+    
+
+document.getElementById("productImage")
+.addEventListener("change",function(){
+
+const file = this.files[0];
+
+if(file){
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+document.getElementById("preview").src = e.target.result;
+document.getElementById("preview").style.display = "block";
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+});
+    
 </script>
 
 </body>
