@@ -72,6 +72,17 @@ box-shadow:0 1px 5px rgba(0,0,0,.1);
     box-sizing:border-box;
     margin-bottom:10px;
 }
+
+textarea{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:5px;
+box-sizing:border-box;
+margin-bottom:10px;
+min-height:80px;
+}
+    
 .callBtn{
 background:green;
 color:#fff;
@@ -190,16 +201,34 @@ display:inline-block;
 <label for="address">Address</label>
 <input id="address" placeholder="Enter Address">
 
-<label for="longitude">Brief description of your Product</label>
-<input id="longitude" placeholder="Product Description">
+<a
+target="_blank"
+href="https://www.google.com/maps/search/?api=1&query=${item.location}">
+📍 View Location
+</a>
 
-<label for="latitude">Latitude & Longitude</label>
-<input id="latitude" placeholder="Enter Latitude & Longitude of shop Location">
-  
+<label for="description">Brief Description of your Product</label>
+<textarea id="description" placeholder="Product Description"></textarea>
+
+<label for="location">Latitude & Longitude</label>
+<input id="location" placeholder="22.7245,88.5632">
+
+<label for="email">Email Address</label>
+<input type="email" id="email" placeholder="Enter Email Address">
+
+<label for="productImage">Product Image</label>
+<input type="file" id="productImage" accept="image/*">  
+    
 <button onclick="registerShop()">
 Register Product
 </button>
 
+<button onclick="editProduct('${item.id}')">
+✏️ Edit
+</button>
+
+<input type="hidden" id="productId">
+    
 <p id="msg"></p>
 
 </div>
@@ -256,14 +285,27 @@ document.getElementById("whatsapp").value,
 address:
 document.getElementById("address").value,
 
-longitude:
-document.getElementById("longitude").value,
+description:
+document.getElementById("description").value,
 
-latitude:
-document.getElementById("latitude").value
+location:
+document.getElementById("location").value,
+
+email:
+document.getElementById("email").value,
 
 };
 
+if(document.getElementById("productId").value){
+
+    action = "updateProduct";
+
+}else{
+
+    action = "registerShop";
+
+}
+    
 const res = await fetch(API_URL,{
 method:"POST",
 body:JSON.stringify({
@@ -347,8 +389,14 @@ Call
 <a
 class="waBtn"
 target="_blank"
-href="https://wa.me/${item.whatsapp}">
+href="https://wa.me/${item.whatsapp}?text=Hello, I found your product in aionline.net.in, I am interested in ${encodeURIComponent(item.productName)}}">
 WhatsApp
+</a>
+
+<a
+class="callBtn"
+href="mailto:${item.email}">
+📧 Email
 </a>
 
 </div>
