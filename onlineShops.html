@@ -1,1 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Online Shops Portal</title>
 
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:15px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+.card{
+background:#fff;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h2{
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border:1px solid #ccc;
+border-radius:5px;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+background:#1976d2;
+color:#fff;
+border-radius:5px;
+cursor:pointer;
+}
+
+.product{
+background:#fff;
+padding:15px;
+margin-bottom:10px;
+border-radius:10px;
+box-shadow:0 1px 5px rgba(0,0,0,.1);
+}
+
+.callBtn{
+background:green;
+color:#fff;
+padding:8px 12px;
+text-decoration:none;
+border-radius:5px;
+display:inline-block;
+margin-right:5px;
+}
+
+.waBtn{
+background:#25D366;
+color:#fff;
+padding:8px 12px;
+text-decoration:none;
+border-radius:5px;
+display:inline-block;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Online Shop Registration</h2>
+
+<input id="shopName" placeholder="Shop Name">
+
+<input id="ownerName" placeholder="Shop Owner Name">
+
+<input id="category" placeholder="Business Category">
+
+<input id="productName" placeholder="Product Name">
+
+<input id="price" placeholder="Price">
+
+<input id="weight" placeholder="Product Weight">
+
+<input type="date" id="expiryDate">
+
+<input id="mobile" placeholder="Mobile Number">
+
+<input id="whatsapp" placeholder="WhatsApp Number">
+
+<input id="address" placeholder="Address">
+
+<input id="longitude" placeholder="Longitude">
+
+<input id="latitude" placeholder="Latitude">
+
+<button onclick="registerShop()">
+Register Shop
+</button>
+
+<p id="msg"></p>
+
+</div>
+
+<div class="card">
+
+<input
+id="searchBox"
+placeholder="Search Product..."
+onkeyup="searchProducts()">
+
+</div>
+
+<div id="productList"></div>
+
+</div>
+
+<script>
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwnadimqjYWXDAhM5u13CFlltryFBuS46-uDdaqCkvJ6b-4TeB1CZ15yPbSgTvSGnBV/exec";
+
+async function registerShop(){
+
+const data = {
+
+shopName:
+document.getElementById("shopName").value,
+
+ownerName:
+document.getElementById("ownerName").value,
+
+category:
+document.getElementById("category").value,
+
+productName:
+document.getElementById("productName").value,
+
+price:
+document.getElementById("price").value,
+
+weight:
+document.getElementById("weight").value,
+
+expiryDate:
+document.getElementById("expiryDate").value,
+
+mobile:
+document.getElementById("mobile").value,
+
+whatsapp:
+document.getElementById("whatsapp").value,
+
+address:
+document.getElementById("address").value,
+
+longitude:
+document.getElementById("longitude").value,
+
+latitude:
+document.getElementById("latitude").value
+
+};
+
+const res = await fetch(API_URL,{
+method:"POST",
+body:JSON.stringify({
+action:"registerShop",
+data:data
+})
+});
+
+const result = await res.json();
+
+document.getElementById("msg").innerHTML =
+result.message;
+
+}
+
+async function loadProducts(){
+
+const res = await fetch(API_URL,{
+method:"POST",
+body:JSON.stringify({
+action:"getProducts"
+})
+});
+
+const data = await res.json();
+
+showProducts(data);
+
+}
+
+async function searchProducts(){
+
+const keyword =
+document.getElementById("searchBox").value;
+
+const res = await fetch(API_URL,{
+method:"POST",
+body:JSON.stringify({
+action:"searchProducts",
+keyword:keyword
+})
+});
+
+const data = await res.json();
+
+showProducts(data);
+
+}
+
+function showProducts(data){
+
+let html="";
+
+data.forEach(item=>{
+
+html += `
+<div class="product">
+
+<h3>${item.productName}</h3>
+
+<p><b>Shop:</b> ${item.shopName}</p>
+
+<p><b>Category:</b> ${item.category}</p>
+
+<p><b>Price:</b> ₹${item.price}</p>
+
+<p><b>Weight:</b> ${item.weight}</p>
+
+<p><b>Expiry:</b> ${item.expiryDate}</p>
+
+<p><b>Address:</b> ${item.address}</p>
+
+<a
+class="callBtn"
+href="tel:${item.mobile}">
+Call
+</a>
+
+<a
+class="waBtn"
+target="_blank"
+href="https://wa.me/${item.whatsapp}">
+WhatsApp
+</a>
+
+</div>
+`;
+
+});
+
+document.getElementById("productList").innerHTML =
+html;
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>
