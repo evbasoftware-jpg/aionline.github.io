@@ -109,12 +109,13 @@ display:inline-block;
 <div class="container">
 
 <div class="card">
-
-<h2>Shop & Product Registration Online</h2>
-
-<h3 style="color:red; text-align:justify; line-height:1.6; margin:10px 0;">
-aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions.
-</h3>
+    
+<h2 onclick="toggleForm()" style="cursor:pointer;">
+<span id="icon">▶</span>
+Shop & Product Registration Online
+</h2>
+    
+<div id="formSection" style="display:none;">
     
 <label for="shopName">Shop Name</label>
 <input id="shopName" placeholder="Enter Shop Name">
@@ -229,7 +230,7 @@ Register Product
 </button>
 
 <p id="msg"></p>
-
+</div>
 </div>
 
 <div class="card">
@@ -240,7 +241,10 @@ placeholder="Search Product..."
 onkeyup="searchProducts()">
 
 </div>
-
+<h4 style="color:red; text-align:justify; line-height:1.6; margin:10px 0;">
+aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions.
+</h>
+    
 <div id="productList"></div>
 
 </div>
@@ -560,6 +564,28 @@ reader.readAsDataURL(file);
 }
 
 });
+    
+function toggleForm(){
+
+const form =
+document.getElementById("formSection");
+
+const icon =
+document.getElementById("icon");
+
+if(form.style.display === "none"){
+
+form.style.display = "block";
+icon.innerHTML = "▼";
+
+}else{
+
+form.style.display = "none";
+icon.innerHTML = "▶";
+
+}
+
+}
     
 </script>
 
