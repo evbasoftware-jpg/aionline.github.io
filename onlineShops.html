@@ -30,13 +30,20 @@ h2{
 text-align:center;
 }
 
-input,select{
-width:100%;
-padding:10px;
-margin:5px 0;
-border:1px solid #ccc;
-border-radius:5px;
-box-sizing:border-box;
+label{
+    display:block;
+    margin-top:10px;
+    margin-bottom:4px;
+    font-weight:bold;
+    color:#333;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    box-sizing:border-box;
 }
 
 button{
@@ -84,34 +91,46 @@ display:inline-block;
 
 <div class="card">
 
-<h2>Online Shop Registration</h2>
+<h2>Online Shop & Product Registration</h2>
 
-<input id="shopName" placeholder="Shop Name">
+<label for="shopName">Shop Name</label>
+<input id="shopName" placeholder="Enter Shop Name">
 
-<input id="ownerName" placeholder="Shop Owner Name">
+<label for="ownerName">Shop Owner Name</label>
+<input id="ownerName" placeholder="Enter Shop Owner Name">
 
-<input id="category" placeholder="Business Category">
+<label for="category">Business Category</label>
+<input id="category" placeholder="Enter Business Category">
 
-<input id="productName" placeholder="Product Name">
+<label for="productName">Product Name</label>
+<input id="productName" placeholder="Enter Product Name">
 
-<input id="price" placeholder="Price">
+<label for="price">Product Price</label>
+<input id="price" placeholder="Enter Product Price">
 
-<input id="weight" placeholder="Product Weight">
+<label for="weight">Product Weight</label>
+<input id="weight" placeholder="Enter Product Weight">
 
+<label for="expiryDate">Expiry Date of the Product</label>
 <input type="date" id="expiryDate">
 
-<input id="mobile" placeholder="Mobile Number">
+<label for="mobile">Mobile Number</label>
+<input id="mobile" placeholder="Enter Mobile Number">
 
-<input id="whatsapp" placeholder="WhatsApp Number">
+<label for="whatsapp">WhatsApp Number</label>
+<input id="whatsapp" placeholder="Enter WhatsApp Number">
 
-<input id="address" placeholder="Address">
+<label for="address">Address</label>
+<input id="address" placeholder="Enter Address">
 
-<input id="longitude" placeholder="Longitude">
+<label for="longitude">Longitude</label>
+<input id="longitude" placeholder="Enter Longitude for shop Location">
 
-<input id="latitude" placeholder="Latitude">
-
+<label for="latitude">Latitude</label>
+<input id="latitude" placeholder="Enter Latitude for shop Location">
+  
 <button onclick="registerShop()">
-Register Shop
+Register Product
 </button>
 
 <p id="msg"></p>
@@ -246,7 +265,9 @@ html += `
 
 <p><b>Weight:</b> ${item.weight}</p>
 
-<p><b>Expiry:</b> ${item.expiryDate}</p>
+<p><b>Expiry:</b> ${
+new Date(item.expiryDate).toLocaleDateString('en-GB')
+}</p>
 
 <p><b>Address:</b> ${item.address}</p>
 
@@ -279,3 +300,4 @@ loadProducts();
 
 </body>
 </html>
+
