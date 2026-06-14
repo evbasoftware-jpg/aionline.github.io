@@ -64,6 +64,14 @@ border-radius:10px;
 box-shadow:0 1px 5px rgba(0,0,0,.1);
 }
 
+  input, select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    box-sizing:border-box;
+    margin-bottom:10px;
+}
 .callBtn{
 background:green;
 color:#fff;
@@ -100,8 +108,59 @@ display:inline-block;
 <input id="ownerName" placeholder="Enter Shop Owner Name">
 
 <label for="category">Business Category</label>
-<input id="category" placeholder="Enter Business Category">
 
+<select id="category">
+
+<option value="">Select Business Category</option>
+
+<option>Groceries</option>
+<option>Fruits & Vegetables</option>
+<option>Dairy Products</option>
+<option>Bakery & Cakes</option>
+<option>Food & Beverages</option>
+
+<option>Fashion & Clothing</option>
+<option>Men's Fashion</option>
+<option>Women's Fashion</option>
+<option>Kids Fashion</option>
+<option>Footwear</option>
+
+<option>Beauty & Cosmetics</option>
+<option>Health & Personal Care</option>
+
+<option>Mobile & Accessories</option>
+<option>Computer & Laptop</option>
+<option>Electronics</option>
+<option>Home Appliances</option>
+
+<option>Furniture</option>
+<option>Home Decor</option>
+<option>Kitchen & Dining</option>
+
+<option>Books & Stationery</option>
+<option>Sports & Fitness</option>
+<option>Toys & Games</option>
+
+<option>Jewelry & Watches</option>
+<option>Gift Items</option>
+
+<option>Pet Supplies</option>
+<option>Agriculture Products</option>
+
+<option>Medicine & Pharmacy</option>
+
+<option>Automobile Parts</option>
+<option>Hardware & Tools</option>
+
+<option>Construction Materials</option>
+
+<option>Handicrafts</option>
+<option>Local Products</option>
+
+<option>Other</option>
+
+</select>
+  
 <label for="productName">Product Name</label>
 <input id="productName" placeholder="Enter Product Name">
 
@@ -300,4 +359,3 @@ loadProducts();
 
 </body>
 </html>
-
