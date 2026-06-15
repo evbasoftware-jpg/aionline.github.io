@@ -258,6 +258,7 @@ async function registerShop(){
 
     let imageData = "";
 
+    /*
 const file =
 document.getElementById("productImage").files[0];
 
@@ -279,7 +280,7 @@ if(file){
 
   });
 
-}
+} */
     
 const data = {
 
@@ -371,9 +372,13 @@ document.getElementById("address").value = "";
 document.getElementById("description").value = "";
 document.getElementById("location").value = "";
 document.getElementById("email").value = "";
-document.getElementById("productImage").value = "";
-document.getElementById("saveBtn").innerText = "Register Product";   
-document.getElementById("preview").style.display = "none";
+/*document.getElementById("productImage").value = ""; */
+    
+if(document.getElementById("preview")){
+  document.getElementById("preview").style.display = "none";
+  document.getElementById("preview").src = "";
+}
+    
 document.getElementById("preview").src = "";
     
     loadProducts();
@@ -530,6 +535,9 @@ document.getElementById("email").value = p.email;
 
 window.scrollTo(0,0);
 
+document.getElementById("formSection").style.display = "block";
+document.getElementById("icon").innerHTML = "▼";
+    
 document.getElementById("saveBtn").innerText =
 "Update Product";
 
@@ -542,7 +550,7 @@ document.getElementById("preview").style.display =
     
 }
     
-
+/*
 document.getElementById("productImage")
 .addEventListener("change",function(){
 
@@ -563,7 +571,7 @@ reader.readAsDataURL(file);
 
 }
 
-});
+}); */
     
 function toggleForm(){
 
