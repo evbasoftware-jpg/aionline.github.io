@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি ও ডাটা আপডেট পোর্টাল</title>
+    <title>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি (Fast Version)</title>
     <style>
         * {
             margin: 0;
@@ -23,14 +23,14 @@
             margin-bottom: 30px;
             background: linear-gradient(135deg, #1f4068, #162447);
             color: white;
-            padding: 30px 20px;
+            padding: 25px 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         header h1 {
             font-size: 2rem;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         /* সার্চ প্যানেল */
@@ -39,7 +39,7 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
@@ -145,13 +145,39 @@
             color: #1f4068;
             padding: 40px;
         }
+
+        /* পেজিনেশন স্টাইল */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background-color: #1f4068;
+            color: white;
+            border-color: #1f4068;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি</h1>
-        <p>প্রথম রো (হেডিং) বাদে সকল তথ্য নিচে প্রদর্শিত হচ্ছে। ফাঁকা ঘরগুলো এডিট করে সাবমিট করুন।</p>
+        <p>গতি বাড়ানোর জন্য তথ্যগুলো পেজ আকারে (Pagination) সাজানো হয়েছে।</p>
     </header>
 
     <div class="search-panel">
@@ -193,21 +219,22 @@
                 </tr>
             </thead>
             <tbody id="officeTableBody">
-                </tbody>
+            </tbody>
         </table>
+
+        <div class="pagination" id="paginationWrapper"></div>
     </div>
     
     <script>
-        // আপনার নতুন স্প্রেডশিটের আইডি (লিংকের মাঝের অংশটি)
-const sheetId = '1kPdHEY-jU5Btni5uBocH2N_0nq8qKbcWbDGMmLxmvxE'; 
-const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-        
-        // ⚠️ আপনার গুগল অ্যাপস স্ক্রিপ্টের Web App URLটি এখানে পেস্ট করুন:
-        const webAppUrl = 'https://script.google.com/macros/s/AKfycbwQvlW77WTkAOngRF-xqvq5L2PGDBo--QsPNNaaibGuypUD3Kz6PRr7a1Vpbik22E0tzQ/exec'; 
+        const sheetId = '1kPdHEY-jU5Btni5uBocH2N_0nq8qKbcWbDGMmLxmvxE'; 
+        const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+        const webAppUrl = 'https://script.google.com/macros/s/AKfycbxLSJnPBCV1ax8i7rDgJVfFngp371XZBk4AeXS3iierMv6-CCczqPjz62GkdgfRqMLWUQ/exec'; 
 
         let allOffices = [];
+        let filteredOffices = [];
+        let currentPage = 1;
+        const rowsPerPage = 50; 
 
-        // গুগল শিট থেকে ডাটা ফেচ করার ফাংশন
         async function loadSheetData() {
             try {
                 const response = await fetch(fetchUrl);
@@ -217,9 +244,7 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
                 
                 const rows = data.table.rows;
                 
-                // rows[0] হলো হেডার কলাম, তাই map করার সময় আমরা রো চেক করে প্রথম রো বাদ দেব।
-                // গুগলের gviz এপিআই প্রথম রো স্বয়ংক্রিয়ভাবে হেডারে রূপান্তর করতে পারে, তাও সুরক্ষার জন্য প্রথম রো ডেটা ফিল্টার করা হলো।
-                allOffices = rows.map((row, index) => {
+                allOffices = rows.map((row) => {
                     return {
                         name: row.c[0] && row.c[0].v ? String(row.c[0].v) : '',
                         type: row.c[1] && row.c[1].v ? String(row.c[1].v) : '',
@@ -230,13 +255,17 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
                         pincode: row.c[6] && row.c[6].v ? String(row.c[6].v) : '',
                         email: row.c[7] && row.c[7].v ? String(row.c[7].v) : '',
                         location: row.c[8] && row.c[8].v ? String(row.c[8].v) : '',
-                        remarks: row.c[9] && row.c[9].v ? String(row.c[9].v) : '' // কলাম J যদি আগে থেকে থাকে
+                        remarks: row.c[9] && row.c[9].v ? String(row.c[9].v) : ''
                     };
-                }).filter(office => office.name !== "NAME OF OFFICE"); // নিশ্চিতভাবে হেডিং রো বাদ দেওয়া হলো
+                }).filter(office => office.name !== "NAME OF OFFICE" && office.name.trim() !== ""); 
 
+                filteredOffices = [...allOffices];
+                
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('tableWrapper').style.display = 'block';
-                displayTable(allOffices);
+                
+                setupPagination();
+                displayTable();
 
             } catch (error) {
                 console.error("ডাটা আনতে সমস্যা:", error);
@@ -244,34 +273,50 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
             }
         }
 
-        // টেবিলে ডাটা দেখানোর মূল ফাংশন
-        function displayTable(data) {
+        function displayTable() {
             const tbody = document.getElementById('officeTableBody');
             tbody.innerHTML = "";
 
-            if (data.length === 0) {
+            if (filteredOffices.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;">কোনো মেলানো তথ্য পাওয়া যায়নি।</td></tr>`;
                 return;
             }
 
-            data.forEach((office, index) => {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = filteredOffices.slice(start, end);
+
+            paginatedItems.forEach((office, index) => {
+                const globalIndex = start + index; 
                 const tr = document.createElement('tr');
                 
-                // পিনকোড ফাঁকা থাকলে এডিট ইনপুট বক্স দেখাবে, ডাটা থাকলে নরমাল টেক্সট দেখাবে
+                const villageTD = `<input type="text" class="edit-input" id="vil-${globalIndex}" value="${office.village}" placeholder="গ্রাম/পৌরসভা লিখুন">`;
+
                 const pinTD = office.pincode.trim() === "" 
-                    ? `<input type="text" class="edit-input" id="pin-${index}" placeholder="পিনকোড লিখুন">` 
+                    ? `<input type="text" class="edit-input" id="pin-${globalIndex}" placeholder="পিনকোড লিখুন">` 
                     : office.pincode;
 
-                // লোকেশন ফাঁকা থাকলে এডিট ইনপুট বক্স দেখাবে, ডাটা থাকলে লিঙ্ক বা ম্যাপ দেখাবে
-                const locTD = office.location.trim() === "" 
-                    ? `<input type="text" class="edit-input" id="loc-${index}" placeholder="গুগল ম্যাপ লিঙ্ক">` 
-                    : (office.location.startsWith('http') ? `<a href="${office.location}" target="_blank">🔗 ম্যাপ দেখুন</a>` : office.location);
+                const isLocationEmpty = !office.location || office.location.trim() === "" || office.location === "তথ্য নেই";
 
-                // রিমার্কস বা মন্তব্যের জন্য সবসময় একটি ইনপুট বক্স থাকবে
-                const remarksTD = `<input type="text" class="edit-input" id="rem-${index}" value="${office.remarks}" placeholder="মন্তব্য লিখুন">`;
+                let locTD = "";
+                if (isLocationEmpty) {
+                    locTD = `<input type="text" class="edit-input" id="loc-${globalIndex}" placeholder="ম্যাপ লিংক বা Lat, Lon">`;
+                } else {
+                    if (office.location.startsWith('http')) {
+                        locTD = `<a href="${office.location}" target="_blank">🔗 ম্যাপ দেখুন</a>`;
+                    } 
+                    else if (office.location.includes(',')) {
+                        const coords = office.location.trim();
+                        const googleMapCoordsUrl = `https://www.google.com/maps?q=${coords}`;
+                        locTD = `<a href="${googleMapCoordsUrl}" target="_blank">📍 ম্যাপ দেখুন (${coords})</a>`;
+                    } 
+                    else {
+                        locTD = office.location;
+                    }
+                }
 
-                // অ্যাকশন বাটন (যদি কোনো কলাম ফাঁকা থাকে বা রিমার্কস দিতে চায় তবেই বাটন কাজ করবে)
-                const actionTD = `<button class="submit-btn" id="btn-${index}" onclick="submitUpdate(${index}, '${escapeHtml(office.name)}')">Submit</button>`;
+                const remarksTD = `<input type="text" class="edit-input" id="rem-${globalIndex}" value="${office.remarks}" placeholder="মন্তব্য লিখুন">`;
+                const actionTD = `<button class="submit-btn" id="btn-${globalIndex}" onclick="submitUpdate(${globalIndex}, '${escapeHtml(office.name)}')">Submit</button>`;
 
                 tr.innerHTML = `
                     <td><strong>${office.name}</strong></td>
@@ -279,7 +324,7 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
                     <td>${office.district}</td>
                     <td>${office.block}</td>
                     <td>${office.ps}</td>
-                    <td>${office.village}</td>
+                    <td>${villageTD}</td>
                     <td>${pinTD}</td>
                     <td>${office.email}</td>
                     <td>${locTD}</td>
@@ -290,45 +335,68 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
             });
         }
 
-        // ডাটাবেস আপডেট করার ফাংশন (Apps Script এ পাঠানো হবে)
-        async function submitUpdate(index, officeName) {
-            const btn = document.getElementById(`btn-${index}`);
-            
-            const pinInput = document.getElementById(`pin-${index}`);
-            const locInput = document.getElementById(`loc-${index}`);
-            const remInput = document.getElementById(`rem-${index}`);
+        function setupPagination() {
+            const wrapper = document.getElementById('paginationWrapper');
+            wrapper.innerHTML = "";
 
+            const pageCount = Math.ceil(filteredOffices.length / rowsPerPage);
+            if (pageCount <= 1) return;
+
+            for (let i = 1; i <= pageCount; i++) {
+                if (i === 1 || i === pageCount || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    const btn = document.createElement('button');
+                    btn.className = `page-btn ${currentPage === i ? 'active' : ''}`;
+                    btn.innerText = i;
+                    btn.addEventListener('click', () => {
+                        currentPage = i;
+                        displayTable();
+                        setupPagination();
+                        window.scrollTo({top: 200, behavior: 'smooth'});
+                    });
+                    wrapper.appendChild(btn);
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    const dots = document.createElement('span');
+                    dots.innerText = "...";
+                    wrapper.appendChild(dots);
+                }
+            }
+        }
+
+        async function submitUpdate(globalIndex, officeName) {
+            const btn = document.getElementById(`btn-${globalIndex}`);
+            
+            const vilInput = document.getElementById(`vil-${globalIndex}`);
+            const pinInput = document.getElementById(`pin-${globalIndex}`);
+            const locInput = document.getElementById(`loc-${globalIndex}`);
+            const remInput = document.getElementById(`rem-${globalIndex}`);
+
+            const villageValue = vilInput ? vilInput.value : '';
             const pincodeValue = pinInput ? pinInput.value : '';
             const locationValue = locInput ? locInput.value : '';
             const remarksValue = remInput ? remInput.value : '';
-
-            if (webAppUrl === 'https://script.google.com/macros/s/AKfycbwQvlW77WTkAOngRF-xqvq5L2PGDBo--QsPNNaaibGuypUD3Kz6PRr7a1Vpbik22E0tzQ/exec') {
-                alert("অনুগ্রহ করে প্রথমে কোডের ৩২২ নম্বর লাইনে আপনার Google Apps Script Web App URL টি যুক্ত করুন!");
-                return;
-            }
 
             btn.disabled = true;
             btn.innerText = "সংরক্ষণ হচ্ছে...";
 
             const payload = {
                 officeName: officeName,
+                village: villageValue,
                 pincode: pincodeValue,
                 location: locationValue,
                 remarks: remarksValue
             };
 
             try {
-                // Apps Script এ POST রিকোয়েস্ট পাঠানো
-                const response = await fetch(webAppUrl, {
+                await fetch(webAppUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // ব্রাউজার সিকিউরিটি ব্লকিং এড়াতে নো-কোর্স ব্যবহার করা হলো
+                    mode: 'no-cors', 
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
                 });
 
-                alert("অনুরোধ পাঠানো হয়েছে! গুগল স্প্রেডশিট চেক করুন। তথ্য আপডেট হতে কয়েক সেকেন্ড সময় লাগতে পারে।");
+                alert("অনুরোধ পাঠানো হয়েছে! গুগল স্প্রেডশিট চেক করুন।");
                 btn.innerText = "Submitted";
                 btn.style.backgroundColor = "#4a5568";
                 
@@ -340,24 +408,24 @@ const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=
             }
         }
 
-        // সার্চ এবং ফিল্টারিং লাইভ ট্র্যাকিং
         function filterTable() {
             const nameQ = document.getElementById('searchName').value.toLowerCase();
             const distQ = document.getElementById('searchDistrict').value.toLowerCase();
             const blockQ = document.getElementById('searchBlock').value.toLowerCase();
             const psQ = document.getElementById('searchPS').value.toLowerCase();
 
-            const filtered = allOffices.filter(office => {
+            filteredOffices = allOffices.filter(office => {
                 return office.name.toLowerCase().includes(nameQ) &&
                        office.district.toLowerCase().includes(distQ) &&
                        office.block.toLowerCase().includes(blockQ) &&
                        office.ps.toLowerCase().includes(psQ);
             });
 
-            displayTable(filtered);
+            currentPage = 1; 
+            setupPagination();
+            displayTable();
         }
 
-        // HTML স্পেশাল ক্যারেক্টার হ্যান্ডেল করার জন্য সাহায্যকারী ফাংশন
         function escapeHtml(text) {
             return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         }
