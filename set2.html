@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি ও ডাটা আপডেট পোর্টাল</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #1f4068, #162447);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* সার্চ প্যানেল */
+        .search-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+
+        .filter-group input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .filter-group input:focus {
+            border-color: #1f4068;
+        }
+
+        /* টেবিল কন্টেইনার */
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #1f4068;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* ইনপুট ফিল্ড ও বাটন স্টাইল */
+        .edit-input {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: 150px;
+        }
+
+        .edit-input:focus {
+            border-color: #38a169;
+            background-color: #f0fff4;
+        }
+
+        .submit-btn {
+            background-color: #38a169;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #2f855a;
+        }
+
+        .submit-btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1f4068;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি</h1>
+        <p>প্রথম রো (হেডিং) বাদে সকল তথ্য নিচে প্রদর্শিত হচ্ছে। ফাঁকা ঘরগুলো এডিট করে সাবমিট করুন।</p>
+    </header>
+
+    <div class="search-panel">
+        <div class="filter-group">
+            <label>অফিসের নাম</label>
+            <input type="text" id="searchName" placeholder="খুঁজুন...">
+        </div>
+        <div class="filter-group">
+            <label>জেলা (District)</label>
+            <input type="text" id="searchDistrict" placeholder="খুঁজুন...">
+        </div>
+        <div class="filter-group">
+            <label>ব্লক (Block)</label>
+            <input type="text" id="searchBlock" placeholder="খুঁজুন...">
+        </div>
+        <div class="filter-group">
+            <label>থানা (PS)</label>
+            <input type="text" id="searchPS" placeholder="খুঁজুন...">
+        </div>
+    </div>
+
+    <div id="loading" class="loader">গুগল স্প্রেডশিট থেকে লাইভ তথ্য লোড হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।</div>
+    
+    <div class="table-container" id="tableWrapper" style="display: none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>NAME OF OFFICE</th>
+                    <th>TYPE OF OFFICE</th>
+                    <th>DISTRICT</th>
+                    <th>NAME OF THE BLOCK</th>
+                    <th>NAME OF POLICE STATION</th>
+                    <th>VILLAGE / MUNICIPALITY & WARD</th>
+                    <th>PIN CODE</th>
+                    <th>Email address</th>
+                    <th>LOCATION</th>
+                    <th>REMARKS (মন্তব্য)</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody id="officeTableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // আপনার স্প্রেডশিট আইডি এবং গুগল অ্যাপস স্ক্রিপ্ট ডেপ্লয়মেন্ট ইউআরএল
+        const sheetId = '11ZLNFDdOBz0V8kewvkCwmJbhOzRtTeX0DH966thkptk';
+        const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+        
+        // ⚠️ আপনার গুগল অ্যাপস স্ক্রিপ্টের Web App URLটি এখানে পেস্ট করুন:
+        const webAppUrl = 'আপনার_ওয়েব_অ্যাপ_ইউআরএল_এখানে_বসিয়ে_দিন'; 
+
+        let allOffices = [];
+
+        // গুগল শিট থেকে ডাটা ফেচ করার ফাংশন
+        async function loadSheetData() {
+            try {
+                const response = await fetch(fetchUrl);
+                const text = await response.text();
+                const jsonText = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\s]*)\);/)[1];
+                const data = JSON.parse(jsonText);
+                
+                const rows = data.table.rows;
+                
+                // rows[0] হলো হেডার কলাম, তাই map করার সময় আমরা রো চেক করে প্রথম রো বাদ দেব।
+                // গুগলের gviz এপিআই প্রথম রো স্বয়ংক্রিয়ভাবে হেডারে রূপান্তর করতে পারে, তাও সুরক্ষার জন্য প্রথম রো ডেটা ফিল্টার করা হলো।
+                allOffices = rows.map((row, index) => {
+                    return {
+                        name: row.c[0] && row.c[0].v ? String(row.c[0].v) : '',
+                        type: row.c[1] && row.c[1].v ? String(row.c[1].v) : '',
+                        district: row.c[2] && row.c[2].v ? String(row.c[2].v) : '',
+                        block: row.c[3] && row.c[3].v ? String(row.c[3].v) : '',
+                        ps: row.c[4] && row.c[4].v ? String(row.c[4].v) : '',
+                        village: row.c[5] && row.c[5].v ? String(row.c[5].v) : '',
+                        pincode: row.c[6] && row.c[6].v ? String(row.c[6].v) : '',
+                        email: row.c[7] && row.c[7].v ? String(row.c[7].v) : '',
+                        location: row.c[8] && row.c[8].v ? String(row.c[8].v) : '',
+                        remarks: row.c[9] && row.c[9].v ? String(row.c[9].v) : '' // কলাম J যদি আগে থেকে থাকে
+                    };
+                }).filter(office => office.name !== "NAME OF OFFICE"); // নিশ্চিতভাবে হেডিং রো বাদ দেওয়া হলো
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('tableWrapper').style.display = 'block';
+                displayTable(allOffices);
+
+            } catch (error) {
+                console.error("ডাটা আনতে সমস্যা:", error);
+                document.getElementById('loading').innerText = "ডাটা লোড করা সম্ভব হয়নি। শিটটি 'Publish to web' করা আছে কিনা যাচাই করুন।";
+            }
+        }
+
+        // টেবিলে ডাটা দেখানোর মূল ফাংশন
+        function displayTable(data) {
+            const tbody = document.getElementById('officeTableBody');
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;">কোনো মেলানো তথ্য পাওয়া যায়নি।</td></tr>`;
+                return;
+            }
+
+            data.forEach((office, index) => {
+                const tr = document.createElement('tr');
+                
+                // পিনকোড ফাঁকা থাকলে এডিট ইনপুট বক্স দেখাবে, ডাটা থাকলে নরমাল টেক্সট দেখাবে
+                const pinTD = office.pincode.trim() === "" 
+                    ? `<input type="text" class="edit-input" id="pin-${index}" placeholder="পিনকোড লিখুন">` 
+                    : office.pincode;
+
+                // লোকেশন ফাঁকা থাকলে এডিট ইনপুট বক্স দেখাবে, ডাটা থাকলে লিঙ্ক বা ম্যাপ দেখাবে
+                const locTD = office.location.trim() === "" 
+                    ? `<input type="text" class="edit-input" id="loc-${index}" placeholder="গুগল ম্যাপ লিঙ্ক">` 
+                    : (office.location.startsWith('http') ? `<a href="${office.location}" target="_blank">🔗 ম্যাপ দেখুন</a>` : office.location);
+
+                // রিমার্কস বা মন্তব্যের জন্য সবসময় একটি ইনপুট বক্স থাকবে
+                const remarksTD = `<input type="text" class="edit-input" id="rem-${index}" value="${office.remarks}" placeholder="মন্তব্য লিখুন">`;
+
+                // অ্যাকশন বাটন (যদি কোনো কলাম ফাঁকা থাকে বা রিমার্কস দিতে চায় তবেই বাটন কাজ করবে)
+                const actionTD = `<button class="submit-btn" id="btn-${index}" onclick="submitUpdate(${index}, '${escapeHtml(office.name)}')">Submit</button>`;
+
+                tr.innerHTML = `
+                    <td><strong>${office.name}</strong></td>
+                    <td>${office.type}</td>
+                    <td>${office.district}</td>
+                    <td>${office.block}</td>
+                    <td>${office.ps}</td>
+                    <td>${office.village}</td>
+                    <td>${pinTD}</td>
+                    <td>${office.email}</td>
+                    <td>${locTD}</td>
+                    <td>${remarksTD}</td>
+                    <td>${actionTD}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ডাটাবেস আপডেট করার ফাংশন (Apps Script এ পাঠানো হবে)
+        async function submitUpdate(index, officeName) {
+            const btn = document.getElementById(`btn-${index}`);
+            
+            const pinInput = document.getElementById(`pin-${index}`);
+            const locInput = document.getElementById(`loc-${index}`);
+            const remInput = document.getElementById(`rem-${index}`);
+
+            const pincodeValue = pinInput ? pinInput.value : '';
+            const locationValue = locInput ? locInput.value : '';
+            const remarksValue = remInput ? remInput.value : '';
+
+            if (webAppUrl === 'আপনার_ওয়েব_অ্যাপ_ইউআরএল_এখানে_বসিয়ে_দিন') {
+                alert("অনুগ্রহ করে প্রথমে কোডের ৩২২ নম্বর লাইনে আপনার Google Apps Script Web App URL টি যুক্ত করুন!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "সংরক্ষণ হচ্ছে...";
+
+            const payload = {
+                officeName: officeName,
+                pincode: pincodeValue,
+                location: locationValue,
+                remarks: remarksValue
+            };
+
+            try {
+                // Apps Script এ POST রিকোয়েস্ট পাঠানো
+                const response = await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', // ব্রাউজার সিকিউরিটি ব্লকিং এড়াতে নো-কোর্স ব্যবহার করা হলো
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("অনুরোধ পাঠানো হয়েছে! গুগল স্প্রেডশিট চেক করুন। তথ্য আপডেট হতে কয়েক সেকেন্ড সময় লাগতে পারে।");
+                btn.innerText = "Submitted";
+                btn.style.backgroundColor = "#4a5568";
+                
+            } catch (error) {
+                console.error("আপডেট করতে সমস্যা হয়েছে:", error);
+                alert("দুঃখিত, তথ্যটি স্প্রেডশিটে সেভ করা যায়নি।");
+                btn.disabled = false;
+                btn.innerText = "Submit";
+            }
+        }
+
+        // সার্চ এবং ফিল্টারিং লাইভ ট্র্যাকিং
+        function filterTable() {
+            const nameQ = document.getElementById('searchName').value.toLowerCase();
+            const distQ = document.getElementById('searchDistrict').value.toLowerCase();
+            const blockQ = document.getElementById('searchBlock').value.toLowerCase();
+            const psQ = document.getElementById('searchPS').value.toLowerCase();
+
+            const filtered = allOffices.filter(office => {
+                return office.name.toLowerCase().includes(nameQ) &&
+                       office.district.toLowerCase().includes(distQ) &&
+                       office.block.toLowerCase().includes(blockQ) &&
+                       office.ps.toLowerCase().includes(psQ);
+            });
+
+            displayTable(filtered);
+        }
+
+        // HTML স্পেশাল ক্যারেক্টার হ্যান্ডেল করার জন্য সাহায্যকারী ফাংশন
+        function escapeHtml(text) {
+            return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
+        document.getElementById('searchName').addEventListener('input', filterTable);
+        document.getElementById('searchDistrict').addEventListener('input', filterTable);
+        document.getElementById('searchBlock').addEventListener('input', filterTable);
+        document.getElementById('searchPS').addEventListener('input', filterTable);
+
+        window.onload = loadSheetData;
+    </script>
+</body>
+</html>
