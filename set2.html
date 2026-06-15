@@ -198,12 +198,12 @@
     </div>
     
     <script>
-        // আপনার স্প্রেডশিট আইডি এবং গুগল অ্যাপস স্ক্রিপ্ট ডেপ্লয়মেন্ট ইউআরএল
-        const sheetId = '1kPdHEY-jU5Btni5uBocH2N_0nq8qKbcWbDGMmLxmvxE';
-        const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+        // আপনার নতুন স্প্রেডশিটের আইডি (লিংকের মাঝের অংশটি)
+const sheetId = '1kPdHEY-jU5Btni5uBocH2N_0nq8qKbcWbDGMmLxmvxE'; 
+const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
         
         // ⚠️ আপনার গুগল অ্যাপস স্ক্রিপ্টের Web App URLটি এখানে পেস্ট করুন:
-        const webAppUrl = 'আপনার_ওয়েব_অ্যাপ_ইউআরএল_এখানে_বসিয়ে_দিন'; 
+        const webAppUrl = 'https://script.google.com/macros/s/AKfycbwQvlW77WTkAOngRF-xqvq5L2PGDBo--QsPNNaaibGuypUD3Kz6PRr7a1Vpbik22E0tzQ/exec'; 
 
         let allOffices = [];
 
@@ -302,7 +302,7 @@
             const locationValue = locInput ? locInput.value : '';
             const remarksValue = remInput ? remInput.value : '';
 
-            if (webAppUrl === 'আপনার_ওয়েব_অ্যাপ_ইউআরএল_এখানে_বসিয়ে_দিন') {
+            if (webAppUrl === 'https://script.google.com/macros/s/AKfycbwQvlW77WTkAOngRF-xqvq5L2PGDBo--QsPNNaaibGuypUD3Kz6PRr7a1Vpbik22E0tzQ/exec') {
                 alert("অনুগ্রহ করে প্রথমে কোডের ৩২২ নম্বর লাইনে আপনার Google Apps Script Web App URL টি যুক্ত করুন!");
                 return;
             }
