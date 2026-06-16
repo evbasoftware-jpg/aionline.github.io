@@ -50,6 +50,34 @@ Download Excel
 </button>
 
 <div id="preview"></div>
+    
+<div id="progressContainer" style="
+display:none;
+width:100%;
+background:#ddd;
+margin-top:15px;
+border-radius:5px;
+overflow:hidden;
+">
+
+<div id="progressBar" style="
+width:0%;
+height:25px;
+background:#4CAF50;
+color:white;
+text-align:center;
+line-height:25px;
+font-weight:bold;
+">
+0%
+</div>
+
+</div>
+
+<div id="progressText" style="
+margin-top:5px;
+font-weight:bold;
+"></div>
 
 <script>
 
@@ -161,7 +189,7 @@ let allHeaders=new Set();
 
 async function processPDFs(){
 
-    const files=
+    const files =
     document.getElementById("pdfFiles").files;
 
     if(files.length===0){
@@ -172,12 +200,21 @@ async function processPDFs(){
     finalRows=[];
     allHeaders.clear();
 
-    for(const file of files){
+    const total = files.length;
 
-        let text=
+    for(let i=0;i<total;i++){
+
+        const file = files[i];
+
+        updateProgress(
+            (i/total)*100,
+            `Extracting PDF ${i+1} of ${total}`
+        );
+
+        let text =
         await extractText(file);
 
-        let row=
+        let row =
         parseKeyValue(text);
 
         row["PDF File"]=file.name;
@@ -187,6 +224,11 @@ async function processPDFs(){
 
         finalRows.push(row);
     }
+
+    updateProgress(
+        100,
+        "PDF Extraction Completed"
+    );
 
     showTable();
 }
@@ -485,6 +527,10 @@ function showTable(){
 
 async function downloadExcel(){
 
+    updateProgress(
+    0,
+    "Preparing Excel File...");
+    
     if(finalRows.length===0){
         alert("No Data");
         return;
@@ -496,13 +542,23 @@ async function downloadExcel(){
     const worksheet = workbook.addWorksheet("Employee Data");
 
     worksheet.addRow(headers);
-    worksheet.getRow(1).font = {bold:true};
-        
-    finalRows.forEach(r=>{
-        worksheet.addRow(
-            headers.map(h => r[h] || "")
-        );
-    });
+worksheet.getRow(1).font = {bold:true};
+
+updateProgress(
+    30,
+    "Writing Data..."
+);
+
+finalRows.forEach(r=>{
+    worksheet.addRow(
+        headers.map(h => r[h] || "")
+    );
+});
+
+updateProgress(
+    60,
+    "Formatting Excel..."
+);
 
     worksheet.eachRow(row => {
     row.eachCell(cell => {
@@ -538,8 +594,19 @@ async function downloadExcel(){
 
     column.width = Math.min(
         Math.max(maxLength + 2, 10),40);});
+    
+    updateProgress(
+    80,
+    "Generating Excel..."
+);
+    
     const buffer = await workbook.xlsx.writeBuffer();
 
+    updateProgress(
+    100,
+    "Excel Download Ready"
+);
+    
     const blob = new Blob([buffer],{type:
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 
@@ -555,6 +622,35 @@ async function downloadExcel(){
     link.click();
 }
 
+    function updateProgress(percent,text=""){
+
+    const bar =
+    document.getElementById("progressBar");
+
+    const container =
+    document.getElementById("progressContainer");
+
+    const txt =
+    document.getElementById("progressText");
+
+    container.style.display="block";
+
+    bar.style.width = percent + "%";
+    bar.innerText = Math.round(percent) + "%";
+
+    txt.innerText = text;
+
+    if(percent>=100){
+
+        setTimeout(()=>{
+            container.style.display="none";
+            bar.style.width="0%";
+            bar.innerText="0%";
+            txt.innerText="";
+        },1500);
+    }
+}
+    
 </script>
 
 </body>
