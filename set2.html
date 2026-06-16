@@ -68,6 +68,15 @@
         .filter-group input:focus {
             border-color: #1f4068;
         }
+    
+    .office-name{
+    min-width: 220px;
+    max-width: 250px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+}
 
         /* টেবিল কন্টেইনার */
         .table-container {
@@ -88,7 +97,6 @@
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid #e2e8f0;
-            white-space: nowrap;
         }
 
         th {
@@ -177,13 +185,16 @@
 
     <header>
         <h1>পশ্চিমবঙ্গ সরকারি অফিস ডিরেক্টরি</h1>
-        <p>গতি বাড়ানোর জন্য তথ্যগুলো পেজ আকারে (Pagination) সাজানো হয়েছে।</p>
     </header>
 
     <div class="search-panel">
         <div class="filter-group">
             <label>অফিসের নাম</label>
             <input type="text" id="searchName" placeholder="খুঁজুন...">
+        </div>
+        <div class="filter-group">
+            <label>গ্রাম (Village)</label>
+            <input type="text" id="searchVillage" placeholder="খুঁজুন...">
         </div>
         <div class="filter-group">
             <label>জেলা (District)</label>
@@ -226,52 +237,87 @@
     </div>
     
     <script>
-        const sheetId = '1kPdHEY-jU5Btni5uBocH2N_0nq8qKbcWbDGMmLxmvxE'; 
-        const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-        const webAppUrl = 'https://script.google.com/macros/s/AKfycbxLSJnPBCV1ax8i7rDgJVfFngp371XZBk4AeXS3iierMv6-CCczqPjz62GkdgfRqMLWUQ/exec'; 
-
+    
+        const apiUrl = "https://script.google.com/macros/s/AKfycbwVyYP1KFb7AuJq9ckh2wFTxihRrhe6EQz3rHD5gwL8Fho5PdAs2aUVg9IzRvkwhN1jJA/exec";
+    
         let allOffices = [];
         let filteredOffices = [];
         let currentPage = 1;
         const rowsPerPage = 50; 
 
-        async function loadSheetData() {
-            try {
-                const response = await fetch(fetchUrl);
-                const text = await response.text();
-                const jsonText = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\s]*)\);/)[1];
-                const data = JSON.parse(jsonText);
-                
-                const rows = data.table.rows;
-                
-                allOffices = rows.map((row) => {
-                    return {
-                        name: row.c[0] && row.c[0].v ? String(row.c[0].v) : '',
-                        type: row.c[1] && row.c[1].v ? String(row.c[1].v) : '',
-                        district: row.c[2] && row.c[2].v ? String(row.c[2].v) : '',
-                        block: row.c[3] && row.c[3].v ? String(row.c[3].v) : '',
-                        ps: row.c[4] && row.c[4].v ? String(row.c[4].v) : '',
-                        village: row.c[5] && row.c[5].v ? String(row.c[5].v) : '',
-                        pincode: row.c[6] && row.c[6].v ? String(row.c[6].v) : '',
-                        email: row.c[7] && row.c[7].v ? String(row.c[7].v) : '',
-                        location: row.c[8] && row.c[8].v ? String(row.c[8].v) : '',
-                        remarks: row.c[9] && row.c[9].v ? String(row.c[9].v) : ''
-                    };
-                }).filter(office => office.name !== "NAME OF OFFICE" && office.name.trim() !== ""); 
+    function makeCell(value, id, placeholder="তথ্য লিখুন") {
 
-                filteredOffices = [...allOffices];
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('tableWrapper').style.display = 'block';
-                
-                setupPagination();
-                displayTable();
+    if (!value || String(value).trim() === "") {
 
-            } catch (error) {
-                console.error("ডাটা আনতে সমস্যা:", error);
-                document.getElementById('loading').innerText = "ডাটা লোড করা সম্ভব হয়নি। শিটটি 'Publish to web' করা আছে কিনা যাচাই করুন।";
-            }
-        }
+        return `<input
+                    type="text"
+                    class="edit-input"
+                    id="${id}"
+                    placeholder="${placeholder}">`;
+    }
+
+    return value;
+}
+    
+
+    
+        async function loadSheetData(){
+
+    try{
+
+        const response = await fetch(apiUrl);
+
+        const rows = await response.json();
+
+        console.log("Total Rows:", rows.length);
+
+        allOffices = rows.slice(1).map(row => ({
+
+            name: row[0] || "",
+            type: row[1] || "",
+            district: row[2] || "",
+            block: row[3] || "",
+            ps: row[4] || "",
+            village: row[5] || "",
+            pincode: row[6] || "",
+            email: row[7] || "",
+            location: row[8] || "",
+            remarks: row[9] || ""
+
+        }))
+        .filter(x => x.name.trim() !== "");
+
+        allOffices.sort((a, b) => {
+
+    const districtCompare =
+        a.district.localeCompare(b.district, 'en', { sensitivity: 'base' });
+
+    if (districtCompare !== 0) {
+        return districtCompare;
+    }
+
+    return a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
+
+});
+        
+        filteredOffices = [...allOffices];
+
+        document.getElementById("loading").style.display="none";
+        document.getElementById("tableWrapper").style.display="block";
+
+        setupPagination();
+        displayTable();
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        document.getElementById("loading").innerHTML =
+        "ডাটা লোড করা যায়নি";
+
+    }
+}
 
         function displayTable() {
             const tbody = document.getElementById('officeTableBody');
@@ -287,52 +333,95 @@
             const paginatedItems = filteredOffices.slice(start, end);
 
             paginatedItems.forEach((office, index) => {
-                const globalIndex = start + index; 
-                const tr = document.createElement('tr');
-                
-                const villageTD = `<input type="text" class="edit-input" id="vil-${globalIndex}" value="${office.village}" placeholder="গ্রাম/পৌরসভা লিখুন">`;
 
-                const pinTD = office.pincode.trim() === "" 
-                    ? `<input type="text" class="edit-input" id="pin-${globalIndex}" placeholder="পিনকোড লিখুন">` 
-                    : office.pincode;
+    const globalIndex = start + index;
+    const tr = document.createElement('tr');
 
-                const isLocationEmpty = !office.location || office.location.trim() === "" || office.location === "তথ্য নেই";
+    const nameTD =
+    `<div class="office-name">
+        <strong>${office.name}</strong>
+     </div>`;
 
-                let locTD = "";
-                if (isLocationEmpty) {
-                    locTD = `<input type="text" class="edit-input" id="loc-${globalIndex}" placeholder="ম্যাপ লিংক বা Lat, Lon">`;
-                } else {
-                    if (office.location.startsWith('http')) {
-                        locTD = `<a href="${office.location}" target="_blank">🔗 ম্যাপ দেখুন</a>`;
-                    } 
-                    else if (office.location.includes(',')) {
-                        const coords = office.location.trim();
-                        const googleMapCoordsUrl = `https://www.google.com/maps?q=${coords}`;
-                        locTD = `<a href="${googleMapCoordsUrl}" target="_blank">📍 ম্যাপ দেখুন (${coords})</a>`;
-                    } 
-                    else {
-                        locTD = office.location;
-                    }
-                }
+    const typeTD =
+        makeCell(office.type, `type-${globalIndex}`, "Type");
 
-                const remarksTD = `<input type="text" class="edit-input" id="rem-${globalIndex}" value="${office.remarks}" placeholder="মন্তব্য লিখুন">`;
-                const actionTD = `<button class="submit-btn" id="btn-${globalIndex}" onclick="submitUpdate(${globalIndex}, '${escapeHtml(office.name)}')">Submit</button>`;
+    const districtTD =
+        makeCell(office.district, `district-${globalIndex}`, "District");
 
-                tr.innerHTML = `
-                    <td><strong>${office.name}</strong></td>
-                    <td>${office.type}</td>
-                    <td>${office.district}</td>
-                    <td>${office.block}</td>
-                    <td>${office.ps}</td>
-                    <td>${villageTD}</td>
-                    <td>${pinTD}</td>
-                    <td>${office.email}</td>
-                    <td>${locTD}</td>
-                    <td>${remarksTD}</td>
-                    <td>${actionTD}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+    const blockTD =
+        makeCell(office.block, `block-${globalIndex}`, "Block");
+
+    const psTD =
+        makeCell(office.ps, `ps-${globalIndex}`, "Police Station");
+
+    const villageTD =
+        makeCell(office.village, `village-${globalIndex}`, "Village");
+
+    const pinTD =
+        makeCell(office.pincode, `pin-${globalIndex}`, "PIN Code");
+
+    const emailTD =
+        makeCell(office.email, `email-${globalIndex}`, "Email");
+
+    const remarksTD =
+        makeCell(office.remarks, `remarks-${globalIndex}`, "Remarks");
+
+    let locationTD = "";
+
+    if (!office.location || office.location.trim() === "") {
+
+        locationTD =
+        `<input type="text"
+                class="edit-input"
+                id="location-${globalIndex}"
+                placeholder="Latitude,Longitude">`;
+
+    } else if (office.location.includes(",")) {
+
+        locationTD =
+        `<a href="https://www.google.com/maps?q=${office.location}"
+            target="_blank">
+            📍 Map
+         </a>`;
+
+    } else if (office.location.startsWith("http")) {
+
+        locationTD =
+        `<a href="${office.location}"
+            target="_blank">
+            🔗 Map
+         </a>`;
+
+    } else {
+
+        locationTD = office.location;
+    }
+
+    const actionTD =
+    `<button
+        class="submit-btn"
+        id="btn-${globalIndex}"
+        onclick="submitUpdate(${globalIndex}, '${escapeHtml(office.name)}')">
+        Submit
+     </button>`;
+
+    tr.innerHTML = `
+        <td>${nameTD}</td>
+        <td>${typeTD}</td>
+        <td>${districtTD}</td>
+        <td>${blockTD}</td>
+        <td>${psTD}</td>
+        <td>${villageTD}</td>
+        <td>${pinTD}</td>
+        <td>${emailTD}</td>
+        <td>${locationTD}</td>
+        <td>${remarksTD}</td>
+        <td>${actionTD}</td>
+    `;
+
+    tbody.appendChild(tr);
+
+});
         }
 
         function setupPagination() {
@@ -362,75 +451,128 @@
             }
         }
 
-        async function submitUpdate(globalIndex, officeName) {
-            const btn = document.getElementById(`btn-${globalIndex}`);
-            
-            const vilInput = document.getElementById(`vil-${globalIndex}`);
-            const pinInput = document.getElementById(`pin-${globalIndex}`);
-            const locInput = document.getElementById(`loc-${globalIndex}`);
-            const remInput = document.getElementById(`rem-${globalIndex}`);
+        async function submitUpdate(globalIndex, officeName){
 
-            const villageValue = vilInput ? vilInput.value : '';
-            const pincodeValue = pinInput ? pinInput.value : '';
-            const locationValue = locInput ? locInput.value : '';
-            const remarksValue = remInput ? remInput.value : '';
+    const btn =
+    document.getElementById(`btn-${globalIndex}`);
 
-            btn.disabled = true;
-            btn.innerText = "সংরক্ষণ হচ্ছে...";
+    const payload = {
 
-            const payload = {
-                officeName: officeName,
-                village: villageValue,
-                pincode: pincodeValue,
-                location: locationValue,
-                remarks: remarksValue
-            };
+    officeName,
 
-            try {
-                await fetch(webAppUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+    
+    type:
+    document.getElementById(`type-${globalIndex}`)?.value || "",
 
-                alert("অনুরোধ পাঠানো হয়েছে! গুগল স্প্রেডশিট চেক করুন।");
-                btn.innerText = "Submitted";
-                btn.style.backgroundColor = "#4a5568";
-                
-            } catch (error) {
-                console.error("আপডেট করতে সমস্যা হয়েছে:", error);
-                alert("দুঃখিত, তথ্যটি স্প্রেডশিটে সেভ করা যায়নি।");
-                btn.disabled = false;
-                btn.innerText = "Submit";
-            }
+    district:
+    document.getElementById(`district-${globalIndex}`)?.value || "",
+
+    block:
+    document.getElementById(`block-${globalIndex}`)?.value || "",
+
+    ps:
+    document.getElementById(`ps-${globalIndex}`)?.value || "",
+
+    village:
+    document.getElementById(`village-${globalIndex}`)?.value || "",
+
+    pincode:
+    document.getElementById(`pin-${globalIndex}`)?.value || "",
+
+    email:
+    document.getElementById(`email-${globalIndex}`)?.value || "",
+
+    location:
+    document.getElementById(`location-${globalIndex}`)?.value || "",
+
+    remarks:
+    document.getElementById(`remarks-${globalIndex}`)?.value || ""
+
+};
+
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    try{
+
+        const response = await fetch(apiUrl,{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify(payload)
+
+        });
+
+        const result = await response.json();
+
+        if(result.success){
+
+            btn.innerText="Saved";
+
+        }else{
+
+            btn.innerText="Failed";
+            btn.disabled=false;
+
         }
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        btn.innerText="Error";
+        btn.disabled=false;
+
+    }
+}
 
         function filterTable() {
-            const nameQ = document.getElementById('searchName').value.toLowerCase();
-            const distQ = document.getElementById('searchDistrict').value.toLowerCase();
-            const blockQ = document.getElementById('searchBlock').value.toLowerCase();
-            const psQ = document.getElementById('searchPS').value.toLowerCase();
 
-            filteredOffices = allOffices.filter(office => {
-                return office.name.toLowerCase().includes(nameQ) &&
-                       office.district.toLowerCase().includes(distQ) &&
-                       office.block.toLowerCase().includes(blockQ) &&
-                       office.ps.toLowerCase().includes(psQ);
-            });
+    const nameQ = document.getElementById('searchName').value.toLowerCase();
+    const distQ = document.getElementById('searchDistrict').value.toLowerCase();
+    const blockQ = document.getElementById('searchBlock').value.toLowerCase();
+    const psQ = document.getElementById('searchPS').value.toLowerCase();
+    const villageQ = document.getElementById('searchVillage').value.toLowerCase();
 
-            currentPage = 1; 
-            setupPagination();
-            displayTable();
-        }
+    filteredOffices = allOffices.filter(office => {
+
+        return office.name.toLowerCase().includes(nameQ) &&
+               office.district.toLowerCase().includes(distQ) &&
+               office.block.toLowerCase().includes(blockQ) &&
+               office.ps.toLowerCase().includes(psQ) &&
+               office.village.toLowerCase().includes(villageQ);
+
+    });
+            
+            filteredOffices.sort((a, b) => {
+
+    const districtCompare =
+        a.district.localeCompare(b.district, 'en', { sensitivity: 'base' });
+
+    if (districtCompare !== 0) {
+        return districtCompare;
+    }
+
+    return a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
+
+});
+
+    currentPage = 1;
+    setupPagination();
+    displayTable();
+}
 
         function escapeHtml(text) {
             return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         }
 
         document.getElementById('searchName').addEventListener('input', filterTable);
+        document.getElementById('searchVillage').addEventListener('input', filterTable);
         document.getElementById('searchDistrict').addEventListener('input', filterTable);
         document.getElementById('searchBlock').addEventListener('input', filterTable);
         document.getElementById('searchPS').addEventListener('input', filterTable);
