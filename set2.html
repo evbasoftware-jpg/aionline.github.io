@@ -401,7 +401,8 @@
     `<button
         class="submit-btn"
         id="btn-${globalIndex}"
-        onclick="submitUpdate(${globalIndex}, '${escapeHtml(office.name)}')">
+        onclick="submitUpdate(${globalIndex}, this.dataset.name)"
+data-name="${encodeURIComponent(office.name)}">
         Submit
      </button>`;
 
