@@ -488,39 +488,39 @@ if(permanentBlock){
 
     
     
-    // Circle
+        // =================================================================
+    // নতুন এবং ১০০% কার্যকরী CIRCLE এবং SCHOOL NAME এক্সট্রাকশন লজিক
+    // =================================================================
     const originalText = text;
-
-    const circleMatch = originalText.match(
-        /([A-Z0-9()\-]+(?:\s+[A-Z0-9()\-]+)*\s+CIRCLE,\s*[A-Z]+)/i);
-
     text = text.replace(/\s+/g, " ").trim();
-    
-if(circleMatch){
 
-    obj["Circle"] = circleMatch[1]
-        .replace(/^OF\s+WB\s+/i,"")
-        .trim();
-}
-
-// নতুন এবং কার্যকরী School Name এক্সট্রাকশন লজিক
-const schoolMatch = text.match(/CIRCLE,\s*(.*?)\s*School Name\s*:/i);
-
-if (schoolMatch) {
-    obj["School Name"] = schoolMatch[1].replace(/\s+/g, " ").trim();
-} else {
-    // ব্যাকআপ অপশন: যদি কোনো ফাইলে 'School Name :' কি-ওয়ার্ড না থাকে
-    const backupSchoolMatch = text.match(/CIRCLE,\s*([A-Z0-9\s().\s-]+?(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH|MSK|SSK))/i);
-    if (backupSchoolMatch) {
-        obj["School Name"] = backupSchoolMatch[1].replace(/\s+/g, " ").trim();
+    // ১. Circle এক্সট্রাক্ট করা
+    const circleMatch = originalText.match(/([A-Z0-9()\-]+(?:\s+[A-Z0-9()\-]+)*\s+CIRCLE,\s*[A-Z]+)/i);
+    if (circleMatch) {
+        obj["Circle"] = circleMatch[1].replace(/^OF\s+WB\s+/i, "").trim();
     }
-}
 
+    // ২. School Name এক্সট্রাক্ট করা (লুপের ওভাররাইট থেকে বাঁচাতে আলাদা লজিক)
+    const schoolMatch = text.match(/CIRCLE,\s*(.*?)\s*School Name\s*:/i);
+    if (schoolMatch) {
+        obj["School Name"] = schoolMatch[1].replace(/\s+/g, " ").trim();
+    } else {
+        // ব্যাকআপ অপশন: যদি কোনো ফাইলে 'School Name :' কি-ওয়ার্ড না থাকে
+        const backupSchoolMatch = text.match(/CIRCLE,\s*([A-Z0-9\s().\s-]+?(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH|MSK|SSK|HIGH\s+SCHOOL|JR\.\s+HIGH))/i);
+        if (backupSchoolMatch) {
+            obj["School Name"] = backupSchoolMatch[1].replace(/\s+/g, " ").trim();
+        }
+    }
 
-   
-    for(let i=0;i<HEADERS.length;i++){
-
+    // ৩. অন্যান্য সব ফীডের জন্য লুপ চালানো (School Name বাদ দিয়ে)
+    for(let i=0; i<HEADERS.length; i++){
         const current = HEADERS[i];
+        
+        // অত্যন্ত গুরুত্বপূর্ণ: "Circle" এবং "School Name" যেহেতু উপরে বের করেছি, 
+        // তাই লুপে এদের আবার প্রসেস করে ফাঁকা করা যাবে না।
+        if (current === "Circle" || current === "School Name") {
+            continue; 
+        }
 
         const nextHeaders = HEADERS
             .slice(i+1)
@@ -530,16 +530,13 @@ if (schoolMatch) {
         let regex;
 
         if(nextHeaders){
-
             regex = new RegExp(
-    current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
-    "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
-")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|DETAILS OF PREVIOUS EMPLOYMENT|Finalized By DPSC|osms\\.wbsed\\.gov\\.in|$)",
-    "i"
-);
-
-        }else{
-
+                current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
+                "\\s*:\\s*(.*?)\\s*(?=(" + nextHeaders +
+                ")\\s*:|PERSONAL DETAILS|PERMANENT ADDRESS|CONTACT DETAILS|PROFESSIONAL DETAILS|DETAILS OF PREVIOUS EMPLOYMENT|Finalized By DPSC|osms\\.wbsed\\.gov\\.in|$)",
+                "i"
+            );
+        } else {
             regex = new RegExp(
                 current.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') +
                 "\\s*:\\s*(.*)$",
@@ -550,15 +547,13 @@ if (schoolMatch) {
         const match = text.match(regex);
 
         if(match){
-
-            obj[current] = match[1]
-                .replace(/\s+/g," ")
-                .trim();
+            obj[current] = match[1].replace(/\s+/g," ").trim();
         }
     }
 
     return obj;
 }
+
 
 function showTable(){
 
