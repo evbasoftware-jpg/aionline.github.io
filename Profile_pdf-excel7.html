@@ -503,13 +503,19 @@ if(circleMatch){
         .trim();
 }
 
-const schoolMatch = text.match(
-/CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH))/i
-);
+// নতুন এবং কার্যকরী School Name এক্সট্রাকশন লজিক
+const schoolMatch = text.match(/CIRCLE,\s*(.*?)\s*School Name\s*:/i);
 
-if(schoolMatch){
-    obj["School Name"] = schoolMatch[1].trim();
+if (schoolMatch) {
+    obj["School Name"] = schoolMatch[1].replace(/\s+/g, " ").trim();
+} else {
+    // ব্যাকআপ অপশন: যদি কোনো ফাইলে 'School Name :' কি-ওয়ার্ড না থাকে
+    const backupSchoolMatch = text.match(/CIRCLE,\s*([A-Z0-9\s().\s-]+?(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH|MSK|SSK))/i);
+    if (backupSchoolMatch) {
+        obj["School Name"] = backupSchoolMatch[1].replace(/\s+/g, " ").trim();
+    }
 }
+
 
    
     for(let i=0;i<HEADERS.length;i++){
