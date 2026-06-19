@@ -125,58 +125,25 @@ font-weight:bold;
 <script>
 
              // ==========================================
-    // EMAIL ID LOGIN CHECKING SYSTEMS
-    // ==========================================
-    const allowedEmails = [
-      "ujlmndl@gmail.com",
-      "evbasoftware@gmail.com",
-      "circlelabpur@gmail.com"
-    ];
+ <!-- Login SECTION -->
+    <div id="loginBox">
+        
+        <h3>Login with your e-mail</h3>
+        
+    <div id="g_id_onload"
+       data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+    </div>
 
-    function handleCredentialResponse(response) {
-      try {
-        // গুগলের পাঠানো টোকেন ডিকোড করা
-        const base64Url = response.credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
+    <div class="g_id_signin"
+       data-type="standard">
+    </div>
+    </div>
 
-        const data = JSON.parse(jsonPayload);
-        const email = data.email ? data.email.toLowerCase().trim() : "";
-
-        // ইমেইল চেক করা
-        if (allowedEmails.map(e => e.toLowerCase().trim()).includes(email)) {
-          document.getElementById("loginBox").style.display = "none";
-          document.getElementById("PdfUploadContent").style.display = "block";
-        } else {
-          alert("Access Denied ❌\nUnauthorized Email: " + email);
-        }
-      } catch (error) {
-        alert("Login Error: " + error.message);
-      }
-    }
-
-    // পেজ লোড হওয়ার সাথে সাথে গুগল লগইন পপ-আপ এবং বোতাম তৈরি করা
-    window.onload = function () {
-      google.accounts.id.initialize({
-        client_id: "870634629474-0nuj2mglv6o40v6c8b93v90c29f27uol.apps.googleusercontent.com", // আপনার কোডে থাকা ক্লায়েন্ট আইডি
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: false
-      });
-
-      // গুগল লগইন বোতাম রেন্ডার করা
-      google.accounts.id.renderButton(
-        document.getElementById("buttonDiv"), // আপনার লগইন বাটনের কন্টেইনার ID
-        { theme: "outline", size: "large", width: "250" }
-      );
-
-      // প্রম্পট বা পপ-আপ উইন্ডো চালু করা (ফাইল মোডে এটি সাহায্য করবে)
-      google.accounts.id.prompt(); 
-    }
-
-    //email id checking complete 
+    <div id="PdfUploadContent" style="display:none;
+        width:95%; min-height:700px; padding:30px;
+        margin:auto; font-size:18px;">
+<!-- Login SECTION complete -->
         
     const HEADERS = [
 "Circle",
