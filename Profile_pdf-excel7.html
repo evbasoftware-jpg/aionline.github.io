@@ -50,23 +50,19 @@ button{
 <body>
 
     <!-- Login SECTION -->
-    <div id="loginBox">
-        
-        <h3>Login with your e-mail</h3>
-        
     <div id="g_id_onload"
-       data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse">
-    </div>
+     data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
 
-    <div class="g_id_signin"
-       data-type="standard">
-    </div>
-    </div>
-
-    <div id="PdfUploadContent" style="display:none;
-        width:95%; min-height:700px; padding:30px;
-        margin:auto; font-size:18px;">
+<div class="g_id_signin"
+     data-type="standard"
+     data-size="large"
+     data-theme="outline"
+     data-text="signin_with"
+     data-shape="rectangular">
+</div>
 <!-- Login SECTION complete -->
 
 <div class="logo-box" >
@@ -126,23 +122,36 @@ font-weight:bold;
 
              
  // Login SECTION
-    <div id="loginBox">
-        
-        <h3>Login with your e-mail</h3>
-        
-    <div id="g_id_onload"
-       data-client_id="153331935742-fjjo78i8lp28pj22f95a7bhep6qmmae7.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse">
-    </div>
 
-    <div class="g_id_signin"
-       data-type="standard">
-    </div>
-    </div>
+const allowedEmails = [
+  "ujlmndl@gmail.com",
+  "evbasoftware@gmail.com",
+  "circlelabpur@gmail.com"
+];
 
-    <div id="PdfUploadContent" style="display:none;
-        width:95%; min-height:700px; padding:30px;
-        margin:auto; font-size:18px;">
+function handleCredentialResponse(response) {
+  try {
+    const payload = JSON.parse(
+      atob(response.credential.split('.')[1])
+    );
+
+    const email = payload.email || "";
+
+    if (allowedEmails.includes(email.toLowerCase())) {
+
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("PdfUploadContent").style.display = "block";
+
+    } else {
+      alert("Access Denied ❌\nUnauthorized Email: " + email);
+    }
+
+  } catch(err) {
+    console.error(err);
+    alert("Login Failed");
+  }
+}
+
 // Login SECTION complete
         
     const HEADERS = [
