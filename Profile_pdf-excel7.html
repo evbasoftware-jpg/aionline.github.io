@@ -121,38 +121,25 @@ font-weight:bold;
 <script>
 
              
- //email id checking
-
-const allowedEmails = [
+    //email id checking 
+    const allowedEmails = [
   "ujlmndl@gmail.com",
   "evbasoftware@gmail.com",
   "circlelabpur@gmail.com"
 ];
 
 function handleCredentialResponse(response) {
-  try {
-    const payload = JSON.parse(
-      atob(response.credential.split('.')[1])
-    );
+  const data = JSON.parse(atob(response.credential.split('.')[1]));
+  const email = data.email;
 
-    const email = payload.email || "";
-
-    if (allowedEmails.includes(email.toLowerCase())) {
-
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("PdfUploadContent").style.display = "block";
-
-    } else {
-      alert("Access Denied ❌\nUnauthorized Email: " + email);
-    }
-
-  } catch(err) {
-    console.error(err);
-    alert("Login Failed");
+  if (allowedEmails.includes(email)) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("PdfUploadContent").style.display = "block";
+  } else {
+    alert("Access Denied ❌\nUnauthorized Email");
   }
 }
-
-//email id checking complete
+    //email id checking complete 
         
     const HEADERS = [
 "Circle",
