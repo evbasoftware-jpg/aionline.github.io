@@ -74,57 +74,73 @@
             gap: 20px;
         }
 
-        .service-card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            animation: fadeIn 0.5s ease forwards;
-        }
-        .service-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 15px 35px rgba(11, 94, 215, 0.1);
-        }
-        
-        .service-info { margin-bottom: 15px; }
+        /* সার্ভিস কার্ডের লেআউট */
+.service-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid rgba(0,0,0,0.03);
+    
+    /* নিচের ৩টি লাইন লেখার পাশে বাটন আনার জন্য মূল ভূমিকা রাখবে */
+    display: flex;
+    flex-direction: row;      /* লেখা এবং বাটন পাশাপাশি থাকবে */
+    align-items: center;      /* লম্বালম্বিভাবে একদম মাঝে থাকবে */
+    justify-content: flex-start; /* সবকিছু বাম দিক থেকে শুরু হবে */
+    gap: 15px;                /* লেখা ও ভিডিও বাটনের মাঝখানের নিখুঁত গ্যাপ */
+    
+    animation: fadeIn 0.5s ease forwards;
+}
 
-        .service-card .link-text { 
-            color: var(--text); 
-            text-decoration: none; 
-            font-size: 15px;
-            font-weight: 600;
-            display: block;
-            line-height: 1.4;
-            padding-left: 10px;
-        }
-        .service-card .link-text:hover { color: var(--primary); }
+.service-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 15px 35px rgba(11, 94, 215, 0.1);
+}
 
-        .card-actions {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-top: auto;
-        }
+/* লেখার অংশটি যেন পুরো কার্ডের বাকি জায়গাটা নেয় */
+.service-info {
+    flex: 1; 
+}
 
-        .video {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #ff4757;
-            color: white !important;
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
-        }
+.service-card .link-text { 
+    color: var(--text); 
+    text-decoration: none; 
+    font-size: 15px;
+    font-weight: 600;
+    display: block;
+    line-height: 1.4;
+    border-left: none; /* আপনার আগের চাওয়া অনুযায়ী নীল বর্ডার বন্ধ করা হলো */
+    padding-left: 0;
+}
+.service-card .link-text:hover {
+    color: var(--primary);
+}
+
+/* বাটন কন্টেইনার */
+.card-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* বাটন যেন ছোট বা চ্যাপ্টা না হয়ে যায় */
+}
+
+/* ভিডিও বাটনের স্টাইল */
+.video {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #ff4757;
+    color: white !important;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
+    white-space: nowrap; /* লেখা যেন দুই লাইনে ভেঙে না যায় */
+}
+
         .video:hover { background: #ff2e44; transform: scale(1.05); }
 
         .whatsapp {
