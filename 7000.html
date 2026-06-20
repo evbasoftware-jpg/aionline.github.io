@@ -560,15 +560,10 @@
     // Search Functionality
     function searchFunction() {
         let input = document.getElementById('searchInput').value.toLowerCase();
-        let sections = document.getElementsByClassName('section');
-        
-        for (let i = 0; i < sections.length; i++) {
-            let text = sections[i].innerText.toLowerCase();
-            if (text.includes(input)) {
-                sections[i].style.display = "";
-            } else {
-                sections[i].style.display = "none";
-            }
+        let cards = document.getElementsByClassName('service-card');
+        for (let i = 0; i < cards.length; i++) {
+            let text = cards[i].innerText.toLowerCase();
+            if (text.includes(input)) { cards[i].style.display = "flex"; } else { cards[i].style.display = "none"; }
         }
     }
 
