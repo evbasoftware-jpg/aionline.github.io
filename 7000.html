@@ -1,990 +1,561 @@
 <!DOCTYPE html>
-<html lang='bn'><head><meta charset='UTF-8'>
-<title>Set–1 Child Development</title>
-<link rel='stylesheet' href='style.css'>
-<script>
-const TOTALQ=120;
-</script>
-<script src='quiz.js'></script></head>
-<body onload='showPage(1)'>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Online - Smart Digital & AI Based Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B5ED7;
+            --secondary: #00C2FF;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --text: #2d3436;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-box { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .logo { height: 60px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        header h1 { font-size: 28px; letter-spacing: 1px; text-transform: uppercase; }
+        header p { font-weight: 300; opacity: 0.9; }
+
+        .search-container {
+            max-width: 600px;
+            margin: -25px auto 30px;
+            padding: 0 20px;
+        }
+        .search-box {
+            display: flex;
+            background: var(--white);
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            outline: none;
+            font-size: 16px;
+        }
+        .search-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .search-box button:hover { background: #0849a3; }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .service-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .service-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 15px 35px rgba(11, 94, 215, 0.1);
+        }
+        
+        .service-info { margin-bottom: 15px; }
+
+        .service-card .link-text { 
+            color: var(--text); 
+            text-decoration: none; 
+            font-size: 15px;
+            font-weight: 600;
+            display: block;
+            line-height: 1.4;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+        }
+        .service-card .link-text:hover { color: var(--primary); }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .video {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #ff4757;
+            color: white !important;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
+        }
+        .video:hover { background: #ff2e44; transform: scale(1.05); }
+
+        .whatsapp {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-decoration: none;
+            z-index: 1000;
+        }
+        .support-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #ff9f43;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        #chatBox {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            display: none;
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid #eee;
+        }
+        .chat-header { background: var(--primary); color: white; padding: 15px; font-weight: 600; display: flex; justify-content: space-between; }
+        #chatMessages { height: 300px; overflow-y: auto; padding: 15px; font-size: 13px; background: #fdfdfd; }
+        .chat-input-area { display: flex; padding: 10px; border-top: 1px solid #eee; }
+        .chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; outline: none; }
+        .chat-input-area button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 50%; margin-left: 5px; cursor: pointer; }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: #2d3436;
+            color: white;
+            margin-top: 50px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; padding: 10px; }
+            header h1 { font-size: 22px; }
+        }
+    
+        .faq-item {
+            margin-bottom: 10px;
+            border: 1px solid #eef2f7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .faq-question {
+            width: 100%;
+            padding: 15px 20px;
+            background: #f9fbff;
+            border: none;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .faq-question:hover { background: #eef4ff; }
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+        .faq-answer p { padding: 15px 0; font-size: 14px; color: #555; margin: 0; }
+        .faq-question i { font-size: 12px; transition: transform 0.3s; }
+        .faq-question.active i { transform: rotate(180deg); }
+
+        .whatsapp-btn-container {
+            text-align: center;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 20px;
+            max-width: 1200px;
+            box-shadow: var(--shadow);
+        }
+        .whatsapp-btn-container p { margin-bottom: 15px; color: #636e72; font-weight: 400; }
+        .custom-wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25D366;
+            color: white !important;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .custom-wa-btn:hover {
+            background: #1eb956;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+        .custom-wa-btn i { font-size: 22px; }
+        @keyframes pulse-wa {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .custom-wa-btn { animation: pulse-wa 2s infinite; }
+    </style>
+</head>
+<body onload="startChat()">
+
 <header>
-<h1>Set–1 Child Development</h1>
-<div id='pinfo'></div>
-<div class='progress'><div id='pbar' class='progress-bar'></div></div>
+    <div class="logo-box">
+        <img src="logo.png" alt="AI Online Logo" class="logo">
+    </div>
+    <h1>AI ONLINE</h1>
+    <p><i class="fas fa-robot"></i> Smart Digital & AI Based Services</p>
 </header>
 
-<div class='container'>
-
-<div class='question' id='q1'>
-1. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 1?<br>
-<label><input type='radio' name='q1'> অপশন A</label><br>
-<label><input type='radio' name='q1' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q1'> অপশন C</label><br>
-<label><input type='radio' name='q1'> অপশন D</label>
-</div>
-
-<div class='question' id='q2'>
-2. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 2?<br>
-<label><input type='radio' name='q2'> অপশন A</label><br>
-<label><input type='radio' name='q2' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q2'> অপশন C</label><br>
-<label><input type='radio' name='q2'> অপশন D</label>
-</div>
-
-<div class='question' id='q3'>
-3. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 3?<br>
-<label><input type='radio' name='q3'> অপশন A</label><br>
-<label><input type='radio' name='q3' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q3'> অপশন C</label><br>
-<label><input type='radio' name='q3'> অপশন D</label>
-</div>
-
-<div class='question' id='q4'>
-4. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 4?<br>
-<label><input type='radio' name='q4'> অপশন A</label><br>
-<label><input type='radio' name='q4' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q4'> অপশন C</label><br>
-<label><input type='radio' name='q4'> অপশন D</label>
-</div>
-
-<div class='question' id='q5'>
-5. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 5?<br>
-<label><input type='radio' name='q5'> অপশন A</label><br>
-<label><input type='radio' name='q5' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q5'> অপশন C</label><br>
-<label><input type='radio' name='q5'> অপশন D</label>
-</div>
-
-<div class='question' id='q6'>
-6. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 6?<br>
-<label><input type='radio' name='q6'> অপশন A</label><br>
-<label><input type='radio' name='q6' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q6'> অপশন C</label><br>
-<label><input type='radio' name='q6'> অপশন D</label>
-</div>
-
-<div class='question' id='q7'>
-7. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 7?<br>
-<label><input type='radio' name='q7'> অপশন A</label><br>
-<label><input type='radio' name='q7' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q7'> অপশন C</label><br>
-<label><input type='radio' name='q7'> অপশন D</label>
-</div>
-
-<div class='question' id='q8'>
-8. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 8?<br>
-<label><input type='radio' name='q8'> অপশন A</label><br>
-<label><input type='radio' name='q8' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q8'> অপশন C</label><br>
-<label><input type='radio' name='q8'> অপশন D</label>
-</div>
-
-<div class='question' id='q9'>
-9. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 9?<br>
-<label><input type='radio' name='q9'> অপশন A</label><br>
-<label><input type='radio' name='q9' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q9'> অপশন C</label><br>
-<label><input type='radio' name='q9'> অপশন D</label>
-</div>
-
-<div class='question' id='q10'>
-10. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 10?<br>
-<label><input type='radio' name='q10'> অপশন A</label><br>
-<label><input type='radio' name='q10' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q10'> অপশন C</label><br>
-<label><input type='radio' name='q10'> অপশন D</label>
-</div>
-
-<div class='question' id='q11'>
-11. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 11?<br>
-<label><input type='radio' name='q11'> অপশন A</label><br>
-<label><input type='radio' name='q11' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q11'> অপশন C</label><br>
-<label><input type='radio' name='q11'> অপশন D</label>
-</div>
-
-<div class='question' id='q12'>
-12. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 12?<br>
-<label><input type='radio' name='q12'> অপশন A</label><br>
-<label><input type='radio' name='q12' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q12'> অপশন C</label><br>
-<label><input type='radio' name='q12'> অপশন D</label>
-</div>
-
-<div class='question' id='q13'>
-13. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 13?<br>
-<label><input type='radio' name='q13'> অপশন A</label><br>
-<label><input type='radio' name='q13' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q13'> অপশন C</label><br>
-<label><input type='radio' name='q13'> অপশন D</label>
-</div>
-
-<div class='question' id='q14'>
-14. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 14?<br>
-<label><input type='radio' name='q14'> অপশন A</label><br>
-<label><input type='radio' name='q14' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q14'> অপশন C</label><br>
-<label><input type='radio' name='q14'> অপশন D</label>
-</div>
-
-<div class='question' id='q15'>
-15. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 15?<br>
-<label><input type='radio' name='q15'> অপশন A</label><br>
-<label><input type='radio' name='q15' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q15'> অপশন C</label><br>
-<label><input type='radio' name='q15'> অপশন D</label>
-</div>
-
-<div class='question' id='q16'>
-16. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 16?<br>
-<label><input type='radio' name='q16'> অপশন A</label><br>
-<label><input type='radio' name='q16' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q16'> অপশন C</label><br>
-<label><input type='radio' name='q16'> অপশন D</label>
-</div>
-
-<div class='question' id='q17'>
-17. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 17?<br>
-<label><input type='radio' name='q17'> অপশন A</label><br>
-<label><input type='radio' name='q17' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q17'> অপশন C</label><br>
-<label><input type='radio' name='q17'> অপশন D</label>
-</div>
-
-<div class='question' id='q18'>
-18. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 18?<br>
-<label><input type='radio' name='q18'> অপশন A</label><br>
-<label><input type='radio' name='q18' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q18'> অপশন C</label><br>
-<label><input type='radio' name='q18'> অপশন D</label>
-</div>
-
-<div class='question' id='q19'>
-19. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 19?<br>
-<label><input type='radio' name='q19'> অপশন A</label><br>
-<label><input type='radio' name='q19' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q19'> অপশন C</label><br>
-<label><input type='radio' name='q19'> অপশন D</label>
-</div>
-
-<div class='question' id='q20'>
-20. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 20?<br>
-<label><input type='radio' name='q20'> অপশন A</label><br>
-<label><input type='radio' name='q20' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q20'> অপশন C</label><br>
-<label><input type='radio' name='q20'> অপশন D</label>
-</div>
-
-<div class='question' id='q21'>
-21. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 21?<br>
-<label><input type='radio' name='q21'> অপশন A</label><br>
-<label><input type='radio' name='q21' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q21'> অপশন C</label><br>
-<label><input type='radio' name='q21'> অপশন D</label>
-</div>
-
-<div class='question' id='q22'>
-22. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 22?<br>
-<label><input type='radio' name='q22'> অপশন A</label><br>
-<label><input type='radio' name='q22' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q22'> অপশন C</label><br>
-<label><input type='radio' name='q22'> অপশন D</label>
-</div>
-
-<div class='question' id='q23'>
-23. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 23?<br>
-<label><input type='radio' name='q23'> অপশন A</label><br>
-<label><input type='radio' name='q23' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q23'> অপশন C</label><br>
-<label><input type='radio' name='q23'> অপশন D</label>
-</div>
-
-<div class='question' id='q24'>
-24. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 24?<br>
-<label><input type='radio' name='q24'> অপশন A</label><br>
-<label><input type='radio' name='q24' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q24'> অপশন C</label><br>
-<label><input type='radio' name='q24'> অপশন D</label>
-</div>
-
-<div class='question' id='q25'>
-25. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 25?<br>
-<label><input type='radio' name='q25'> অপশন A</label><br>
-<label><input type='radio' name='q25' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q25'> অপশন C</label><br>
-<label><input type='radio' name='q25'> অপশন D</label>
-</div>
-
-<div class='question' id='q26'>
-26. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 26?<br>
-<label><input type='radio' name='q26'> অপশন A</label><br>
-<label><input type='radio' name='q26' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q26'> অপশন C</label><br>
-<label><input type='radio' name='q26'> অপশন D</label>
-</div>
-
-<div class='question' id='q27'>
-27. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 27?<br>
-<label><input type='radio' name='q27'> অপশন A</label><br>
-<label><input type='radio' name='q27' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q27'> অপশন C</label><br>
-<label><input type='radio' name='q27'> অপশন D</label>
-</div>
-
-<div class='question' id='q28'>
-28. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 28?<br>
-<label><input type='radio' name='q28'> অপশন A</label><br>
-<label><input type='radio' name='q28' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q28'> অপশন C</label><br>
-<label><input type='radio' name='q28'> অপশন D</label>
-</div>
-
-<div class='question' id='q29'>
-29. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 29?<br>
-<label><input type='radio' name='q29'> অপশন A</label><br>
-<label><input type='radio' name='q29' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q29'> অপশন C</label><br>
-<label><input type='radio' name='q29'> অপশন D</label>
-</div>
-
-<div class='question' id='q30'>
-30. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 30?<br>
-<label><input type='radio' name='q30'> অপশন A</label><br>
-<label><input type='radio' name='q30' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q30'> অপশন C</label><br>
-<label><input type='radio' name='q30'> অপশন D</label>
-</div>
-
-<div class='question' id='q31'>
-31. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 31?<br>
-<label><input type='radio' name='q31'> অপশন A</label><br>
-<label><input type='radio' name='q31' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q31'> অপশন C</label><br>
-<label><input type='radio' name='q31'> অপশন D</label>
-</div>
-
-<div class='question' id='q32'>
-32. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 32?<br>
-<label><input type='radio' name='q32'> অপশন A</label><br>
-<label><input type='radio' name='q32' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q32'> অপশন C</label><br>
-<label><input type='radio' name='q32'> অপশন D</label>
-</div>
-
-<div class='question' id='q33'>
-33. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 33?<br>
-<label><input type='radio' name='q33'> অপশন A</label><br>
-<label><input type='radio' name='q33' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q33'> অপশন C</label><br>
-<label><input type='radio' name='q33'> অপশন D</label>
-</div>
-
-<div class='question' id='q34'>
-34. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 34?<br>
-<label><input type='radio' name='q34'> অপশন A</label><br>
-<label><input type='radio' name='q34' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q34'> অপশন C</label><br>
-<label><input type='radio' name='q34'> অপশন D</label>
-</div>
-
-<div class='question' id='q35'>
-35. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 35?<br>
-<label><input type='radio' name='q35'> অপশন A</label><br>
-<label><input type='radio' name='q35' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q35'> অপশন C</label><br>
-<label><input type='radio' name='q35'> অপশন D</label>
-</div>
-
-<div class='question' id='q36'>
-36. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 36?<br>
-<label><input type='radio' name='q36'> অপশন A</label><br>
-<label><input type='radio' name='q36' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q36'> অপশন C</label><br>
-<label><input type='radio' name='q36'> অপশন D</label>
-</div>
-
-<div class='question' id='q37'>
-37. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 37?<br>
-<label><input type='radio' name='q37'> অপশন A</label><br>
-<label><input type='radio' name='q37' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q37'> অপশন C</label><br>
-<label><input type='radio' name='q37'> অপশন D</label>
-</div>
-
-<div class='question' id='q38'>
-38. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 38?<br>
-<label><input type='radio' name='q38'> অপশন A</label><br>
-<label><input type='radio' name='q38' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q38'> অপশন C</label><br>
-<label><input type='radio' name='q38'> অপশন D</label>
-</div>
-
-<div class='question' id='q39'>
-39. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 39?<br>
-<label><input type='radio' name='q39'> অপশন A</label><br>
-<label><input type='radio' name='q39' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q39'> অপশন C</label><br>
-<label><input type='radio' name='q39'> অপশন D</label>
-</div>
-
-<div class='question' id='q40'>
-40. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 40?<br>
-<label><input type='radio' name='q40'> অপশন A</label><br>
-<label><input type='radio' name='q40' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q40'> অপশন C</label><br>
-<label><input type='radio' name='q40'> অপশন D</label>
-</div>
-
-<div class='question' id='q41'>
-41. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 41?<br>
-<label><input type='radio' name='q41'> অপশন A</label><br>
-<label><input type='radio' name='q41' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q41'> অপশন C</label><br>
-<label><input type='radio' name='q41'> অপশন D</label>
-</div>
-
-<div class='question' id='q42'>
-42. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 42?<br>
-<label><input type='radio' name='q42'> অপশন A</label><br>
-<label><input type='radio' name='q42' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q42'> অপশন C</label><br>
-<label><input type='radio' name='q42'> অপশন D</label>
-</div>
-
-<div class='question' id='q43'>
-43. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 43?<br>
-<label><input type='radio' name='q43'> অপশন A</label><br>
-<label><input type='radio' name='q43' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q43'> অপশন C</label><br>
-<label><input type='radio' name='q43'> অপশন D</label>
-</div>
-
-<div class='question' id='q44'>
-44. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 44?<br>
-<label><input type='radio' name='q44'> অপশন A</label><br>
-<label><input type='radio' name='q44' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q44'> অপশন C</label><br>
-<label><input type='radio' name='q44'> অপশন D</label>
-</div>
-
-<div class='question' id='q45'>
-45. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 45?<br>
-<label><input type='radio' name='q45'> অপশন A</label><br>
-<label><input type='radio' name='q45' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q45'> অপশন C</label><br>
-<label><input type='radio' name='q45'> অপশন D</label>
-</div>
-
-<div class='question' id='q46'>
-46. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 46?<br>
-<label><input type='radio' name='q46'> অপশন A</label><br>
-<label><input type='radio' name='q46' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q46'> অপশন C</label><br>
-<label><input type='radio' name='q46'> অপশন D</label>
-</div>
-
-<div class='question' id='q47'>
-47. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 47?<br>
-<label><input type='radio' name='q47'> অপশন A</label><br>
-<label><input type='radio' name='q47' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q47'> অপশন C</label><br>
-<label><input type='radio' name='q47'> অপশন D</label>
-</div>
-
-<div class='question' id='q48'>
-48. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 48?<br>
-<label><input type='radio' name='q48'> অপশন A</label><br>
-<label><input type='radio' name='q48' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q48'> অপশন C</label><br>
-<label><input type='radio' name='q48'> অপশন D</label>
-</div>
-
-<div class='question' id='q49'>
-49. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 49?<br>
-<label><input type='radio' name='q49'> অপশন A</label><br>
-<label><input type='radio' name='q49' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q49'> অপশন C</label><br>
-<label><input type='radio' name='q49'> অপশন D</label>
-</div>
-
-<div class='question' id='q50'>
-50. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 50?<br>
-<label><input type='radio' name='q50'> অপশন A</label><br>
-<label><input type='radio' name='q50' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q50'> অপশন C</label><br>
-<label><input type='radio' name='q50'> অপশন D</label>
-</div>
-
-<div class='question' id='q51'>
-51. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 51?<br>
-<label><input type='radio' name='q51'> অপশন A</label><br>
-<label><input type='radio' name='q51' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q51'> অপশন C</label><br>
-<label><input type='radio' name='q51'> অপশন D</label>
-</div>
-
-<div class='question' id='q52'>
-52. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 52?<br>
-<label><input type='radio' name='q52'> অপশন A</label><br>
-<label><input type='radio' name='q52' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q52'> অপশন C</label><br>
-<label><input type='radio' name='q52'> অপশন D</label>
-</div>
-
-<div class='question' id='q53'>
-53. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 53?<br>
-<label><input type='radio' name='q53'> অপশন A</label><br>
-<label><input type='radio' name='q53' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q53'> অপশন C</label><br>
-<label><input type='radio' name='q53'> অপশন D</label>
-</div>
-
-<div class='question' id='q54'>
-54. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 54?<br>
-<label><input type='radio' name='q54'> অপশন A</label><br>
-<label><input type='radio' name='q54' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q54'> অপশন C</label><br>
-<label><input type='radio' name='q54'> অপশন D</label>
-</div>
-
-<div class='question' id='q55'>
-55. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 55?<br>
-<label><input type='radio' name='q55'> অপশন A</label><br>
-<label><input type='radio' name='q55' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q55'> অপশন C</label><br>
-<label><input type='radio' name='q55'> অপশন D</label>
-</div>
-
-<div class='question' id='q56'>
-56. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 56?<br>
-<label><input type='radio' name='q56'> অপশন A</label><br>
-<label><input type='radio' name='q56' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q56'> অপশন C</label><br>
-<label><input type='radio' name='q56'> অপশন D</label>
-</div>
-
-<div class='question' id='q57'>
-57. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 57?<br>
-<label><input type='radio' name='q57'> অপশন A</label><br>
-<label><input type='radio' name='q57' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q57'> অপশন C</label><br>
-<label><input type='radio' name='q57'> অপশন D</label>
-</div>
-
-<div class='question' id='q58'>
-58. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 58?<br>
-<label><input type='radio' name='q58'> অপশন A</label><br>
-<label><input type='radio' name='q58' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q58'> অপশন C</label><br>
-<label><input type='radio' name='q58'> অপশন D</label>
-</div>
-
-<div class='question' id='q59'>
-59. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 59?<br>
-<label><input type='radio' name='q59'> অপশন A</label><br>
-<label><input type='radio' name='q59' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q59'> অপশন C</label><br>
-<label><input type='radio' name='q59'> অপশন D</label>
-</div>
-
-<div class='question' id='q60'>
-60. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 60?<br>
-<label><input type='radio' name='q60'> অপশন A</label><br>
-<label><input type='radio' name='q60' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q60'> অপশন C</label><br>
-<label><input type='radio' name='q60'> অপশন D</label>
-</div>
-
-<div class='question' id='q61'>
-61. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 61?<br>
-<label><input type='radio' name='q61'> অপশন A</label><br>
-<label><input type='radio' name='q61' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q61'> অপশন C</label><br>
-<label><input type='radio' name='q61'> অপশন D</label>
-</div>
-
-<div class='question' id='q62'>
-62. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 62?<br>
-<label><input type='radio' name='q62'> অপশন A</label><br>
-<label><input type='radio' name='q62' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q62'> অপশন C</label><br>
-<label><input type='radio' name='q62'> অপশন D</label>
-</div>
-
-<div class='question' id='q63'>
-63. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 63?<br>
-<label><input type='radio' name='q63'> অপশন A</label><br>
-<label><input type='radio' name='q63' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q63'> অপশন C</label><br>
-<label><input type='radio' name='q63'> অপশন D</label>
-</div>
-
-<div class='question' id='q64'>
-64. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 64?<br>
-<label><input type='radio' name='q64'> অপশন A</label><br>
-<label><input type='radio' name='q64' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q64'> অপশন C</label><br>
-<label><input type='radio' name='q64'> অপশন D</label>
-</div>
-
-<div class='question' id='q65'>
-65. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 65?<br>
-<label><input type='radio' name='q65'> অপশন A</label><br>
-<label><input type='radio' name='q65' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q65'> অপশন C</label><br>
-<label><input type='radio' name='q65'> অপশন D</label>
-</div>
-
-<div class='question' id='q66'>
-66. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 66?<br>
-<label><input type='radio' name='q66'> অপশন A</label><br>
-<label><input type='radio' name='q66' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q66'> অপশন C</label><br>
-<label><input type='radio' name='q66'> অপশন D</label>
-</div>
-
-<div class='question' id='q67'>
-67. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 67?<br>
-<label><input type='radio' name='q67'> অপশন A</label><br>
-<label><input type='radio' name='q67' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q67'> অপশন C</label><br>
-<label><input type='radio' name='q67'> অপশন D</label>
-</div>
-
-<div class='question' id='q68'>
-68. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 68?<br>
-<label><input type='radio' name='q68'> অপশন A</label><br>
-<label><input type='radio' name='q68' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q68'> অপশন C</label><br>
-<label><input type='radio' name='q68'> অপশন D</label>
-</div>
-
-<div class='question' id='q69'>
-69. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 69?<br>
-<label><input type='radio' name='q69'> অপশন A</label><br>
-<label><input type='radio' name='q69' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q69'> অপশন C</label><br>
-<label><input type='radio' name='q69'> অপশন D</label>
-</div>
-
-<div class='question' id='q70'>
-70. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 70?<br>
-<label><input type='radio' name='q70'> অপশন A</label><br>
-<label><input type='radio' name='q70' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q70'> অপশন C</label><br>
-<label><input type='radio' name='q70'> অপশন D</label>
-</div>
-
-<div class='question' id='q71'>
-71. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 71?<br>
-<label><input type='radio' name='q71'> অপশন A</label><br>
-<label><input type='radio' name='q71' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q71'> অপশন C</label><br>
-<label><input type='radio' name='q71'> অপশন D</label>
-</div>
-
-<div class='question' id='q72'>
-72. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 72?<br>
-<label><input type='radio' name='q72'> অপশন A</label><br>
-<label><input type='radio' name='q72' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q72'> অপশন C</label><br>
-<label><input type='radio' name='q72'> অপশন D</label>
-</div>
-
-<div class='question' id='q73'>
-73. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 73?<br>
-<label><input type='radio' name='q73'> অপশন A</label><br>
-<label><input type='radio' name='q73' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q73'> অপশন C</label><br>
-<label><input type='radio' name='q73'> অপশন D</label>
-</div>
-
-<div class='question' id='q74'>
-74. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 74?<br>
-<label><input type='radio' name='q74'> অপশন A</label><br>
-<label><input type='radio' name='q74' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q74'> অপশন C</label><br>
-<label><input type='radio' name='q74'> অপশন D</label>
-</div>
-
-<div class='question' id='q75'>
-75. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 75?<br>
-<label><input type='radio' name='q75'> অপশন A</label><br>
-<label><input type='radio' name='q75' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q75'> অপশন C</label><br>
-<label><input type='radio' name='q75'> অপশন D</label>
-</div>
-
-<div class='question' id='q76'>
-76. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 76?<br>
-<label><input type='radio' name='q76'> অপশন A</label><br>
-<label><input type='radio' name='q76' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q76'> অপশন C</label><br>
-<label><input type='radio' name='q76'> অপশন D</label>
-</div>
-
-<div class='question' id='q77'>
-77. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 77?<br>
-<label><input type='radio' name='q77'> অপশন A</label><br>
-<label><input type='radio' name='q77' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q77'> অপশন C</label><br>
-<label><input type='radio' name='q77'> অপশন D</label>
-</div>
-
-<div class='question' id='q78'>
-78. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 78?<br>
-<label><input type='radio' name='q78'> অপশন A</label><br>
-<label><input type='radio' name='q78' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q78'> অপশন C</label><br>
-<label><input type='radio' name='q78'> অপশন D</label>
-</div>
-
-<div class='question' id='q79'>
-79. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 79?<br>
-<label><input type='radio' name='q79'> অপশন A</label><br>
-<label><input type='radio' name='q79' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q79'> অপশন C</label><br>
-<label><input type='radio' name='q79'> অপশন D</label>
-</div>
-
-<div class='question' id='q80'>
-80. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 80?<br>
-<label><input type='radio' name='q80'> অপশন A</label><br>
-<label><input type='radio' name='q80' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q80'> অপশন C</label><br>
-<label><input type='radio' name='q80'> অপশন D</label>
-</div>
-
-<div class='question' id='q81'>
-81. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 81?<br>
-<label><input type='radio' name='q81'> অপশন A</label><br>
-<label><input type='radio' name='q81' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q81'> অপশন C</label><br>
-<label><input type='radio' name='q81'> অপশন D</label>
-</div>
-
-<div class='question' id='q82'>
-82. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 82?<br>
-<label><input type='radio' name='q82'> অপশন A</label><br>
-<label><input type='radio' name='q82' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q82'> অপশন C</label><br>
-<label><input type='radio' name='q82'> অপশন D</label>
-</div>
-
-<div class='question' id='q83'>
-83. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 83?<br>
-<label><input type='radio' name='q83'> অপশন A</label><br>
-<label><input type='radio' name='q83' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q83'> অপশন C</label><br>
-<label><input type='radio' name='q83'> অপশন D</label>
-</div>
-
-<div class='question' id='q84'>
-84. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 84?<br>
-<label><input type='radio' name='q84'> অপশন A</label><br>
-<label><input type='radio' name='q84' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q84'> অপশন C</label><br>
-<label><input type='radio' name='q84'> অপশন D</label>
-</div>
-
-<div class='question' id='q85'>
-85. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 85?<br>
-<label><input type='radio' name='q85'> অপশন A</label><br>
-<label><input type='radio' name='q85' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q85'> অপশন C</label><br>
-<label><input type='radio' name='q85'> অপশন D</label>
-</div>
-
-<div class='question' id='q86'>
-86. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 86?<br>
-<label><input type='radio' name='q86'> অপশন A</label><br>
-<label><input type='radio' name='q86' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q86'> অপশন C</label><br>
-<label><input type='radio' name='q86'> অপশন D</label>
-</div>
-
-<div class='question' id='q87'>
-87. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 87?<br>
-<label><input type='radio' name='q87'> অপশন A</label><br>
-<label><input type='radio' name='q87' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q87'> অপশন C</label><br>
-<label><input type='radio' name='q87'> অপশন D</label>
-</div>
-
-<div class='question' id='q88'>
-88. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 88?<br>
-<label><input type='radio' name='q88'> অপশন A</label><br>
-<label><input type='radio' name='q88' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q88'> অপশন C</label><br>
-<label><input type='radio' name='q88'> অপশন D</label>
-</div>
-
-<div class='question' id='q89'>
-89. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 89?<br>
-<label><input type='radio' name='q89'> অপশন A</label><br>
-<label><input type='radio' name='q89' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q89'> অপশন C</label><br>
-<label><input type='radio' name='q89'> অপশন D</label>
-</div>
-
-<div class='question' id='q90'>
-90. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 90?<br>
-<label><input type='radio' name='q90'> অপশন A</label><br>
-<label><input type='radio' name='q90' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q90'> অপশন C</label><br>
-<label><input type='radio' name='q90'> অপশন D</label>
-</div>
-
-<div class='question' id='q91'>
-91. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 91?<br>
-<label><input type='radio' name='q91'> অপশন A</label><br>
-<label><input type='radio' name='q91' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q91'> অপশন C</label><br>
-<label><input type='radio' name='q91'> অপশন D</label>
-</div>
-
-<div class='question' id='q92'>
-92. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 92?<br>
-<label><input type='radio' name='q92'> অপশন A</label><br>
-<label><input type='radio' name='q92' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q92'> অপশন C</label><br>
-<label><input type='radio' name='q92'> অপশন D</label>
-</div>
-
-<div class='question' id='q93'>
-93. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 93?<br>
-<label><input type='radio' name='q93'> অপশন A</label><br>
-<label><input type='radio' name='q93' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q93'> অপশন C</label><br>
-<label><input type='radio' name='q93'> অপশন D</label>
-</div>
-
-<div class='question' id='q94'>
-94. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 94?<br>
-<label><input type='radio' name='q94'> অপশন A</label><br>
-<label><input type='radio' name='q94' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q94'> অপশন C</label><br>
-<label><input type='radio' name='q94'> অপশন D</label>
-</div>
-
-<div class='question' id='q95'>
-95. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 95?<br>
-<label><input type='radio' name='q95'> অপশন A</label><br>
-<label><input type='radio' name='q95' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q95'> অপশন C</label><br>
-<label><input type='radio' name='q95'> অপশন D</label>
-</div>
-
-<div class='question' id='q96'>
-96. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 96?<br>
-<label><input type='radio' name='q96'> অপশন A</label><br>
-<label><input type='radio' name='q96' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q96'> অপশন C</label><br>
-<label><input type='radio' name='q96'> অপশন D</label>
-</div>
-
-<div class='question' id='q97'>
-97. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 97?<br>
-<label><input type='radio' name='q97'> অপশন A</label><br>
-<label><input type='radio' name='q97' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q97'> অপশন C</label><br>
-<label><input type='radio' name='q97'> অপশন D</label>
-</div>
-
-<div class='question' id='q98'>
-98. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 98?<br>
-<label><input type='radio' name='q98'> অপশন A</label><br>
-<label><input type='radio' name='q98' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q98'> অপশন C</label><br>
-<label><input type='radio' name='q98'> অপশন D</label>
-</div>
-
-<div class='question' id='q99'>
-99. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 99?<br>
-<label><input type='radio' name='q99'> অপশন A</label><br>
-<label><input type='radio' name='q99' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q99'> অপশন C</label><br>
-<label><input type='radio' name='q99'> অপশন D</label>
-</div>
-
-<div class='question' id='q100'>
-100. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 100?<br>
-<label><input type='radio' name='q100'> অপশন A</label><br>
-<label><input type='radio' name='q100' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q100'> অপশন C</label><br>
-<label><input type='radio' name='q100'> অপশন D</label>
-</div>
-
-<div class='question' id='q101'>
-101. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 101?<br>
-<label><input type='radio' name='q101'> অপশন A</label><br>
-<label><input type='radio' name='q101' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q101'> অপশন C</label><br>
-<label><input type='radio' name='q101'> অপশন D</label>
-</div>
-
-<div class='question' id='q102'>
-102. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 102?<br>
-<label><input type='radio' name='q102'> অপশন A</label><br>
-<label><input type='radio' name='q102' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q102'> অপশন C</label><br>
-<label><input type='radio' name='q102'> অপশন D</label>
-</div>
-
-<div class='question' id='q103'>
-103. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 103?<br>
-<label><input type='radio' name='q103'> অপশন A</label><br>
-<label><input type='radio' name='q103' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q103'> অপশন C</label><br>
-<label><input type='radio' name='q103'> অপশন D</label>
-</div>
-
-<div class='question' id='q104'>
-104. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 104?<br>
-<label><input type='radio' name='q104'> অপশন A</label><br>
-<label><input type='radio' name='q104' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q104'> অপশন C</label><br>
-<label><input type='radio' name='q104'> অপশন D</label>
-</div>
-
-<div class='question' id='q105'>
-105. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 105?<br>
-<label><input type='radio' name='q105'> অপশন A</label><br>
-<label><input type='radio' name='q105' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q105'> অপশন C</label><br>
-<label><input type='radio' name='q105'> অপশন D</label>
-</div>
-
-<div class='question' id='q106'>
-106. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 106?<br>
-<label><input type='radio' name='q106'> অপশন A</label><br>
-<label><input type='radio' name='q106' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q106'> অপশন C</label><br>
-<label><input type='radio' name='q106'> অপশন D</label>
-</div>
-
-<div class='question' id='q107'>
-107. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 107?<br>
-<label><input type='radio' name='q107'> অপশন A</label><br>
-<label><input type='radio' name='q107' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q107'> অপশন C</label><br>
-<label><input type='radio' name='q107'> অপশন D</label>
-</div>
-
-<div class='question' id='q108'>
-108. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 108?<br>
-<label><input type='radio' name='q108'> অপশন A</label><br>
-<label><input type='radio' name='q108' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q108'> অপশন C</label><br>
-<label><input type='radio' name='q108'> অপশন D</label>
-</div>
-
-<div class='question' id='q109'>
-109. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 109?<br>
-<label><input type='radio' name='q109'> অপশন A</label><br>
-<label><input type='radio' name='q109' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q109'> অপশন C</label><br>
-<label><input type='radio' name='q109'> অপশন D</label>
-</div>
-
-<div class='question' id='q110'>
-110. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 110?<br>
-<label><input type='radio' name='q110'> অপশন A</label><br>
-<label><input type='radio' name='q110' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q110'> অপশন C</label><br>
-<label><input type='radio' name='q110'> অপশন D</label>
-</div>
-
-<div class='question' id='q111'>
-111. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 111?<br>
-<label><input type='radio' name='q111'> অপশন A</label><br>
-<label><input type='radio' name='q111' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q111'> অপশন C</label><br>
-<label><input type='radio' name='q111'> অপশন D</label>
-</div>
-
-<div class='question' id='q112'>
-112. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 112?<br>
-<label><input type='radio' name='q112'> অপশন A</label><br>
-<label><input type='radio' name='q112' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q112'> অপশন C</label><br>
-<label><input type='radio' name='q112'> অপশন D</label>
-</div>
-
-<div class='question' id='q113'>
-113. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 113?<br>
-<label><input type='radio' name='q113'> অপশন A</label><br>
-<label><input type='radio' name='q113' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q113'> অপশন C</label><br>
-<label><input type='radio' name='q113'> অপশন D</label>
-</div>
-
-<div class='question' id='q114'>
-114. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 114?<br>
-<label><input type='radio' name='q114'> অপশন A</label><br>
-<label><input type='radio' name='q114' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q114'> অপশন C</label><br>
-<label><input type='radio' name='q114'> অপশন D</label>
-</div>
-
-<div class='question' id='q115'>
-115. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 115?<br>
-<label><input type='radio' name='q115'> অপশন A</label><br>
-<label><input type='radio' name='q115' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q115'> অপশন C</label><br>
-<label><input type='radio' name='q115'> অপশন D</label>
-</div>
-
-<div class='question' id='q116'>
-116. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 116?<br>
-<label><input type='radio' name='q116'> অপশন A</label><br>
-<label><input type='radio' name='q116' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q116'> অপশন C</label><br>
-<label><input type='radio' name='q116'> অপশন D</label>
-</div>
-
-<div class='question' id='q117'>
-117. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 117?<br>
-<label><input type='radio' name='q117'> অপশন A</label><br>
-<label><input type='radio' name='q117' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q117'> অপশন C</label><br>
-<label><input type='radio' name='q117'> অপশন D</label>
-</div>
-
-<div class='question' id='q118'>
-118. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 118?<br>
-<label><input type='radio' name='q118'> অপশন A</label><br>
-<label><input type='radio' name='q118' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q118'> অপশন C</label><br>
-<label><input type='radio' name='q118'> অপশন D</label>
-</div>
-
-<div class='question' id='q119'>
-119. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 119?<br>
-<label><input type='radio' name='q119'> অপশন A</label><br>
-<label><input type='radio' name='q119' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q119'> অপশন C</label><br>
-<label><input type='radio' name='q119'> অপশন D</label>
-</div>
-
-<div class='question' id='q120'>
-120. Set–1 Child Development – সিলেবাস ভিত্তিক প্রশ্ন 120?<br>
-<label><input type='radio' name='q120'> অপশন A</label><br>
-<label><input type='radio' name='q120' value='1'> অপশন B</label><br>
-<label><input type='radio' name='q120'> অপশন C</label><br>
-<label><input type='radio' name='q120'> অপশন D</label>
-</div>
-
-
-<div class='navbtn'>
-<button id='prev' onclick='prevPage()'>⬅ Previous</button>
-<button id='next' onclick='nextPage()'>Next ➡</button>
-</div>
-
-</div>
-
-<div class='sticky-submit'>
-<button onclick='submitQuiz()'>Submit Test</button>
-</div>
-
-</body></html>
+<div class="search-container">
+    <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="searchFunction()" placeholder="Search services (e.g. Tax, GPF, Salary)...">
+        <button><i class="fas fa-search"></i></button>
+    </div>
+</div>
+
+<div class="container" id="servicesGrid">
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Multiple_Calculator.html" class="link-text">Age, Date, Service Length, Retirement & Leave Calculator (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://docs.google.com/spreadsheets/d/1uC4LBw_IuJ3fPu1vgIXM7t_fLyASGi9r/edit?usp=drivesdk" class="link-text">GPF Calculator Excel (Free)</a>
+        </div>
+        <div class="card-actions">
+            <a href="https://youtu.be/9bJ5WKuQTc8?si=zsfbID-EjOImn-Kj" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/GPF_CALCULATOR.html" class="link-text">GPF Calculator Online (Free)</a>
+        </div>
+        <div class="card-actions">
+            <a href="https://youtu.be/gnKgL_Axq64?si=PILFzsjHhSewGRdU" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/2025-26_Income_Tax_Calculator.html" class="link-text">Income Tax Calculator 2025-26 - New Regime (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/old_regime.html" class="link-text">Income Tax Calculator - Old Regime (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Form16.html" class="link-text">Income Tax Form 16 (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/income_tax_software.html" class="link-text">Income Tax Software for Office of the Sub-Inspector of Schools [Excel] (₹2000/-)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/2025-26_SalStm_TaxCal.html" class="link-text">Income Tax Software for Office of the Sub-Inspector of Schools [Online] (₹2000/-)</a>
+        </div>
+        <div class="card-actions">
+            <a href="https://youtube.com/shorts/O86Mc6WhwUY?si=RmBjchGPvv4YuEbG" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Office_Schools_WB.html" class="link-text">Office & Schools Address (West Bengal)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Single_Profile_pdf-excel.html" class="link-text">OSMS PDF Teacher Profile Convert into Excel [Single] (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Profile_pdf-excel.html" class="link-text">OSMS PDF Teacher Profile Convert into Excel [Single/Multiple] (₹1000)</a>
+        </div>
+        <div class="card-actions">
+            <a href="" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/Pay_Slip.html" class="link-text">Pay Slip, Primary Teachers, WB (FREE)</a>
+        </div>
+        <div class="card-actions">
+            <a href="https://youtube.com/shorts/PHELTnVVteg?si=QmhU-nMQJxHO86_b" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/pension_Gratuity_Commutation.html" class="link-text">Pension, Gratuity & Commutation Calculator (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/onlineShops.html" class="link-text">1) Register your shop and products for free.<br>2) Discover, search, and shop online.</a>
+        </div>
+        <div class="card-actions">
+            <a href="" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="" class="link-text">Salary Calculation for the Entire Service Life (Coming Soon)</a>
+        </div>
+        <div class="card-actions">
+            <a href="" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/SalaryStatement.html" class="link-text">Salary Statement (FREE)</a>
+        </div>
+        <div class="card-actions">
+            <a href="https://youtube.com/shorts/3K2OVkfV8Nw?si=_ElDhz2qSv6v8jeH" class="video"><i class="fab fa-youtube"></i> How to Use</a>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/WBTextBook.html" class="link-text">School Text Books, West Bengal (FREE)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-info">
+            <a href="https://aionline.in.net/teacher_surplus_deficit.html" class="link-text">Surplus/Deficit Teacher (Free)</a>
+        </div>
+        <div class="card-actions"></div>
+    </div>
+
+</div>
+
+<div class="faq-master-wrapper" onclick="toggleMainFAQ()" style="cursor: pointer; background: #fff; padding: 15px 20px; border-radius: 15px; margin: 20px auto; max-width: 1200px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 1px solid #0B5ED7;">
+    <h3 style="color: var(--primary); margin: 0; font-size: 18px;">
+        <i class="fas fa-question-circle"></i> সাধারণ জিজ্ঞাসা (FAQ) দেখুন
+    </h3>
+    <i class="fas fa-chevron-down" id="mainFaqIcon" style="transition: 0.3s; color: var(--primary);"></i>
+</div>
+
+<div id="faqMasterContainer" style="max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; max-width: 1200px; margin: auto; padding: 0 20px;">
+    
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+            জিপিএফ (GPF) ক্যালকুলেটর ব্যবহারের ভিডিও নির্দেশিকা (ক্লিকেবল সময়)
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+            <div style="padding: 10px 0;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">নিচের সময়গুলোর ওপর ক্লিক করলে ভিডিওর সেই অংশটি সরাসরি দেখতে পাবেন:</p>
+                <ul style="list-style: none; padding-left: 0; font-size: 13px; line-height: 2.2;">
+                    <li><a href="http://www.youtube.com/watch?v=gnKgL_Axq64&t=9" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:09</a> <b>সময় নির্বাচন:</b> Start ও End মাস সিলেক্ট করে 'Set' করুন।</li>
+                    <li><a href="http://www.youtube.com/watch?v=gnKgL_Axq64&t=30" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:30</a> <b>ব্যালেন্স ও ফরম্যাট:</b> ওপেনিং ব্যালেন্স লিখে 'Generate' করুন।</li>
+                    <li><a href="http://www.youtube.com/watch?v=gnKgL_Axq64&t=40" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:40</a> <b>ডিপোজিট এন্ট্রি:</b> জিপিএফ জমার টাকা কলামে লিখুন।</li>
+                    <li><a href="http://www.youtube.com/watch?v=gnKgL_Axq64&t=163" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">02:43</a> <b>লোন/উইথড্রয়াল:</b> টাকা তোলার হিসাব এই অংশে দেখুন।</li>
+                    <li><a href="http://www.youtube.com/watch?v=gnKgL_Axq64&t=45" target="_blank" style="color: #0B5ED7; text-decoration: none; font-weight: bold; background: #eef4ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #0B5ED7;">00:45</a> <b>প্রিন্ট ও সেভ:</b> হিসাবটি ডাউনলোড করার পদ্ধতি।</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+            পেনশন ও গ্র্যাচুইটি ক্যালকুলেটর কি নতুন নিয়ম অনুযায়ী আপডেট করা? 
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer"><p>হ্যাঁ, আমাদের পেনশন, গ্র্যাচুইটি এবং কমিউটেশন ক্যালকুলেটরটি সর্বশেষ সরকারি রুলস (ROPA) অনুযায়ী আপডেট করা হয়েছে।</p></div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+            ট্যাক্স ক্যালকুলেটরে কি Old এবং New Regime—উভয় সুবিধা আছে? 
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer"><p>হ্যাঁ, আমাদের ২০২৫-২৬ অর্থবর্ষের ইনকাম ট্যাক্স ক্যালকুলেটরে Old এবং New Tax Regime তুলনা করার সুবিধা রয়েছে।</p></div>
+    </div>
+</div>
+    
+<div class="whatsapp-btn-container">
+    <p>আপনার কি আরও কোনো প্রশ্ন আছে?</p>
+    <a href="https://wa.me/919800074626" target="_blank" class="custom-wa-btn"><i class="fab fa-whatsapp"></i> সরাসরি হোয়াটসঅ্যাপ সাপোর্ট নিন</a>
+</div>
+
+<footer>
+    <p>© 2026 AI Online | Digital Support India</p>
+</footer>
+
+<a class="whatsapp" href="https://wa.me/919800074626" target="_blank"><i class="fab fa-whatsapp"></i></a>
+<button class="support-btn" onclick="toggleChat()"><i class="fas fa-headset"></i> AI Support</button>
+
+<div id="chatBox">
+    <div class="chat-header"><span>AI Online Support</span><i class="fas fa-times" onclick="toggleChat()" style="cursor:pointer"></i></div>
+    <div id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input id="chatInput" onkeypress="if(event.key === 'Enter') sendChat()" placeholder="Type here...">
+        <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+    function searchFunction() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let cards = document.getElementsByClassName('service-card');
+        for (let i = 0; i < cards.length; i++) {
+            let text = cards[i].innerText.toLowerCase();
+            if (text.includes(input)) { cards[i].style.display = "flex"; } else { cards[i].style.display = "none"; }
+        }
+    }
+
+    function toggleChat() {
+        const box = document.getElementById('chatBox');
+        if (box.style.display === "block") { box.style.display = "none"; } else { box.style.display = "block"; if (document.getElementById('chatMessages').innerHTML.trim() === "") { startChat(); } }
+    }
+        
+    function sendChat(customMsg = null) {
+        let input = document.getElementById('chatInput');
+        let msg = customMsg || input.value;
+        if (!msg) return;
+
+        let messages = document.getElementById('chatMessages');
+        messages.innerHTML += `<div style="text-align:right; margin:10px 0"><b>You:</b> ${msg}</div>`;
+        let reply = "দুঃখিত, বুঝতে পারিনি। অপশন থেকে বেছে নিন।";
+        let lowerMsg = msg.toLowerCase();
+        
+        if (lowerMsg.includes('1')) { reply = "<b>Income Tax Software:</b> স্কুল এসআই অফিসের জন্য বিশেষ সফটওয়্যার।"; }
+        else if (lowerMsg.includes('2')) { reply = "<b>GPF Calculator:</b> জিপিএফ হিসাব করার অনলাইন টুল।"; }
+
+        setTimeout(() => {
+            messages.innerHTML += `<div style="margin:10px 0; background:#f1f1f1; padding:10px; border-radius:10px;"><b>AI:</b> ${reply}</div>`;
+            showQuickButtons();
+            messages.scrollTop = messages.scrollHeight;
+        }, 500);
+        input.value = '';
+    }
+
+    function showQuickButtons() {
+        let messages = document.getElementById('chatMessages');
+        messages.innerHTML += `
+            <div class="quick-btns" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">
+                <button onclick="sendChat('1')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">Income Tax Software</button>
+                <button onclick="sendChat('2')" style="font-size:11px; cursor:pointer; background:white; border:1px solid #0B5ED7; border-radius:15px; padding:3px 10px;">GPF Calculator</button>
+            </div>`;
+    }
+
+    function startChat() {
+        let messages = document.getElementById('chatMessages');
+        messages.innerHTML = `<div style="margin-bottom:10px"><b>AI:</b> নমস্কার! আমি আপনাকে কীভাবে সাহায্য করতে পারি?</div>`;
+        showQuickButtons();
+    }
+        
+    function toggleFAQ(button) {
+        button.classList.toggle("active");
+        let answer = button.nextElementSibling;
+        let masterContainer = document.getElementById('faqMasterContainer');
+        if (answer.style.maxHeight) { answer.style.maxHeight = null; } else { answer.style.maxHeight = answer.scrollHeight + "px"; masterContainer.style.maxHeight = (masterContainer.scrollHeight + answer.scrollHeight) + "px"; }
+    }
+
+    function toggleMainFAQ() {
+        let masterContainer = document.getElementById('faqMasterContainer');
+        let icon = document.getElementById('mainFaqIcon');
+        if (masterContainer.style.maxHeight === "0px" || masterContainer.style.maxHeight === "") { masterContainer.style.maxHeight = masterContainer.scrollHeight + "px"; icon.style.transform = "rotate(180deg)"; } else { masterContainer.style.maxHeight = "0px"; icon.style.transform = "rotate(0deg)"; }
+    }
+</script>
+</body>
+</html>
