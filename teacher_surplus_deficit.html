@@ -68,6 +68,14 @@ button.print-btn { background: #f5fa73; font-size: 27px;}
 
 /* Print Styles */
 @media print {
+    body { 
+        background: white; 
+        padding: 0; 
+        -webkit-user-select: auto;
+        -moz-user-select: auto;
+        -ms-user-select: auto;
+        user-select: auto;
+    }
     table { width: 100%; box-shadow: none; font-size: 21px; }
     td { page-break-inside: avoid; }
     button { display: none; }
