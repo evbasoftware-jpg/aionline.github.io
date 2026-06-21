@@ -40,23 +40,28 @@ function getCareerIncrementYears() {
 }
 
 // Increment Count
-function getIncrementCount(currentDate, doj) {
-
-    if (
+function getIncrementCount(currentDate, doj){
+    // একই দিন ও মাস না হলে Increment নয়
+    if(
         currentDate.getDate() !== doj.getDate() ||
         currentDate.getMonth() !== doj.getMonth()
-    ) {
+    ){
         return 0;
     }
 
+    // DOJ বছরের মধ্যে Increment হবে না
+    const serviceYears =
+        currentDate.getFullYear() - doj.getFullYear();
+    if(serviceYears <= 0){
+        return 0;
+    }
+
+    // Normal Increment
     let count = 1;
 
-    const serviceYears =
-        currentDate.getFullYear() -
-        doj.getFullYear();
-
-    getCareerIncrementYears().forEach(function (y) {
-        if (serviceYears === y) {
+    // Career Double Increment
+    getCareerIncrementYears().forEach(function(y){
+        if(serviceYears === y){
             count = 2;
         }
     });
@@ -203,7 +208,32 @@ function generate() {
         }
     ];
 
+    let startFound = false;
     ropaConfig.forEach(function (ropa, index) {
+        let startDate = new Date(ropa.start);
+        let endDate = new Date(ropa.end);
+
+// DOJ-এর আগে শেষ হয়ে গেলে Skip
+if(doj > endDate){
+    return;
+}
+
+// প্রথম Applicable ROPA
+if(!startFound){
+
+    if(doj >= startDate && doj <= endDate){
+
+        startDate = new Date(doj);
+
+        startFound = true;
+
+    }else{
+
+        return;
+
+    }
+
+}
         if (!ropa.start) return;
         let startDate = new Date(ropa.start);
         let endDate = new Date(ropa.end);
