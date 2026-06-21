@@ -81,3 +81,31 @@ function getScaleIncrement(basic, ropaYear) {
     // যদি স্কেলের একদম শেষ সীমায় থাকে বা কোনো রেঞ্জে না পড়ে
     return basic;
       }
+
+function getFitmentBasic(basic,oldYear,newYear){
+    if(
+        typeof FITMENT==="undefined"
+    ){
+        return basic;
+    }
+    let factor =
+        FITMENT[newYear] || 1;
+
+    return Math.round(
+        basic*factor/100
+    )*100;
+}
+
+function getPromotionBasic(basic,year){
+    return getScaleIncrement(
+        basic,
+        year
+    );
+}
+
+function getACategoryBasic(basic,year){
+    return getScaleIncrement(
+        basic,
+        year
+    );
+}
