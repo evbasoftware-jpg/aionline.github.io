@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WB Salary Calculation</title>
+
+<style>
+/* পুরো পেজের মার্জিন এবং প্যাডিং ঠিক করা */
+body { font-family: Arial; background: #f5f5f5; margin: 0; padding: 0; }
+h2 { text-align: center; margin: 10px 0; }
+
+/* উপরের কন্ট্রোল সেকশনকে স্ক্রিনের শীর্ষে আটকে রাখার জন্য */
+.controls-container {
+    position: sticky;
+    top: 0;
+    z-index: 1001;
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-bottom: 2px solid #ccc;
+}
+
+.controls {
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* টেবিল কন্টেইনার */
+.table-container { padding: 15px; }
+
+table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    background: #fff; 
+    font-size: 12px; 
+}
+
+th, td { 
+    border: 1px solid #ccc; 
+    padding: 6px 4px; 
+    text-align: center; 
+}
+
+/* টেবিল হেডার স্টিকি করার লজিক */
+thead th {
+    position: sticky;
+    top: 0; /* JS দ্বারা ডাইনামিকালি আপডেট হবে */
+    background: #fcfcd9 !important;
+    z-index: 1000;
+    box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc;
+}
+
+.ropa-header { 
+    background: #d9fcf8; 
+    color: black; 
+    font-weight: bold; 
+    text-align: left; 
+    padding: 8px 15px; 
+}
+
+.edit-input { width: 60px; text-align: center; border: 1px solid transparent; background: transparent; }
+.edit-input:focus { border: 1px solid #007bff; background: #fff; outline: none; }
+</style>
+</head>
+
+<body>
+
+<div class="controls-container" id="topPanel">
+    <h2>WB Salary Calculator</h2>
+    <div class="controls">
+        DOJ: <input type="date" id="dojInput" onchange="autoFillBasicAndROPA()">
+        ,&emsp; DOR: <input type="date" id="dorInput">
+                
+        <b>,&emsp;Category (Joining):</b>
+        <select id="category" onchange="autoFillBasicAndROPA()" style="text-align: center;">
+            <option value="A">A &emsp;</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+        </select><br><br>
+         Starting Basic: <input type="number" id="basicInput" value="0">
+        ,&emsp;A Category Date: <input type="date" id="aDate">
+        ,&emsp;Promotion Date: <input type="date" id="pDate">
+        <br><br>
+
+        ROPA Option Dates:
+        1981 <input type="date" id="r1981" value="1981-04-01">
+        ,&emsp;1990 <input type="date" id="r1990" value="1986-01-01">
+        ,&emsp;1998 <input type="date" id="r1998" value="1996-01-01"><br>
+        &ensp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 
+        2009 <input type="date" id="r2009" value="2006-01-01">
+        ,&emsp;2019 <input type="date" id="r2019" value="2020-01-01">
+
+        <br><br>
+        <b>Career Increment (Select):</b><br>
+        <label><input type="checkbox" class="incOpt" value="10">10Y,&emsp;</label>
+        <label><input type="checkbox" class="incOpt" value="18">18Y,&emsp;</label>
+        <label><input type="checkbox" class="incOpt" value="20">20Y</label>
+        <br><br>
+        <button onclick="generate()">Generate</button>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Basic</th>
+                <th>DA%</th>
+                <th>HRA%</th>
+                <th>Addl Alw</th>
+                <th>DA</th>
+                <th>HRA</th>
+                <th>MA</th>
+                <th>IR</th>
+                <th>Gross</th>
+                <th>GPF</th>
+                <th>PTAX</th>
+                <th>GI</th>
+                <th>Net</th>
+            </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</div>
+
+<script src="DA-HRA-PTAX.js"></script>
+<script src="ROPA-SCALE.js"></script>
+<script src="ROPA-CALCULATION.js"></script>
+<script src="main.js"></script>
+    
+
+</body>
+</html>
