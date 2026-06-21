@@ -1,3 +1,34 @@
+function getIncrementCount(currentDate, doj){
+
+    let count = 0;
+
+    if(
+        currentDate.getDate() === doj.getDate() &&
+        currentDate.getMonth() === doj.getMonth()
+    ){
+        count = 1;
+    }
+
+    const serviceYears =
+        currentDate.getFullYear() -
+        doj.getFullYear();
+
+    document.querySelectorAll(".incOpt:checked")
+        .forEach(opt => {
+
+            if(count === 1 &&
+               serviceYears === Number(opt.value)){
+
+                count = 2;
+
+            }
+
+        });
+
+    return count;
+
+}
+
 // ===============================
 // COMMON CALCULATION
 // ===============================
