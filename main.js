@@ -119,6 +119,6 @@ function render(){
   });
 }
 
-function testGenerate() {
-    alert("Button Working");
+function generate() {
+    alert("Generate Function Called");
 }
