@@ -32,3 +32,22 @@ function getDefaultPTAX(gross) {
     if (gross <= 40000) return 150;
     return 200;
 }
+
+function getDA(dateStr){
+
+    let d = new Date(dateStr);
+    let rate = 0;
+
+    for(let i=0;i<DA_DATA.length;i++){
+
+        let eff = new Date(DA_DATA[i][0]);
+
+        if(d >= eff){
+            rate = DA_DATA[i][1];
+        }
+
+    }
+
+    return rate/100;
+
+}
