@@ -114,48 +114,20 @@ function autoFillBasicAndROPA() {
 
     const doj = new Date(dojStr);
     const ropa = [
-        {
-            id: "r1981",
-            end: new Date("1990-02-28"),
-            year: 1981
-        },
-        {
-            id: "r1990",
-            end: new Date("1999-02-28"),
-            year: 1990
-        },
-        {
-            id: "r1998",
-            end: new Date("2009-03-31"),
-            year: 1998
-        },
-        {
-            id: "r2009",
-            end: new Date("2019-12-31"),
-            year: 2009
-        },
-        {
-            id: "r2019",
-            end: new Date("2099-12-31"),
-            year: 2019
-        }
-    ];
+    {id:"r1981",start:new Date("1981-04-01"),end:new Date("1990-02-28"),year:1981},
+    {id:"r1990",start:new Date("1990-03-01"),end:new Date("1999-02-28"),year:1990},
+    {id:"r1998",start:new Date("1999-03-01"),end:new Date("2009-03-31"),year:1998},
+    {id:"r2009",start:new Date("2009-04-01"),end:new Date("2019-12-31"),year:2009},
+    {id:"r2019",start:new Date("2020-01-01"),end:new Date("2099-12-31"),year:2019}
+];
 
-    let found = false;
-
-    ropa.forEach(function (r) {
-        if (!found && doj <= r.end) {
-            el(r.id).value = dojStr;
-            if (
-                typeof ENTRY_PAY !== "undefined" &&
-                ENTRY_PAY[r.year]
-            ) {
-                el("basicInput").value =
-                    ENTRY_PAY[r.year][category];
-            }
-            found = true;
-        }
-    });
+ropa.forEach(function(r){
+    if(!found && doj>=r.start && doj<=r.end){
+        el(r.id).value=dojStr;
+        el("basicInput").value=ENTRY_PAY[r.year][category];
+        found=true;
+    }
+});
 }
 
 // Generate Salary Table
