@@ -118,3 +118,7 @@ function render(){
     tbody.appendChild(tr);
   });
 }
+
+function testGenerate() {
+    alert("Button Working");
+}
