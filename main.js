@@ -209,139 +209,106 @@ function generate() {
     ];
 
     let startFound = false;
-    ropaConfig.forEach(function (ropa, index) {
-        let startDate = new Date(ropa.start);
-        let endDate = new Date(ropa.end);
-
-// DOJ-এর আগে শেষ হয়ে গেলে Skip
-if(doj > endDate){
-    return;
-}
-
-// প্রথম Applicable ROPA
-if(!startFound){
-
-    if(doj >= startDate && doj <= endDate){
-
-        startDate = new Date(doj);
-
-        startFound = true;
-
-    }else{
-
-        return;
-
+ ropaConfig.forEach(function (ropa, index) {
+    if (!ropa.start) return;
+    let startDate = new Date(ropa.start);
+    let endDate = new Date(ropa.end);
+    if (endDate > dor) {
+        endDate = new Date(dor);
     }
 
-}
-        if (!ropa.start) return;
-        let startDate = new Date(ropa.start);
-        let endDate = new Date(ropa.end);
+    // DOJ-এর আগে শেষ হয়ে যাওয়া ROPA Skip
+    if (doj > endDate) {
+        return;
+    }
 
-        if (endDate > dor) {
-            endDate = new Date(dor);}
-
-        if (startDate > dor) {
-            return; }
-
-        rows.push({
-            isHeader: true,
-            title: ropa.title
-        });
-
-        let loopDate = new Date(startDate);
-
-        while (loopDate <= endDate) {
-            let increment =
-                getIncrementCount(loopDate, doj);
-            for (let i = 0; i < increment; i++) {
-                if (typeof getScaleIncrement === "function") {
-                    currentBasic =
-                        getScaleIncrement(
-                            currentBasic,
-                            ropa.year
-                        );
-                }
-            }
-
-// Anniversary Increment
-let inc = getIncrementCount(loopDate,doj);
-for(let i=0;i<inc;i++){
-    currentBasic =
-        getScaleIncrement(
-            currentBasic,
-            ropa.year
-        );
-}
-
-// July Increment
-if(
-    (ropa.year===2009 || ropa.year===2019)
-    &&
-    isJulyIncrement(loopDate)
-){
-    currentBasic =
-        getScaleIncrement(
-            currentBasic,
-            ropa.year
-        );
-}
-
-// Promotion
-if(isPromotionDate(loopDate)){
-    currentBasic =
-        getPromotionBasic(
-            currentBasic,
-            ropa.year
-        );
-}
-
-// A Category
-if(isACategoryDate(loopDate)){
-    currentBasic =
-        getACategoryBasic(
-            currentBasic,
-            ropa.year
-        );
-}
-          
-            let row = {
-                date: new Date(loopDate),
-                ropaYear: ropa.year,
-                basic: currentBasic,
-                ADD: 0,
-                DA: 0,
-                HRA: 0,
-                MA: ropa.ma,
-                IR: 0,
-                GPF: Math.round(currentBasic * 0.06),
-                GI: 60,
-                PTAX: 0,
-                gross: 0,
-                net: 0
-            };
-
-            calculateSalary(row);
-            rows.push(row);
-            loopDate.setMonth(
-                loopDate.getMonth() + 1
-            );
+    // প্রথম Applicable ROPA
+    if (!startFound) {
+        if (doj >= startDate && doj <= endDate) {
+            startDate = new Date(doj);
+            startFound = true;
+        } else {
+            return;
         }
-        if (index < ropaConfig.length - 1) {
-            if (
-                typeof FITMENT !== "undefined" &&
-                FITMENT[ropaConfig[index + 1].year]
-            ) {
-                if(index<ropaConfig.length-1){
-        const nextYear =ropaConfig[index+1].year;
-        currentBasic = getFitmentBasic(
-            currentBasic,
-            ropa.year,
-            nextYear
-        );  }
-            }
-        }
+    }
+
+    rows.push({
+        isHeader: true,
+        title: ropa.title
     });
+
+    let loopDate = new Date(startDate);
+
+    while (loopDate <= endDate) {
+        // DOJ বছরে Increment হবে না
+        let serviceYears =
+            loopDate.getFullYear() - doj.getFullYear();
+        let increment = 0;
+        if (
+            serviceYears > 0 &&
+            loopDate.getDate() === doj.getDate() &&
+            loopDate.getMonth() === doj.getMonth()
+        ) {
+            increment = 1;
+            document.querySelectorAll(".incOpt:checked")
+                .forEach(function (c) {
+                    if (serviceYears === Number(c.value)) {
+                        increment = 2;
+                    }
+                });
+        }
+
+        for (let i = 0; i < increment; i++) {
+            currentBasic =
+                getScaleIncrement(
+                    currentBasic,
+                    ropa.year
+                );
+        }
+
+        // ROPA 2009 ও 2019-এ 1st July Increment
+        if (
+            (ropa.year === 2009 || ropa.year === 2019) &&
+            loopDate.getDate() === 1 &&
+            loopDate.getMonth() === 6
+        ) {
+            currentBasic =
+                getScaleIncrement(
+                    currentBasic,
+                    ropa.year
+                );
+        }
+
+        let row = {
+            date: new Date(loopDate),
+            ropaYear: ropa.year,
+            basic: currentBasic,
+            ADD: 0,
+            DA: 0,
+            HRA: 0,
+            MA: ropa.ma,
+            IR: 0,
+            GPF: Math.round(currentBasic * 0.06),
+            GI: 60,
+            PTAX: 0,
+            gross: 0,
+            net: 0
+        };
+        calculateSalary(row);
+        rows.push(row);
+        loopDate.setMonth(loopDate.getMonth() + 1);
+    }
+
+    // পরবর্তী ROPA Fitment
+    if (index < ropaConfig.length - 1) {
+        currentBasic =
+            getFitmentBasic(
+                currentBasic,
+                ropa.year,
+                ropaConfig[index + 1].year
+            );
+    }
+});
     
     rows = rows.filter(function(r){
     return r!=null;
