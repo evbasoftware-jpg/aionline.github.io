@@ -119,6 +119,3 @@ function render(){
   });
 }
 
-function generate() {
-    alert("Generate Function Called");
-}
