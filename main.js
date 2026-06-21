@@ -43,16 +43,21 @@ function autoFillBasicAndROPA(){
 }
 
 function generate(){
-  const doj=new Date(el("dojInput").value);
-  const dor=new Date(el("dorInput").value);
-  if(isNaN(doj)||isNaN(dor)){alert("Please select DOJ and DOR");return;}
-  rows=[];
-  let currentBasic=Number(el("basicInput").value);
+  const doj = new Date(el("dojInput").value);
+const dor = new Date(el("dorInput").value);
 
+const r1981Date = new Date(el("r1981").value);
+
+let basic = Number(el("basicInput").value);
+
+rows = [];
+  
+  if(isNaN(doj)||isNaN(dor)){alert("Please select DOJ and DOR");return;}
+  
   const cfg=[
-    {title:"ROPA 1981",year:1981,start:el("r1981").value,end:"1990-12-31",ma:15},
-    {title:"ROPA 1990",year:1990,start:el("r1990").value,end:"1995-12-31",ma:30},
-    {title:"ROPA 1998",year:1998,start:el("r1998").value,end:"2005-12-31",ma:100},
+    {title:"ROPA 1981",year:1981,start:el("r1981").value,end:"1990-02-31",ma:15},
+    {title:"ROPA 1990",year:1990,start:el("r1990").value,end:"1995-02-31",ma:30},
+    {title:"ROPA 1998",year:1998,start:el("r1998").value,end:"2009-03-31",ma:100},
     {title:"ROPA 2009",year:2009,start:el("r2009").value,end:"2019-12-31",ma:300},
     {title:"ROPA 2019",year:2019,start:el("r2019").value,end:"2099-12-31",ma:500}
   ];
@@ -66,19 +71,41 @@ function generate(){
     let loop=(!started && doj>=s)?new Date(doj):new Date(s);
     started=true;
     rows.push({isHeader:true,title:r.title});
+    
     while(loop<=e){
-      let row={
+    let inc=getIncrementCount(loop,doj);
+    for(let i=0;i<inc;i++){
+        currentBasic=
+            getScaleIncrement(
+                currentBasic,
+                r.year
+            );
+    }
+
+    let row={
         date:new Date(loop),
         ropaYear:r.year,
         basic:currentBasic,
-        ADD:0,DA:0,HRA:0,MA:r.ma,IR:0,
+        ADD:0,
+        DA:0,
+        HRA:0,
+        MA:r.ma,
+        IR:0,
         GPF:Math.round(currentBasic*0.06),
-        GI:60,PTAX:0,gross:0,net:0
-      };
-      calculateSalary(row);
-      rows.push(row);
-      loop.setMonth(loop.getMonth()+1);
+        GI:60,
+        PTAX:0,
+        gross:0,
+        net:0
+    };
+
+    calculateSalary(row);
+
+    rows.push(row);
+
+    loop.setMonth(loop.getMonth()+1);
+
     }
+    
     if(idx<cfg.length-1){
       currentBasic=Math.round((currentBasic*FITMENT[cfg[idx+1].year])/100)*100;
     }
