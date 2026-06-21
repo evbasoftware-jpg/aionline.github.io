@@ -1,148 +1,407 @@
+// ================================
 // main.js
-// Generated modular scaffold
+// Part 1
+// ================================
 
-let rows=[];
+let rows = [];
 
-function el(id){return document.getElementById(id);}
-
-function formatDate(dateObj){
-  let d=dateObj.getDate(),m=dateObj.getMonth()+1,y=dateObj.getFullYear();
-  return (d<10?"0"+d:d)+"/"+(m<10?"0"+m:m)+"/"+y;
+function el(id) {
+    return document.getElementById(id);
 }
 
-window.addEventListener("load",updateHeaderTop);
-window.addEventListener("resize",updateHeaderTop);
-
-function updateHeaderTop(){
-  const panel=el("topPanel");
-  if(!panel)return;
-  const h=panel.offsetHeight;
-  document.querySelectorAll("thead th").forEach(th=>th.style.top=h+"px");
+function formatDate(dateObj) {
+    const d = String(dateObj.getDate()).padStart(2, "0");
+    const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const y = dateObj.getFullYear();
+    return d + "/" + m + "/" + y;
 }
 
-function autoFillBasicAndROPA(){
-  const dojStr=el("dojInput").value;
-  const cat=el("category").value;
-  if(!dojStr)return;
-  const doj=new Date(dojStr);
-  const ropa=[
-    {id:"r1981",end:new Date("1990-02-28"),year:1981},
-    {id:"r1990",end:new Date("1999-02-28"),year:1990},
-    {id:"r1998",end:new Date("2009-03-31"),year:1998},
-    {id:"r2009",end:new Date("2019-12-31"),year:2009},
-    {id:"r2019",end:new Date("2099-12-31"),year:2019}
-  ];
-  let found=false;
-  ropa.forEach(r=>{
-    if(!found && doj<r.end){
-      el(r.id).value=dojStr;
-      el("basicInput").value=ENTRY_PAY[r.year][cat];
-      found=true;
+// Sticky Header
+window.addEventListener("load", function () {
+    updateHeaderTop();
+});
+window.addEventListener("resize", function () {
+    updateHeaderTop();
+});
+
+function updateHeaderTop() {
+    const panel = el("topPanel");
+    if (!panel) return;
+    const topHeight = panel.offsetHeight;
+    document.querySelectorAll("thead th").forEach(function (th) {
+        th.style.top = topHeight + "px";
+    });
+}
+
+// Career Increment
+function getCareerIncrementYears() {
+    const arr = [];
+    document.querySelectorAll(".incOpt:checked").forEach(function (item) {
+        arr.push(Number(item.value));
+    });
+    return arr;
+}
+
+// Increment Count
+function getIncrementCount(currentDate, doj) {
+
+    if (
+        currentDate.getDate() !== doj.getDate() ||
+        currentDate.getMonth() !== doj.getMonth()
+    ) {
+        return 0;
     }
-  });
+
+    let count = 1;
+
+    const serviceYears =
+        currentDate.getFullYear() -
+        doj.getFullYear();
+
+    getCareerIncrementYears().forEach(function (y) {
+        if (serviceYears === y) {
+            count = 2;
+        }
+    });
+    return count;
 }
 
-function generate(){
-  const doj = new Date(el("dojInput").value);
-const dor = new Date(el("dorInput").value);
+// ======================================
+// July Increment (ROPA 2009 / 2019)
+// ======================================
 
-const r1981Date = new Date(el("r1981").value);
+function isJulyIncrement(date){
 
-let basic = Number(el("basicInput").value);
+    return (
+        date.getDate() === 1 &&
+        date.getMonth() === 6
+    );
 
-rows = [];
-  
-  if(isNaN(doj)||isNaN(dor)){alert("Please select DOJ and DOR");return;}
-  
-  const cfg=[
-    {title:"ROPA 1981",year:1981,start:el("r1981").value,end:"1990-02-31",ma:15},
-    {title:"ROPA 1990",year:1990,start:el("r1990").value,end:"1995-02-31",ma:30},
-    {title:"ROPA 1998",year:1998,start:el("r1998").value,end:"2009-03-31",ma:100},
-    {title:"ROPA 2009",year:2009,start:el("r2009").value,end:"2019-12-31",ma:300},
-    {title:"ROPA 2019",year:2019,start:el("r2019").value,end:"2099-12-31",ma:500}
-  ];
+}
 
-  let started=false;
-  cfg.forEach((r,idx)=>{
-    if(!r.start)return;
-    let s=new Date(r.start),e=new Date(r.end);
-    if(e>dor)e=dor;
-    if(doj>e)return;
-    let loop=(!started && doj>=s)?new Date(doj):new Date(s);
-    started=true;
-    rows.push({isHeader:true,title:r.title});
-    
-    while(loop<=e){
-    let inc=getIncrementCount(loop,doj);
-    for(let i=0;i<inc;i++){
-        currentBasic=
-            getScaleIncrement(
-                currentBasic,
-                r.year
+// ======================================
+// Promotion
+// ======================================
+
+function isPromotionDate(date){
+
+    const p = el("pDate").value;
+
+    if(!p) return false;
+
+    const pd = new Date(p);
+
+    return (
+        date.getFullYear() === pd.getFullYear() &&
+        date.getMonth() === pd.getMonth() &&
+        date.getDate() === pd.getDate()
+    );
+
+}
+
+// A Category Change
+function isACategoryDate(date){
+    const a = el("aDate").value;
+    if(!a) return false;
+    const ad = new Date(a);
+    return (
+        date.getFullYear() === ad.getFullYear() &&
+        date.getMonth() === ad.getMonth() &&
+        date.getDate() === ad.getDate()
+    );
+}
+
+// Auto Fill
+function autoFillBasicAndROPA() {
+
+    const dojStr = el("dojInput").value;
+    const category = el("category").value;
+
+    if (!dojStr) {
+        return;
+    }
+
+    const doj = new Date(dojStr);
+    const ropa = [
+        {
+            id: "r1981",
+            end: new Date("1990-02-28"),
+            year: 1981
+        },
+        {
+            id: "r1990",
+            end: new Date("1999-02-28"),
+            year: 1990
+        },
+        {
+            id: "r1998",
+            end: new Date("2009-03-31"),
+            year: 1998
+        },
+        {
+            id: "r2009",
+            end: new Date("2019-12-31"),
+            year: 2009
+        },
+        {
+            id: "r2019",
+            end: new Date("2099-12-31"),
+            year: 2019
+        }
+    ];
+
+    let found = false;
+
+    ropa.forEach(function (r) {
+        if (!found && doj <= r.end) {
+            el(r.id).value = dojStr;
+            if (
+                typeof ENTRY_PAY !== "undefined" &&
+                ENTRY_PAY[r.year]
+            ) {
+                el("basicInput").value =
+                    ENTRY_PAY[r.year][category];
+            }
+            found = true;
+        }
+    });
+}
+
+// Generate Salary Table
+function generate() {
+    const doj = new Date(el("dojInput").value);
+    const dor = new Date(el("dorInput").value);
+
+    if (isNaN(doj) || isNaN(dor)) {
+        alert("Please Select DOJ and DOR");
+        return;
+    }
+    rows = [];
+
+    let currentBasic = Number(el("basicInput").value);
+    const ropaConfig = [
+        {
+            title: "ROPA 1981",
+            year: 1981,
+            start: el("r1981").value,
+            end: "1990-02-28",
+            ma: 15
+        },
+        {
+            title: "ROPA 1990",
+            year: 1990,
+            start: el("r1990").value,
+            end: "1999-02-28",
+            ma: 30
+        },
+        {
+            title: "ROPA 1998",
+            year: 1998,
+            start: el("r1998").value,
+            end: "2009-03-31",
+            ma: 100
+        },
+        {
+            title: "ROPA 2009",
+            year: 2009,
+            start: el("r2009").value,
+            end: "2019-12-31",
+            ma: 300
+        },
+        {
+            title: "ROPA 2019",
+            year: 2019,
+            start: el("r2019").value,
+            end: "2099-12-31",
+            ma: 500
+        }
+    ];
+
+    ropaConfig.forEach(function (ropa, index) {
+        if (!ropa.start) return;
+        let startDate = new Date(ropa.start);
+        let endDate = new Date(ropa.end);
+
+        if (endDate > dor) {
+            endDate = new Date(dor);}
+
+        if (startDate > dor) {
+            return; }
+
+        rows.push({
+            isHeader: true,
+            title: ropa.title
+        });
+
+        let loopDate = new Date(startDate);
+
+        while (loopDate <= endDate) {
+            let increment =
+                getIncrementCount(loopDate, doj);
+            for (let i = 0; i < increment; i++) {
+                if (typeof getScaleIncrement === "function") {
+                    currentBasic =
+                        getScaleIncrement(
+                            currentBasic,
+                            ropa.year
+                        );
+                }
+            }
+
+// Anniversary Increment
+let inc = getIncrementCount(loopDate,doj);
+for(let i=0;i<inc;i++){
+    currentBasic =
+        getScaleIncrement(
+            currentBasic,
+            ropa.year
+        );
+}
+
+// July Increment
+if(
+    (ropa.year===2009 || ropa.year===2019)
+    &&
+    isJulyIncrement(loopDate)
+){
+    currentBasic =
+        getScaleIncrement(
+            currentBasic,
+            ropa.year
+        );
+}
+
+// Promotion
+if(isPromotionDate(loopDate)){
+    currentBasic =
+        getPromotionBasic(
+            currentBasic,
+            ropa.year
+        );
+}
+
+// A Category
+if(isACategoryDate(loopDate)){
+    currentBasic =
+        getACategoryBasic(
+            currentBasic,
+            ropa.year
+        );
+}
+          
+            let row = {
+                date: new Date(loopDate),
+                ropaYear: ropa.year,
+                basic: currentBasic,
+                ADD: 0,
+                DA: 0,
+                HRA: 0,
+                MA: ropa.ma,
+                IR: 0,
+                GPF: Math.round(currentBasic * 0.06),
+                GI: 60,
+                PTAX: 0,
+                gross: 0,
+                net: 0
+            };
+
+            calculateSalary(row);
+            rows.push(row);
+            loopDate.setMonth(
+                loopDate.getMonth() + 1
             );
+        }
+        if (index < ropaConfig.length - 1) {
+            if (
+                typeof FITMENT !== "undefined" &&
+                FITMENT[ropaConfig[index + 1].year]
+            ) {
+                if(index<ropaConfig.length-1){
+        const nextYear =ropaConfig[index+1].year;
+        currentBasic = getFitmentBasic(
+            currentBasic,
+            ropa.year,
+            nextYear
+        );  }
+            }
+        }
+    });
+    render();
+                       }
+
+// Update Value
+function updateValue(index, field, value) {
+    let val = Number(value);
+    if (isNaN(val)) {
+        val = 0;
     }
-
-    let row={
-        date:new Date(loop),
-        ropaYear:r.year,
-        basic:currentBasic,
-        ADD:0,
-        DA:0,
-        HRA:0,
-        MA:r.ma,
-        IR:0,
-        GPF:Math.round(currentBasic*0.06),
-        GI:60,
-        PTAX:0,
-        gross:0,
-        net:0
-    };
-
-    calculateSalary(row);
-
-    rows.push(row);
-
-    loop.setMonth(loop.getMonth()+1);
-
+    rows[index][field] = val;
+    // Basic Edit হলে নিচের সব Row Update
+    if (field == "basic") {
+        let currentBasic = val;
+        for (let i = index; i < rows.length; i++) {
+            if (rows[i].isHeader) {
+                continue;
+            }
+            rows[i].basic = currentBasic;
+            rows[i].GPF = Math.round(currentBasic * 0.06);
+            calculateSalary(rows[i]);
+        }
     }
-    
-    if(idx<cfg.length-1){
-      currentBasic=Math.round((currentBasic*FITMENT[cfg[idx+1].year])/100)*100;
+    else {
+        calculateSalary(rows[index]);
     }
-  });
-  render();
+    render();
 }
 
-function updateValue(index,field,value){
-  let v=Number(value); if(isNaN(v))v=0;
-  rows[index][field]=v;
-  calculateSalary(rows[index]);
-  render();
-}
-
-function render(){
-  const tbody=el("tbody");
-  tbody.innerHTML="";
-  rows.forEach((r,idx)=>{
-    const tr=document.createElement("tr");
-    if(r.isHeader){
-      tr.innerHTML=`<td colspan="14" class="ropa-header">${r.title}</td>`;
-    }else{
-      tr.innerHTML=`
-<td>${formatDate(r.date)}</td>
-<td><input class="edit-input" type="number" value="${r.basic}" onchange="updateValue(${idx},'basic',this.value)"></td>
-<td>${((r.daRate||0)*100).toFixed(0)}%</td>
-<td>${((r.hraRate||0)*100).toFixed(0)}%</td>
-<td>${r.ADD}</td><td>${r.DA}</td>
-<td><input class="edit-input" type="number" value="${r.HRA}" onchange="updateValue(${idx},'HRA',this.value)"></td>
-<td><input class="edit-input" type="number" value="${r.MA}" onchange="updateValue(${idx},'MA',this.value)"></td>
-<td>${r.IR}</td><td>${r.gross}</td>
-<td><input class="edit-input" type="number" value="${r.GPF}" onchange="updateValue(${idx},'GPF',this.value)"></td>
-<td><input class="edit-input" type="number" value="${r.PTAX}" onchange="updateValue(${idx},'PTAX',this.value)"></td>
-<td><input class="edit-input" type="number" value="${r.GI}" onchange="updateValue(${idx},'GI',this.value)"></td>
-<td>${r.net}</td>`;
-    }
-    tbody.appendChild(tr);
-  });
+// Render
+function render() {
+    const tbody = el("tbody");
+    tbody.innerHTML = "";
+    rows.forEach(function (row, index) {
+        const tr = document.createElement("tr");
+        if (row.isHeader) {
+            tr.innerHTML =
+                `<td colspan="14" class="ropa-header">
+                ${row.title}
+                </td>`;
+            tbody.appendChild(tr);
+            return;
+        }
+        tr.innerHTML =
+`<td>${formatDate(row.date)}</td>
+<td>
+<input class="edit-input" type="number" value="${row.basic}"
+onchange="updateValue(${index},'basic',this.value)">
+</td>
+<td>${((row.daRate || 0) * 100).toFixed(0)}%</td>
+<td>${((row.hraRate || 0) * 100).toFixed(0)}%</td>
+<td>
+<input class="edit-input" type="number" value="${row.ADD}"
+onchange="updateValue(${index},'ADD',this.value)">
+</td>
+<td>${row.DA}</td>
+<td>${row.HRA}</td>
+<td>
+<input class="edit-input" type="number" value="${row.MA}"
+onchange="updateValue(${index},'MA',this.value)">
+</td>
+<td>
+<input class="edit-input" type="number" value="${row.IR}"
+onchange="updateValue(${index},'IR',this.value)">
+</td>
+<td>${row.gross}</td>
+<td>
+<input class="edit-input" type="number" value="${row.GPF}"
+onchange="updateValue(${index},'GPF',this.value)">
+</td>
+<td>${row.PTAX}</td>
+<td>
+<input class="edit-input" type="number" value="${row.GI}"
+onchange="updateValue(${index},'GI',this.value)">
+</td>
+<td>${row.net}</td>`;
+        tbody.appendChild(tr);
+    });
 }
 
