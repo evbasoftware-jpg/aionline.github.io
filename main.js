@@ -1,8 +1,5 @@
-// ================================
 // main.js
 // Part 1
-// ================================
-
 let rows = [];
 
 function el(id) {
@@ -66,10 +63,7 @@ function getIncrementCount(currentDate, doj) {
     return count;
 }
 
-// ======================================
 // July Increment (ROPA 2009 / 2019)
-// ======================================
-
 function isJulyIncrement(date){
 
     return (
@@ -79,24 +73,16 @@ function isJulyIncrement(date){
 
 }
 
-// ======================================
 // Promotion
-// ======================================
-
 function isPromotionDate(date){
-
     const p = el("pDate").value;
-
     if(!p) return false;
-
     const pd = new Date(p);
-
     return (
         date.getFullYear() === pd.getFullYear() &&
         date.getMonth() === pd.getMonth() &&
         date.getDate() === pd.getDate()
     );
-
 }
 
 // A Category Change
@@ -326,29 +312,49 @@ if(isACategoryDate(loopDate)){
             }
         }
     });
+    
+    rows = rows.filter(function(r){
+    return r!=null;
+});
     render();
                        }
 
 // Update Value
-function updateValue(index, field, value) {
-    let val = Number(value);
-    if (isNaN(val)) {
-        val = 0;
+function updateValue(index, field, value){
+    let v = Number(value);
+    if(isNaN(v)){
+        v = 0;
     }
-    rows[index][field] = val;
-    // Basic Edit হলে নিচের সব Row Update
-    if (field == "basic") {
-        let currentBasic = val;
-        for (let i = index; i < rows.length; i++) {
-            if (rows[i].isHeader) {
+    rows[index][field] = v;
+    if(field=="basic"){
+        let currentBasic=v;
+        for(let i=index;i<rows.length;i++){
+            if(rows[i].isHeader){
                 continue;
             }
-            rows[i].basic = currentBasic;
-            rows[i].GPF = Math.round(currentBasic * 0.06);
+            rows[i].basic=currentBasic;
             calculateSalary(rows[i]);
+            // পরবর্তী Increment Date এ Basic Update
+            if(i<rows.length-1){
+                let next=rows[i+1];
+                if(next && !next.isHeader){
+                    let inc=
+                        getIncrementCount(
+                            next.date,
+                            new Date(el("dojInput").value)
+                        );
+                    for(let j=0;j<inc;j++){
+                        currentBasic=
+                            getScaleIncrement(
+                                currentBasic,
+                                next.ropaYear
+                            );
+                    }
+                }
+            }
         }
     }
-    else {
+    else{
         calculateSalary(rows[index]);
     }
     render();
@@ -358,16 +364,21 @@ function updateValue(index, field, value) {
 function render() {
     const tbody = el("tbody");
     tbody.innerHTML = "";
+    let lastRopa="";
     rows.forEach(function (row, index) {
         const tr = document.createElement("tr");
-        if (row.isHeader) {
-            tr.innerHTML =
-                `<td colspan="14" class="ropa-header">
-                ${row.title}
-                </td>`;
-            tbody.appendChild(tr);
-            return;
+        
+        if(row.isHeader){
+    lastRopa=row.title;
+    tr.innerHTML=
+    `<td colspan="14"
+    class="ropa-header">
+    ${row.title}
+    </td>`;
+    tbody.appendChild(tr);
+    return;
         }
+        
         tr.innerHTML =
 `<td>${formatDate(row.date)}</td>
 <td>
@@ -405,3 +416,16 @@ onchange="updateValue(${index},'GI',this.value)">
     });
 }
 
+function refreshAll(){
+    rows.forEach(function(r){
+        if(r.isHeader){
+            return;
+        }
+        calculateSalary(r);
+    });
+    render();
+}
+
+function updateBasic(){
+    refreshAll();
+}
