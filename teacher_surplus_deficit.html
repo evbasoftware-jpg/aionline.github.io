@@ -63,7 +63,9 @@ th{
 
 .logo-box { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
 .logo { height: 90px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-      
+
+button.print-btn { background: #f5fa73; }
+    
 </style>
 </head>
 
@@ -104,7 +106,8 @@ th{
 </table>
 
 </div>
-
+   <button class="print-btn" onclick="window.print()" style="margin-left:117px;">Print / PDF</button>
+    
 <script>
 
 function calculate() {
@@ -130,7 +133,9 @@ function calculate() {
     // Actual Teacher Required as per PTR
     let requiredTeachers;
 
-    if (students <= 60) {
+    if (students <= 0) {
+        requiredTeachers = 0;
+    else if (students <= 60) {
         requiredTeachers = 2;
     } else if (students <= 90) {
         requiredTeachers = 3;
