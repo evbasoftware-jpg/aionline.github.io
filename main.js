@@ -125,21 +125,21 @@ function autoFillBasicAndROPA() {
         {
             year:1990,
             id:"r1990",
-            from:new Date("1990-03-01"),
+            from:new Date("1986-06-01"),
             to:new Date("1999-02-28"),
             next:"1999-03-01"
         },
         {
             year:1998,
             id:"r1998",
-            from:new Date("1999-03-01"),
+            from:new Date("1996-06-01"),
             to:new Date("2009-03-31"),
             next:"2009-04-01"
         },
         {
             year:2009,
             id:"r2009",
-            from:new Date("2009-04-01"),
+            from:new Date("2006-01-01"),
             to:new Date("2019-12-31"),
             next:"2020-01-01"
         },
