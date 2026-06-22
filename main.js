@@ -104,30 +104,75 @@ function isACategoryDate(date){
 
 // Auto Fill
 function autoFillBasicAndROPA() {
-
     const dojStr = el("dojInput").value;
     const category = el("category").value;
-
-    if (!dojStr) {
-        return;
-    }
-
+    if (!dojStr) return;
     const doj = new Date(dojStr);
-    const ropa = [
-    {id:"r1981",start:new Date("1981-04-01"),end:new Date("1990-02-28"),year:1981},
-    {id:"r1990",start:new Date("1990-03-01"),end:new Date("1999-02-28"),year:1990},
-    {id:"r1998",start:new Date("1999-03-01"),end:new Date("2009-03-31"),year:1998},
-    {id:"r2009",start:new Date("2009-04-01"),end:new Date("2019-12-31"),year:2009},
-    {id:"r2019",start:new Date("2020-01-01"),end:new Date("2099-12-31"),year:2019}
-];
 
-ropa.forEach(function(r){
-    if(!found && doj>=r.start && doj<=r.end){
-        el(r.id).value=dojStr;
-        el("basicInput").value=ENTRY_PAY[r.year][category];
-        found=true;
+    // সব Date Clear
+    ["r1981","r1990","r1998","r2009","r2019"].forEach(function(id){
+        el(id).value = "";
+    });
+
+    const ropa = [
+        {
+            year:1981,
+            id:"r1981",
+            from:new Date("1981-04-01"),
+            to:new Date("1990-02-28"),
+            next:"1990-03-01"
+        },
+        {
+            year:1990,
+            id:"r1990",
+            from:new Date("1990-03-01"),
+            to:new Date("1999-02-28"),
+            next:"1999-03-01"
+        },
+        {
+            year:1998,
+            id:"r1998",
+            from:new Date("1999-03-01"),
+            to:new Date("2009-03-31"),
+            next:"2009-04-01"
+        },
+        {
+            year:2009,
+            id:"r2009",
+            from:new Date("2009-04-01"),
+            to:new Date("2019-12-31"),
+            next:"2020-01-01"
+        },
+        {
+            year:2019,
+            id:"r2019",
+            from:new Date("2020-01-01"),
+            to:new Date("2099-12-31"),
+            next:null
+        }
+    ];
+
+    let startIndex = -1;
+    for(let i=0;i<ropa.length;i++){
+        if(doj>=ropa[i].from && doj<=ropa[i].to){
+            startIndex=i;
+            if(typeof ENTRY_PAY!="undefined"){
+                el("basicInput").value=
+                    ENTRY_PAY[ropa[i].year][category];
+            }
+            break;
+        }
     }
-});
+
+    if(startIndex==-1) return;
+
+    // বর্তমান ROPA = DOJ
+    el(ropa[startIndex].id).value=dojStr;
+
+    // পরবর্তী ROPA গুলো তাদের শুরু তারিখ
+    for(let i=startIndex+1;i<ropa.length;i++){
+        el(ropa[i].id).value=ropa[i].from.toISOString().split("T")[0];
+    }
 }
 
 // Generate Salary Table
