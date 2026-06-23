@@ -148,12 +148,33 @@ function updateHeaderTop() {
     }
 }
 
+// --- সংশোধিত autoFillBasicAndROPA ফাংশন ---
 function autoFillBasicAndROPA() {
     const dojStr = el("dojInput").value;
     const cat = el("category").value;
     if (!dojStr) return;
 
     const doj = new Date(dojStr);
+    const cutoff1986 = new Date("1986-01-01");
+    
+    // DOJ যদি 1-Jan-1986 এর আগে হয়, তবে বিশেষ অপশন ডেট লজিক কাজ করবে
+    if (doj < cutoff1986) {
+        let d = doj.getDate();
+        let m = doj.getMonth() + 1;
+        let mmStr = m < 10 ? '0' + m : m;
+        let ddStr = d < 10 ? '0' + d : d;
+        
+        // ROPA 1990 অপশন ডেট: DOJ Day + DOJ Month + 1986
+        el("r1990").value = `1986-${mmStr}-${ddStr}`;
+        
+        // ROPA 1998 অপশন ডেট: 01 + DOJ Month + 1996
+        el("r1998").value = `1996-${mmStr}-01`;
+    } else {
+        // ডিফল্ট ডেট (যদি DOJ পরে হয়)
+        el("r1990").value = "1986-01-01";
+        el("r1998").value = "1996-01-01";
+    }
+
     const ropaFields = [
         { id: "r1981", date: new Date("1990-02-28"), year: 1981 },
         { id: "r1990", date: new Date("1999-02-28"), year: 1990 },
@@ -165,6 +186,13 @@ function autoFillBasicAndROPA() {
     let currentRopaFound = false;
     for (let i = 0; i < ropaFields.length; i++) {
         let field = el(ropaFields[i].id);
+        
+        // স্পেশাল কন্ডিশনে ROPA 1990 ও 1998 এর ভ্যালু লুপে ওভাররাইট হওয়া আটকানোর জন্য
+        if ((ropaFields[i].id === "r1990" || ropaFields[i].id === "r1998") && doj < cutoff1986) {
+            if (doj < ropaFields[i].date) currentRopaFound = true;
+            continue;
+        }
+
         if (!currentRopaFound && doj < ropaFields[i].date) {
             field.value = dojStr;
             el("basicInput").value = ENTRY_PAY[ropaFields[i].year][cat];
@@ -174,6 +202,121 @@ function autoFillBasicAndROPA() {
         }
     }
 }
+
+// --- সংশোধিত generate ফাংশন ---
+function generate() {
+    const dojInput = new Date(el("dojInput").value);
+    const dorInput = new Date(el("dorInput").value);
+    let currentBasic = +el("basicInput").value;
+
+    if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
+
+    rows = [];
+    const ROPA_CONFIG = [
+        { name: "ROPA 1981", start: el("r1981").value, end: "1990-02-28", year: 1981, ma: 15 },
+        { name: "ROPA 1990", start: el("r1990").value, end: "1999-02-28", year: 1990, ma: 30 },
+        { name: "ROPA 1998", start: el("r1998").value, end: "2009-03-31", year: 1998, ma: 100 },
+        { name: "ROPA 2009", start: el("r2009").value, end: "2019-12-31", year: 2009, ma: 300 },
+        { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019, ma: 500 }
+    ];
+
+    let hasStarted = false;
+
+    ROPA_CONFIG.forEach((config, idx) => {
+        if (!config.start) return; 
+        let ropaStart = new Date(config.start);
+        let ropaEnd = new Date(config.end);
+        if (ropaEnd > dorInput) ropaEnd = dorInput;
+        if (dojInput > ropaEnd) return;
+
+        let actualStart = !hasStarted && dojInput >= ropaStart ? new Date(dojInput) : new Date(ropaStart);
+        hasStarted = true;
+
+        rows.push({ isHeader: true, title: config.name });
+
+        let currentLoopDate = new Date(actualStart);
+        
+        let dojMonth = dojInput.getMonth(); 
+        let dojYear = dojInput.getFullYear();
+        let dojDay = dojInput.getDate(); 
+
+        let isFirstMonthOfRopa = true; 
+
+        while (currentLoopDate <= ropaEnd) {
+            let monthDate = new Date(currentLoopDate);
+            let m = monthDate.getMonth();
+            let y = monthDate.getFullYear();
+
+            // ইনক্রিমেন্ট লজিক
+            if (rows.length > 0 && !rows[rows.length-1].isHeader) {
+                if (config.year >= 2009) {
+                    if (m === 6) { 
+                        if (dojMonth <= 6) {
+                            if (y === dojYear) {
+                                let diffDays = (monthDate - dojInput) / (1000 * 60 * 60 * 24);
+                                if (diffDays >= 181) currentBasic = getScaleIncrement(currentBasic, config.year);
+                            } else {
+                                currentBasic = getScaleIncrement(currentBasic, config.year);
+                            }
+                        } else {
+                            if (y > dojYear) currentBasic = getScaleIncrement(currentBasic, config.year);
+                        }
+                    }
+                } else {
+                    if (m === dojMonth && y > dojYear) {
+                        currentBasic = getScaleIncrement(currentBasic, config.year);
+                    }
+                }
+            }
+
+            let daRate = getDA(monthDate);
+            let hraRate = 0;
+            if (monthDate >= new Date("2020-01-01")) hraRate = 0.12;
+            else if (monthDate >= new Date("2009-04-01")) hraRate = 0.15;
+            else if (monthDate >= new Date("1998-01-01")) hraRate = 0.15;
+
+            let rowObj = {
+                date: new Date(monthDate),
+                basic: currentBasic,
+                daRate, hraRate, ADD: 0, DA: 0, HRA: 0, MA: config.ma, IR: 0, 
+                GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year
+            };
+            reCalcRow(rowObj, true);
+            rows.push(rowObj);
+
+            // --- তারিখ পরিবর্তনের নতুন লজিক ---
+            if (config.year === 1981) {
+                // ROPA 1981-এর জন্য সবসময় DOJ-এর নির্দিষ্ট দিন লক থাকবে
+                currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
+                currentLoopDate.setDate(dojDay); 
+            } else {
+                // ROPA 1990, 1998 এবং অন্যান্য রোপার ক্ষেত্রে প্রথম রো-এর পর থেকে মাসের ১ তারিখ হবে
+                if (isFirstMonthOfRopa) {
+                    currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
+                    currentLoopDate.setDate(1); 
+                    isFirstMonthOfRopa = false;
+                } else {
+                    currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
+                }
+            }
+
+            if (currentLoopDate > dorInput) break;
+        }
+
+        // রোপা চেঞ্জ ও ফিটমেন্ট লজিক
+        if (idx < ROPA_CONFIG.length - 1) {
+            let nextRopaYear = ROPA_CONFIG[idx+1].year;
+            let cat = el("category").value; 
+            
+            let fitmentPay = currentBasic * FITMENT[nextRopaYear];
+            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
+            
+            currentBasic = Math.max(fitmentPay, entryPay);
+        }
+    });
+    render();
+}
+
 
 function formatDate(dateObj) {
     let d = dateObj.getDate();
@@ -214,32 +357,19 @@ const FITMENT = {1990:1.1, 1998:1.25, 2009:1.86, 2019:2.57};
 function el(id){ return document.getElementById(id); }
 
 function getScaleIncrement(basic, ropaYear) {
-    let cat = el("category").value; // A, B, C বা high
-    
-    // --- ROPA 2019 লজিক (ছবি অনুযায়ী পে-ম্যাট্রিক্স থেকে পরবর্তী ঘর নির্ধারণ) ---
+    let cat = el("category").value; 
     if (ropaYear === 2019) {
         let matrix = SCALE[2019][cat];
         if (matrix) {
-            // চার্টে বর্তমান বেসিকটি খুঁজে বের করা
             for (let i = 0; i < matrix.length - 1; i++) {
-                if (basic === matrix[i]) {
-                    return matrix[i + 1]; // ঠিক পরের ধাপটি রিটার্ন করবে
-                }
+                if (basic === matrix[i]) return matrix[i + 1];
             }
-            // যদি চার্টে বেসিকটি হুবহু না পাওয়া যায় (যেমন: মাঝখানে কেউ এডিট করলে)
-            // তাহলে ৩% করে পরবর্তী ১০০-তে রাউন্ড করবে
-            let nextBasic = Math.ceil((basic * 1.03) / 100) * 100;
-            return nextBasic;
+            return Math.ceil((basic * 1.03) / 100) * 100;
         }
     }
-
-    // --- ROPA 2009 লজিক (৩% বৃদ্ধি এবং পরবর্তী ১০-এর গুণিতকে রাউন্ড) ---
     if (ropaYear === 2009) {
-        // ROPA 2009 অনুযায়ী ইনক্রিমেন্ট সবসময় পরবর্তী ১০-এর গুণিতকে রাউন্ড হয় (Math.ceil)
         return Math.ceil((basic * 1.03) / 10) * 10;
     }
-
-    // --- পুরোনো ROPA (1981, 1990, 1998) লজিক ---
     let currentScale = SCALE[ropaYear] ? SCALE[ropaYear][cat] : null;
     if (!currentScale) return basic;
 
@@ -247,16 +377,10 @@ function getScaleIncrement(basic, ropaYear) {
         let stageStart = currentScale[i];
         let stageInc = currentScale[i + 1];
         let stageEnd = currentScale[i + 2];
-        
-        if (basic >= stageStart && basic < stageEnd) {
-            return basic + stageInc;
-        }
+        if (basic >= stageStart && basic < stageEnd) return basic + stageInc;
     }
-
-    // যদি স্কেলের একদম শেষ সীমায় থাকে বা কোনো রেঞ্জে না পড়ে
     return basic;
 }
-
 
 const DA_DATA = [
     ["1987-03-01",4],["1987-12-01",8],["1988-06-01",13],["1989-02-01",18],["1989-06-01",23],["1989-11-01",29],["1990-06-01",34],["1990-12-01",38],["1991-04-01",43],["1992-01-01",51],["1992-11-01",60],["1993-07-01",71],["1993-12-01",83],["1994-05-01",92],["1994-11-01",97],["1995-02-01",104],["1995-06-01",114],["1995-12-01",125],["1996-04-01",136],["1996-10-01",148],["1997-08-01",159],["1997-12-01",170],["1998-04-01",182.4],["1997-04-01",0],["1997-08-01",4],["1997-12-01",8],["1998-04-01",13],["1998-11-01",22],["1999-08-01",32],["2000-04-01",37],["2000-10-01",38],["2001-07-01",41],["2003-07-01",45],["2004-09-01",49],["2005-04-01",52],["2005-09-01",55],["2005-12-01",59],["2006-03-01",61],["2006-07-01",64],["2006-09-01",67],["2007-01-01",71],["2007-04-01",24],["2008-01-01",29],["2008-06-01",35],["2008-11-01",41],["2009-03-01",47],["2008-04-01",2],["2008-06-01",6],["2008-11-01",9],["2009-03-01",12],["2009-04-01",16],["2009-12-01",22],["2010-04-01",27],["2010-12-01",35],["2012-01-01",45],["2013-01-01",52],["2014-01-01",58],["2015-01-01",65],["2016-01-01",75],["2017-01-01",85],["2018-01-01",100],["2019-01-01",125],["2020-01-01",0],["2021-01-01",3],["2023-03-01",6],["2024-01-01",10],["2024-04-01",14],["2025-04-01",18],["2026-04-01",22]
@@ -284,7 +408,6 @@ function getDefaultPTAX(gross) {
 }
 
 function reCalcRow(row, useDefaultPTAX = false) {
-    // HRA Calculation Logic
     if (row.hraRate > 0) {
         row.HRA = Math.round(row.basic * row.hraRate);
         if (row.ropaYear === 2019 && row.HRA > 12000) row.HRA = 12000;
@@ -292,7 +415,6 @@ function reCalcRow(row, useDefaultPTAX = false) {
     } else {
         row.HRA = 0;
     }
-
     row.DA = Math.round(row.basic * row.daRate);
     row.gross = row.basic + row.DA + row.HRA + row.MA + row.ADD + row.IR;
     if (useDefaultPTAX) row.PTAX = getDefaultPTAX(row.gross);
@@ -301,144 +423,25 @@ function reCalcRow(row, useDefaultPTAX = false) {
 
 let rows = [];
 
-function generate() {
-    const dojInput = new Date(el("dojInput").value);
-    const dorInput = new Date(el("dorInput").value);
-    let currentBasic = +el("basicInput").value;
-
-    if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
-
-    rows = [];
-    const ROPA_CONFIG = [
-        { name: "ROPA 1981", start: el("r1981").value, end: "1990-02-28", year: 1981, ma: 15 },
-        { name: "ROPA 1990", start: el("r1990").value, end: "1999-02-28", year: 1990, ma: 30 },
-        { name: "ROPA 1998", start: el("r1998").value, end: "2009-03-31", year: 1998, ma: 100 },
-        { name: "ROPA 2009", start: el("r2009").value, end: "2019-12-31", year: 2009, ma: 300 },
-        { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019, ma: 500 }
-    ];
-
-    let hasStarted = false;
-
-    ROPA_CONFIG.forEach((config, idx) => {
-        if (!config.start) return; 
-        let ropaStart = new Date(config.start);
-        let ropaEnd = new Date(config.end);
-        if (ropaEnd > dorInput) ropaEnd = dorInput;
-        if (dojInput > ropaEnd) return;
-
-        let actualStart = !hasStarted && dojInput >= ropaStart ? new Date(dojInput) : new Date(ropaStart);
-        hasStarted = true;
-
-        rows.push({ isHeader: true, title: config.name });
-
-        let currentLoopDate = new Date(actualStart);
-        
-        // জয়েনিং তথ্য
-        let dojMonth = dojInput.getMonth(); 
-        let dojYear = dojInput.getFullYear();
-
-        while (currentLoopDate <= ropaEnd) {
-            let monthDate = new Date(currentLoopDate);
-            let m = monthDate.getMonth();
-            let y = monthDate.getFullYear();
-
-            // --- ইনক্রিমেন্ট লজিক ---
-            // প্রথম মাসের রো জেনারেট হওয়ার পর থেকে চেক শুরু হবে
-            if (rows.length > 0 && !rows[rows.length-1].isHeader) {
-                
-                if (config.year >= 2009) {
-                    // জুলাই ইনক্রিমেন্ট (মাসে মাসে চেক)
-                    if (m === 6) { // জুলাই মাস (Index 6)
-                        
-                        // ১. যদি জয়েনিং Jan(0) থেকে July(6) এর মধ্যে হয়
-                        if (dojMonth <= 6) {
-                            // প্রথম বছরের জুলাই ইনক্রিমেন্টের জন্য অন্তত ৬ মাস সার্ভিস দরকার
-                            // সহজ হিসাব: যদি জয়েনিং বছর এবং বর্তমান জুলাইয়ের বছর এক হয়, তবে দিন বিয়োগ করে দেখা।
-                            // অন্যথায়, পরের বছরগুলোর প্রতি জুলাইয়ে ইনক্রিমেন্ট হবে।
-                            if (y === dojYear) {
-                                let diffDays = (monthDate - dojInput) / (1000 * 60 * 60 * 24);
-                                if (diffDays >= 181) { // প্রায় ৬ মাস (১৮২ দিন)
-                                    currentBasic = getScaleIncrement(currentBasic, config.year);
-                                }
-                            } else {
-                                currentBasic = getScaleIncrement(currentBasic, config.year);
-                            }
-                        } else {
-                            // যদি জুলাইয়ের পরে জয়েন করে, তবে প্রথম জুলাইয়ে পাবে না, পরের বছর থেকে পাবে
-                            if (y > dojYear) {
-                                currentBasic = getScaleIncrement(currentBasic, config.year);
-                            }
-                        }
-                    }
-                } else {
-                    // পুরোনো রোপার Anniversary Increment
-                    if (m === dojMonth && y > dojYear) {
-                        currentBasic = getScaleIncrement(currentBasic, config.year);
-                    }
-                }
-            }
-
-            let daRate = getDA(monthDate);
-            let hraRate = 0;
-            if (monthDate >= new Date("2020-01-01")) hraRate = 0.12;
-            else if (monthDate >= new Date("2009-04-01")) hraRate = 0.15;
-            else if (monthDate >= new Date("1998-01-01")) hraRate = 0.15;
-
-            let rowObj = {
-                date: new Date(monthDate),
-                basic: currentBasic,
-                daRate, hraRate, ADD: 0, DA: 0, HRA: 0, MA: config.ma, IR: 0, 
-                GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year
-            };
-            reCalcRow(rowObj, true);
-            rows.push(rowObj);
-
-            // পরের মাসে মুভ করা
-            currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
-            if (currentLoopDate > dorInput) break;
-        }
-
-      // রোপা চেঞ্জ হলে ফিটমেন্ট ও নতুন বেসিক নির্ধারণের সঠিক নিয়ম
-        if (idx < ROPA_CONFIG.length - 1) {
-            let nextRopaYear = ROPA_CONFIG[idx+1].year;
-            let cat = el("category").value; // বর্তমান ক্যাটাগরি (A, B, C)
-            
-            // ১. আগের রোপার শেষ বেসিককে ফিটমেন্ট ফ্যাক্টর দিয়ে গুণ
-            let fitmentPay = currentBasic * FITMENT[nextRopaYear];
-            
-            // ২. নতুন রোপার প্রারম্ভিক (First) বেসিক নির্ধারণ
-            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
-            
-            // ৩. দুটির মধ্যে যেটি বড় (Maximum) সেটিই হবে নতুন বেসিক
-            currentBasic = Math.max(fitmentPay, entryPay);
-        }
-    });
-    render();
-}
 
 
 function updateValue(index, field, value) {
     let val = parseFloat(value) || 0;
-    
-    // বর্তমান রো-তে ভ্যালু আপডেট
     rows[index][field] = val;
     reCalcRow(rows[index], (field === 'basic'));
 
-    // যদি Basic পরিবর্তন করা হয়, তবে নিচের সব ঘর আপডেট করতে হবে
     if (field === 'basic') {
         let lastBasic = val;
         let dojMonth = new Date(el("dojInput").value).getMonth();
         let dojYear = new Date(el("dojInput").value).getFullYear();
         
-                for (let i = index + 1; i < rows.length; i++) {
+        for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) {
-                // রোপা পরিবর্তন হলে নতুন বেসিক ফিটমেন্ট ও এন্ট্রি পে-র তুলনামূলক নিয়ম অনুযায়ী হবে
                 let nextRopaYear = rows[i+1]?.ropaYear;
                 if(nextRopaYear) {
                     let cat = el("category").value;
                     let fitmentPay = lastBasic * FITMENT[nextRopaYear];
                     let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
-                    
                     lastBasic = Math.max(fitmentPay, entryPay);
                 }
                 continue;
@@ -447,13 +450,9 @@ function updateValue(index, field, value) {
             let m = rows[i].date.getMonth();
             let y = rows[i].date.getFullYear();
 
-            // --- ইনক্রিমেন্ট লজিক আপডেট (July Increment Fix) ---
             if (rows[i].ropaYear === rows[i-1].ropaYear) {
-                
                 if (rows[i].ropaYear >= 2009) {
-                    // জুলাই মাস হলে ইনক্রিমেন্ট হবে
                     if (m === 6) { 
-                        // প্রথম বছরের জুলাই ইনক্রিমেন্ট রুল চেক
                         if (dojMonth <= 6) {
                             if (y === dojYear) {
                                 let diffDays = (rows[i].date - new Date(el("dojInput").value)) / (1000 * 60 * 60 * 24);
@@ -466,9 +465,7 @@ function updateValue(index, field, value) {
                         }
                     }
                 } else {
-                    // পুরোনো রোপার জন্য Anniversary Increment (একই মাস এবং বছর বেশি)
                     if (m === dojMonth) {
-                        // মাসের শুরুতে একবারই ইনক্রিমেন্ট হবে
                         if (rows[i-1].date.getMonth() !== m) {
                             lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
                         }
@@ -477,10 +474,9 @@ function updateValue(index, field, value) {
             }
 
             rows[i].basic = lastBasic;
-            reCalcRow(rows[i], true); // PTAX এবং DA নতুন বেসিক অনুযায়ী আপডেট হবে
+            reCalcRow(rows[i], true);
         }
     } else {
-        // Basic ছাড়া অন্য ফিল্ড (HRA, MA, GPF ইত্যাদি) হলে নিচের সব ঘরে কপি হবে
         for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) continue;
             rows[i][field] = val;
@@ -489,8 +485,6 @@ function updateValue(index, field, value) {
     }
     render();
 }
-
-
 
 function render(){
     let tbody = el("tbody");
