@@ -92,8 +92,8 @@ function getFitmentBasic(basic,oldYear,newYear){
         FITMENT[newYear] || 1;
 
     return Math.round(
-        basic*factor
-    );
+        basic*factor/100
+    )*100;
 }
 
 function getPromotionBasic(basic,year){
