@@ -398,14 +398,24 @@ function generate() {
             if (currentLoopDate > dorInput) break;
         }
 
-        // রোপা চেঞ্জ হলে ফিটমেন্ট
+      // রোপা চেঞ্জ হলে ফিটমেন্ট ও নতুন বেসিক নির্ধারণের সঠিক নিয়ম
         if (idx < ROPA_CONFIG.length - 1) {
             let nextRopaYear = ROPA_CONFIG[idx+1].year;
-            currentBasic = Math.round((currentBasic * FITMENT[nextRopaYear]) / 100) * 100;
+            let cat = el("category").value; // বর্তমান ক্যাটাগরি (A, B, C)
+            
+            // ১. আগের রোপার শেষ বেসিককে ফিটমেন্ট ফ্যাক্টর দিয়ে গুণ
+            let fitmentPay = currentBasic * FITMENT[nextRopaYear];
+            
+            // ২. নতুন রোপার প্রারম্ভিক (First) বেসিক নির্ধারণ
+            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
+            
+            // ৩. দুটির মধ্যে যেটি বড় (Maximum) সেটিই হবে নতুন বেসিক
+            currentBasic = Math.max(fitmentPay, entryPay);
         }
     });
     render();
 }
+
 
 function updateValue(index, field, value) {
     let val = parseFloat(value) || 0;
@@ -420,12 +430,16 @@ function updateValue(index, field, value) {
         let dojMonth = new Date(el("dojInput").value).getMonth();
         let dojYear = new Date(el("dojInput").value).getFullYear();
         
-        for (let i = index + 1; i < rows.length; i++) {
+                for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) {
-                // রোপা পরিবর্তন হলে নতুন বেসিক ফিটমেন্ট অনুযায়ী ক্যালকুলেট হবে
+                // রোপা পরিবর্তন হলে নতুন বেসিক ফিটমেন্ট ও এন্ট্রি পে-র তুলনামূলক নিয়ম অনুযায়ী হবে
                 let nextRopaYear = rows[i+1]?.ropaYear;
                 if(nextRopaYear) {
-                    lastBasic = Math.round((lastBasic * FITMENT[nextRopaYear]) / 100) * 100;
+                    let cat = el("category").value;
+                    let fitmentPay = lastBasic * FITMENT[nextRopaYear];
+                    let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
+                    
+                    lastBasic = Math.max(fitmentPay, entryPay);
                 }
                 continue;
             }
