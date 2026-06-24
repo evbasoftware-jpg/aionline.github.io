@@ -211,10 +211,8 @@ function get18YearScaleBenefit(basic, ropaYear, currentScaleType) {
         targetScaleType = "high";
     }
 
-    // ১. প্রথমে একটি সিঙ্গেল ইনক্রিমেন্ট দেওয়া হচ্ছে
     let singleIncPay = getScaleIncrementByScaleType(basic, ropaYear, currentScaleType);
 
-    // ROPA 2019 বা 2009 এর পার্সেন্টেজ মেথড হলে সরাসরি ৩% বাড়িয়ে সিল বা রাউন্ড হবে
     if (ropaYear === 2019) {
         let matrix = SCALE[2019][targetScaleType] || SCALE[2019]["A"];
         for (let i = 0; i < matrix.length; i++) {
@@ -223,12 +221,21 @@ function get18YearScaleBenefit(basic, ropaYear, currentScaleType) {
         let computed = Math.ceil((singleIncPay * 1.03) / 100) * 100;
         return { basic: computed, scale: targetScaleType };
     }
+    
     if (ropaYear === 2009) {
-        let computed = Math.ceil((singleIncPay * 1.03) / 10) * 10;
-        return { basic: computed, scale: targetScaleType };
+        let newVal = singleIncPay * 1.03;
+        let intVal = Math.floor(newVal); 
+        let round10 = Math.round(newVal / 10) * 10;
+        let computed = 0;
+        if (intVal === round10) {
+            computed = round10;
+        } else {
+            let mod10 = newVal % 10;
+            computed = mod10 > 0 ? (newVal - mod10 + 10) : newVal;
+        }
+        return { basic: Math.round(computed), scale: targetScaleType };
     }
 
-    // ওল্ড রোপা স্কেলের ক্ষেত্রে টার্গেট স্কেলের পরবর্তী উচ্চতর মান খোঁজা
     let targetScale = SCALE[ropaYear] ? SCALE[ropaYear][targetScaleType] : null;
     if (!targetScale) return { basic: singleIncPay, scale: targetScaleType };
 
@@ -240,6 +247,7 @@ function get18YearScaleBenefit(basic, ropaYear, currentScaleType) {
     return { basic: singleIncPay, scale: targetScaleType };
 }
 
+// --- বাৎসরিক এবং ক্যারিয়ার ইনক্রিমেন্ট লজিক ---
 function getScaleIncrementByScaleType(basic, ropaYear, scaleType) {
     if (ropaYear === 2019) {
         let matrix = SCALE[2019][scaleType];
@@ -250,9 +258,24 @@ function getScaleIncrementByScaleType(basic, ropaYear, scaleType) {
             return Math.ceil((basic * 1.03) / 100) * 100;
         }
     }
+    
     if (ropaYear === 2009) {
-        return Math.ceil((basic * 1.03) / 10) * 10;
+        let newVal = basic * 1.03;
+        let intVal = Math.floor(newVal);             
+        let round10 = Math.round(newVal / 10) * 10;  
+        
+        if (intVal === round10) {
+            return round10;
+        } else {
+            let mod10 = newVal % 10;                 
+            if (mod10 > 0) {
+                return (newVal - mod10) + 10;
+            } else {
+                return newVal;
+            }
+        }
     }
+    
     let currentScale = SCALE[ropaYear] ? SCALE[ropaYear][scaleType] : null;
     if (!currentScale) return basic;
 
@@ -270,7 +293,6 @@ function getScaleIncrement(basic, ropaYear) {
     return getScaleIncrementByScaleType(basic, ropaYear, cat);
 }
 
-// --- সংশোধিত generate ফাংশন ---
 function generate() {
     const dojInput = new Date(el("dojInput").value);
     const dorInput = new Date(el("dorInput").value);
@@ -288,7 +310,7 @@ function generate() {
     ];
 
     let hasStarted = false;
-    let currentScaleType = el("category").value; // ডায়নামিক স্কেল ট্র্যাকিং
+    let currentScaleType = el("category").value; 
 
     ROPA_CONFIG.forEach((config, idx) => {
         if (!config.start) return; 
@@ -315,21 +337,18 @@ function generate() {
             let m = monthDate.getMonth();
             let y = monthDate.getFullYear();
 
-            // ইনক্রিমেন্ট লজিক
             if (rows.length > 0 && !rows[rows.length-1].isHeader) {
                 let diffYears = y - dojYear;
                 let isCareerMonth = (m === dojMonth && diffYears > 0);
                 
                 if (isCareerMonth && (diffYears === 10 || diffYears === 20) && isCareerIncSelected(diffYears)) {
-                    // ১০ এবং ২০ বছরের জন্য ডাবল ইনক্রিমেন্ট
                     currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                     currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                 } 
                 else if (isCareerMonth && diffYears === 18 && isCareerIncSelected(18)) {
-                    // ১৮ বছরের বিশেষ বেনিফিট ও ক্যাটাগরি শিফটিং সূত্র
                     let benefit = get18YearScaleBenefit(currentBasic, config.year, currentScaleType);
                     currentBasic = benefit.basic;
-                    currentScaleType = benefit.scale; // নতুন স্থায়ী স্কেল আপডেট করা হলো
+                    currentScaleType = benefit.scale; 
                 }
                 else if (config.year >= 2009) {
                     if (m === 6) { 
@@ -351,7 +370,6 @@ function generate() {
                 }
             }
 
-            // দশমিক জনিত সমস্যা দূর করতে Math.round যুক্ত করা হলো (বিশেষ করে ROPA 2019)
             currentBasic = Math.round(currentBasic);
 
             let daRate = getDA(monthDate);
@@ -364,7 +382,8 @@ function generate() {
                 date: new Date(monthDate),
                 basic: currentBasic,
                 daRate, hraRate, ADD: 0, DA: 0, HRA: 0, MA: config.ma, IR: 0, 
-                GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year
+                GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year,
+                calculatedScale: currentScaleType // এডিটের পর ট্র্যাক রাখার জন্য স্থায়ীভাবে সেভ করা হলো
             };
             reCalcRow(rowObj, true);
             rows.push(rowObj);
@@ -460,7 +479,7 @@ function getDefaultPTAX(gross) {
 }
 
 function reCalcRow(row, useDefaultPTAX = false) {
-    row.basic = Math.round(row.basic); // ডাবল প্রোটেকশন রাউন্ডিং
+    row.basic = Math.round(row.basic); 
     if (row.hraRate > 0) {
         row.HRA = Math.round(row.basic * row.hraRate);
         if (row.ropaYear === 2019 && row.HRA > 12000) row.HRA = 12000;
@@ -474,7 +493,7 @@ function reCalcRow(row, useDefaultPTAX = false) {
     row.net = row.gross - (row.GPF + row.PTAX + row.GI);
 }
 
-// --- সংশোধিত updateValue ফাংশন ---
+// --- সংশোধিত এবং সম্পূর্ণরূপে ফিক্সড করা updateValue ফাংশন ---
 function updateValue(index, field, value) {
     let val = parseFloat(value) || 0;
     rows[index][field] = val;
@@ -484,7 +503,9 @@ function updateValue(index, field, value) {
         let lastBasic = val;
         let dojMonth = new Date(el("dojInput").value).getMonth();
         let dojYear = new Date(el("dojInput").value).getFullYear();
-        let currentScaleType = el("category").value; 
+        
+        // এডিট হওয়া নির্দিষ্ট রো থেকে তার পূর্বের জেনারেট হওয়া স্কেল টাইপটি তোলা হচ্ছে
+        let currentScaleType = rows[index].calculatedScale || el("category").value; 
 
         for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) {
@@ -537,6 +558,7 @@ function updateValue(index, field, value) {
 
             lastBasic = Math.round(lastBasic);
             rows[i].basic = lastBasic;
+            rows[i].calculatedScale = currentScaleType; // প্রতিটি রো-তে রানিং স্কেল সিঙ্ক রাখা হলো
             reCalcRow(rows[i], true);
         }
     } else {
@@ -549,12 +571,10 @@ function updateValue(index, field, value) {
     render();
 }
 
-// --- সংশোধিত render ফাংশন (TOTAL রো যুক্ত করা হয়েছে) ---
 function render(){
     let tbody = el("tbody");
     tbody.innerHTML = "";
     
-    // টোটাল গণনার ভেরিয়েবলসমূহ
     let totalBasic = 0, totalADD = 0, totalDA = 0, totalHRA = 0, totalMA = 0, totalIR = 0, totalGross = 0, totalGPF = 0, totalPTAX = 0, totalGI = 0, totalNet = 0;
     let hasDataRows = false;
 
@@ -564,7 +584,6 @@ function render(){
             tr.innerHTML = `<td colspan="14" class="ropa-header">${r.title}</td>`;
         } else {
             hasDataRows = true;
-            // টোটাল যোগ করা হচ্ছে
             totalBasic += r.basic;
             totalADD += r.ADD;
             totalDA += r.DA;
@@ -596,7 +615,6 @@ function render(){
         tbody.appendChild(tr);
     });
 
-    // ডাটা রো থাকলে টেবিলের একদম নিচে একটি TOTAL রো জেনারেট হবে
     if (hasDataRows) {
         let totalTr = document.createElement("tr");
         totalTr.className = "total-row";
@@ -620,5 +638,6 @@ function render(){
     }
 }
 </script>
+          
 </body>
 </html>
