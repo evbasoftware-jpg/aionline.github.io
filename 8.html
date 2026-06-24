@@ -5,11 +5,9 @@
 <title>WB Salary Calculation</title>
 
 <style>
-/* পুরো পেজের মার্জিন এবং প্যাডিং ঠিক করা */
 body { font-family: Arial; background: #f5f5f5; margin: 0; padding: 0; }
 h2 { text-align: center; margin: 10px 0; }
 
-/* উপরের কন্ট্রোল সেকশনকে স্ক্রিনের শীর্ষে আটকে রাখার জন্য */
 .controls-container {
     position: sticky;
     top: 0;
@@ -26,7 +24,6 @@ h2 { text-align: center; margin: 10px 0; }
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* টেবিল কন্টেইনার */
 .table-container { padding: 15px; }
 
 table { 
@@ -43,10 +40,9 @@ th, td {
     text-align: center; 
 }
 
-/* টেবিল হেডার স্টিকি করার লজিক */
 thead th {
     position: sticky;
-    top: 0; /* JS দ্বারা ডাইনামিকালি আপডেট হবে */
+    top: 0; 
     background: #fcfcd9 !important;
     z-index: 1000;
     box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc;
@@ -58,6 +54,11 @@ thead th {
     font-weight: bold; 
     text-align: left; 
     padding: 8px 15px; 
+}
+
+.total-row {
+    background: #e2e3e5;
+    font-weight: bold;
 }
 
 .edit-input { width: 60px; text-align: center; border: 1px solid transparent; background: transparent; }
@@ -127,7 +128,6 @@ thead th {
 </div>
 
 <script>
-// রোপা অনুযায়ী ক্যাটাগরিভিত্তিক এন্ট্রি পে
 const ENTRY_PAY = {
     1981: { A: 300,  B: 280,  C: 260 },
     1990: { A: 1040, B: 980,  C: 920 },
@@ -148,7 +148,6 @@ function updateHeaderTop() {
     }
 }
 
-// --- সংশোধিত autoFillBasicAndROPA ফাংশন ---
 function autoFillBasicAndROPA() {
     const dojStr = el("dojInput").value;
     const cat = el("category").value;
@@ -157,20 +156,15 @@ function autoFillBasicAndROPA() {
     const doj = new Date(dojStr);
     const cutoff1986 = new Date("1986-01-01");
     
-    // DOJ যদি 1-Jan-1986 এর আগে হয়, তবে বিশেষ অপশন ডেট লজিক কাজ করবে
     if (doj < cutoff1986) {
         let d = doj.getDate();
         let m = doj.getMonth() + 1;
         let mmStr = m < 10 ? '0' + m : m;
         let ddStr = d < 10 ? '0' + d : d;
         
-        // ROPA 1990 অপশন ডেট: DOJ Day + DOJ Month + 1986
         el("r1990").value = `1986-${mmStr}-${ddStr}`;
-        
-        // ROPA 1998 অপশন ডেট: 01 + DOJ Month + 1996
         el("r1998").value = `1996-${mmStr}-01`;
     } else {
-        // ডিফল্ট ডেট (যদি DOJ পরে হয়)
         el("r1990").value = "1986-01-01";
         el("r1998").value = "1996-01-01";
     }
@@ -187,7 +181,6 @@ function autoFillBasicAndROPA() {
     for (let i = 0; i < ropaFields.length; i++) {
         let field = el(ropaFields[i].id);
         
-        // স্পেশাল কন্ডিশনে ROPA 1990 ও 1998 এর ভ্যালু লুপে ওভাররাইট হওয়া আটকানোর জন্য
         if ((ropaFields[i].id === "r1990" || ropaFields[i].id === "r1998") && doj < cutoff1986) {
             if (doj < ropaFields[i].date) currentRopaFound = true;
             continue;
@@ -201,6 +194,80 @@ function autoFillBasicAndROPA() {
             field.value = "";
         }
     }
+}
+
+function isCareerIncSelected(years) {
+    const checkboxes = document.querySelectorAll('.incOpt');
+    for (let cb of checkboxes) {
+        if (cb.value == years && cb.checked) return true;
+    }
+    return false;
+}
+
+// ১৮ বছরের বিশেষ স্কেল পরিবর্তন ও নেক্সট উচ্চতর বেসিক খোঁজার লজিক
+function get18YearScaleBenefit(basic, ropaYear, currentScaleType) {
+    let targetScaleType = "A";
+    if (currentScaleType === "A" || currentScaleType === "high") {
+        targetScaleType = "high";
+    }
+
+    // ১. প্রথমে একটি সিঙ্গেল ইনক্রিমেন্ট দেওয়া হচ্ছে
+    let singleIncPay = getScaleIncrementByScaleType(basic, ropaYear, currentScaleType);
+
+    // ROPA 2019 বা 2009 এর পার্সেন্টেজ মেথড হলে সরাসরি ৩% বাড়িয়ে সিল বা রাউন্ড হবে
+    if (ropaYear === 2019) {
+        let matrix = SCALE[2019][targetScaleType] || SCALE[2019]["A"];
+        for (let i = 0; i < matrix.length; i++) {
+            if (matrix[i] >= singleIncPay) return { basic: matrix[i], scale: targetScaleType };
+        }
+        let computed = Math.ceil((singleIncPay * 1.03) / 100) * 100;
+        return { basic: computed, scale: targetScaleType };
+    }
+    if (ropaYear === 2009) {
+        let computed = Math.ceil((singleIncPay * 1.03) / 10) * 10;
+        return { basic: computed, scale: targetScaleType };
+    }
+
+    // ওল্ড রোপা স্কেলের ক্ষেত্রে টার্গেট স্কেলের পরবর্তী উচ্চতর মান খোঁজা
+    let targetScale = SCALE[ropaYear] ? SCALE[ropaYear][targetScaleType] : null;
+    if (!targetScale) return { basic: singleIncPay, scale: targetScaleType };
+
+    for (let i = 0; i < targetScale.length; i += 2) {
+        if (targetScale[i] >= singleIncPay) {
+            return { basic: targetScale[i], scale: targetScaleType };
+        }
+    }
+    return { basic: singleIncPay, scale: targetScaleType };
+}
+
+function getScaleIncrementByScaleType(basic, ropaYear, scaleType) {
+    if (ropaYear === 2019) {
+        let matrix = SCALE[2019][scaleType];
+        if (matrix) {
+            for (let i = 0; i < matrix.length - 1; i++) {
+                if (basic === matrix[i]) return matrix[i + 1];
+            }
+            return Math.ceil((basic * 1.03) / 100) * 100;
+        }
+    }
+    if (ropaYear === 2009) {
+        return Math.ceil((basic * 1.03) / 10) * 10;
+    }
+    let currentScale = SCALE[ropaYear] ? SCALE[ropaYear][scaleType] : null;
+    if (!currentScale) return basic;
+
+    for (let i = 0; i < currentScale.length - 2; i += 2) {
+        let stageStart = currentScale[i];
+        let stageInc = currentScale[i + 1];
+        let stageEnd = currentScale[i + 2];
+        if (basic >= stageStart && basic < stageEnd) return basic + stageInc;
+    }
+    return basic;
+}
+
+function getScaleIncrement(basic, ropaYear) {
+    let cat = el("category").value; 
+    return getScaleIncrementByScaleType(basic, ropaYear, cat);
 }
 
 // --- সংশোধিত generate ফাংশন ---
@@ -221,6 +288,7 @@ function generate() {
     ];
 
     let hasStarted = false;
+    let currentScaleType = el("category").value; // ডায়নামিক স্কেল ট্র্যাকিং
 
     ROPA_CONFIG.forEach((config, idx) => {
         if (!config.start) return; 
@@ -249,25 +317,42 @@ function generate() {
 
             // ইনক্রিমেন্ট লজিক
             if (rows.length > 0 && !rows[rows.length-1].isHeader) {
-                if (config.year >= 2009) {
+                let diffYears = y - dojYear;
+                let isCareerMonth = (m === dojMonth && diffYears > 0);
+                
+                if (isCareerMonth && (diffYears === 10 || diffYears === 20) && isCareerIncSelected(diffYears)) {
+                    // ১০ এবং ২০ বছরের জন্য ডাবল ইনক্রিমেন্ট
+                    currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
+                    currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
+                } 
+                else if (isCareerMonth && diffYears === 18 && isCareerIncSelected(18)) {
+                    // ১৮ বছরের বিশেষ বেনিফিট ও ক্যাটাগরি শিফটিং সূত্র
+                    let benefit = get18YearScaleBenefit(currentBasic, config.year, currentScaleType);
+                    currentBasic = benefit.basic;
+                    currentScaleType = benefit.scale; // নতুন স্থায়ী স্কেল আপডেট করা হলো
+                }
+                else if (config.year >= 2009) {
                     if (m === 6) { 
                         if (dojMonth <= 6) {
                             if (y === dojYear) {
                                 let diffDays = (monthDate - dojInput) / (1000 * 60 * 60 * 24);
-                                if (diffDays >= 181) currentBasic = getScaleIncrement(currentBasic, config.year);
+                                if (diffDays >= 181) currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                             } else {
-                                currentBasic = getScaleIncrement(currentBasic, config.year);
+                                currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                             }
                         } else {
-                            if (y > dojYear) currentBasic = getScaleIncrement(currentBasic, config.year);
+                            if (y > dojYear) currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                         }
                     }
                 } else {
                     if (m === dojMonth && y > dojYear) {
-                        currentBasic = getScaleIncrement(currentBasic, config.year);
+                        currentBasic = getScaleIncrementByScaleType(currentBasic, config.year, currentScaleType);
                     }
                 }
             }
+
+            // দশমিক জনিত সমস্যা দূর করতে Math.round যুক্ত করা হলো (বিশেষ করে ROPA 2019)
+            currentBasic = Math.round(currentBasic);
 
             let daRate = getDA(monthDate);
             let hraRate = 0;
@@ -284,13 +369,10 @@ function generate() {
             reCalcRow(rowObj, true);
             rows.push(rowObj);
 
-            // --- তারিখ পরিবর্তনের নতুন লজিক ---
             if (config.year === 1981) {
-                // ROPA 1981-এর জন্য সবসময় DOJ-এর নির্দিষ্ট দিন লক থাকবে
                 currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
                 currentLoopDate.setDate(dojDay); 
             } else {
-                // ROPA 1990, 1998 এবং অন্যান্য রোপার ক্ষেত্রে প্রথম রো-এর পর থেকে মাসের ১ তারিখ হবে
                 if (isFirstMonthOfRopa) {
                     currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
                     currentLoopDate.setDate(1); 
@@ -303,20 +385,17 @@ function generate() {
             if (currentLoopDate > dorInput) break;
         }
 
-        // রোপা চেঞ্জ ও ফিটমেন্ট লজিক
         if (idx < ROPA_CONFIG.length - 1) {
             let nextRopaYear = ROPA_CONFIG[idx+1].year;
-            let cat = el("category").value; 
-            
             let fitmentPay = currentBasic * FITMENT[nextRopaYear];
-            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
+            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
             
             currentBasic = Math.max(fitmentPay, entryPay);
+            currentBasic = Math.round(currentBasic);
         }
     });
     render();
 }
-
 
 function formatDate(dateObj) {
     let d = dateObj.getDate();
@@ -325,7 +404,6 @@ function formatDate(dateObj) {
     return (d < 10 ? '0' + d : d) + '/' + (m < 10 ? '0' + m : m) + '/' + y;
 }
 
-// স্কেল অনুযায়ী ইনক্রিমেন্ট লজিক
 const SCALE = {
     1981: { 
         A: [300, 10, 400, 15, 565, 20, 685], 
@@ -356,32 +434,6 @@ const SCALE = {
 const FITMENT = {1990:1.1, 1998:1.25, 2009:1.86, 2019:2.57};
 function el(id){ return document.getElementById(id); }
 
-function getScaleIncrement(basic, ropaYear) {
-    let cat = el("category").value; 
-    if (ropaYear === 2019) {
-        let matrix = SCALE[2019][cat];
-        if (matrix) {
-            for (let i = 0; i < matrix.length - 1; i++) {
-                if (basic === matrix[i]) return matrix[i + 1];
-            }
-            return Math.ceil((basic * 1.03) / 100) * 100;
-        }
-    }
-    if (ropaYear === 2009) {
-        return Math.ceil((basic * 1.03) / 10) * 10;
-    }
-    let currentScale = SCALE[ropaYear] ? SCALE[ropaYear][cat] : null;
-    if (!currentScale) return basic;
-
-    for (let i = 0; i < currentScale.length - 2; i += 2) {
-        let stageStart = currentScale[i];
-        let stageInc = currentScale[i + 1];
-        let stageEnd = currentScale[i + 2];
-        if (basic >= stageStart && basic < stageEnd) return basic + stageInc;
-    }
-    return basic;
-}
-
 const DA_DATA = [
     ["1987-03-01",4],["1987-12-01",8],["1988-06-01",13],["1989-02-01",18],["1989-06-01",23],["1989-11-01",29],["1990-06-01",34],["1990-12-01",38],["1991-04-01",43],["1992-01-01",51],["1992-11-01",60],["1993-07-01",71],["1993-12-01",83],["1994-05-01",92],["1994-11-01",97],["1995-02-01",104],["1995-06-01",114],["1995-12-01",125],["1996-04-01",136],["1996-10-01",148],["1997-08-01",159],["1997-12-01",170],["1998-04-01",182.4],["1997-04-01",0],["1997-08-01",4],["1997-12-01",8],["1998-04-01",13],["1998-11-01",22],["1999-08-01",32],["2000-04-01",37],["2000-10-01",38],["2001-07-01",41],["2003-07-01",45],["2004-09-01",49],["2005-04-01",52],["2005-09-01",55],["2005-12-01",59],["2006-03-01",61],["2006-07-01",64],["2006-09-01",67],["2007-01-01",71],["2007-04-01",24],["2008-01-01",29],["2008-06-01",35],["2008-11-01",41],["2009-03-01",47],["2008-04-01",2],["2008-06-01",6],["2008-11-01",9],["2009-03-01",12],["2009-04-01",16],["2009-12-01",22],["2010-04-01",27],["2010-12-01",35],["2012-01-01",45],["2013-01-01",52],["2014-01-01",58],["2015-01-01",65],["2016-01-01",75],["2017-01-01",85],["2018-01-01",100],["2019-01-01",125],["2020-01-01",0],["2021-01-01",3],["2023-03-01",6],["2024-01-01",10],["2024-04-01",14],["2025-04-01",18],["2026-04-01",22]
 ];
@@ -408,6 +460,7 @@ function getDefaultPTAX(gross) {
 }
 
 function reCalcRow(row, useDefaultPTAX = false) {
+    row.basic = Math.round(row.basic); // ডাবল প্রোটেকশন রাউন্ডিং
     if (row.hraRate > 0) {
         row.HRA = Math.round(row.basic * row.hraRate);
         if (row.ropaYear === 2019 && row.HRA > 12000) row.HRA = 12000;
@@ -421,10 +474,7 @@ function reCalcRow(row, useDefaultPTAX = false) {
     row.net = row.gross - (row.GPF + row.PTAX + row.GI);
 }
 
-let rows = [];
-
-
-
+// --- সংশোধিত updateValue ফাংশন ---
 function updateValue(index, field, value) {
     let val = parseFloat(value) || 0;
     rows[index][field] = val;
@@ -434,14 +484,14 @@ function updateValue(index, field, value) {
         let lastBasic = val;
         let dojMonth = new Date(el("dojInput").value).getMonth();
         let dojYear = new Date(el("dojInput").value).getFullYear();
-        
+        let currentScaleType = el("category").value; 
+
         for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) {
                 let nextRopaYear = rows[i+1]?.ropaYear;
                 if(nextRopaYear) {
-                    let cat = el("category").value;
                     let fitmentPay = lastBasic * FITMENT[nextRopaYear];
-                    let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][cat] : 0;
+                    let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
                     lastBasic = Math.max(fitmentPay, entryPay);
                 }
                 continue;
@@ -451,28 +501,41 @@ function updateValue(index, field, value) {
             let y = rows[i].date.getFullYear();
 
             if (rows[i].ropaYear === rows[i-1].ropaYear) {
-                if (rows[i].ropaYear >= 2009) {
+                let diffYears = y - dojYear;
+                let isCareerMonth = (m === dojMonth && diffYears > 0);
+
+                if (isCareerMonth && (diffYears === 10 || diffYears === 20) && isCareerIncSelected(diffYears)) {
+                    lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
+                    lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
+                }
+                else if (isCareerMonth && diffYears === 18 && isCareerIncSelected(18)) {
+                    let benefit = get18YearScaleBenefit(lastBasic, rows[i].ropaYear, currentScaleType);
+                    lastBasic = benefit.basic;
+                    currentScaleType = benefit.scale;
+                }
+                else if (rows[i].ropaYear >= 2009) {
                     if (m === 6) { 
                         if (dojMonth <= 6) {
                             if (y === dojYear) {
                                 let diffDays = (rows[i].date - new Date(el("dojInput").value)) / (1000 * 60 * 60 * 24);
-                                if (diffDays >= 181) lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                                if (diffDays >= 181) lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
                             } else {
-                                lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                                lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
                             }
                         } else if (y > dojYear) {
-                            lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                            lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
                         }
                     }
                 } else {
                     if (m === dojMonth) {
                         if (rows[i-1].date.getMonth() !== m) {
-                            lastBasic = getScaleIncrement(lastBasic, rows[i].ropaYear);
+                            lastBasic = getScaleIncrementByScaleType(lastBasic, rows[i].ropaYear, currentScaleType);
                         }
                     }
                 }
             }
 
+            lastBasic = Math.round(lastBasic);
             rows[i].basic = lastBasic;
             reCalcRow(rows[i], true);
         }
@@ -486,14 +549,34 @@ function updateValue(index, field, value) {
     render();
 }
 
+// --- সংশোধিত render ফাংশন (TOTAL রো যুক্ত করা হয়েছে) ---
 function render(){
     let tbody = el("tbody");
     tbody.innerHTML = "";
+    
+    // টোটাল গণনার ভেরিয়েবলসমূহ
+    let totalBasic = 0, totalADD = 0, totalDA = 0, totalHRA = 0, totalMA = 0, totalIR = 0, totalGross = 0, totalGPF = 0, totalPTAX = 0, totalGI = 0, totalNet = 0;
+    let hasDataRows = false;
+
     rows.forEach((r, idx) => {
         let tr = document.createElement("tr");
         if(r.isHeader) {
             tr.innerHTML = `<td colspan="14" class="ropa-header">${r.title}</td>`;
         } else {
+            hasDataRows = true;
+            // টোটাল যোগ করা হচ্ছে
+            totalBasic += r.basic;
+            totalADD += r.ADD;
+            totalDA += r.DA;
+            totalHRA += r.HRA;
+            totalMA += r.MA;
+            totalIR += r.IR;
+            totalGross += r.gross;
+            totalGPF += r.GPF;
+            totalPTAX += r.PTAX;
+            totalGI += r.GI;
+            totalNet += r.net;
+
             tr.innerHTML = `
                 <td>${formatDate(r.date)}</td>
                 <td><input type="number" class="edit-input" value="${r.basic}" onchange="updateValue(${idx}, 'basic', this.value)"></td>
@@ -512,9 +595,30 @@ function render(){
         }
         tbody.appendChild(tr);
     });
+
+    // ডাটা রো থাকলে টেবিলের একদম নিচে একটি TOTAL রো জেনারেট হবে
+    if (hasDataRows) {
+        let totalTr = document.createElement("tr");
+        totalTr.className = "total-row";
+        totalTr.innerHTML = `
+            <td>TOTAL</td>
+            <td>${totalBasic}</td>
+            <td>-</td>
+            <td>-</td>
+            <td>${totalADD}</td>
+            <td>${totalDA}</td>
+            <td>${totalHRA}</td>
+            <td>${totalMA}</td>
+            <td>${totalIR}</td>
+            <td>${totalGross}</td>
+            <td>${totalGPF}</td>
+            <td>${totalPTAX}</td>
+            <td>${totalGI}</td>
+            <td>${totalNet}</td>
+        `;
+        tbody.appendChild(totalTr);
+    }
 }
 </script>
-
-
 </body>
 </html>
