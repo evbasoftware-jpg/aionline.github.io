@@ -293,14 +293,32 @@ function getScaleIncrement(basic, ropaYear) {
     return getScaleIncrementByScaleType(basic, ropaYear, cat);
 }
 
+// ROPA 2019 এর জন্য ম্যাট্রিক্স থেকে Nearest সংখ্যা খোঁজার হেল্পার ফাংশন
+function findNearestMatrixValue(calculatedVal, scaleType) {
+    let matrix = SCALE[2019][scaleType] || SCALE[2019]["A"];
+    let nearest = matrix[0];
+    let minDiff = Math.abs(calculatedVal - nearest);
+    
+    for (let i = 1; i < matrix.length; i++) {
+        let diff = Math.abs(calculatedVal - matrix[i]);
+        if (diff < minDiff) {
+            minDiff = diff;
+            nearest = matrix[i];
+        }
+    }
+    return nearest;
+}
+
 function generate() {
     const dojInput = new Date(el("dojInput").value);
     const dorInput = new Date(el("dorInput").value);
     let currentBasic = +el("basicInput").value;
-
+    let ropaOptionBasic = {};
+    
     if (isNaN(dojInput) || isNaN(dorInput)) return alert("Please select DOJ and DOR");
 
     rows = [];
+    
     const ROPA_CONFIG = [
         { name: "ROPA 1981", start: el("r1981").value, end: "1990-02-28", year: 1981, ma: 15 },
         { name: "ROPA 1990", start: el("r1990").value, end: "1999-02-28", year: 1990, ma: 30 },
@@ -309,6 +327,7 @@ function generate() {
         { name: "ROPA 2019", start: el("r2019").value, end: "2099-12-31", year: 2019, ma: 500 }
     ];
 
+    
     let hasStarted = false;
     let currentScaleType = el("category").value; 
 
@@ -378,12 +397,24 @@ function generate() {
             else if (monthDate >= new Date("2009-04-01")) hraRate = 0.15;
             else if (monthDate >= new Date("1998-01-01")) hraRate = 0.15;
 
+            // ROPA option date-এর basic সংরক্ষণ
+let optionDate = new Date(el("r2009").value);
+
+if (
+    config.year === 1998 &&
+    monthDate.getFullYear() === optionDate.getFullYear() &&
+    monthDate.getMonth() === optionDate.getMonth() &&
+    monthDate.getDate() === optionDate.getDate()
+){
+    ropaOptionBasic[1998] = currentBasic;
+}
+            
             let rowObj = {
                 date: new Date(monthDate),
                 basic: currentBasic,
                 daRate, hraRate, ADD: 0, DA: 0, HRA: 0, MA: config.ma, IR: 0, 
                 GPF: Math.round(currentBasic * 0.06), GI: 60, PTAX: 0, ropaYear: config.year,
-                calculatedScale: currentScaleType // এডিটের পর ট্র্যাক রাখার জন্য স্থায়ীভাবে সেভ করা হলো
+                calculatedScale: currentScaleType 
             };
             reCalcRow(rowObj, true);
             rows.push(rowObj);
@@ -404,12 +435,40 @@ function generate() {
             if (currentLoopDate > dorInput) break;
         }
 
+        // --- রোপা চেঞ্জ ও আপনার নতুন ট্রানজিশন লজিক ---
         if (idx < ROPA_CONFIG.length - 1) {
             let nextRopaYear = ROPA_CONFIG[idx+1].year;
-            let fitmentPay = currentBasic * FITMENT[nextRopaYear];
-            let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
             
-            currentBasic = Math.max(fitmentPay, entryPay);
+            if (config.year === 1998 && nextRopaYear === 2009) {
+
+    let optionBasic = ropaOptionBasic[1998] || currentBasic;
+
+    let fitmentPay = optionBasic * 1.86;
+
+    let step1Pay =
+        (fitmentPay % 10 > 0)
+        ? fitmentPay - (fitmentPay % 10) + 10
+        : fitmentPay;
+
+    let gradePay = 2100;
+
+    if (currentScaleType === "high") gradePay = 2900;
+    else if (currentScaleType === "A") gradePay = 2600;
+    else if (currentScaleType === "B") gradePay = 2300;
+
+    currentBasic = Math.round(step1Pay + gradePay);               
+            } else if (config.year === 2009 && nextRopaYear === 2019) {
+                // ROPA 2009 থেকে ROPA 2019 এ যাওয়ার বিশেষ সূত্র (Nearest Matrix Value)
+                let multiVal = currentBasic * 2.57;
+                currentBasic = findNearestMatrixValue(multiVal, currentScaleType);
+                
+            } else {
+                // সাধারণ ডিফল্ট ট্রানজিশন লজিক (অন্যান্য রোপার ক্ষেত্রে)
+                let fitmentPay = currentBasic * FITMENT[nextRopaYear];
+                let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
+                currentBasic = Math.max(fitmentPay, entryPay);
+            }
+            
             currentBasic = Math.round(currentBasic);
         }
     });
@@ -504,16 +563,60 @@ function updateValue(index, field, value) {
         let dojMonth = new Date(el("dojInput").value).getMonth();
         let dojYear = new Date(el("dojInput").value).getFullYear();
         
-        // এডিট হওয়া নির্দিষ্ট রো থেকে তার পূর্বের জেনারেট হওয়া স্কেল টাইপটি তোলা হচ্ছে
         let currentScaleType = rows[index].calculatedScale || el("category").value; 
 
         for (let i = index + 1; i < rows.length; i++) {
             if (rows[i].isHeader) {
                 let nextRopaYear = rows[i+1]?.ropaYear;
-                if(nextRopaYear) {
-                    let fitmentPay = lastBasic * FITMENT[nextRopaYear];
-                    let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
-                    lastBasic = Math.max(fitmentPay, entryPay);
+                let currentRopaYear = rows[i-1]?.ropaYear;
+                
+                if(nextRopaYear && currentRopaYear) {
+                    if (currentRopaYear === 1998 && nextRopaYear === 2009) {
+
+    let optionDate = new Date(el("r2009").value);
+
+    let optionBasic = lastBasic;
+
+    for(let j = 0; j < rows.length; j++) {
+
+        if(rows[j].isHeader) continue;
+
+        if(
+            rows[j].ropaYear === 1998 &&
+            rows[j].date.getFullYear() === optionDate.getFullYear() &&
+            rows[j].date.getMonth() === optionDate.getMonth()
+        ){
+            optionBasic = rows[j].basic;
+            break;
+        }
+    }
+
+    let baseVal = optionBasic * 1.86;
+
+    let mod10 = baseVal % 10;
+
+    let step1Pay =
+        mod10 > 0
+        ? (baseVal - mod10 + 10)
+        : baseVal;
+
+    let gradePay = 2100;
+
+    if (currentScaleType === "high") gradePay = 2900;
+    else if (currentScaleType === "A") gradePay = 2600;
+    else if (currentScaleType === "B") gradePay = 2300;
+
+    lastBasic = Math.round(step1Pay + gradePay);
+}
+                    else if (currentRopaYear === 2009 && nextRopaYear === 2019) {
+                        let multiVal = lastBasic * 2.57;
+                        lastBasic = findNearestMatrixValue(multiVal, currentScaleType);
+                    } 
+                    else {
+                        let fitmentPay = lastBasic * FITMENT[nextRopaYear];
+                        let entryPay = ENTRY_PAY[nextRopaYear] ? ENTRY_PAY[nextRopaYear][currentScaleType] : 0;
+                        lastBasic = Math.max(fitmentPay, entryPay);
+                    }
                 }
                 continue;
             }
@@ -558,7 +661,7 @@ function updateValue(index, field, value) {
 
             lastBasic = Math.round(lastBasic);
             rows[i].basic = lastBasic;
-            rows[i].calculatedScale = currentScaleType; // প্রতিটি রো-তে রানিং স্কেল সিঙ্ক রাখা হলো
+            rows[i].calculatedScale = currentScaleType; 
             reCalcRow(rows[i], true);
         }
     } else {
@@ -637,7 +740,7 @@ function render(){
         tbody.appendChild(totalTr);
     }
 }
-</script>
+</script> 
           
 </body>
 </html>
