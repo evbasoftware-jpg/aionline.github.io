@@ -21,7 +21,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: linear-gradient(to bottom, #060a13, #0b1528); color: #ffffff; min-height: 100vh; overflow-x: hidden; }
 
-        header { text-align: center; padding: 40px 20px 20px; }
+        header { text-align: center; padding: 40px 20px 20px; position: relative; }
         
         /* 🌟 হেডারের মেইন সাইনবোর্ড এনিমেশন */
         .mall-sign {
@@ -31,7 +31,6 @@
             border-radius: 15px;
             border: 3px solid var(--neon-blue);
             margin-bottom: 10px;
-            /* অনবরত জ্বলবে আর নিভে যাবে (Pulsing neon) */
             animation: signGlow 2s infinite alternate ease-in-out;
         }
         
@@ -40,15 +39,47 @@
             font-weight: 700; 
             letter-spacing: 2px; 
             text-transform: uppercase; 
-            /* টেক্সট নিয়ন লাইট এনিমেশন */
             animation: textGlow 2s infinite alternate ease-in-out;
         }
         
+        /* 🔥 আগুনের ফুলকির জন্য কন্টেইনার পজিশন */
+        .sparkle-text-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
         header p { 
             font-size: 16px; 
             font-weight: 600;
-            /* নিচের টেক্সট ও আইকন ও অনবরত জ্বলবে-নিভবে */
+            position: relative;
+            z-index: 10;
             animation: subTextGlow 2s infinite alternate ease-in-out;
+        }
+
+        /* 🎇 ঝরে পড়া ফুলকি বা স্পার্কের স্টাইল */
+        .fire-spark {
+            position: absolute;
+            background: linear-gradient(to bottom, #ffff00, #fcf7a7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 0 8px #ff6600, 0 0 15px #ff3300;
+            animation: fallAndFade 0.5s linear forwards;
+        }
+
+        @keyframes fallAndFade {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(120px) translateX(var(--drift)) scale(0.2);
+                opacity: 0;
+            }
         }
 
         /* 🎬 হেডারের এনিমেশন কী-ফ্রেমসমূহ */
@@ -61,8 +92,8 @@
             100% { color: #fff; text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-pink); }
         }
         @keyframes subTextGlow {
-            0% { color: #aa9900; text-shadow: 0 0 0px transparent; }
-            100% { color: var(--neon-yellow); text-shadow: 0 0 8px var(--neon-yellow); }
+            0% { color: #aa9900; text-shadow: 0 0 2px rgba(255,150,0,0.5); }
+            100% { color: var(--neon-yellow); text-shadow: 0 0 12px #ffcc00, 0 0 20px #ff6600; }
         }
 
         .mall-grid {
@@ -87,7 +118,7 @@
         }
         .shop:hover { transform: scale(1.02); }
 
-        /* ✨ সবগুলো বর্ডার অনবরত গ্লো (Always Glowing Borders) করার এনিমেশন */
+        /* ✨ সবগুলো বর্ডার অনবরত গ্লো করার এনিমেশন */
         @keyframes blueGlow { 0% { box-shadow: 0 0 5px rgba(0,240,255,0.2); } 100% { box-shadow: 0 0 20px var(--neon-blue), inset 0 0 8px rgba(0,240,255,0.3); } }
         @keyframes greenGlow { 0% { box-shadow: 0 0 5px rgba(57,255,20,0.2); } 100% { box-shadow: 0 0 20px var(--neon-green), inset 0 0 8px rgba(57,255,20,0.3); } }
         @keyframes pinkGlow { 0% { box-shadow: 0 0 5px rgba(255,0,127,0.2); } 100% { box-shadow: 0 0 20px var(--neon-pink), inset 0 0 8px rgba(255,0,127,0.3); } }
@@ -95,14 +126,14 @@
         @keyframes purpleGlow { 0% { box-shadow: 0 0 5px rgba(176,38,255,0.2); } 100% { box-shadow: 0 0 20px var(--neon-purple), inset 0 0 8px rgba(176,38,255,0.3); } }
         @keyframes yellowGlow { 0% { box-shadow: 0 0 5px rgba(255,238,0,0.2); } 100% { box-shadow: 0 0 20px var(--neon-yellow), inset 0 0 8px rgba(255,238,0,0.3); } }
 
-        .border-blue { border: 7px solid var(--neon-blue); animation: blueGlow 0.5s infinite alternate ease-in-out; }
-        .border-green { border: 7px solid var(--neon-green); animation: greenGlow 0.9s infinite alternate ease-in-out; }
-        .border-pink { border: 7px solid var(--neon-pink); animation: pinkGlow 0.6s infinite alternate ease-in-out; }
-        .border-orange { border: 7px solid var(--neon-orange); animation: orangeGlow 0.4s infinite alternate ease-in-out; }
-        .border-purple { border: 7px solid var(--neon-purple); animation: purpleGlow 0.7s infinite alternate ease-in-out; }
-        .border-yellow { border: 7px solid var(--neon-yellow); animation: yellowGlow 0.8s infinite alternate ease-in-out; }
+        .border-blue { border: 3px solid var(--neon-blue); animation: blueGlow 0.5s infinite alternate ease-in-out; }
+        .border-green { border: 3px solid var(--neon-green); animation: greenGlow 0.9s infinite alternate ease-in-out; }
+        .border-pink { border: 3px solid var(--neon-pink); animation: pinkGlow 0.6s infinite alternate ease-in-out; }
+        .border-orange { border: 3px solid var(--neon-orange); animation: orangeGlow 0.4s infinite alternate ease-in-out; }
+        .border-purple { border: 3px solid var(--neon-purple); animation: purpleGlow 0.7s infinite alternate ease-in-out; }
+        .border-yellow { border: 3px solid var(--neon-yellow); animation: yellowGlow 0.8s infinite alternate ease-in-out; }
 
-        /* 💡 দরজা খুললে ভেতর থেকে যে আলোটা জ্বলবে (Flash Light Glow) */
+        /* 💡 কাঁচের দরজা খুললে ভেতর থেকে যে আলোটা জ্বলবে */
         .shop-light-flash {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -177,7 +208,7 @@
             align-items: center;
             padding: 0 20px;
             text-align: center;
-            font-size: 15px;
+            font-size: 21px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -230,12 +261,14 @@
     <div class="mall-sign">
         <h1>AI ONLINE</h1>
     </div>
-    <p><i class="fas fa-bolt"></i> Smart Digital & AI Based Services</p>
+    <br>
+    <div class="sparkle-text-container" id="sparkle-container">
+        <p style="font-size: 18px;"><i class="fas fa-bolt"></i> Smart Digital & AI Based Services</p>
+    </div>
 </header>
 
 <div class="mall-grid">
 
-    <!-- দোকান ০১ -->
     <div class="shop border-orange" onclick="openElevatorDoor(this, 'https://aionline.in.net/Multiple_Calculator.html')">
         <div class="shop-number">01</div>
         <div class="shop-interior"><i class="fas fa-calculator"></i></div>
@@ -249,7 +282,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০২ -->
     <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/GPF_CALCULATOR.html')">
         <a href="https://youtu.be/gnKgL_Axq64" class="video-btn" onclick="event.stopPropagation();" target="_blank"><i class="fab fa-youtube"></i> Video</a>
         <div class="shop-number">02</div>
@@ -264,7 +296,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৩ -->
     <div class="shop border-pink" onclick="openElevatorDoor(this, 'https://docs.google.com/spreadsheets/d/1uC4LBw_IuJ3fPu1vgIXM7t_fLyASGi9r/edit')">
         <a href="https://youtu.be/ZCfM-me1yqc" class="video-btn" onclick="event.stopPropagation();" target="_blank"><i class="fab fa-youtube"></i> Video</a>
         <div class="shop-number">03</div>
@@ -279,7 +310,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৪ -->
     <div class="shop border-purple" onclick="openElevatorDoor(this, 'https://aionline.in.net/2025-26_Income_Tax_Calculator.html')">
         <div class="shop-number">04</div>
         <div class="shop-interior"><i class="fas fa-receipt"></i></div>
@@ -293,7 +323,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৫ -->
     <div class="shop border-yellow" onclick="openElevatorDoor(this, 'https://aionline.in.net/old_regime.html')">
         <div class="shop-number">05</div>
         <div class="shop-interior"><i class="fas fa-calculator"></i></div>
@@ -307,7 +336,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৬ -->
     <div class="shop border-green" onclick="openElevatorDoor(this, 'https://aionline.in.net/Form16.html')">
         <div class="shop-number">06</div>
         <div class="shop-interior"><i class="fas fa-file-invoice"></i></div>
@@ -321,7 +349,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৭ -->
     <div class="shop border-pink" onclick="openElevatorDoor(this, 'https://aionline.in.net/income_tax_software.html')">
         <div class="shop-number">07</div>
         <div class="shop-interior"><i class="fas fa-chart-line"></i></div>
@@ -335,7 +362,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৮ -->
     <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/2025-26_SalStm_TaxCal.html')">
         <a href="https://youtube.com/shorts/O86Mc6WhwUY" class="video-btn" onclick="event.stopPropagation();" target="_blank"><i class="fab fa-youtube"></i> Video</a>
         <div class="shop-number">08</div>
@@ -350,7 +376,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ০৯ -->
     <div class="shop border-yellow" onclick="openElevatorDoor(this, 'https://aionline.in.net/Office_Schools_WB.html')">
         <div class="shop-number">09</div>
         <div class="shop-interior"><i class="fas fa-map-marked-alt"></i></div>
@@ -364,7 +389,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১০ -->
     <div class="shop border-purple" onclick="openElevatorDoor(this, 'https://aionline.in.net/Single_Profile_pdf-excel.html')">
         <div class="shop-number">10</div>
         <div class="shop-interior"><i class="fas fa-file-pdf"></i></div>
@@ -378,7 +402,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১১ -->
     <div class="shop border-green" onclick="openElevatorDoor(this, 'https://aionline.in.net/Profile_pdf-excel.html')">
         <div class="shop-number">11</div>
         <div class="shop-interior"><i class="fas fa-copy"></i></div>
@@ -392,8 +415,7 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১২ -->
-    <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/Pay_Slip.html')">
+     <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/Pay_Slip.html')">
         <a href="https://youtube.com/shorts/PHELTnVVteg" class="video-btn" onclick="event.stopPropagation();" target="_blank"><i class="fab fa-youtube"></i> Video</a>
         <div class="shop-number">12</div>
         <div class="shop-interior"><i class="fas fa-money-check-alt"></i></div>
@@ -407,7 +429,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-<!-- দোকান ১৩ -->
     <div class="shop border-orange" onclick="openElevatorDoor(this, 'https://aionline.in.net/pension_Gratuity_Commutation.html')">
         <div class="shop-number">13</div>
         <div class="shop-interior"><i class="fas fa-user-shield"></i></div>
@@ -421,7 +442,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১৪ -->
     <div class="shop border-purple" onclick="openElevatorDoor(this, 'https://aionline.in.net/onlineShops.html')">
         <div class="shop-number">14</div>
         <div class="shop-interior"><i class="fas fa-shopping-cart"></i></div>
@@ -435,7 +455,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১৫ -->
     <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/8.html')">
         <div class="shop-number">15</div>
         <div class="shop-interior"><i class="fas fa-history"></i></div>
@@ -449,7 +468,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১৬ -->
     <div class="shop border-green" onclick="openElevatorDoor(this, 'https://aionline.in.net/SalaryStatement.html')">
         <a href="https://youtube.com/shorts/3K2OVkfV8Nw" class="video-btn" onclick="event.stopPropagation();" target="_blank"><i class="fab fa-youtube"></i> Video</a>
         <div class="shop-number">16</div>
@@ -464,7 +482,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১৭ -->
     <div class="shop border-pink" onclick="openElevatorDoor(this, 'https://aionline.in.net/WBTextBook.html')">
         <div class="shop-number">17</div>
         <div class="shop-interior"><i class="fas fa-book-open"></i></div>
@@ -478,7 +495,6 @@
         <div class="open-status">OPEN 24/7</div>
     </div>
 
-    <!-- দোকান ১৮ -->
     <div class="shop border-yellow" onclick="openElevatorDoor(this, 'https://aionline.in.net/surplus_deficit_ptr.html')">
         <div class="shop-number">18</div>
         <div class="shop-interior"><i class="fas fa-users-cog"></i></div>
@@ -525,7 +541,50 @@ window.addEventListener('pageshow', function (event) {
         });
     }
 });
+
+// 🔥 আগুনের ফুলকি বা স্পার্ক জেনারেট করার জাভাস্ক্রিপ্ট ইঞ্জিন
+function createSparks() {
+    const container = document.getElementById('sparkle-container');
+    if (!container) return;
+
+    // প্রতিবার ১ থেকে ৩টি পর্যন্ত র্যান্ডম ফুলকি তৈরি হবে
+    const count = Math.floor(Math.random() * 3) + 1;
+
+    for (let i = 0; i < count; i++) {
+        const spark = document.createElement('div');
+        spark.classList.add('fire-spark');
+
+        // ফুলকির সাইজ র্যান্ডম করা (৩px থেকে ৭px)
+        const size = Math.random() * 4 + 3;
+        spark.style.width = `${size}px`;
+        spark.style.height = `${size}px`;
+
+        // ফুলকি টেক্সটের চওড়ার যেকোনো জায়গা থেকে বের হবে (Random Left Position)
+        const leftPos = Math.random() * container.offsetWidth;
+        spark.style.left = `${leftPos}px`;
+        spark.style.top = `${container.offsetHeight - 5}px`; // টেক্সটের ঠিক নিচ থেকে ঝরবে
+
+        // ডানে-বামে হালকা হেলে পড়ার জন্য কাস্টম প্রোপার্টি (Drift Effect)
+        const drift = (Math.random() - 0.5) * 60; // -30px থেকে +30px ড্রিফট
+        spark.style.setProperty('--drift', `${drift}px`);
+
+        // এনিমেশনের স্পিড সামান্য র্যান্ডম করা
+        const duration = Math.random() * 0.7 + 0.8; // ০.৮ থেকে ১.৫ সেকেন্ড
+        spark.style.animationDuration = `${duration}s`;
+
+        container.appendChild(spark);
+
+        // এনিমেশন শেষ হলে মেমোরি খালি করার জন্য ডম থেকে ডিলিট করে দেওয়া
+        setTimeout(() => {
+            spark.remove();
+        }, duration * 1000);
+    }
+}
+
+// প্রতি ৫০ মিলিসেকেন্ড পর পর অনবরত ফুলকি তৈরি হতে থাকবে (স্মুথ এফেক্ট)
+setInterval(createSparks, 50);
 </script>
 
 </body>
 </html>
+        
