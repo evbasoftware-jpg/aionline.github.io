@@ -543,24 +543,27 @@
 <script>
     
 function openElevatorDoor(shopElement, url) {
-    // যদি অলরেডি খোলা থাকে, তাও যেন ব্যবহারকারী লিংকে যেতে পারেন তার ব্যবস্থা করা হলো
+    // যদি অলরেডি খোলা থাকে, তবে সরাসরি লিংকে পাঠাবে
     if (shopElement.classList.contains('door-opened')) {
         window.location.href = url;
         return;
     }
 
-    // দরজা খোলার ক্লাস যোগ করা হলো
+    // দরজা খোলার অ্যানিমেশন শুরু
     shopElement.classList.add('door-opened');
 
-    // ১.১ সেকেন্ড পর নির্দিষ্ট লিংকে রিডাইরেক্ট হবে
     setTimeout(function() {
+        // লিংকে যাওয়ার ঠিক আগে দরজাটি আবার বন্ধ (রিমুভ) করে দেওয়া হচ্ছে
+        // এর ফলে ব্যাক করে আসলে দরজা সবসময় বন্ধই থাকবে!
+        shopElement.classList.remove('door-opened');
+        
+        // এবার লিংকে নিয়ে যাবে
         window.location.href = url;
     }, 1100);
 }
 
-// পেজে ফিরে আসলে বা রিলোড হলে দরজা স্বয়ংক্রিয়ভাবে বন্ধ করার জন্য
+// ব্যাক বাটনের ক্যাশ দূর করার জন্য অতিরিক্ত নিরাপত্তা
 window.addEventListener('pageshow', function (event) {
-    // এটি সব ধরনের ব্রাউজারে ব্যাক বাটনে ক্লিক করলে দরজা রিমুভ করে দেবে
     const openedShops = document.querySelectorAll('.shop.door-opened');
     openedShops.forEach(function(shop) {
         shop.classList.remove('door-opened');
