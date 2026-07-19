@@ -541,24 +541,32 @@
 <a class="whatsapp-float" href="https://wa.me/919800074626" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
 <script>
+    
 function openElevatorDoor(shopElement, url) {
-    if (shopElement.classList.contains('door-opened')) return;
+    // যদি অলরেডি খোলা থাকে, তাও যেন ব্যবহারকারী লিংকে যেতে পারেন তার ব্যবস্থা করা হলো
+    if (shopElement.classList.contains('door-opened')) {
+        window.location.href = url;
+        return;
+    }
 
+    // দরজা খোলার ক্লাস যোগ করা হলো
     shopElement.classList.add('door-opened');
 
+    // ১.১ সেকেন্ড পর নির্দিষ্ট লিংকে রিডাইরেক্ট হবে
     setTimeout(function() {
         window.location.href = url;
     }, 1100);
 }
 
+// পেজে ফিরে আসলে বা রিলোড হলে দরজা স্বয়ংক্রিয়ভাবে বন্ধ করার জন্য
 window.addEventListener('pageshow', function (event) {
-    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-        const openedShops = document.querySelectorAll('.shop.door-opened');
-        openedShops.forEach(function(shop) {
-            shop.classList.remove('door-opened');
-        });
-    }
+    // এটি সব ধরনের ব্রাউজারে ব্যাক বাটনে ক্লিক করলে দরজা রিমুভ করে দেবে
+    const openedShops = document.querySelectorAll('.shop.door-opened');
+    openedShops.forEach(function(shop) {
+        shop.classList.remove('door-opened');
+    });
 });
+
 
 // 🔥 আগুনের ফুলকি বা স্পার্ক জেনারেট করার জাভাস্ক্রিপ্ট ইঞ্জিন
 function createSparks() {
