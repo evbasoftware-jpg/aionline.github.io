@@ -1,484 +1,397 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surplus, Deficit & PTR Calculator</title>
+<meta charset="utf-8">
+<title>Surplus, Deficit & PTR</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+body{
+    font-family:Arial,sans-serif;
+    padding:20px;
+    background:#f5f5f5;
+}
 
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-            color: #333;
-            margin: 0;
-        }
+.container{
+    max-width:900px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+}
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto 30px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
+input{
+    width:90%;
+    text-align:center;
+    margin:3px 0;
+    font-size: 34px;
+    font-weight: bold;
+}
 
-        .logo-box {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    font-size: 27px;
+}
 
-        .logo {
-            height: 90px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
+tr{
+    height:70px;
+}
+    
+th{
+    background:#faebcf;
+    color:blue;
+    text-align:left;
+    border:2px solid purple;
+}
 
-        h1 {
-            text-align: center;
-            margin-top: 10px;
-            color: #2c3e50;
-        }
+td{
+    border:2px solid purple;
+    padding:8px;
+    text-align:center;
+    font-weight: bold;
+}
 
-        h3 {
-            text-align: center;
-            color: blue;
-            margin-bottom: 5px;
-        }
+.calc-table td {
+    width: 50%;
+}
 
-        /* Calculator Input Styling */
-        input[type="number"] {
-            width: 90%;
-            text-align: center;
-            margin: 3px 0;
-            font-size: 28px;
-            font-weight: bold;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+.section-title {
+    text-align: center;
+    border-bottom: 2px solid #2c3e50;
+    padding-bottom: 10px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
 
-        /* Table Base Styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 18px;
-        }
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-        tr {
-            height: 50px;
-        }
+.header h3 {
+    margin: 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
-        th, td {
-            border: 2px solid purple;
-            padding: 10px;
-            vertical-align: middle;
-        }
+.header p {
+    margin: 3px 0;
+    font-style: italic;
+    color: #555;
+}
+    
+.nested-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
 
-        th {
-            background: #faebcf;
-            color: blue;
-            text-align: left;
-        }
+.nested-table th, .nested-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
 
-        td {
-            width: 50%;
-            text-align: center;
-            font-weight: bold;
-        }
+.nested-table th {
+    background-color: #f9f9f9;
+}
+    
+h1{text-align:center;}
+h3{text-align:center; color:blue;} 
+    
+.result{
+    font-weight:bold;
+}
 
-        .result {
-            font-weight: bold;
-            color: #d9534f;
-        }
+.logo-box { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+.logo { height: 90px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
-        /* Schedule Tables & Sections */
-        .section-title {
-            text-align: center;
-            border-bottom: 2px solid #2c3e50;
-            padding-bottom: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
+button.print-btn { background: #f5fa73; font-size: 47px;}
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+/* Schedule table specific alignments */
+.schedule-table td {
+    text-align: left;
+    font-weight: normal;
+    font-size: 18px;
+}
 
-        .header h3 {
-            margin: 5px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #333;
-        }
+.schedule-table th {
+    font-size: 18px;
+}
 
-        .header h4 {
-            margin: 5px 0;
-            color: #2c3e50;
-        }
-
-        .header p {
-            margin: 3px 0;
-            font-style: italic;
-            color: #555;
-        }
-
-        .schedule-table th, 
-        .schedule-table td {
-            text-align: left;
-            font-size: 16px;
-            font-weight: normal;
-        }
-
-        .schedule-table th {
-            font-weight: bold;
-        }
-
-        .nested-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0;
-        }
-
-        .nested-table th, 
-        .nested-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .nested-table th {
-            background-color: #f9f9f9;
-        }
-
-        /* Action Buttons */
-        .btn-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        button.print-btn {
-            background: #f5fa73;
-            font-size: 24px;
-            padding: 10px 30px;
-            border: 2px solid #333;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        button.print-btn:hover {
-            background: #e6ed45;
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                user-select: auto;
-            }
-            .container {
-                box-shadow: none;
-                max-width: 100%;
-                padding: 0;
-                margin-bottom: 40px;
-            }
-            table {
-                width: 100%;
-                box-shadow: none;
-            }
-            td {
-                page-break-inside: avoid;
-            }
-            th {
-                font-size: 16px;
-            }
-            .print-btn {
-                display: none;
-            }
-            input[type="number"] {
-                border: none;
-                background: transparent;
-            }
-        }
-    </style>
+/* Print Styles */
+@media print {
+    body { 
+        background: white; 
+        padding: 0; 
+        -webkit-user-select: auto;
+        -moz-user-select: auto;
+        -ms-user-select: auto;
+        user-select: auto;
+    }
+    table { width: 100%; box-shadow: none;}
+    td { page-break-inside: avoid; }
+    th{font-size: 21px;}
+    button { display: none; }
+}
+    
+</style>
 </head>
 
 <body>
 
-    <!-- CALCULATOR SECTION -->
-    <div class="container">
-        <div class="logo-box">
-            <img src="logo.png" alt="AI Online Logo" class="logo">
-        </div>
+<div class="container">
+<div class="logo-box">
+        <img src="logo.png" alt="AI Online Logo" class="logo">
+</div>
+    
+<h3>https://aionline.in.net</h3>
+<h1>Teacher Surplus / Deficit with PTR</h1>
 
-        <h3>https://aionline.in.net</h3>
-        <h1>Teacher Surplus / Deficit with PTR</h1>
+<table class="calc-table">
+  <tr><th style="width:50%;">No. of Students</th>
+  <td><input type="number" id="students" value="" oninput="calculate()"></td>
+  </tr>
+  <tr><th>No. of Regular Teachers</th>
+    <td><input type="number" id="regular" value="" oninput="calculate()"></td>
+  </tr>
+  <tr><th>No. of Para Teachers</th>
+    <td><input type="number" id="para" value="" oninput="calculate()"></td>
+  </tr>
+  <tr><th>Total Teacher (including Para Teacher)</th>
+    <td id="total"></td></tr>
+  <tr><th>PTR (excluding Para Teacher)</th>
+    <td id="ptrEx"></td></tr>
+  <tr><th>PTR (Including Para Teacher)</th>
+    <td id="ptrIn"></td></tr>
+  <tr><th>Actual Teacher Required as per PTR</th>
+    <td id="required"></td></tr>
+  <tr><th>Mention whether surplus/ deficit as per RTE norm</th>
+    <td id="status" class="result"></td></tr>
+  <tr><th>Number of Surplus Teacher (Excluding Para Teacher)</th>
+    <td id="surplus"></td></tr>
+  <tr><th>No of deficit teacher (Deficit Including Para Teacher)</th>
+    <td id="deficit"></td></tr>
+</table>
 
-        <table>
-            <tr>
-                <th style="width: 60%;">No. of Students</th>
-                <td><input type="number" id="students" value="" oninput="calculate()"></td>
-            </tr>
-            <tr>
-                <th>No. of Regular Teachers</th>
-                <td><input type="number" id="regular" value="" oninput="calculate()"></td>
-            </tr>
-            <tr>
-                <th>No. of Para Teachers</th>
-                <td><input type="number" id="para" value="" oninput="calculate()"></td>
-            </tr>
-            <tr>
-                <th>Total Teacher (including Para Teacher)</th>
-                <td id="total"></td>
-            </tr>
-            <tr>
-                <th>PTR (excluding Para Teacher)</th>
-                <td id="ptrEx"></td>
-            </tr>
-            <tr>
-                <th>PTR (Including Para Teacher)</th>
-                <td id="ptrIn"></td>
-            </tr>
-            <tr>
-                <th>Actual Teacher Required as per PTR</th>
-                <td id="required"></td>
-            </tr>
-            <tr>
-                <th>Mention whether surplus/ deficit as per RTE norm</th>
-                <td id="status" class="result"></td>
-            </tr>
-            <tr>
-                <th>Number of Surplus Teacher (Excluding Para Teacher)</th>
-                <td id="surplus"></td>
-            </tr>
-            <tr>
-                <th>No of deficit teacher (Deficit Including Para Teacher)</th>
-                <td id="deficit"></td>
-            </tr>
-        </table>
+</div>
+   <button class="print-btn" onclick="window.print()" style="margin-left:117px;">Print / PDF</button>
+<br><br>
+
+ <div class="container">
+
+    <!-- ENGLISH SECTION -->
+    <h2 class="section-title">English Version</h2>
+    
+    <div class="header">
+        <h3>THE SCHEDULE</h3>
+        <p>(See sections 19 and 25)</p>
+        <h4>NORMS AND STANDARDS FOR A SCHOOL</h4>
     </div>
 
-    <!-- PRINT BUTTON -->
-    <div class="btn-container">
-        <button class="print-btn" onclick="window.print()">Print / PDF</button>
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">Sl. No.</th>
+                <th style="width: 22%;">Item</th>
+                <th style="width: 70%;">Norms and Standards</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1.</td>
+                <td>
+                    <strong>Number of teachers:</strong><br><br>
+                    (a) For first class to fifth class
+                </td>
+                <td>
+                    <table class="nested-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60%;">Admitted children</th>
+                                <th style="width: 40%;">Number of teachers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Up to Sixty</td>
+                                <td>Two</td>
+                            </tr>
+                            <tr>
+                                <td>Between sixty-one to ninety</td>
+                                <td>Three</td>
+                            </tr>
+                            <tr>
+                                <td>Between Ninety-one to one hundred and twenty</td>
+                                <td>Four</td>
+                            </tr>
+                            <tr>
+                                <td>Between One hundred and twenty-one to two hundred</td>
+                                <td>Five</td>
+                            </tr>
+                            <tr>
+                                <td>Above One hundred and fifty children</td>
+                                <td>Five plus one Head-teacher</td>
+                            </tr>
+                            <tr>
+                                <td>Above Two hundred children</td>
+                                <td>Pupil-Teacher Ratio (excluding Head-teacher) shall not exceed forty.</td>
+                            </tr>
+                        </tbody> 
+                    </table>  
+                </td>  
+            </tr>  
+        </tbody>  
+    </table>
+
+    <!-- BENGALI SECTION -->
+    <h2 class="section-title">বাংলা সংস্করণ (Bengali Version)</h2>
+    
+    <div class="header">
+        <h3>তফসিল / সিডিউল</h3>
+        <p>(ধারা ১৯ এবং ২৫ দ্রষ্টব্য)</p>
+        <h4>বিদ্যালয়ের নিয়ম ও মানদণ্ড</h4>
     </div>
 
-    <!-- NORMS AND STANDARDS SECTION -->
-    <div class="container">
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">ক্রমিক নং</th>
+                <th style="width: 22%;">বিষয়</th>
+                <th style="width: 70%;">নিয়ম ও মানদণ্ড</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>১.</td>
+                <td>
+                    <strong>শিক্ষকের সংখ্যা:</strong><br><br>
+                    (ক) প্রথম শ্রেণী থেকে পঞ্চম শ্রেণীর জন্য
+                </td>
+                <td>
+                    <table class="nested-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60%;">ভর্তিকৃত শিক্ষার্থী / শিশু</th>
+                                <th style="width: 40%;">শিক্ষকের সংখ্যা</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>৬০ জন পর্যন্ত</td>
+                                <td>২ জন</td>
+                            </tr>
+                            <tr>
+                                <td>৬১ থেকে ৯০ জন</td>
+                                <td>৩ জন</td>
+                            </tr>
+                            <tr>
+                                <td>৯১ থেকে ১২০ জন</td>
+                                <td>৪ জন</td>
+                            </tr>
+                            <tr>
+                                <td>১২১ থেকে ২০০ জন</td>
+                                <td>৫ জন</td>
+                            </tr>
+                            <tr>
+                                <td>১৫০ জনের বেশি শিক্ষার্থী হলে</td>
+                                <td>৫ জন এবং ১ জন প্রধান শিক্ষক</td>
+                            </tr>
+                            <tr>
+                                <td>২০০ জনের বেশি শিক্ষার্থী হলে</td>
+                                <td>ছাত্র-শিক্ষক অনুপাত (প্রধান শিক্ষক ব্যতীত) ৪০ এর বেশি হবে না।</td>
+                            </tr> 
+                        </tbody> 
+                    </table> 
+                </td> 
+            </tr> 
+        </tbody> 
+    </table>
+ </div>
+    
+<script>
 
-        <!-- ENGLISH SECTION -->
-        <h2 class="section-title">English Version</h2>
+function calculate() {
 
-        <div class="header">
-            <h3>THE SCHEDULE</h3>
-            <p>(See sections 19 and 25)</p>
-            <h4>NORMS AND STANDARDS FOR A SCHOOL</h4>
-        </div>
+    // Input Values
+    let students = Number(document.getElementById("students").value) || 0;
+    let regularTeachers = Number(document.getElementById("regular").value) || 0;
+    let paraTeachers = Number(document.getElementById("para").value) || 0;
 
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">Sl. No.</th>
-                    <th style="width: 30%;">Item</th>
-                    <th style="width: 60%;">Norms and Standards</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1.</td>
-                    <td>
-                        <strong>Number of teachers:</strong><br><br>
-                        (a) For first class to fifth class
-                    </td>
-                    <td>
-                        <table class="nested-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50%;">Admitted children</th>
-                                    <th style="width: 50%;">Number of teachers</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Up to Sixty</td>
-                                    <td>Two</td>
-                                </tr>
-                                <tr>
-                                    <td>Between sixty-one to ninety</td>
-                                    <td>Three</td>
-                                </tr>
-                                <tr>
-                                    <td>Between Ninety-one to one hundred and twenty</td>
-                                    <td>Four</td>
-                                </tr>
-                                <tr>
-                                    <td>Between One hundred and twenty-one to two hundred</td>
-                                    <td>Five</td>
-                                </tr>
-                                <tr>
-                                    <td>Above One hundred and fifty children</td>
-                                    <td>Five plus one Head-teacher</td>
-                                </tr>
-                                <tr>
-                                    <td>Above Two hundred children</td>
-                                    <td>Pupil-Teacher Ratio (excluding Head-teacher) shall not exceed forty.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    // Total Teacher (Including Para Teacher)
+    let totalTeachers = regularTeachers + paraTeachers;
 
-        <!-- BENGALI SECTION -->
-        <h2 class="section-title">বাংলা সংস্করণ (Bengali Version)</h2>
+    // PTR (Excluding Para Teacher)
+    let ptrExcludingPara = regularTeachers > 0
+        ? (students / regularTeachers).toFixed(2)
+        : "";
 
-        <div class="header">
-            <h3>তফসিল / সিডিউল</h3>
-            <p>(ধারা ১৯ এবং ২৫ দ্রষ্টব্য)</p>
-            <h4>বিদ্যালয়ের নিয়ম ও মানদণ্ড</h4>
-        </div>
+    // PTR (Including Para Teacher)
+    let ptrIncludingPara = totalTeachers > 0
+        ? (students / totalTeachers).toFixed(2)
+        : "";
 
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">ক্রমিক নং</th>
-                    <th style="width: 30%;">বিষয়</th>
-                    <th style="width: 60%;">নিয়ম ও মানদণ্ড</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>১.</td>
-                    <td>
-                        <strong>শিক্ষকের সংখ্যা:</strong><br><br>
-                        (ক) প্রথম শ্রেণী থেকে পঞ্চম শ্রেণীর জন্য
-                    </td>
-                    <td>
-                        <table class="nested-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50%;">ভর্তিকৃত শিক্ষার্থী / শিশু</th>
-                                    <th style="width: 50%;">শিক্ষকের সংখ্যা</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>৬০ জন পর্যন্ত</td>
-                                    <td>২ জন</td>
-                                </tr>
-                                <tr>
-                                    <td>৬১ থেকে ৯০ জন</td>
-                                    <td>৩ জন</td>
-                                </tr>
-                                <tr>
-                                    <td>৯১ থেকে ১২০ জন</td>
-                                    <td>৪ জন</td>
-                                </tr>
-                                <tr>
-                                    <td>১২১ থেকে ২০০ জন</td>
-                                    <td>৫ জন</td>
-                                </tr>
-                                <tr>
-                                    <td>১৫০ জনের বেশি শিক্ষার্থী হলে</td>
-                                    <td>৫ জন এবং ১ জন প্রধান শিক্ষক</td>
-                                </tr>
-                                <tr>
-                                    <td>২০০ জনের বেশি শিক্ষার্থী হলে</td>
-                                    <td>ছাত্র-শিক্ষক অনুপাত (প্রধান শিক্ষক ব্যতীত) ৪০ এর বেশি হবে না।</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    // Actual Teacher Required as per PTR
+    let requiredTeachers;
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        function calculate() {
-            // Input Values
-            let students = Number(document.getElementById("students").value) || 0;
-            let regularTeachers = Number(document.getElementById("regular").value) || 0;
-            let paraTeachers = Number(document.getElementById("para").value) || 0;
+    if (students <= 0) {
+        requiredTeachers = 0;
+    }else if (students <= 60) {
+        requiredTeachers = 2;
+    } else if (students <= 90) {
+        requiredTeachers = 3;
+    } else if (students <= 120) {
+        requiredTeachers = 4;
+    } else if (students <= 150) {
+        requiredTeachers = 5;
+    } else if (students <= 200) {
+        requiredTeachers = 6;
+    } else {
+        requiredTeachers = Math.ceil(students / 40) + 1;
+    }
 
-            // Total Teacher (Including Para Teacher)
-            let totalTeachers = regularTeachers + paraTeachers;
+    // Mention whether Surplus / Deficit as per RTE Norm
 
-            // PTR (Excluding Para Teacher)
-            let ptrExcludingPara = regularTeachers > 0
-                ? (students / regularTeachers).toFixed(2)
-                : "";
+    let status = "";
 
-            // PTR (Including Para Teacher)
-            let ptrIncludingPara = totalTeachers > 0
-                ? (students / totalTeachers).toFixed(2)
-                : "";
+    if (regularTeachers > requiredTeachers) {
+        status = "SURPLUS";
+    } else if (requiredTeachers > totalTeachers) {
+        status = "DEFICIT";
+    } else {
+        status = "";
+    }
 
-            // Actual Teacher Required as per PTR
-            let requiredTeachers;
+    // Number of Surplus Teacher (Excluding Para Teacher)
 
-            if (students <= 0) {
-                requiredTeachers = 0;
-            } else if (students <= 60) {
-                requiredTeachers = 2;
-            } else if (students <= 90) {
-                requiredTeachers = 3;
-            } else if (students <= 120) {
-                requiredTeachers = 4;
-            } else if (students <= 150) {
-                requiredTeachers = 5;
-            } else if (students <= 200) {
-                requiredTeachers = 6;
-            } else {
-                requiredTeachers = Math.ceil(students / 40) + 1;
-            }
+    let surplusTeacher =
+        regularTeachers > requiredTeachers
+            ? regularTeachers - requiredTeachers
+            : "";
 
-            // Mention whether Surplus / Deficit as per RTE Norm
-            let status = "";
-            if (regularTeachers > requiredTeachers) {
-                status = "SURPLUS";
-            } else if (requiredTeachers > totalTeachers) {
-                status = "DEFICIT";
-            } else {
-                status = "";
-            }
+    // Number of Deficit Teacher (Including Para Teacher)
 
-            // Number of Surplus Teacher (Excluding Para Teacher)
-            let surplusTeacher = regularTeachers > requiredTeachers
-                ? regularTeachers - requiredTeachers
-                : "";
+    let deficitTeacher =
+        requiredTeachers > totalTeachers
+            ? requiredTeachers - totalTeachers
+            : "";
 
-            // Number of Deficit Teacher (Including Para Teacher)
-            let deficitTeacher = requiredTeachers > totalTeachers
-                ? requiredTeachers - totalTeachers
-                : "";
+    // Output
 
-            // Output to HTML
-            document.getElementById("total").textContent = totalTeachers;
-            document.getElementById("ptrEx").textContent = ptrExcludingPara;
-            document.getElementById("ptrIn").textContent = ptrIncludingPara;
-            document.getElementById("required").textContent = requiredTeachers;
-            document.getElementById("status").textContent = status;
-            document.getElementById("surplus").textContent = surplusTeacher;
-            document.getElementById("deficit").textContent = deficitTeacher;
-        }
+    document.getElementById("total").textContent = totalTeachers;
+    document.getElementById("ptrEx").textContent = ptrExcludingPara;
+    document.getElementById("ptrIn").textContent = ptrIncludingPara;
+    document.getElementById("required").textContent = requiredTeachers;
+    document.getElementById("status").textContent = status;
+    document.getElementById("surplus").textContent = surplusTeacher;
+    document.getElementById("deficit").textContent = deficitTeacher;
+      
+}
 
-        calculate();
-    </script>
+calculate();
 
+</script>
 </body>
 </html>
