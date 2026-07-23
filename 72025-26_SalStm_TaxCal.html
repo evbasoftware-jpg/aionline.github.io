@@ -825,7 +825,7 @@ const otherRecord = otherSheetData.find(item =>
    
     if (found) {
         // 🔹 শিক্ষক সিলেক্ট করার সাথে সাথেই টাইটেল পরিবর্তন হবে
-        const formattedTitle = `${teacherName} FY ${year}-${year+1}`;
+        const formattedTitle = `${teacherName}_FY ${year}-${year+1}`;
         document.title = formattedTitle;
 
         let infoboxHtml = '';
