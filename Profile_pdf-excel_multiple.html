@@ -504,8 +504,9 @@ if(circleMatch){
 }
 
 const schoolMatch = text.match(
-/CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH))/i
-);
+/*  /CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|HIGH SCHOOL|MADRASAH))/i */
+/CIRCLE,\s*[A-Z\s]+?\s+([A-Z]+(?:\s+[A-Z]+)*\s+(?:PRIMARY SCHOOL|JUNIOR BASIC SCHOOL|BASIC SCHOOL|1 PRIMARY SCHOOL|2 PRIMARY SCHOOL|PATHSALA|BIDYAPITH|VIDYAPITHVIDYALAY|VIDYALAYA|HIGH SCHOOL|MADRASAH))/i
+    );
 
 if(schoolMatch){
     obj["School Name"] = schoolMatch[1].trim();
