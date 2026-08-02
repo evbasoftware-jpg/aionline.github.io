@@ -41,6 +41,24 @@
             margin-bottom: 15px;
             text-align: justify;
         }
+        
+        /* নোটিশ/আপডেট বক্স */
+        .alert-box {
+            background-color: #e3f2fd;
+            border-left: 5px solid #003366;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .alert-box h3 {
+            color: #003366;
+            margin-bottom: 8px;
+        }
+        .alert-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
         /* তথ্য টেবিল */
         table {
             width: 100%;
@@ -61,6 +79,7 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
         /* অফিশিয়াল লিংক */
         .links-list {
             list-style-type: none;
@@ -99,7 +118,46 @@
     
     <p>ভারতের আদমশুমারি হলো দেশের জনসংখ্যা, অর্থনীতি, শিক্ষা ও সামাজিক সূচকসমূহ সংগ্রহের সবচেয়ে বড় উৎস। ভারতের স্বরাষ্ট্র মন্ত্রণালয়ের (Ministry of Home Affairs) অধীনে থাকা <strong>Office of the Registrar General and Census Commissioner, India (ORGI)</strong> এটি পরিচালনা করে। ভারতে ১৮৭২ সালে প্রথম আদমশুমারি অনুষ্ঠিত হয় এবং ১৯৫১ সাল থেকে প্রতি ১০ বছর পর পর স্বাধীন ভারতে শুমারি পরিচালিত হয়ে আসছে।</p>
 
-    <h2>সর্বশেষ প্রকাশিত তথ্য (আদমশুমারি ২০১১ অনুযায়ী)</h2>
+    <!-- বর্তমান বছরের সেন্সাস সংক্রান্ত আপডেট -->
+    <div class="alert-box">
+        <h3>📢 চলমান ১৬শ ডিজিটাল সেন্সাস সংক্রান্ত তথ্য:</h3>
+        <p>কোভিড-১৯ মহামারীর কারণে স্থগিত থাকা ভারতের ১৬শ আদমশুমারি শুরু হয়েছে। এটি ভারতের ইতিহাসের প্রথম সম্পূর্ণ <strong>ডিজিটাল সেন্সাস (Digital Census)</strong>।</p>
+        <ul>
+            <li><strong>প্রথম ফেজ (House Listing & Housing Census):</strong> এপ্রিল ২০২৬ থেকে শুরু হয়ে পর্যায়ক্রমে পরিচালিত হচ্ছে।</li>
+            <li><strong>অনলাইন সেলফ-এনিউমারেশন (Self-Enumeration):</strong> নাগরিকরা নিজেরাই মোবাইল অ্যাপ বা ওয়েবসাইটের মাধ্যমে নির্দিষ্ট সময়ে নিজেদের তথ্য অনলাইনে জমা দিতে পারবেন।</li>
+            <li><strong>পশ্চিমবঙ্গ সেন্সাস উইন্ডো:</strong> ১ আগস্ট ২০২৬ থেকে ১৫ আগস্ট ২০২৬ পর্যন্ত পশ্চিমবঙ্গে সেলফ-এনিউমারেশন প্রক্রিয়া চালু রয়েছে।</li>
+            <li><strong>দ্বিতীয় ফেজ (Population Enumeration):</strong> মূল জনসংখ্যা গণনা ও সামাজিক-অর্থনৈতিক তথ্য সংগ্রহ সম্পন্ন করা হবে।</li>
+        </ul>
+    </div>
+
+    <h2>গুরুত্বপূর্ণ অফিশিয়াল ওয়েবসাইট ও অনলাইন সেনসাস লিংক</h2>
+    <p>অনলাইন সেলফ-এনিউমারেশন সেবা, মূল জাতীয় পোর্টাল এবং রাজ্যভিত্তিক তথ্যের জন্য নিচের অফিশিয়াল লিংকগুলোতে ভিজিট করুন:</p>
+    
+    <ul class="links-list">
+        <li>
+            <a href="https://se.census.gov.in/" target="_blank" rel="noopener noreferrer">
+                অনলাইন সেলফ-এনিউমারেশন/সেনসাস পোর্টাল (Self-Enumeration Portal)
+            </a>
+        </li>
+        <li>
+            <a href="https://censusindia.gov.in/census.website/en" target="_blank" rel="noopener noreferrer">
+                Census India English Portal (অফিশিয়াল ওয়েবাসাইট)
+            </a>
+        </li>
+        
+        <li>
+            <a href="http://censusindia.gov.in/" target="_blank" rel="noopener noreferrer">
+                Census of India (মূল হোম পেজ)
+            </a>
+        </li>
+        <li>
+            <a href="https://westbengal.census.gov.in/Census_writeup.php" target="_blank" rel="noopener noreferrer">
+                পশ্চিমবঙ্গ সেনসাস পোর্টাল (West Bengal Census Portal)
+            </a>
+        </li>
+    </ul>
+    
+    <h2>সর্বশেষ প্রকাশিত ঐতিহাসিক তথ্য (আদমশুমারি ২০১১ অনুযায়ী)</h2>
     <table>
         <thead>
             <tr>
@@ -139,29 +197,8 @@
         </tbody>
     </table>
 
-    <h2>গুরুত্বপূর্ণ অফিশিয়াল ওয়েবসাইট ও লিংক</h2>
-    <p>ভারত সরকারের অফিশিয়াল ডাটাবেজ, রিপোর্ট ও পরিসংখ্যানের জন্য নিচের অফিশিয়াল লিংকগুলোতে ভিজিট করুন:</p>
-    
-    <ul class="links-list">
-        <li>
-            <a href="https://censusindia.gov.bd/" target="_blank" rel="noopener noreferrer">
-                Census of India (অফিশিয়াল পোর্টাল)
-            </a>
-        </li>
-        <li>
-            <a href="https://mha.gov.in/" target="_blank" rel="noopener noreferrer">
-                Ministry of Home Affairs (MHA)
-            </a>
-        </li>
-        <li>
-            <a href="https://mospi.gov.in/" target="_blank" rel="noopener noreferrer">
-                MoSPI (Ministry of Statistics and Programme Implementation)
-            </a>
-        </li>
-    </ul>
-
     <footer>
-        <p>উৎস: রেজিস্ট্রার জেনারেল ও সেন্সাস কমিশনারের কার্যালয়, ভারত সরকার</p>
+        <p>উৎস: রেজিস্ট্রার জেনারেল ও সেন্সাস কমিশনারের কার্যালয়, স্বরাষ্ট্র মন্ত্রণালয়, ভারত সরকার</p>
     </footer>
 </div>
 
