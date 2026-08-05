@@ -171,10 +171,14 @@ button.print-btn { background: #f5fa73; font-size: 47px;}
     <td id="required"></td></tr>
   <tr style="height:70px;"><th>Mention whether surplus/ deficit as per RTE norm</th>
     <td id="status" class="result"></td></tr>
+  <tr style="height:70px;"><th>Number of Surplus Teacher (Including Para Teacher)</th>
+    <td id="surplusInc"></td></tr>
   <tr style="height:70px;"><th>Number of Surplus Teacher (Excluding Para Teacher)</th>
     <td id="surplus"></td></tr>
   <tr style="height:70px;"><th>No of deficit teacher (Deficit Including Para Teacher)</th>
     <td id="deficit"></td></tr>
+  <tr style="height:70px;"><th>No of deficit teacher (Deficit Excluding Para Teacher)</th>
+    <td id="deficitEx"></td></tr>
 </table>
 </div>
    <button class="print-btn" onclick="window.print()" style="margin-left:117px;">Print / PDF</button>
@@ -365,6 +369,18 @@ function calculate() {
             ? requiredTeachers - totalTeachers
             : "";
 
+    // Number of Surplus Teacher (Including Para Teacher)
+    let surplusTeacherInc =
+        totalTeachers > requiredTeachers
+            ? totalTeachers - requiredTeachers
+            : "";
+
+    // No of deficit teacher (Deficit Excluding Para Teacher)
+    let deficitTeacherEx =
+        requiredTeachers > regularTeachers
+            ? requiredTeachers - regularTeachers
+            : "";
+
     // Output
 
     document.getElementById("total").textContent = totalTeachers;
@@ -374,6 +390,8 @@ function calculate() {
     document.getElementById("status").textContent = status;
     document.getElementById("surplus").textContent = surplusTeacher;
     document.getElementById("deficit").textContent = deficitTeacher;
+    document.getElementById("surplusInc").textContent = surplusTeacherInc;
+    document.getElementById("deficitEx").textContent = deficitTeacherEx;
       
 }
 
