@@ -19,10 +19,26 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { /* একপাশে অন্ধকার, অন্যপাশে আবছা আলোর ছটা */
-/* background: linear-gradient(5deg, #0c4d9c 70%, #77a6e0 100%); */
-   background: orange;
-        }
+       
+    body {
+    /* ১০টি কালার মসৃণভাবে চেঞ্জ হওয়ার জন্য ৩০ সেকেন্ড সময় দেওয়া হয়েছে */
+    animation: multiColorChange 60s infinite alternate ease-in-out;
+    }
+
+/* বডির ব্যাকগ্রাউন্ড কালার চেঞ্জের ফ্রেম (১০টি রঙ) */
+@keyframes multiColorChange {
+    0%   { background-color: #ff9800; } /* অরেঞ্জ (আপনার আসল কালার) */
+    10%  { background-color: #f44336; } /* লাল */
+    20%  { background-color: #e91e63; } /* পিঙ্ক / গোলাপি */
+    30%  { background-color: #9c27b0; } /* ডার্ক পার্পল / বেগুনি */
+    40%  { background-color: #673ab7; } /* ডিপ ভায়োলেট */
+    50%  { background-color: #3f51b5; } /* ইন্ডিগো / নীল */
+    60%  { background-color: #03a9f4; } /* স্কাই ব্লু */
+    70%  { background-color: #009688; } /* টিল / গাঢ় সায়ান */
+    80%  { background-color: #4caf50; } /* সবুজ */
+    90%  { background-color: #8bc34a; } /* লাইম গ্রিন */
+    100% { background-color: #ffc107; } /* ওয়ার্ম ইয়োলো / হলুদ */
+}
 
         header { text-align: center; padding: 40px 20px 20px; position: relative; }
         
