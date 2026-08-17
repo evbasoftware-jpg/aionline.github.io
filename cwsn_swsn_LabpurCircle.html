@@ -1,7 +1,48 @@
-<iframe 
-  src="https://script.google.com/macros/s/AKfycbz6AOFg0tbtNkPa7FH2J5LlsxJFhhQhdLWVAHjdUqmi6XwUD738vklLL9kBoMzjPUZj/exec" 
-  width="100%" 
-  height="1200px" 
-  style="border:none; min-height: 100vh; overflow: auto;"
-  scrolling="yes">
-</iframe>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <!-- মোবাইলে সঠিক টাচ ও কার্সার কাজ করানোর জন্য এই ভিউপোর্ট মেটা ট্যাগটি আবশ্যক -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CWSN / SWSN - Labpur Circle</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* ডাবল স্ক্রলবার বন্ধ করার জন্য */
+      background-color: #f0f3f6;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .iframe-container {
+      width: 100%;
+      height: 100%;
+      height: 100dvh; /* মোবাইল ক্রোমের অ্যাড্রেসবার অনুযায়ী অটো সাইজ */
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: none;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="iframe-container">
+    <iframe 
+      src="https://script.google.com/macros/s/AKfycbz6AOFg0tbtNkPa7FH2J5LlsxJFhhQhdLWVAHjdUqmi6XwUD738vklLL9kBoMzjPUZj/exec" 
+      allow="clipboard-write; autofocus"
+      scrolling="yes">
+    </iframe>
+  </div>
+
+</body>
+</html>
