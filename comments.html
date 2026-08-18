@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comment & Suggestion Portal</title>
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 25px 15px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #0f172a;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .required {
+      color: #ef4444;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    input[readonly] {
+      background-color: #f1f5f9;
+      cursor: not-allowed;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #ef4444;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #dc2626;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #eff6ff;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    .user-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+    }
+
+    .google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .comment-card {
+      background: #fff;
+      border-left: 4px solid var(--primary);
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .comment-author {
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .comment-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #334155;
+      white-space: pre-line;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- গুগল লগইন সেকশন -->
+    <div id="loginSection" class="card" style="text-align: center;">
+      <h2>কমেন্ট বা পরামর্শ দেওয়ার জন্য লগইন করুন</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 15px;">
+        আপনার মোবাইলে থাকা যেকোনো গুগল ইমেইল দিয়ে সহজে লগইন করুন।
+      </p>
+      
+      <div class="google-btn-wrapper">
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" 
+             data-type="standard" 
+             data-size="large" 
+             data-theme="outline" 
+             data-text="sign_in_with" 
+             data-shape="rectangular" 
+             data-logo_alignment="left">
+        </div>
+      </div>
+    </div>
+
+    <!-- কমেন্ট ফর্ম সেকশন -->
+    <div id="commentSection" class="card" style="display: none;">
+      <div class="user-badge">
+        <div class="user-meta">
+          <img id="userPicture" class="user-avatar" src="" alt="Profile">
+          <div>
+            <div style="font-weight: 600;" id="displayUserName"></div>
+            <div style="font-size: 12px; color: #3b82f6;" id="displayEmail"></div>
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="logout()">Logout</button>
+      </div>
+
+      <h2>আপনার মতামত/পরামর্শ লিখুন</h2>
+      <form id="commentForm">
+        <div class="form-group">
+          <label>Name <span class="required">*</span></label>
+          <input type="text" id="userName" required placeholder="আপনার নাম">
+        </div>
+
+        <div class="form-group">
+          <label>Country <span class="required">*</span></label>
+          <input type="text" id="userCountry" required placeholder="আপনার দেশের নাম">
+        </div>
+
+        <div class="form-group">
+          <label>Mobile (ঐচ্ছিক)</label>
+          <input type="tel" id="userMobile" placeholder="মোবাইল নম্বর">
+        </div>
+
+        <div class="form-group">
+          <label>Comment/Suggestion Message <span class="required">*</span></label>
+          <textarea id="userMessage" rows="4" required placeholder="আপনার মূল্যবান মতামত লিখুন..."></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">সাবমিট করুন</button>
+      </form>
+    </div>
+
+    <!-- কমেন্ট লিস্ট -->
+    <div class="card">
+      <h2>সাম্প্রতিক কমেন্ট ও সাজেশন সমূহ</h2>
+      <div id="commentList">
+        <div class="loading">কমেন্ট লোড হচ্ছে...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvamcgb8t4880dubkx7jwllSHCZ5AO_zUOJhVZn4UQdT292N5bV5sQko32ddLvbvgk-Q/exec';
+
+    let currentUser = JSON.parse(localStorage.getItem('commentUser')) || null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkLoginState();
+      fetchComments();
+    });
+
+    // JWT ডিকোড করে ইউজার ডেটা বের করার ফাংশন
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // গুগল সাইন-ইন রেসপন্স হ্যান্ডলার
+    function handleCredentialResponse(response) {
+      const userData = parseJwt(response.credential);
+      currentUser = {
+        name: userData.name,
+        email: userData.email,
+        picture: userData.picture
+      };
+      
+      localStorage.setItem('commentUser', JSON.stringify(currentUser));
+      checkLoginState();
+    }
+
+    function checkLoginState() {
+      if (currentUser && currentUser.email) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('commentSection').style.display = 'block';
+        
+        document.getElementById('displayEmail').innerText = currentUser.email;
+        document.getElementById('displayUserName').innerText = currentUser.name;
+        document.getElementById('userPicture').src = currentUser.picture || 'https://via.placeholder.com/38';
+        
+        // নাম ফিল্ডে গুগলের নাম অটো-ফিল করা
+        document.getElementById('userName').value = currentUser.name || '';
+      } else {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('commentSection').style.display = 'none';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('commentUser');
+      currentUser = null;
+      checkLoginState();
+    }
+
+    // কমেন্ট সাবমিট
+    document.getElementById('commentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'সাবমিট হচ্ছে...';
+
+      const payload = {
+        name: document.getElementById('userName').value.trim(),
+        country: document.getElementById('userCountry').value.trim(),
+        mobile: document.getElementById('userMobile').value.trim(),
+        message: document.getElementById('userMessage').value.trim(),
+        email: currentUser.email
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        alert('আপনার কমেন্ট সফলভাবে জমা হয়েছে!');
+        document.getElementById('userMessage').value = '';
+        setTimeout(fetchComments, 1500);
+
+      } catch (err) {
+        alert('কোথাও সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'সাবমিট করুন';
+      }
+    });
+
+    // কমেন্ট লোড
+    async function fetchComments() {
+      const container = document.getElementById('commentList');
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const result = await res.json();
+
+        if (result.status === 'success' && result.data.length > 0) {
+          container.innerHTML = '';
+          result.data.reverse().forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'comment-card';
+            div.innerHTML = `
+              <div class="comment-header">
+                <div>
+                  <span class="comment-author">${escapeHtml(item.name)}</span> 
+                  <span>(${escapeHtml(item.country)})</span>
+                </div>
+                <div>#${item.slNo}</div>
+              </div>
+              <div class="comment-text">${escapeHtml(item.message)}</div>
+            `;
+            container.appendChild(div);
+          });
+        } else {
+          container.innerHTML = '<p style="color: var(--muted); font-size: 14px;">এখনও কোনো কমেন্ট জমা পড়েনি।</p>';
+        }
+      } catch (err) {
+        container.innerHTML = '<p style="color: red; font-size: 14px;">কমেন্ট লোড করতে সমস্যা হচ্ছে।</p>';
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
