@@ -365,11 +365,9 @@
             div.innerHTML = `
               <div class="comment-header">
                 <div>
+                  ${item.slNo}) 
                   <span class="comment-author">${escapeHtml(item.name)}</span> 
-                  <span>(${escapeHtml(item.country)})</span>
-                </div>
-                <div>#${item.slNo}</div>
-              </div>
+                  <span>(${escapeHtml(item.country)})</span>                
               ${item.timestamp ? `<div class="comment-time">🕒 ${escapeHtml(item.timestamp)}</div>` : ''}
               <div class="comment-text">${escapeHtml(item.message)}</div>
             `;
