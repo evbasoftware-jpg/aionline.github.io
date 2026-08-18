@@ -81,11 +81,6 @@
       border-color: var(--primary);
     }
 
-    input[readonly] {
-      background-color: #f1f5f9;
-      cursor: not-allowed;
-    }
-
     button {
       background-color: var(--primary);
       color: white;
@@ -155,14 +150,22 @@
     .comment-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 13px;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .comment-author {
       font-weight: bold;
+      font-size: 14px;
       color: var(--text);
+    }
+
+    .comment-time {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 8px;
     }
 
     .comment-text {
@@ -267,7 +270,7 @@
       fetchComments();
     });
 
-    // JWT ডিকোড করে ইউজার ডেটা বের করার ফাংশন
+    // JWT ডিকোড ফাংশন
     function parseJwt(token) {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -277,7 +280,7 @@
       return JSON.parse(jsonPayload);
     }
 
-    // গুগল সাইন-ইন রেসপন্স হ্যান্ডলার
+    // গুগল সাইন-ইন হ্যান্ডলার
     function handleCredentialResponse(response) {
       const userData = parseJwt(response.credential);
       currentUser = {
@@ -299,7 +302,6 @@
         document.getElementById('displayUserName').innerText = currentUser.name;
         document.getElementById('userPicture').src = currentUser.picture || 'https://via.placeholder.com/38';
         
-        // নাম ফিল্ডে গুগলের নাম অটো-ফিল করা
         document.getElementById('userName').value = currentUser.name || '';
       } else {
         document.getElementById('loginSection').style.display = 'block';
@@ -338,18 +340,17 @@
         });
 
         alert('আপনার কমেন্ট সফলভাবে জমা হয়েছে!');
-        document.getElementById('userMessage').value = '';
-        setTimeout(fetchComments, 1500);
+        // সাবমিট হওয়ার পর পেজ রিলোড
+        location.reload();
 
       } catch (err) {
         alert('কোথাও সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।');
-      } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = 'সাবমিট করুন';
       }
     });
 
-    // কমেন্ট লোড
+    // কমেন্ট লোড ও তারিখ-সময় প্রদর্শন
     async function fetchComments() {
       const container = document.getElementById('commentList');
       try {
@@ -369,6 +370,7 @@
                 </div>
                 <div>#${item.slNo}</div>
               </div>
+              ${item.timestamp ? `<div class="comment-time">🕒 ${escapeHtml(item.timestamp)}</div>` : ''}
               <div class="comment-text">${escapeHtml(item.message)}</div>
             `;
             container.appendChild(div);
