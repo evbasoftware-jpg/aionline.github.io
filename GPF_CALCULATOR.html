@@ -51,9 +51,7 @@ td.negative{
     footer{
         display:none !important;
     }
-         
-    a{display:none;}
-         
+              
     .logo-box{
         position: static;
     }
@@ -61,7 +59,8 @@ td.negative{
     table{
         page-break-inside: avoid;
     }
-
+      .no-print { display: none !important; } /* ভিজিটর কাউন্টার প্রিন্ট বন্ধ রাখা */
+       .site-link { display: inline-block !important; } /* সাইটের লিঙ্ক প্রিন্টে দেখানো */
     }
      
 </style>
@@ -349,9 +348,11 @@ sel.addRange(range);
 }
 
 </script>
+  <!-- ভিজিটর কাউন্টার সেকশন (no-print ক্লাসের মাধ্যমে প্রিন্টে এটি বাদ পড়বে) -->
+<div class="no-print">
 <a href='http://www.freevisitorcounters.com'>Free counter</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=1964b022696cfcaacf6d3a7d139937abab57805c'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1521605/t/1"></script>
-
+</div>
 </body>
 </html>
 
