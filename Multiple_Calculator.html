@@ -20,8 +20,10 @@
     .print-btn{ background:blue; color: white; }
     .reset-btn{ background:#d9534f; color: white; }
     footer { text-align: center; padding: 20px; color: #666; }
-    @media print{ .controls, footer, button, a { display:none !important; } 
+    @media print{ .controls, footer, button { display:none !important; } 
                  *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;  } 
+                .no-print { display: none !important; } /* ভিজিটর কাউন্টার প্রিন্ট বন্ধ রাখা */
+            .site-link { display: inline-block !important; } /* সাইটের লিঙ্ক প্রিন্টে দেখানো */
                 }
 </style>
 </head>
@@ -203,9 +205,10 @@ window.onload = function() {
     document.getElementById('end').value = today;
 };
 </script>
-    
+  <!-- ভিজিটর কাউন্টার সেকশন (no-print ক্লাসের মাধ্যমে প্রিন্টে এটি বাদ পড়বে) -->
+<div class="no-print">  
 <a href='https://www.free-counters.org/'>Get free Counters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=f1947b33d890e2a9a024bf1f9b5982cdcdea00ee'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1523485/t/1"></script>
-
+</div>
 </body>
 </html>
