@@ -40,6 +40,7 @@
         .logo-box { position: static; }
         .logo { height: 67px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         
+        /* প্রিন্ট অপ্টিমাইজেশন */
         @media print {
             body { max-width: 850px; background: white; padding: 20px; margin: 5px; }
             .calc-container { box-shadow: none; border: none; max-width: 100%; }
@@ -47,7 +48,8 @@
             .res-card { border: 1px solid #ccc; background: white !important; }
             .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 5px; }
             .btn-group { display: none !important; }
-            a { display: none; }
+            .no-print { display: none !important; } /* ভিজিটর কাউন্টার প্রিন্ট বন্ধ রাখা */
+            .site-link { display: inline-block !important; } /* সাইটের লিঙ্ক প্রিন্টে দেখানো */
         }
     </style>
 </head>
@@ -55,7 +57,7 @@
 <div class="logo-box" style="color: blue; font-size:20px">
      <img src="logo.png" alt="AI Online Logo" class="logo">
 </div>
-    <b><a href='https://aionline.in.net' style='text-decoration: none;'>https://aionline.in.net</a></b>
+    <b><a href='https://aionline.in.net' class="site-link" style='text-decoration: none; color: inherit;'>https://aionline.in.net</a></b>
     
 <div class="calc-container">
     <h2>পেনশন, গ্র্যাচুইটি ও কমিউটেশন গণনা (ROPA 2019)</h2>
@@ -301,7 +303,13 @@
         document.getElementById('btnPrint').style.display = 'block';
     }
 </script>
-    <a href='https://free-hit-counters.net/'>freehitcounters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=a847bdb8ffac335409349b15b3868673d3ae4769'></script>
-   <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1534985/t/1"></script>
+
+<!-- ভিজিটর কাউন্টার সেকশন (no-print ক্লাসের মাধ্যমে প্রিন্টে এটি বাদ পড়বে) -->
+<div class="no-print">
+    <a href='https://free-hit-counters.net/'>freehitcounters</a>
+    <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=a847bdb8ffac335409349b15b3868673d3ae4769'></script>
+    <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1534985/t/1"></script>
+</div>
+
 </body>
 </html>
