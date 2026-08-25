@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pension, Gratuity & Commutation Calculation</title>
+    <style>
+        :root { --primary: #2563eb; --secondary: #0f172a; --success: #16a34a; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); padding: 15px; color: #334155; }
+        .calc-container { max-width: 850px; margin: auto; background: white; padding: 10px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid #f1f5f9; }
+        
+        .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        
+        .flex-row { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 5px; }
+        .flex-row label { flex: 2; margin-bottom: 0; font-weight: 600; font-size: 17px; line-height: 1.2; }
+        .flex-row input, .flex-row select { flex: 1; max-width: 150px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 17px; }
+
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 17px; }
+        input, select { width: 100%; padding: 5px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 17px; box-sizing: border-box; }
+        
+        .section-title { font-size: 17px; font-weight: bold; color: purple; margin: 5px 0 5px; padding-left: 10px; border-left: 4px solid var(--primary); }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 2; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 21px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-print { flex: 1; background: yellow; color: black; display: none; }
+        button:hover { opacity: 0.9; }
+        
+        .result-area { margin-top: 5px; display: none; }
+        .res-card { padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; }
+        .res-line { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; }
+        .res-line span:last-child { font-weight: bold; color: var(--primary); }
+        .highlight { color: #d132e6 !important; font-size: 18px; }
+
+        /* হিসাব পদ্ধতি স্টাইল */
+        .formula-list { list-style: none; padding: 0; margin: 0; font-size: 14.5px; line-height: 1.7; }
+        .formula-list li { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dotted #cbd5e1; }
+        .calc-step { background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 5px; font-family: monospace; font-size: 13.5px; display: inline-block; margin-top: 3px; font-weight: 600; }
+
+        .logo-box { position: static; }
+        .logo { height: 67px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        
+        @media print {
+            body { max-width: 850px; background: white; padding: 20px; margin: 5px; }
+            .calc-container { box-shadow: none; border: none; max-width: 100%; }
+            .result-area { display: block !important; margin-top: 0; }
+            .res-card { border: 1px solid #ccc; background: white !important; }
+            .section-title { display: block !important; border-left: 4px solid #000; margin-bottom: 5px; }
+            .btn-group { display: none !important; }
+            a { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="logo-box" style="color: blue; font-size:20px">
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+</div>
+    <b><a href='https://aionline.in.net' style='text-decoration: none;'>https://aionline.in.net</a></b>
+    
+<div class="calc-container">
+    <h2>পেনশন, গ্র্যাচুইটি ও কমিউটেশন গণনা (ROPA 2019)</h2>
+    
+    <div class="grid-row">
+        <div>
+            <label>শেষ বেসিক পে (Last Basic Pay):</label>
+            <input type="number" id="basic" placeholder="যেমন: 58800">
+        </div>
+        <div>
+            <label>ডিএ (DA) %:</label>
+            <input type="number" id="da" placeholder="যেমন: 18">
+        </div>
+    </div>
+
+    <div class="res-card" style="background: #feffcc; border-left: 5px solid pink;">
+        <div class="section-title">চাকুরিকাল (Service Period)</div>
+        <div class="grid-row">
+            <div>
+                <label>যোগদানের তারিখ (Date of Joining):</label>
+                <input type="date" id="doj" onchange="calculateServicePeriod()">
+            </div>
+            <div>
+                <label>অবসরের তারিখ (Date of Retirement):</label>
+                <input type="date" id="dor" onchange="calculateServicePeriod()">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" id="yy" placeholder="বছর">
+            <input type="number" id="mm" placeholder="মাস">
+            <input type="number" id="dd" placeholder="দিন">
+        </div>
+    </div>
+    
+    <div class="section-title">অতিরিক্ত অপশন (Extra Options)</div>
+    
+    <div class="flex-row">
+        <label>কমিউটেশন সর্বোচ্চ ৪০% (Commutation Maximum 40%):</label>
+        <input type="number" id="commPct" value="40" max="40">
+    </div>
+
+    <div class="flex-row">
+        <label>মেডিকেল অ্যালাউন্স (Medical Allowance):</label>
+        <select id="medAllow">
+            <option value="500">500 টাকা</option>
+            <option value="0">0 টাকা</option>
+        </select>
+    </div>
+    
+    <div class="flex-row">
+        <label>পরবর্তী জন্মদিনে বয়স (Age on next Birthday):</label>
+        <input type="number" id="age" value="61">
+    </div>
+
+    <div class="btn-group">
+        <button onclick="calculateAll()">হিসাব করুন (Calculate)</button>
+    </div>
+
+    <div id="resultBox" class="result-area">
+        <div class="res-card" style="border-left: 5px solid #f7c1c1">
+            <div class="section-title" style="margin-top:0;">এককালীন প্রাপ্য (Lumpsum)</div>
+            <div class="res-line"><span>মোট হাফ-ইয়ারলি পিরিয়ড (Total Half Yearly Period):</span> <span id="rPeriods"></span></div>
+            <div class="res-line"><span>গ্র্যাচুইটি (Gratuity) (DCRG):</span> <span id="rGratuity"></span></div>
+            <div class="res-line"><span>কমিউটেশন ফ্যাক্টর (Commutation Factor):</span> <span id="rFactor"></span></div>
+            <div class="res-line"><span>পেনশনের কমিউটেড ভ্যালু (Commuted value of Pension) (CVP):</span> <span id="rCvp"></span></div>
+            <div class="res-line"><span><b>মোট এককালীন প্রাপ্য (Total Lumpsum) (DCRG+CVP):</b></span> <span id="rTotalLump" class="highlight"></span></div>
+        </div>
+
+        <div class="res-card" style="background: #ecfdfc; border-left: 5px solid orange;">
+            <div class="section-title">মাসিক পেনশন (Monthly Pension)</div>
+            <div class="res-line"><span>মূল পেনশন (Gross Pension):</span> <span id="rGrossPen"></span></div>
+            <div class="res-line"><span>কমিউটেশন কর্তন (Commutation Deduction) (-):</span> <span id="rCommCut"></span></div>
+            <div class="res-line"><span>মূল পেনশনের ওপর ডিএ (DA on Gross Pension):</span> <span id="rDaAmt"></span></div>
+            <div class="res-line"><span>মেডিকেল অ্যালাউন্স (Medical Allowance) (+):</span> <span id="rMed"></span></div>
+            <div class="res-line" style="border-top: 1px solid #16a34a; padding-top: 2px;">
+                <span><b>মাসিক নিট পেনশন (Monthly Net Pension):</b></span> <span id="rNetPen" class="highlight"></span>
+            </div>
+        </div>
+
+        <!-- সূত্র ও অ্যামাউন্টসহ বিস্তারিত হিসাব পদ্ধতি -->
+        <div class="res-card" style="background: #f8fafc; border-left: 5px solid #6366f1;">
+            <div class="section-title">হিসাব পদ্ধতি ও সূত্র (Calculation Breakdown)</div>
+            <ul class="formula-list">
+                <li>
+                    <b>১. হাফ-ইয়ারলি পিরিয়ড:</b> (বছর × ২) + (মাস ≥ ৩ হলে ১, মাস ≥ ৯ হলে ২) [সর্বোচ্চ ৬৬]<br>
+                    <span class="calc-step" id="expPeriods"></span>
+                </li>
+                <li>
+                    <b>২. গ্র্যাচুইটি (DCRG):</b> (Basic Pay + DA Amount) × হাফ-ইয়ারলি পিরিয়ড ÷ ৪ [সর্বোচ্চ ১২,০০,০০০]<br>
+                    <span class="calc-step" id="expGratuity"></span>
+                </li>
+                <li>
+                    <b>৩. মূল পেনশন (Gross Pension):</b> Basic Pay ÷ ২<br>
+                    <span class="calc-step" id="expGrossPen"></span>
+                </li>
+                <li>
+                    <b>৪. কমিউটেশন কর্তন:</b> Gross Pension × কমিউটেশন %<br>
+                    <span class="calc-step" id="expCommCut"></span>
+                </li>
+                <li>
+                    <b>৫. কমিউটেড ভ্যালু (CVP):</b> কমিউটেশন কর্তন × ১২ × বয়স অনুযায়ী ফ্যাক্টর<br>
+                    <span class="calc-step" id="expCvp"></span>
+                </li>
+                <li>
+                    <b>৬. মাসিক নিট পেনশন:</b> (Gross Pension - Commutation) + DA on Gross Pension + Medical Allowance<br>
+                    <span class="calc-step" id="expNetPen"></span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="btn-group">
+           <button id="btnPrint" class="btn-print" onclick="window.print()">প্রিন্ট করুন (Print / PDF)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateServicePeriod() {
+        const dojVal = document.getElementById('doj').value;
+        const dorVal = document.getElementById('dor').value;
+
+        if (!dojVal || !dorVal) return;
+
+        const doj = new Date(dojVal);
+        const dor = new Date(dorVal);
+
+        if (dor < doj) {
+            alert("অবসরের তারিখ যোগদানের তারিখের আগে হতে পারে না।");
+            return;
+        }
+
+        let years = dor.getFullYear() - doj.getFullYear();
+        let months = dor.getMonth() - doj.getMonth();
+        let days = dor.getDate() - doj.getDate();
+
+        if (days < 0) {
+            months--;
+            const lastMonth = new Date(dor.getFullYear(), dor.getMonth(), 0);
+            days += lastMonth.getDate();
+        }
+
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        days += 1;
+        if (days >= 30) {
+            months++;
+            days -= 30;
+        }
+        if (months >= 12) {
+            years++;
+            months -= 12;
+        }
+
+        document.getElementById('yy').value = years;
+        document.getElementById('mm').value = months;
+        document.getElementById('dd').value = days;
+    }
+    
+    function calculateAll() {
+        const basic = parseFloat(document.getElementById('basic').value) || 0;
+        const daRate = parseFloat(document.getElementById('da').value) || 0;
+        const yy = parseInt(document.getElementById('yy').value) || 0;
+        const mm = parseInt(document.getElementById('mm').value) || 0;
+        const commPct = parseFloat(document.getElementById('commPct').value) || 0;
+        const med = parseFloat(document.getElementById('medAllow').value) || 0;
+        const age = parseInt(document.getElementById('age').value) || 61;
+
+        if (basic <= 0 || yy < 10) {
+            alert("Basic Pay, DA এবং Service Period লিখুন। পেনশনের জন্য ন্যূনতম ১০ বছর সার্ভিস প্রয়োজন।");
+            return;
+        }
+
+        let extraPeriod = 0;
+        if (mm >= 3 && mm < 9) extraPeriod = 1;
+        else if (mm >= 9) extraPeriod = 2;
+
+        let totalPeriods = (yy * 2) + extraPeriod;
+        let cappedPeriods = totalPeriods > 66 ? 66 : totalPeriods;
+
+        const daOnPay = (basic * daRate) / 100;
+        const emoluments = basic + daOnPay;
+        let gratuityRaw = (emoluments * cappedPeriods) / 4;
+        let gratuity = gratuityRaw > 1200000 ? 1200000 : gratuityRaw;
+
+        const grossPension = basic / 2;
+        const commutedAmt = grossPension * (commPct / 100);
+        const reducedPension = grossPension - commutedAmt;
+        const daOnPension = (grossPension * daRate) / 100;
+        const netMonthly = reducedPension + daOnPension + med;
+
+        const factorTable = {
+            20: 9.188, 21: 9.187, 22: 9.186, 23: 9.185, 24: 9.184, 25: 9.183,
+            26: 9.182, 27: 9.180, 28: 9.178, 29: 9.176, 30: 9.173, 31: 9.169,
+            32: 9.164, 33: 9.159, 34: 9.152, 35: 9.145, 36: 9.136, 37: 9.126,
+            38: 9.116, 39: 9.103, 40: 9.090, 41: 9.075, 42: 9.059, 43: 9.040,
+            44: 9.019, 45: 8.996, 46: 8.971, 47: 8.943, 48: 8.913, 49: 8.881,
+            50: 8.846, 51: 8.808, 52: 8.768, 53: 8.724, 54: 8.678, 55: 8.627,
+            56: 8.572, 57: 8.512, 58: 8.446, 59: 8.371, 60: 8.287, 61: 8.194,
+            62: 8.093, 63: 7.982, 64: 7.862, 65: 7.731, 66: 7.591, 67: 7.431,
+            68: 7.262, 69: 7.083, 70: 6.897, 71: 6.703, 72: 6.502, 73: 6.296,
+            74: 6.085, 75: 5.872, 76: 5.657, 77: 5.443, 78: 5.229, 79: 5.018,
+            80: 4.812, 81: 4.611
+        };
+            
+        const factor = factorTable[age] || 8.194;
+        const cvp = commutedAmt * 12 * factor;
+
+        // ফলাফল আপডেট
+        document.getElementById('rPeriods').innerText = totalPeriods;
+        document.getElementById('rGratuity').innerText = "₹ " + Math.round(gratuity).toLocaleString('en-IN');
+        document.getElementById('rFactor').innerText = factor;
+        document.getElementById('rCvp').innerText = "₹ " + Math.round(cvp).toLocaleString('en-IN');
+        document.getElementById('rTotalLump').innerText = "₹ " + Math.round(gratuity + cvp).toLocaleString('en-IN');
+        document.getElementById('rGrossPen').innerText = "₹ " + grossPension.toLocaleString('en-IN');
+        document.getElementById('rCommCut').innerText = "₹ " + Math.round(commutedAmt).toLocaleString('en-IN');
+        document.getElementById('rDaAmt').innerText = "₹ " + Math.round(daOnPension).toLocaleString('en-IN');
+        document.getElementById('rMed').innerText = "₹ " + med.toLocaleString('en-IN');
+        document.getElementById('rNetPen').innerText = "₹ " + Math.round(netMonthly).toLocaleString('en-IN');
+
+        // অ্যামাউন্টসহ বিস্তারিত হিসাব দেখানো
+        document.getElementById('expPeriods').innerText = 
+            `হিসাব: (${yy} × 2) + ${extraPeriod} = ${totalPeriods}` + (totalPeriods > 66 ? ` (গণনায় সর্বোচ্চ ৬৬ নেওয়া হবে)` : ``);
+
+        document.getElementById('expGratuity').innerText = 
+            `হিসাব: (${basic.toLocaleString('en-IN')} + ${Math.round(daOnPay).toLocaleString('en-IN')}) × ${cappedPeriods} ÷ 4 = ₹ ${Math.round(gratuity).toLocaleString('en-IN')}` + (gratuityRaw > 1200000 ? ` (সর্বোচ্চ ১২ লক্ষ টাকা প্রযোজ্য)` : ``);
+
+        document.getElementById('expGrossPen').innerText = 
+            `হিসাব: ${basic.toLocaleString('en-IN')} ÷ 2 = ₹ ${grossPension.toLocaleString('en-IN')}`;
+
+        document.getElementById('expCommCut').innerText = 
+            `হিসাব: ${grossPension.toLocaleString('en-IN')} × ${commPct}% = ₹ ${Math.round(commutedAmt).toLocaleString('en-IN')}`;
+
+        document.getElementById('expCvp').innerText = 
+            `হিসাব: ${Math.round(commutedAmt).toLocaleString('en-IN')} × 12 × ${factor} = ₹ ${Math.round(cvp).toLocaleString('en-IN')}`;
+
+        document.getElementById('expNetPen').innerText = 
+            `হিসাব: (${grossPension.toLocaleString('en-IN')} - ${Math.round(commutedAmt).toLocaleString('en-IN')}) + ${Math.round(daOnPension).toLocaleString('en-IN')} (DA ${daRate}%) + ${med} (MA) = ₹ ${Math.round(netMonthly).toLocaleString('en-IN')}`;
+
+        document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('btnPrint').style.display = 'block';
+    }
+</script>
+    <a href='https://free-hit-counters.net/'>freehitcounters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=a847bdb8ffac335409349b15b3868673d3ae4769'></script>
+   <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1534985/t/1"></script>
+</body>
+</html>
