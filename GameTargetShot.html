@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>টার্গেট শট - aionline.in.net</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --accent: #f43f5e;
+            --accent-glow: rgba(244, 63, 94, 0.4);
+            --gold: #facc15;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            cursor: crosshair; /* কাস্টম এইম কার্সর */
+        }
+
+        .header {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            letter-spacing: 1px;
+        }
+
+        .header a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        #game-box {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 540px;
+            background: radial-gradient(circle at center, #1e293b, #090d16);
+            border: 2px solid #334155;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), 0 0 20px var(--accent-glow);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* স্কোর ও সময় বার */
+        #hud {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 8px #000;
+        }
+
+        .hud-item {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #334155;
+        }
+
+        /* পপআপ মোডাল */
+        #game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 13, 22, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            z-index: 50;
+        }
+
+        #game-modal h2 {
+            font-size: 26px;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        #game-modal p {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: #ffffff;
+            border: none;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.5);
+            transition: transform 0.1s;
+        }
+
+        .btn-play:active {
+            transform: scale(0.96);
+        }
+
+        .footer-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🎯 টার্গেট শট (Target Shot)</h1>
+        <a href="https://aionline.in.net" target="_blank">aionline.in.net</a>
+    </div>
+
+    <div id="game-box">
+        <canvas id="targetCanvas" width="480" height="540"></canvas>
+        
+        <div id="hud">
+            <div class="hud-item">স্কোর: <span id="score" style="color:var(--gold);">0</span></div>
+            <div class="hud-item">সময়: <span id="timer" style="color:var(--accent);">60s</span></div>
+        </div>
+
+        <div id="game-modal">
+            <h2 id="modal-title">স্নাইপার মিশন!</h2>
+            <p id="modal-desc">
+                যত দ্রুত সম্ভব সঠিক টার্গেটে গুলি করুন।<br>
+                মাঝের লাল পয়েন্টে মারলে সর্বোচ্চ পয়েন্ট পাবেন!<br>
+                ⚠️ <b>বোমা (💣) স্পর্শ করবেন না!</b>
+            </p>
+            <button class="btn-play" id="start-btn">খেলা শুরু করুন</button>
+        </div>
+    </div>
+
+    <div class="footer-note">টার্গেট বা বোতামে সরাসরি টাচ বা ক্লিক করুন</div>
+
+    <script>
+        const canvas = document.getElementById('targetCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scoreElem = document.getElementById('score');
+        const timerElem = document.getElementById('timer');
+        const modal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const startBtn = document.getElementById('start-btn');
+
+        let isRunning = false;
+        let score = 0;
+        let timeLeft = 60;
+        let timerInterval = null;
+        let targets = [];
+        let particles = [];
+        let popups = [];
+
+        // লক্ষ্যবস্তু তৈরি
+        function spawnTarget() {
+            if (!isRunning) return;
+            const isBomb = Math.random() < 0.22; // ২২% সম্ভাবনা বোমার
+            const radius = isBomb ? 26 : (Math.random() * 10 + 28);
+            
+            targets.push({
+                x: Math.random() * (canvas.width - radius * 2) + radius,
+                y: Math.random() * (canvas.height - radius * 2 - 60) + radius + 40,
+                radius: radius,
+                isBomb: isBomb,
+                vx: (Math.random() - 0.5) * 2.5,
+                vy: (Math.random() - 0.5) * 2.5,
+                life: 140, // ফ্রেম লাইফটাইম
+                maxLife: 140
+            });
+        }
+
+        // পার্টিকেল ইফেক্ট
+        function createSparks(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color,
+                    life: 20,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        // পপআপ টেক্সট
+        function addPopup(x, y, text, color) {
+            popups.push({ x, y, text, color, alpha: 1.0 });
+        }
+
+        // শট হ্যান্ডলার (টাচ ও ক্লিক)
+        function shoot(e) {
+            if (!isRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const clickX = (clientX - rect.left) * scaleX;
+            const clickY = (clientY - rect.top) * scaleY;
+
+            createSparks(clickX, clickY, '#ffffff', 8);
+
+            // টার্গেটে আঘাত লেগেছে কি না পরীক্ষা
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                const dist = Math.hypot(clickX - t.x, clickY - t.y);
+
+                if (dist <= t.radius) {
+                    if (t.isBomb) {
+                        // বোমায় আঘাত লাগলে
+                        score = Math.max(0, score - 30);
+                        createSparks(t.x, t.y, '#ef4444', 30);
+                        addPopup(t.x, t.y, "-30 💥", '#ef4444');
+                    } else {
+                        // সাধারণ টার্গেট স্কোরিং
+                        let points = 20;
+                        let text = "+20";
+                        if (dist < t.radius * 0.35) { // Bullseye
+                            points = 50;
+                            text = "BULLSEYE! +50 🔥";
+                        }
+                        score += points;
+                        createSparks(t.x, t.y, '#f59e0b', 20);
+                        addPopup(t.x, t.y, text, '#facc15');
+                    }
+
+                    scoreElem.innerText = score;
+                    targets.splice(i, 1);
+                    return; // একটি ক্লিকে একটাই ধ্বংস হবে
+                }
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            timeLeft = 60;
+            targets = [];
+            particles = [];
+            popups = [];
+            scoreElem.innerText = score;
+            timerElem.innerText = `${timeLeft}s`;
+            isRunning = true;
+            modal.style.display = 'none';
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElem.innerText = `${timeLeft}s`;
+                if (timeLeft <= 0) gameOver();
+            }, 1000);
+        }
+
+        function gameOver() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            modalTitle.innerText = "মিশন সমাপ্ত!";
+            modalDesc.innerText = `সময় শেষ!\nআপনার অর্জিত মোট স্কোর: ${score} পয়েন্ট।`;
+            startBtn.innerText = "আবার খেলুন";
+            modal.style.display = 'flex';
+        }
+
+        // ইভেন্ট লিসেনার
+        canvas.addEventListener('mousedown', shoot);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            shoot(e);
+        }, { passive: false });
+
+        startBtn.addEventListener('click', resetGame);
+
+        let frameCounter = 0;
+
+        function update() {
+            if (!isRunning) return;
+            frameCounter++;
+
+            // নির্দিষ্ট বিরতিতে টার্গেট তৈরি
+            if (frameCounter % 35 === 0 && targets.length < 6) {
+                spawnTarget();
+            }
+
+            // টার্গেট আপডেট
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                t.x += t.vx;
+                t.y += t.vy;
+                t.life--;
+
+                // দেয়ালে ধাক্কা খেয়ে ফিরে আসা
+                if (t.x - t.radius < 0 || t.x + t.radius > canvas.width) t.vx *= -1;
+                if (t.y - t.radius < 40 || t.y + t.radius > canvas.height) t.vy *= -1;
+
+                if (t.life <= 0) targets.splice(i, 1);
+            }
+
+            // পার্টিকেল আপডেট
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            // পপআপ আপডেট
+            for (let i = popups.length - 1; i >= 0; i--) {
+                const pop = popups[i];
+                pop.y -= 1.2;
+                pop.alpha -= 0.03;
+                if (pop.alpha <= 0) popups.splice(i, 1);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ব্যাকগ্রাউন্ড রেডার/গ্রিড লাইন
+            ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 140, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 220, 0, Math.PI * 2);
+            ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.moveTo(0, canvas.height / 2); ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+
+            // টার্গেট ড্র
+            targets.forEach(t => {
+                ctx.save();
+                if (t.isBomb) {
+                    // বোমা
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.stroke();
+
+                    ctx.font = `${t.radius * 1.1}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('💣', t.x, t.y);
+                } else {
+                    // ক্ল্যাসিক আর্চারি টার্গেট রিং
+                    // আউটার হোয়াইট
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // ব্লু রিং
+                    ctx.fillStyle = '#0284c7';
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // বুলসআই রেড
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius * 0.35, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            // পার্টিকেল ড্র
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // পপআপ টেক্সট ড্র
+            popups.forEach(pop => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, pop.alpha);
+                ctx.fillStyle = pop.color;
+                ctx.font = "bold 16px 'Segoe UI'";
+                ctx.textAlign = "center";
+                ctx.fillText(pop.text, pop.x, pop.y);
+                ctx.restore();
+            });
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
+
