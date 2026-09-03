@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Shooter - aionline.in.net</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #05070e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .header {
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 19px;
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+        }
+        .header a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 560px;
+            background: #02040a;
+            border: 2px solid #0284c7;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(2, 132, 199, 0.4);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 8px #000;
+        }
+        #game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 7, 18, 0.88);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        #game-modal h2 {
+            font-size: 26px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+        }
+        #game-modal p {
+            font-size: 15px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #ffffff;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.5);
+            transition: transform 0.1s ease;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 420px;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+        .touch-btn {
+            flex: 1;
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: bold;
+            background: #0f172a;
+            color: #38bdf8;
+            border: 1px solid #0284c7;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .fire-btn {
+            background: linear-gradient(180deg, #e11d48, #be123c);
+            color: #ffffff;
+            border: 1px solid #fda4af;
+            box-shadow: 0 0 10px rgba(225, 29, 72, 0.4);
+        }
+        .touch-btn:active {
+            filter: brightness(1.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>স্পেস গ্যালাক্সি ওয়ার (Space War)</h1>
+        <a href="https://aionline.in.net" target="_blank">aionline.in.net</a>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="420" height="560"></canvas>
+        <div id="ui-overlay">
+            <span id="score-text">স্কোর: 0</span>
+            <span id="best-text">সেরা: 0</span>
+        </div>
+        <div id="game-modal">
+            <h2 id="modal-title">গ্যালাক্সি ডিফেন্ডার</h2>
+            <p id="modal-desc">লেজার রে দিয়ে শত্রু জাহাজ ও উল্কাপিণ্ড ধ্বংস করুন!<br>PC: তীরচিহ্ন/A-D এবং Spacebar দিয়ে গুলি করুন।</p>
+            <button class="btn" id="start-btn">যুদ্ধ শুরু করুন</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="touch-btn" id="btn-left">◀ বাঁয়ে</button>
+        <button class="touch-btn fire-btn" id="btn-fire">🔥 গুলি (FIRE)</button>
+        <button class="touch-btn" id="btn-right">ডানে ▶</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scoreText = document.getElementById('score-text');
+        const bestText = document.getElementById('best-text');
+        const modal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const startBtn = document.getElementById('start-btn');
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnFire = document.getElementById('btn-fire');
+
+        let isRunning = false;
+        let score = 0;
+        let bestScore = 0;
+        let frameCount = 0;
+
+        const player = {
+            x: canvas.width / 2 - 18,
+            y: canvas.height - 75,
+            width: 36,
+            height: 44,
+            speed: 6,
+            movingLeft: false,
+            movingRight: false,
+            firing: false,
+            fireCooldown: 0
+        };
+
+        let lasers = [];
+        let targets = []; // উল্কা এবং শত্রু জাহাজ
+        let particles = [];
+        let stars = [];
+        let nebulae = [];
+
+        // পটভূমির নেবুলা ক্লাউড
+        for (let i = 0; i < 3; i++) {
+            nebulae.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 80 + 60,
+                color: i % 2 === 0 ? 'rgba(76, 29, 149, 0.15)' : 'rgba(14, 116, 144, 0.15)',
+                speed: 0.3
+            });
+        }
+
+        // তারকারাজি
+        for (let i = 0; i < 60; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2 + 0.5,
+                speed: Math.random() * 2 + 0.5,
+                alpha: Math.random()
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 25,
+                    color: color || '#f97316',
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        function spawnTargets() {
+            if (frameCount % 45 === 0) {
+                const isEnemyShip = Math.random() > 0.6;
+                const size = isEnemyShip ? 32 : Math.random() * 18 + 22;
+                targets.push({
+                    type: isEnemyShip ? 'enemy' : 'meteor',
+                    x: Math.random() * (canvas.width - size),
+                    y: -size - 10,
+                    size: size,
+                    speed: isEnemyShip ? 2.5 : Math.random() * 1.8 + 2.2,
+                    hp: isEnemyShip ? 2 : 1,
+                    craterOffset: Math.random() * 5
+                });
+            }
+        }
+
+        function fireLaser() {
+            // ডাবল প্লাজমা লেজার রে
+            lasers.push({ x: player.x + 6, y: player.y + 4, w: 4, h: 16 });
+            lasers.push({ x: player.x + player.width - 10, y: player.y + 4, w: 4, h: 16 });
+        }
+
+        function resetGame() {
+            player.x = canvas.width / 2 - player.width / 2;
+            lasers = [];
+            targets = [];
+            particles = [];
+            score = 0;
+            frameCount = 0;
+            isRunning = true;
+            modal.style.display = 'none';
+            scoreText.innerText = `স্কোর: ${score}`;
+        }
+
+        function gameOver() {
+            isRunning = false;
+            createExplosion(player.x + player.width / 2, player.y + player.height / 2, '#38bdf8');
+            if (score > bestScore) {
+                bestScore = score;
+                bestText.innerText = `সেরা: ${bestScore}`;
+            }
+            modalTitle.innerText = "মিশন ব্যর্থ!";
+            modalDesc.innerText = `আপনার মহাকাশযান ধ্বংস হয়েছে!\nচূড়ান্ত স্কোর: ${score}`;
+            startBtn.innerText = "আবার খেলুন";
+            modal.style.display = 'flex';
+        }
+
+        // কীবোর্ড ইনপুট
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') player.movingLeft = true;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') player.movingRight = true;
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') player.firing = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') player.movingLeft = false;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') player.movingRight = false;
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') player.firing = false;
+        });
+
+        // অন-স্ক্রিন বাটন
+        const bindButton = (el, prop) => {
+            const on = (e) => { e.preventDefault(); player[prop] = true; };
+            const off = (e) => { e.preventDefault(); player[prop] = false; };
+            el.addEventListener('mousedown', on);
+            el.addEventListener('mouseup', off);
+            el.addEventListener('touchstart', on);
+            el.addEventListener('touchend', off);
+        };
+        bindButton(btnLeft, 'movingLeft');
+        bindButton(btnRight, 'movingRight');
+        bindButton(btnFire, 'firing');
+
+        startBtn.addEventListener('click', resetGame);
+
+        // ড্রয়িং ফাংশনস
+        function drawPlayerShip(x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // ইঞ্জিনের বুস্টার ফ্লেম (অ্যানিমেটেড)
+            const flameHeight = Math.sin(frameCount * 0.4) * 5 + 14;
+            const gradFlame = ctx.createLinearGradient(18, 38, 18, 38 + flameHeight);
+            gradFlame.addColorStop(0, '#38bdf8');
+            gradFlame.addColorStop(0.5, '#f59e0b');
+            gradFlame.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradFlame;
+            ctx.beginPath();
+            ctx.moveTo(12, 38);
+            ctx.lineTo(18, 38 + flameHeight);
+            ctx.lineTo(24, 38);
+            ctx.fill();
+
+            // প্রধান বডি
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.moveTo(18, 0);
+            ctx.lineTo(32, 36);
+            ctx.lineTo(18, 30);
+            ctx.lineTo(4, 36);
+            ctx.closePath();
+            ctx.fill();
+
+            // ডানা ও ধাতব ফিনিশ
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.moveTo(18, 6);
+            ctx.lineTo(26, 32);
+            ctx.lineTo(18, 28);
+            ctx.lineTo(10, 32);
+            ctx.closePath();
+            ctx.fill();
+
+            // ককপিট গ্লাস
+            ctx.fillStyle = '#e0f2fe';
+            ctx.beginPath();
+            ctx.ellipse(18, 16, 3.5, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawEnemyShip(x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // শত্রু জাহাজের বডি
+            ctx.fillStyle = '#e11d48';
+            ctx.beginPath();
+            ctx.moveTo(size / 2, size);
+            ctx.lineTo(size, 6);
+            ctx.lineTo(size / 2, 14);
+            ctx.lineTo(0, 6);
+            ctx.closePath();
+            ctx.fill();
+
+            // ককপিট
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(size / 2, 16, size / 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawMeteor(x, y, size, offset) {
+            ctx.save();
+            ctx.fillStyle = '#78716c';
+            ctx.strokeStyle = '#57534e';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // উল্কার ক্র্যাটার (গর্ত)
+            ctx.fillStyle = '#44403c';
+            ctx.beginPath();
+            ctx.arc(x + size / 3, y + size / 3, size / 6, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.65, y + size * 0.6, size / 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function update() {
+            if (!isRunning) return;
+            frameCount++;
+
+            // ব্যাকগ্রাউন্ড আপডেট
+            nebulae.forEach(n => {
+                n.y += n.speed;
+                if (n.y - n.radius > canvas.height) n.y = -n.radius;
+            });
+
+            stars.forEach(s => {
+                s.y += s.speed;
+                if (s.y > canvas.height) s.y = 0;
+            });
+
+            // প্লেয়ার মুভমেন্ট
+            if (player.movingLeft && player.x > 5) player.x -= player.speed;
+            if (player.movingRight && player.x + player.width < canvas.width - 5) player.x += player.speed;
+
+            // লেজার ফায়ারিং অটো/বাটন
+            if (player.fireCooldown > 0) player.fireCooldown--;
+            if (player.firing && player.fireCooldown <= 0) {
+                fireLaser();
+                player.fireCooldown = 12; // শট ইন্টারভাল
+            }
+
+            // লেজার আপডেট
+            for (let i = lasers.length - 1; i >= 0; i--) {
+                lasers[i].y -= 10;
+                if (lasers[i].y < -20) {
+                    lasers.splice(i, 1);
+                }
+            }
+
+            // স্পন টার্গেটস
+            spawnTargets();
+
+            // অবজেক্ট ও কলিশন
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                t.y += t.speed;
+
+                // প্লেয়ারের সাথে সংঘর্ষ
+                if (
+                    player.x < t.x + t.size &&
+                    player.x + player.width > t.x &&
+                    player.y < t.y + t.size &&
+                    player.y + player.height > t.y
+                ) {
+                    gameOver();
+                    return;
+                }
+
+                // লেজারের সাথে সংঘর্ষ
+                for (let j = lasers.length - 1; j >= 0; j--) {
+                    const l = lasers[j];
+                    if (
+                        l.x < t.x + t.size &&
+                        l.x + l.w > t.x &&
+                        l.y < t.y + t.size &&
+                        l.y + l.h > t.y
+                    ) {
+                        lasers.splice(j, 1);
+                        t.hp--;
+
+                        if (t.hp <= 0) {
+                            createExplosion(t.x + t.size / 2, t.y + t.size / 2, t.type === 'enemy' ? '#f43f5e' : '#a8a29e');
+                            score += t.type === 'enemy' ? 25 : 10;
+                            scoreText.innerText = `স্কোর: ${score}`;
+                            targets.splice(i, 1);
+                        } else {
+                            createExplosion(l.x, l.y, '#38bdf8');
+                        }
+                        break;
+                    }
+                }
+
+                // স্ক্রিন পার হলে সরানো
+                if (t.y > canvas.height) {
+                    targets.splice(i, 1);
+                }
+            }
+
+            // পার্টিকেল আপডেট
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // নেবুলা আঁকা
+            nebulae.forEach(n => {
+                const grad = ctx.createRadialGradient(n.x, n.y, 10, n.x, n.y, n.radius);
+                grad.addColorStop(0, n.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // তারা আঁকা
+            ctx.fillStyle = "#ffffff";
+            stars.forEach(s => {
+                ctx.globalAlpha = s.alpha;
+                ctx.fillRect(s.x, s.y, s.size, s.size);
+            });
+            ctx.globalAlpha = 1.0;
+
+            // লেজার রে আঁকা (Glow সহ)
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00f0ff';
+            ctx.fillStyle = '#38bdf8';
+            lasers.forEach(l => {
+                ctx.fillRect(l.x, l.y, l.w, l.h);
+            });
+            ctx.shadowBlur = 0;
+
+            // টার্গেটস আঁকা (উল্কা ও শত্রু)
+            targets.forEach(t => {
+                if (t.type === 'enemy') {
+                    drawEnemyShip(t.x, t.y, t.size);
+                } else {
+                    drawMeteor(t.x, t.y, t.size, t.craterOffset);
+                }
+            });
+
+            // পার্টিকেলস আঁকা
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // প্লেয়ার স্পেসশিপ আঁকা
+            drawPlayerShip(player.x, player.y);
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
