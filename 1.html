@@ -222,7 +222,6 @@
         </div>
     </div>
 
-    <!-- মোবাইল স্পর্শ কন্ট্রোল -->
     <div class="controls-layer">
         <div class="dpad">
             <div></div>
@@ -258,7 +257,6 @@
         const COLS = 18;
         const ROWS = 22;
 
-        // ০: খালি, ১: ইটের দেওয়াল (ভাঙনশীল), ২: স্টিলের দেওয়াল (ভাঙবে না)
         let map = [];
         const baseMapLayout = [
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -285,7 +283,6 @@
             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         ];
 
-        // প্লেয়ার ট্যাংক
         const player = {
             x: 6 * TILE,
             y: 19 * TILE,
@@ -369,7 +366,6 @@
             if (isPlayer) tank.cooldown = 18;
         }
 
-        // কীবোর্ড ও মোবাইল কন্ট্রোল স্টেট
         const keys = { up: false, down: false, left: false, right: false };
 
         window.addEventListener('keydown', (e) => {
@@ -438,7 +434,6 @@
             if (!isRunning) return;
             frameCount++;
 
-            // প্লেয়ার মুভমেন্ট
             let newX = player.x;
             let newY = player.y;
 
@@ -453,11 +448,9 @@
             }
             if (player.cooldown > 0) player.cooldown--;
 
-            // শত্রু স্পন
             if (frameCount % 120 === 0) spawnEnemy();
 
-            // শত্রু AI মুভমেন্ট ও ফায়ার
-            enemies.forEach((en, idx) => {
+            enemies.forEach((en) => {
                 en.changeDirTimer--;
                 if (en.changeDirTimer <= 0) {
                     const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
@@ -476,7 +469,7 @@
                     en.x = ex;
                     en.y = ey;
                 } else {
-                    en.changeDirTimer = 0; // ধাক্কা খেলে দিক বদল
+                    en.changeDirTimer = 0;
                 }
 
                 en.shootTimer--;
@@ -486,33 +479,29 @@
                 }
             });
 
-            // বুলেট আপডেট
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const b = bullets[i];
                 b.x += b.vx;
                 b.y += b.vy;
 
-                // স্ক্রিন সীমা পরীক্ষা
                 if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
                     bullets.splice(i, 1);
                     continue;
                 }
 
-                // দেওয়ালে আঘাত
                 const tileC = Math.floor(b.x / TILE);
                 const tileR = Math.floor(b.y / TILE);
                 if (map[tileR] && map[tileR][tileC] > 0) {
                     if (map[tileR][tileC] === 1) {
-                        map[tileR][tileC] = 0; // ইটের দেওয়াল ভাঙল
+                        map[tileR][tileC] = 0;
                         createExplosion(tileC * TILE + 10, tileR * TILE + 10, '#b45309');
                     } else {
-                        createExplosion(b.x, b.y, '#94a3b8'); // স্টিলে স্পার্ক
+                        createExplosion(b.x, b.y, '#94a3b8');
                     }
                     bullets.splice(i, 1);
                     continue;
                 }
 
-                // প্লেয়ার বুলেটের শত্রুতে আঘাত
                 if (b.isPlayer) {
                     let hit = false;
                     for (let j = enemies.length - 1; j >= 0; j--) {
@@ -529,14 +518,12 @@
                     }
                     if (hit) continue;
                 } else {
-                    // শত্রু বুলেটের প্লেয়ারে আঘাত
                     if (b.x > player.x && b.x < player.x + player.size && b.y > player.y && b.y < player.y + player.size) {
                         createExplosion(player.x + 9, player.y + 9, '#22c55e');
                         bullets.splice(i, 1);
                         lives--;
                         livesElem.innerText = lives;
 
-                        // প্লেয়ার রিস্টার্ট পজিশন
                         player.x = 6 * TILE;
                         player.y = 19 * TILE;
                         if (lives <= 0) {
@@ -548,7 +535,6 @@
                 }
             }
 
-            // পার্টিকেল আপডেট
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.x += p.vx;
@@ -558,7 +544,6 @@
             }
         }
 
-        // ক্লাসিক ট্যাঙ্ক ড্র
         function drawTank(x, y, size, dir, color, barrelColor) {
             ctx.save();
             ctx.translate(x + size / 2, y + size / 2);
@@ -569,22 +554,18 @@
             if (dir === 'RIGHT') rot = Math.PI / 2;
             ctx.rotate(rot);
 
-            // চেইন/হুইল ট্র্যাক
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(-size / 2, -size / 2, 4, size);
             ctx.fillRect(size / 2 - 4, -size / 2, 4, size);
 
-            // বডি
             ctx.fillStyle = color;
             ctx.fillRect(-size / 2 + 3, -size / 2 + 2, size - 6, size - 4);
 
-            // টারেট
             ctx.fillStyle = barrelColor;
             ctx.beginPath();
             ctx.arc(0, 0, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // কামান
             ctx.fillRect(-1.5, -size / 2 - 2, 3, size / 2);
 
             ctx.restore();
@@ -597,14 +578,12 @@
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
                     if (map[r][c] === 1) {
-                        // ইটের দেওয়াল
                         ctx.fillStyle = '#b45309';
                         ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
                         ctx.strokeStyle = '#78350f';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(c * TILE, r * TILE, TILE, TILE);
                     } else if (map[r][c] === 2) {
-                        // স্টিলের দেওয়াল
                         ctx.fillStyle = '#64748b';
                         ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
                         ctx.strokeStyle = '#cbd5e1';
@@ -645,7 +624,10 @@
             requestAnimationFrame(loop);
         }
 
+        // গেমের প্রাথমিক দৃশ্য রেন্ডার
+        initMap();
+        draw();
         loop();
     </script>
 </body>
-</html>
+</html>   
