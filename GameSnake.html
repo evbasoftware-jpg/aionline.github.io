@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ক্লাসিক স্নেক গেম - aionline.in.net</title>
+    <style>
+        :root {
+            --bg-dark: #080d1a;
+            --board-bg: #111827;
+            --snake-head: #a855f7;
+            --snake-body: #c084fc;
+            --food-color: #ef4444;
+            --bonus-color: #facc15;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .header {
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            color: var(--snake-head);
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+            letter-spacing: 1px;
+        }
+
+        .header a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        /* স্কোর বোর্ড */
+        .score-board {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 360px;
+            justify-content: space-between;
+        }
+
+        .score-card {
+            background: #1f2937;
+            padding: 6px 18px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #374151;
+            flex: 1;
+            margin: 0 4px;
+        }
+
+        .score-card span {
+            display: block;
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .score-card strong {
+            font-size: 18px;
+            color: #f3f4f6;
+        }
+
+        #game-container {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            background: var(--board-bg);
+            border: 2px solid #374151;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* মোডাল */
+        #game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 13, 26, 0.92);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 50;
+        }
+
+        #game-modal h2 {
+            font-size: 26px;
+            color: var(--snake-head);
+            margin-bottom: 8px;
+        }
+
+        #game-modal p {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #9333ea, #a855f7);
+            color: #ffffff;
+            border: none;
+            padding: 10px 30px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .btn-start:active {
+            transform: scale(0.96);
+        }
+
+        /* মোবাইল স্পর্শ কন্ট্রোল (D-Pad) */
+        .controls-layer {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 44px);
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .d-btn {
+            background: #1f2937;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .d-btn:active {
+            background: var(--snake-head);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🐍 ক্লাসিক স্নেক (Snake Game)</h1>
+        <a href="https://aionline.in.net" target="_blank">aionline.in.net</a>
+    </div>
+
+    <div class="score-board">
+        <div class="score-card">
+            <span>স্কোর</span>
+            <strong id="score">0</strong>
+        </div>
+        <div class="score-card">
+            <span>সেরা স্কোর</span>
+            <strong id="best-score">0</strong>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <canvas id="snakeCanvas" width="360" height="360"></canvas>
+
+        <div id="game-modal">
+            <h2 id="modal-title">স্নেক গেম!</h2>
+            <p id="modal-desc">
+                লাল খাবার খেয়ে সাপকে বড় করুন!<br>
+                দেয়াল বা নিজের শরীরে ধাক্কা খাওয়া থেকে বিরত থাকুন।<br><br>
+                <small style="color:#94a3b8;">PC: <b>W/A/S/D</b> বা <b>Arrow Keys</b> দিয়ে খেলুন</small>
+            </p>
+            <button class="btn-start" id="start-btn">খেলা শুরু করুন</button>
+        </div>
+    </div>
+
+    <div class="controls-layer">
+        <div></div>
+        <button class="d-btn" id="d-up">▲</button>
+        <div></div>
+        <button class="d-btn" id="d-left">◀</button>
+        <div></div>
+        <button class="d-btn" id="d-right">▶</button>
+        <div></div>
+        <button class="d-btn" id="d-down">▼</button>
+        <div></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scoreElem = document.getElementById('score');
+        const bestScoreElem = document.getElementById('best-score');
+        const modal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const startBtn = document.getElementById('start-btn');
+
+        const GRID_SIZE = 18; // গ্রিডের প্রতিটি ঘরের সাইজ (360/18 = 20 টি ঘর)
+        const TILE_COUNT = canvas.width / GRID_SIZE;
+
+        let snake = [];
+        let dx = 1;
+        let dy = 0;
+        let nextDx = 1;
+        let nextDy = 0;
+
+        let food = { x: 5, y: 5 };
+        let bonusFood = null;
+        let bonusTimer = 0;
+
+        let score = 0;
+        let bestScore = localStorage.getItem('snake_best_score') || 0;
+        bestScoreElem.innerText = bestScore;
+
+        let gameInterval = null;
+        let isRunning = false;
+        let speed = 110;
+
+        // খাবার স্পন করা
+        function spawnFood() {
+            let valid = false;
+            while (!valid) {
+                food.x = Math.floor(Math.random() * TILE_COUNT);
+                food.y = Math.floor(Math.random() * TILE_COUNT);
+                valid = !snake.some(segment => segment.x === food.x && segment.y === food.y);
+            }
+        }
+
+        // স্পেশাল বোনাস ফুড স্পন
+        function spawnBonus() {
+            bonusFood = {
+                x: Math.floor(Math.random() * TILE_COUNT),
+                y: Math.floor(Math.random() * TILE_COUNT),
+                life: 50 // নির্দিষ্ট সময় থাকবে
+            };
+        }
+
+        function resetGame() {
+            snake = [
+                { x: 6, y: 10 },
+                { x: 5, y: 10 },
+                { x: 4, y: 10 }
+            ];
+            dx = 1;
+            dy = 0;
+            nextDx = 1;
+            nextDy = 0;
+            score = 0;
+            speed = 110;
+            bonusFood = null;
+            scoreElem.innerText = score;
+            spawnFood();
+            modal.style.display = 'none';
+            isRunning = true;
+
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, speed);
+        }
+
+        function gameOver() {
+            isRunning = false;
+            clearInterval(gameInterval);
+            modalTitle.innerText = "খেলা সমাপ্ত!";
+            modalDesc.innerText = `আপনি ধাক্কা খেয়েছেন!\nমোট স্কোর: ${score} পয়েন্ট।`;
+            startBtn.innerText = "পুনরায় খেলুন";
+            modal.style.display = 'flex';
+        }
+
+        // ডিরেকশন পরিবর্তন লজিক
+        function changeDirection(newDx, newDy) {
+            // বিপরীত দিকে যাওয়া প্রতিরোধ (উল্টো দিকে না ঘুরে যাওয়া)
+            if (newDx !== -dx && newDy !== -dy) {
+                nextDx = newDx;
+                nextDy = newDy;
+            }
+        }
+
+        // কীবোর্ড কন্ট্রোল
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+            if ((k === 'arrowup' || k === 'w') && dy === 0) changeDirection(0, -1);
+            if ((k === 'arrowdown' || k === 's') && dy === 0) changeDirection(0, 1);
+            if ((k === 'arrowleft' || k === 'a') && dx === 0) changeDirection(-1, 0);
+            if ((k === 'arrowright' || k === 'd') && dx === 0) changeDirection(1, 0);
+        });
+
+        // মোবাইল বাটন ইভেন্ট
+        document.getElementById('d-up').addEventListener('click', () => changeDirection(0, -1));
+        document.getElementById('d-down').addEventListener('click', () => changeDirection(0, 1));
+        document.getElementById('d-left').addEventListener('click', () => changeDirection(-1, 0));
+        document.getElementById('d-right').addEventListener('click', () => changeDirection(1, 0));
+
+        // টাচ স্ক্রিন সোয়াইপ (Swipe) সাপোর্ট
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        canvas.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 30) changeDirection(1, 0);
+                else if (diffX < -30) changeDirection(-1, 0);
+            } else {
+                if (diffY > 30) changeDirection(0, 1);
+                else if (diffY < -30) changeDirection(0, -1);
+            }
+        }, { passive: true });
+
+        startBtn.addEventListener('click', resetGame);
+
+        function update() {
+            dx = nextDx;
+            dy = nextDy;
+
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // দেওয়ালে ধাক্কা লাগা
+            if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
+                gameOver();
+                return;
+            }
+
+            // নিজের শরীরে ধাক্কা লাগা
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // খাবার খাওয়া পরীক্ষা
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                updateScore();
+                spawnFood();
+
+                // নির্দিষ্ট ব্যবধানে স্পেশাল ফুড ও স্পিড বৃদ্ধি
+                if (score % 50 === 0 && !bonusFood) spawnBonus();
+                if (speed > 60 && score % 40 === 0) {
+                    speed -= 4;
+                    clearInterval(gameInterval);
+                    gameInterval = setInterval(gameLoop, speed);
+                }
+            } else if (bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
+                score += 35;
+                updateScore();
+                bonusFood = null;
+            } else {
+                snake.pop(); // খাবার না খেলে লেজের শেষ অংশ মুছে যাওয়া
+            }
+
+            // বোনাস ফুড টাইমার আপডেট
+            if (bonusFood) {
+                bonusFood.life--;
+                if (bonusFood.life <= 0) bonusFood = null;
+            }
+        }
+
+        function updateScore() {
+            scoreElem.innerText = score;
+            if (score > bestScore) {
+                bestScore = score;
+                bestScoreElem.innerText = bestScore;
+                localStorage.setItem('snake_best_score', bestScore);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ব্যাকগ্রাউন্ড গ্রিড
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < canvas.width; i += GRID_SIZE) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            // সাধারণ খাবার ড্র (লাল আপেল)
+            ctx.fillStyle = 'var(--food-color)';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(
+                food.x * GRID_SIZE + GRID_SIZE / 2,
+                food.y * GRID_SIZE + GRID_SIZE / 2,
+                GRID_SIZE / 2.3,
+                0, Math.PI * 2
+            );
+            ctx.fill();
+
+            // স্পেশাল বোনাস ফুড ড্র (হলুদ তারা/বল)
+            if (bonusFood) {
+                ctx.fillStyle = 'var(--bonus-color)';
+                ctx.shadowColor = '#facc15';
+                ctx.beginPath();
+                ctx.arc(
+                    bonusFood.x * GRID_SIZE + GRID_SIZE / 2,
+                    bonusFood.y * GRID_SIZE + GRID_SIZE / 2,
+                    GRID_SIZE / 2,
+                    0, Math.PI * 2
+                );
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+
+            // সাপ আঁকা
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? '#a855f7' : '#c084fc';
+                if (index === 0) {
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#a855f7';
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(
+                    segment.x * GRID_SIZE + 1.5,
+                    segment.y * GRID_SIZE + 1.5,
+                    GRID_SIZE - 3,
+                    GRID_SIZE - 3,
+                    index === 0 ? 6 : 4
+                );
+                ctx.fill();
+
+                // মাথার চোখ আঁকা
+                if (index === 0) {
+                    ctx.fillStyle = '#ffffff';
+                    const eyeSize = 3;
+                    const cx = segment.x * GRID_SIZE + GRID_SIZE / 2;
+                    const cy = segment.y * GRID_SIZE + GRID_SIZE / 2;
+                    ctx.fillRect(cx - 4, cy - 4, eyeSize, eyeSize);
+                    ctx.fillRect(cx + 2, cy - 4, eyeSize, eyeSize);
+                }
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function gameLoop() {
+            if (isRunning) {
+                update();
+                draw();
+            }
+        }
+
+        draw(); // শুরুর বোর্ড প্রদর্শন
+    </script>
+</body>
+</html>
