@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ট্যাঙ্ক ব্যাটল (Tank Battle) - aionline.in.net</title>
+    <style>
+        :root {
+            --bg-dark: #070b12;
+            --board-bg: #0f172a;
+            --accent: #22c55e;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .header {
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        }
+
+        .header a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        #game-box {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            height: 440px;
+            background: var(--board-bg);
+            border: 2px solid #334155;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(34, 197, 94, 0.2);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD ও স্কোর বার */
+        #hud {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 6px #000;
+        }
+
+        .hud-badge {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        /* মোডাল স্ক্রিন */
+        #game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 11, 18, 0.92);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 50;
+        }
+
+        #game-modal h2 {
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        #game-modal p {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #ffffff;
+            border: none;
+            padding: 10px 28px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .btn-play:active {
+            transform: scale(0.96);
+        }
+
+        /* মোবাইল কন্ট্রোল প্যাড */
+        .controls-layer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 360px;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 44px);
+            grid-template-rows: repeat(3, 44px);
+            gap: 4px;
+        }
+
+        .d-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .d-btn:active {
+            background: var(--accent);
+            color: #0b0f19;
+        }
+
+        .btn-fire {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: 2px solid #f87171;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-fire:active {
+            transform: scale(0.92);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🛡️ ট্যাঙ্ক ব্যাটল (Tank Battle)</h1>
+        <a href="https://aionline.in.net" target="_blank">aionline.in.net</a>
+    </div>
+
+    <div id="game-box">
+        <canvas id="tankCanvas" width="360" height="440"></canvas>
+        
+        <div id="hud">
+            <div class="hud-badge">জীবন: <span id="lives-count" style="color:var(--accent);">3</span> ❤️</div>
+            <div class="hud-badge">স্কোর: <span id="score-count" style="color:var(--gold);">0</span></div>
+        </div>
+
+        <div id="game-modal">
+            <h2 id="modal-title">ট্যাঙ্ক ব্যাটল!</h2>
+            <p id="modal-desc">
+                লাল শত্রু ট্যাঙ্ক ধ্বংস করুন এবং নিজে বাঁচুন!<br>
+                ইটের দেওয়াল ভেঙে পথ তৈরি করা যাবে।<br><br>
+                <small style="color:#94a3b8;">PC: <b>W/A/S/D</b> বা <b>Arrow Keys</b> দিয়ে মুভ, <b>Space</b> গোলা ছোড়া</small>
+            </p>
+            <button class="btn-play" id="start-btn">খেলা শুরু করুন</button>
+        </div>
+    </div>
+
+    <!-- মোবাইল স্পর্শ কন্ট্রোল -->
+    <div class="controls-layer">
+        <div class="dpad">
+            <div></div>
+            <button class="d-btn" id="d-up">▲</button>
+            <div></div>
+            <button class="d-btn" id="d-left">◀</button>
+            <div></div>
+            <button class="d-btn" id="d-right">▶</button>
+            <div></div>
+            <button class="d-btn" id="d-down">▼</button>
+            <div></div>
+        </div>
+        <button class="btn-fire" id="btn-shoot">🔥 ফায়ার</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tankCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const livesElem = document.getElementById('lives-count');
+        const scoreElem = document.getElementById('score-count');
+        const modal = document.getElementById('game-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const startBtn = document.getElementById('start-btn');
+
+        let isRunning = false;
+        let score = 0;
+        let lives = 3;
+        let frameCount = 0;
+
+        const TILE = 20;
+        const COLS = 18;
+        const ROWS = 22;
+
+        // ০: খালি, ১: ইটের দেওয়াল (ভাঙনশীল), ২: স্টিলের দেওয়াল (ভাঙবে না)
+        let map = [];
+        const baseMapLayout = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,1,1,0,2,2,0,1,1,0,1,1,0,0,0],
+            [0,1,1,0,1,1,0,2,2,0,1,1,0,1,1,0,0,0],
+            [0,1,1,0,1,1,0,0,0,0,1,1,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0],
+            [1,1,0,2,2,0,1,1,1,1,0,2,2,0,1,1,0,0],
+            [1,1,0,2,2,0,1,1,1,1,0,2,2,0,1,1,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,1,1,0,0,0,0,1,1,0,1,1,0,0,0],
+            [0,1,1,0,1,1,0,2,2,0,1,1,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
+            [1,1,0,1,1,0,0,0,0,0,0,1,1,0,1,1,0,0],
+            [1,1,0,1,1,0,1,1,1,1,0,1,1,0,1,1,0,0],
+            [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
+            [0,1,1,0,2,2,0,0,0,0,2,2,0,1,1,0,0,0],
+            [0,1,1,0,2,2,0,0,0,0,2,2,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0],
+            [0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,0,0],
+            [0,1,1,0,1,1,0,0,0,0,1,1,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+
+        // প্লেয়ার ট্যাংক
+        const player = {
+            x: 6 * TILE,
+            y: 19 * TILE,
+            size: 18,
+            speed: 2,
+            dir: 'UP',
+            cooldown: 0
+        };
+
+        let bullets = [];
+        let enemies = [];
+        let particles = [];
+
+        function initMap() {
+            map = baseMapLayout.map(row => [...row]);
+        }
+
+        function createExplosion(x, y, color = '#f59e0b') {
+            for (let i = 0; i < 12; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    color,
+                    life: 18,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        function spawnEnemy() {
+            if (enemies.length >= 3) return;
+            const spawnPoints = [
+                { x: 1 * TILE, y: 1 * TILE },
+                { x: 8 * TILE, y: 1 * TILE },
+                { x: 16 * TILE, y: 1 * TILE }
+            ];
+            const pt = spawnPoints[Math.floor(Math.random() * spawnPoints.length)];
+            enemies.push({
+                x: pt.x,
+                y: pt.y,
+                size: 18,
+                speed: 1.2,
+                dir: 'DOWN',
+                changeDirTimer: 30,
+                shootTimer: Math.floor(Math.random() * 40 + 30)
+            });
+        }
+
+        function checkCollision(x, y, size) {
+            const left = Math.floor(x / TILE);
+            const right = Math.floor((x + size - 1) / TILE);
+            const top = Math.floor(y / TILE);
+            const bottom = Math.floor((y + size - 1) / TILE);
+
+            if (left < 0 || right >= COLS || top < 0 || bottom >= ROWS) return true;
+
+            for (let r = top; r <= bottom; r++) {
+                for (let c = left; c <= right; c++) {
+                    if (map[r] && (map[r][c] === 1 || map[r][c] === 2)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function shootBullet(tank, isPlayer = false) {
+            if (isPlayer && tank.cooldown > 0) return;
+            
+            let bx = tank.x + tank.size / 2 - 2;
+            let by = tank.y + tank.size / 2 - 2;
+            let vx = 0, vy = 0;
+
+            if (tank.dir === 'UP') vy = -4.5;
+            if (tank.dir === 'DOWN') vy = 4.5;
+            if (tank.dir === 'LEFT') vx = -4.5;
+            if (tank.dir === 'RIGHT') vx = 4.5;
+
+            bullets.push({ x: bx, y: by, vx, vy, isPlayer, size: 4 });
+            if (isPlayer) tank.cooldown = 18;
+        }
+
+        // কীবোর্ড ও মোবাইল কন্ট্রোল স্টেট
+        const keys = { up: false, down: false, left: false, right: false };
+
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+            if (k === 'w' || e.key === 'ArrowUp') keys.up = true;
+            if (k === 's' || e.key === 'ArrowDown') keys.down = true;
+            if (k === 'a' || e.key === 'ArrowLeft') keys.left = true;
+            if (k === 'd' || e.key === 'ArrowRight') keys.right = true;
+            if (e.key === ' ') shootBullet(player, true);
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const k = e.key.toLowerCase();
+            if (k === 'w' || e.key === 'ArrowUp') keys.up = false;
+            if (k === 's' || e.key === 'ArrowDown') keys.down = false;
+            if (k === 'a' || e.key === 'ArrowLeft') keys.left = false;
+            if (k === 'd' || e.key === 'ArrowRight') keys.right = false;
+        });
+
+        const bindBtn = (id, key) => {
+            const el = document.getElementById(id);
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+            el.addEventListener('mousedown', () => keys[key] = true);
+            el.addEventListener('mouseup', () => keys[key] = false);
+        };
+        bindBtn('d-up', 'up');
+        bindBtn('d-down', 'down');
+        bindBtn('d-left', 'left');
+        bindBtn('d-right', 'right');
+
+        document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            shootBullet(player, true);
+        });
+        document.getElementById('btn-shoot').addEventListener('click', () => shootBullet(player, true));
+
+        function resetGame() {
+            initMap();
+            score = 0;
+            lives = 3;
+            player.x = 6 * TILE;
+            player.y = 19 * TILE;
+            player.dir = 'UP';
+            bullets = [];
+            enemies = [];
+            particles = [];
+            scoreElem.innerText = score;
+            livesElem.innerText = lives;
+            isRunning = true;
+            modal.style.display = 'none';
+        }
+
+        function gameOver() {
+            isRunning = false;
+            createExplosion(player.x, player.y, '#22c55e');
+            modalTitle.innerText = "ট্যাঙ্ক ধ্বংস হয়েছে!";
+            modalDesc.innerText = `মিশন ব্যর্থ!\nআপনার চূড়ান্ত স্কোর: ${score} পয়েন্ট।`;
+            startBtn.innerText = "আবার খেলুন";
+            modal.style.display = 'flex';
+        }
+
+        startBtn.addEventListener('click', resetGame);
+
+        function update() {
+            if (!isRunning) return;
+            frameCount++;
+
+            // প্লেয়ার মুভমেন্ট
+            let newX = player.x;
+            let newY = player.y;
+
+            if (keys.up) { newY -= player.speed; player.dir = 'UP'; }
+            else if (keys.down) { newY += player.speed; player.dir = 'DOWN'; }
+            else if (keys.left) { newX -= player.speed; player.dir = 'LEFT'; }
+            else if (keys.right) { newX += player.speed; player.dir = 'RIGHT'; }
+
+            if (!checkCollision(newX, newY, player.size)) {
+                player.x = newX;
+                player.y = newY;
+            }
+            if (player.cooldown > 0) player.cooldown--;
+
+            // শত্রু স্পন
+            if (frameCount % 120 === 0) spawnEnemy();
+
+            // শত্রু AI মুভমেন্ট ও ফায়ার
+            enemies.forEach((en, idx) => {
+                en.changeDirTimer--;
+                if (en.changeDirTimer <= 0) {
+                    const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+                    en.dir = dirs[Math.floor(Math.random() * dirs.length)];
+                    en.changeDirTimer = Math.floor(Math.random() * 40 + 30);
+                }
+
+                let ex = en.x;
+                let ey = en.y;
+                if (en.dir === 'UP') ey -= en.speed;
+                if (en.dir === 'DOWN') ey += en.speed;
+                if (en.dir === 'LEFT') ex -= en.speed;
+                if (en.dir === 'RIGHT') ex += en.speed;
+
+                if (!checkCollision(ex, ey, en.size)) {
+                    en.x = ex;
+                    en.y = ey;
+                } else {
+                    en.changeDirTimer = 0; // ধাক্কা খেলে দিক বদল
+                }
+
+                en.shootTimer--;
+                if (en.shootTimer <= 0) {
+                    shootBullet(en, false);
+                    en.shootTimer = Math.floor(Math.random() * 50 + 40);
+                }
+            });
+
+            // বুলেট আপডেট
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // স্ক্রিন সীমা পরীক্ষা
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // দেওয়ালে আঘাত
+                const tileC = Math.floor(b.x / TILE);
+                const tileR = Math.floor(b.y / TILE);
+                if (map[tileR] && map[tileR][tileC] > 0) {
+                    if (map[tileR][tileC] === 1) {
+                        map[tileR][tileC] = 0; // ইটের দেওয়াল ভাঙল
+                        createExplosion(tileC * TILE + 10, tileR * TILE + 10, '#b45309');
+                    } else {
+                        createExplosion(b.x, b.y, '#94a3b8'); // স্টিলে স্পার্ক
+                    }
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // প্লেয়ার বুলেটের শত্রুতে আঘাত
+                if (b.isPlayer) {
+                    let hit = false;
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        const en = enemies[j];
+                        if (b.x > en.x && b.x < en.x + en.size && b.y > en.y && b.y < en.y + en.size) {
+                            createExplosion(en.x + 9, en.y + 9, '#ef4444');
+                            enemies.splice(j, 1);
+                            score += 100;
+                            scoreElem.innerText = score;
+                            bullets.splice(i, 1);
+                            hit = true;
+                            break;
+                        }
+                    }
+                    if (hit) continue;
+                } else {
+                    // শত্রু বুলেটের প্লেয়ারে আঘাত
+                    if (b.x > player.x && b.x < player.x + player.size && b.y > player.y && b.y < player.y + player.size) {
+                        createExplosion(player.x + 9, player.y + 9, '#22c55e');
+                        bullets.splice(i, 1);
+                        lives--;
+                        livesElem.innerText = lives;
+
+                        // প্লেয়ার রিস্টার্ট পজিশন
+                        player.x = 6 * TILE;
+                        player.y = 19 * TILE;
+                        if (lives <= 0) {
+                            gameOver();
+                            return;
+                        }
+                        continue;
+                    }
+                }
+            }
+
+            // পার্টিকেল আপডেট
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        // ক্লাসিক ট্যাঙ্ক ড্র
+        function drawTank(x, y, size, dir, color, barrelColor) {
+            ctx.save();
+            ctx.translate(x + size / 2, y + size / 2);
+
+            let rot = 0;
+            if (dir === 'DOWN') rot = Math.PI;
+            if (dir === 'LEFT') rot = -Math.PI / 2;
+            if (dir === 'RIGHT') rot = Math.PI / 2;
+            ctx.rotate(rot);
+
+            // চেইন/হুইল ট্র্যাক
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-size / 2, -size / 2, 4, size);
+            ctx.fillRect(size / 2 - 4, -size / 2, 4, size);
+
+            // বডি
+            ctx.fillStyle = color;
+            ctx.fillRect(-size / 2 + 3, -size / 2 + 2, size - 6, size - 4);
+
+            // টারেট
+            ctx.fillStyle = barrelColor;
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // কামান
+            ctx.fillRect(-1.5, -size / 2 - 2, 3, size / 2);
+
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ম্যাপের ব্লক ড্র
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (map[r][c] === 1) {
+                        // ইটের দেওয়াল
+                        ctx.fillStyle = '#b45309';
+                        ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
+                        ctx.strokeStyle = '#78350f';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(c * TILE, r * TILE, TILE, TILE);
+                    } else if (map[r][c] === 2) {
+                        // স্টিলের দেওয়াল
+                        ctx.fillStyle = '#64748b';
+                        ctx.fillRect(c * TILE, r * TILE, TILE, TILE);
+                        ctx.strokeStyle = '#cbd5e1';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(c * TILE, r * TILE, TILE, TILE);
+                    }
+                }
+            }
+
+            // শত্রু ট্যাঙ্ক
+            enemies.forEach(en => {
+                drawTank(en.x, en.y, en.size, en.dir, '#ef4444', '#991b1b');
+            });
+
+            // প্লেয়ার ট্যাঙ্ক
+            drawTank(player.x, player.y, player.size, player.dir, '#22c55e', '#166534');
+
+            // বুলেট
+            bullets.forEach(b => {
+                ctx.fillStyle = b.isPlayer ? '#4ade80' : '#f87171';
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // পার্টিকেল
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
