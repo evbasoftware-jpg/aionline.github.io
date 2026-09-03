@@ -203,13 +203,14 @@
             <h2 id="modal-title">স্নেক গেম!</h2>
             <p id="modal-desc">
                 লাল খাবার খেয়ে সাপকে বড় করুন!<br>
-                দেয়াল বা নিজের শরীরে ধাক্কা খাওয়া থেকে বিরত থাকুন।<br><br>
+                দেওয়াল পারাপার করা যাবে, তবে নিজের শরীরে ধাক্কা লাগলে খেলা শেষ হবে।<br><br>
                 <small style="color:#94a3b8;">PC: <b>W/A/S/D</b> বা <b>Arrow Keys</b> দিয়ে খেলুন</small>
             </p>
             <button class="btn-start" id="start-btn">খেলা শুরু করুন</button>
         </div>
     </div>
 
+    <!-- মোবাইল স্পর্শ কন্ট্রোল -->
     <div class="controls-layer">
         <div></div>
         <button class="d-btn" id="d-up">▲</button>
@@ -233,7 +234,7 @@
         const modalDesc = document.getElementById('modal-desc');
         const startBtn = document.getElementById('start-btn');
 
-        const GRID_SIZE = 18; // গ্রিডের প্রতিটি ঘরের সাইজ (360/18 = 20 টি ঘর)
+        const GRID_SIZE = 18; 
         const TILE_COUNT = canvas.width / GRID_SIZE;
 
         let snake = [];
@@ -244,7 +245,6 @@
 
         let food = { x: 5, y: 5 };
         let bonusFood = null;
-        let bonusTimer = 0;
 
         let score = 0;
         let bestScore = localStorage.getItem('snake_best_score') || 0;
@@ -252,7 +252,9 @@
 
         let gameInterval = null;
         let isRunning = false;
-        let speed = 110;
+        
+        // সাপের গতি নির্ধারণ (১৬০ মিলিসেকেন্ড = যথেষ্ট ধীরস্থির ও নিয়ন্ত্রণযোগ্য)
+        const SPEED = 160;
 
         // খাবার স্পন করা
         function spawnFood() {
@@ -269,7 +271,7 @@
             bonusFood = {
                 x: Math.floor(Math.random() * TILE_COUNT),
                 y: Math.floor(Math.random() * TILE_COUNT),
-                life: 50 // নির্দিষ্ট সময় থাকবে
+                life: 60
             };
         }
 
@@ -284,7 +286,6 @@
             nextDx = 1;
             nextDy = 0;
             score = 0;
-            speed = 110;
             bonusFood = null;
             scoreElem.innerText = score;
             spawnFood();
@@ -292,21 +293,20 @@
             isRunning = true;
 
             clearInterval(gameInterval);
-            gameInterval = setInterval(gameLoop, speed);
+            gameInterval = setInterval(gameLoop, SPEED);
         }
 
         function gameOver() {
             isRunning = false;
             clearInterval(gameInterval);
             modalTitle.innerText = "খেলা সমাপ্ত!";
-            modalDesc.innerText = `আপনি ধাক্কা খেয়েছেন!\nমোট স্কোর: ${score} পয়েন্ট।`;
+            modalDesc.innerText = `নিজের শরীরে আঘাত লেগেছে!\nমোট স্কোর: ${score} পয়েন্ট।`;
             startBtn.innerText = "পুনরায় খেলুন";
             modal.style.display = 'flex';
         }
 
         // ডিরেকশন পরিবর্তন লজিক
         function changeDirection(newDx, newDy) {
-            // বিপরীত দিকে যাওয়া প্রতিরোধ (উল্টো দিকে না ঘুরে যাওয়া)
             if (newDx !== -dx && newDy !== -dy) {
                 nextDx = newDx;
                 nextDy = newDy;
@@ -358,44 +358,43 @@
             dx = nextDx;
             dy = nextDy;
 
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            // নতুন মাথার পজিশন হিসাব করা
+            let headX = snake[0].x + dx;
+            let headY = snake[0].y + dy;
 
-            // দেওয়ালে ধাক্কা লাগা
-            if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
+            // দেওয়ালে ধাক্কা লাগলে উল্টো দিক থেকে বের হওয়া (Screen Wrap)
+            if (headX < 0) headX = TILE_COUNT - 1;
+            else if (headX >= TILE_COUNT) headX = 0;
+
+            if (headY < 0) headY = TILE_COUNT - 1;
+            else if (headY >= TILE_COUNT) headY = 0;
+
+            const newHead = { x: headX, y: headY };
+
+            // শুধু নিজের শরীরে ধাক্কা লাগলে গেম ওভার
+            if (snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
                 gameOver();
                 return;
             }
 
-            // নিজের শরীরে ধাক্কা লাগা
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOver();
-                return;
-            }
-
-            snake.unshift(head);
+            snake.unshift(newHead);
 
             // খাবার খাওয়া পরীক্ষা
-            if (head.x === food.x && head.y === food.y) {
+            if (newHead.x === food.x && newHead.y === food.y) {
                 score += 10;
                 updateScore();
                 spawnFood();
 
-                // নির্দিষ্ট ব্যবধানে স্পেশাল ফুড ও স্পিড বৃদ্ধি
                 if (score % 50 === 0 && !bonusFood) spawnBonus();
-                if (speed > 60 && score % 40 === 0) {
-                    speed -= 4;
-                    clearInterval(gameInterval);
-                    gameInterval = setInterval(gameLoop, speed);
-                }
-            } else if (bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
+            } else if (bonusFood && newHead.x === bonusFood.x && newHead.y === bonusFood.y) {
                 score += 35;
                 updateScore();
                 bonusFood = null;
             } else {
-                snake.pop(); // খাবার না খেলে লেজের শেষ অংশ মুছে যাওয়া
+                snake.pop(); // খাবার না খেলে লেজ কেটে দৈর্ঘ্য অপরিবর্তিত রাখা
             }
 
-            // বোনাস ফুড টাইমার আপডেট
+            // বোনাস ফুড টাইমার
             if (bonusFood) {
                 bonusFood.life--;
                 if (bonusFood.life <= 0) bonusFood = null;
@@ -435,7 +434,7 @@
             );
             ctx.fill();
 
-            // স্পেশাল বোনাস ফুড ড্র (হলুদ তারা/বল)
+            // বোনাস ফুড
             if (bonusFood) {
                 ctx.fillStyle = 'var(--bonus-color)';
                 ctx.shadowColor = '#facc15';
@@ -470,7 +469,7 @@
                 );
                 ctx.fill();
 
-                // মাথার চোখ আঁকা
+                // চোখ আঁকা
                 if (index === 0) {
                     ctx.fillStyle = '#ffffff';
                     const eyeSize = 3;
@@ -490,7 +489,7 @@
             }
         }
 
-        draw(); // শুরুর বোর্ড প্রদর্শন
+        draw();
     </script>
 </body>
 </html>
