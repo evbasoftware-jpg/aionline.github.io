@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>বাংলা সাধারণ জ্ঞান কুইজ - aionline.in.net</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --correct: #22c55e;
+            --wrong: #ef4444;
+            --gold: #facc15;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .header {
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .header a {
+            font-size: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        #quiz-card {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border: 2px solid #334155;
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(56, 189, 248, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* স্ট্যাটাস ও টাইমার বার */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .timer-badge {
+            background: #0f172a;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            transition: width 0.1s linear;
+        }
+
+        /* প্রশ্ন প্রদর্শন */
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f8fafc;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            min-height: 54px;
+        }
+
+        /* অপশন তালিকা */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1.5px solid #334155;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: #162032;
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.2) !important;
+            border-color: var(--correct) !important;
+            color: #4ade80 !important;
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: var(--wrong) !important;
+            color: #f87171 !important;
+        }
+
+        /* মোডাল (স্টার্ট ও রেজাল্ট) */
+        #quiz-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(9, 13, 22, 0.95);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            z-index: 20;
+        }
+
+        #quiz-modal h2 {
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        #quiz-modal p {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #ffffff;
+            border: none;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .btn-start:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🧠 বাংলা সাধারণ জ্ঞান কুইজ</h1>
+        <a href="https://aionline.in.net" target="_blank">aionline.in.net</a>
+    </div>
+
+    <div id="quiz-card">
+        <div class="quiz-header">
+            <span id="question-count">প্রশ্ন: ১/১০</span>
+            <span class="timer-badge" id="timer-text">১৫ সে.</span>
+        </div>
+
+        <div class="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <div class="question-text" id="question-text">প্রশ্ন লোড হচ্ছে...</div>
+
+        <div class="options-list" id="options-container">
+            <!-- অপশনগুলো জাভাস্ক্রিপ্ট দিয়ে তৈরি হবে -->
+        </div>
+
+        <!-- রেজাল্ট ও স্টার্ট স্ক্রিন মোডাল -->
+        <div id="quiz-modal">
+            <h2 id="modal-title">জ্ঞান যাচাই করুন!</h2>
+            <p id="modal-desc">
+                ১০টি আকর্ষণীয় সাধারণ জ্ঞান প্রশ্ন থাকবে।<br>
+                প্রতি প্রশ্নের উত্তর দেওয়ার জন্য ১৫ সেকেন্ড সময় পাবেন!
+            </p>
+            <button class="btn-start" id="start-btn">কুইজ শুরু করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // প্রশ্নব্যাংক (Question Bank)
+        const quizData = [
+            {
+                question: "১. সৌরজগতের সবচেয়ে বড় গ্রহ কোনটি?",
+                options: ["মঙ্গল", "বৃহস্পতি", "শনি", "শুক্র"],
+                correct: 1
+            },
+            {
+                question: "২. মানবদেহের সবচেয়ে বড় অঙ্গ (Organ) কোনটি?",
+                options: ["যকৃত (Liver)", "হৃৎপিণ্ড", "ত্বক (Skin)", "ফুসফুস"],
+                correct: 2
+            },
+            {
+                question: "৩. কোন দেশকে 'সূর্যোদয়ের দেশ' বলা হয়?",
+                options: ["জাপান", "নরওয়ে", "চীন", "অস্ট্রেলিয়া"],
+                correct: 0
+            },
+            {
+                question: "৪. কম্পিউটারের জনক কাকে বলা হয়?",
+                options: ["অ্যালান টুরিং", "চার্লস ব্যাবেজ", "বিল গেটস", "স্টিভ জবস"],
+                correct: 1
+            },
+            {
+                question: "৫. পৃথিবীর সবচেয়ে গভীরতম সমুদ্র খাত কোনটি?",
+                options: ["জাভা খাত", "পুয়ের্তো রিকো খাত", "মারিয়ানা খাত", "রোমানশ খাত"],
+                correct: 2
+            },
+            {
+                question: "৬. বায়ুমণ্ডলে কোন গ্যাসের পরিমাণ সবচেয়ে বেশি?",
+                options: ["অক্সিজেন", "নাইট্রোজেন", "কার্বন ডাই অক্সাইড", "হাইড্রোজেন"],
+                correct: 1
+            },
+            {
+                question: "৭. আলোর গতি প্রতি সেকেন্ডে প্রায় কত কিলোমিটার?",
+                options: ["১,৫০,০০০ কি.মি.", "২,০০,০০০ কি.মি.", "৩,০০,০০০ কি.মি.", "৩,৫০,০০০ কি.মি."],
+                correct: 2
+            },
+            {
+                question: "৮. বিশ্বের সবচেয়ে প্রাচীনতম ভাষা কোনটি হিসেবে স্বীকৃত?",
+                options: ["হিব্রু", "ল্যাটিন", "সংস্কৃত", "তামিল"],
+                correct: 3
+            },
+            {
+                question: "৯. রক্ত জমাট বাঁধতে কোন ভিটামিন সাহায্য করে?",
+                options: ["ভিটামিন A", "ভিটামিন K", "ভিটামিন C", "ভিটামিন D"],
+                correct: 1
+            },
+            {
+                question: "১০. ফেসবুকের প্রতিষ্ঠাতা কে?",
+                options: ["এলন মাস্ক", "জেফ বেজোস", "মার্ক জুকারবার্গ", "ল্যারি পেজ"],
+                correct: 2
+            }
+        ];
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionCount = document.getElementById('question-count');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const modal = document.getElementById('quiz-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const startBtn = document.getElementById('start-btn');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer = null;
+        const TIME_LIMIT = 15; // ১৫ সেকেন্ড
+        let timeLeft = TIME_LIMIT;
+
+        function loadQuestion() {
+            clearInterval(timer);
+            const currentQuiz = quizData[currentQuestionIndex];
+            
+            questionCount.innerText = `প্রশ্ন: ${currentQuestionIndex + 1}/${quizData.length}`;
+            questionText.innerText = currentQuiz.question;
+            optionsContainer.innerHTML = '';
+
+            currentQuiz.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${opt}</span><span style="opacity:0.5;">#${index+1}</span>`;
+                btn.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = TIME_LIMIT;
+            timerText.innerText = `${timeLeft} সে.`;
+            progressBar.style.width = '100%';
+
+            const startTime = Date.now();
+            timer = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const remaining = Math.max(0, TIME_LIMIT - elapsed);
+                
+                timerText.innerText = `${Math.ceil(remaining)} সে.`;
+                progressBar.style.width = `${(remaining / TIME_LIMIT) * 100}%`;
+
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    highlightCorrectAnswer();
+                    setTimeout(nextQuestion, 1200);
+                }
+            }, 100);
+        }
+
+        function selectAnswer(selectedIndex) {
+            clearInterval(timer);
+            const currentQuiz = quizData[currentQuestionIndex];
+            const buttons = optionsContainer.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === currentQuiz.correct) {
+                buttons[selectedIndex].classList.add('correct');
+                score++;
+            } else {
+                buttons[selectedIndex].classList.add('wrong');
+                buttons[currentQuiz.correct].classList.add('correct');
+            }
+
+            setTimeout(nextQuestion, 1200);
+        }
+
+        function highlightCorrectAnswer() {
+            const currentQuiz = quizData[currentQuestionIndex];
+            const buttons = optionsContainer.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+            buttons[currentQuiz.correct].classList.add('correct');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            let feedback = "";
+            if (score === 10) feedback = "অবিশ্বাস্য! আপনি সাধারণ জ্ঞানে একজন পণ্ডিত! 🏆";
+            else if (score >= 7) feedback = "খুব চমৎকার ফলাফল! আপনার প্রস্তুতি বেশ ভালো! 🌟";
+            else if (score >= 4) feedback = "ভালো চেষ্টা! আরও কিছুটা অনুশীলনে দারুণ করবেন। 👍";
+            else feedback = "আবার চেষ্টা করুন, সাধারণ জ্ঞান আরও সমৃদ্ধ হবে! 📚";
+
+            modalTitle.innerText = "কুইজ ফলাফল!";
+            modalDesc.innerHTML = `আপনার মোট স্কোর: <b style="color:var(--gold); font-size:20px;">${score} / ${quizData.length}</b><br><br>${feedback}`;
+            startBtn.innerText = "আবার খেলুন";
+            modal.style.display = 'flex';
+        }
+
+        function startQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            modal.style.display = 'none';
+            loadQuestion();
+        }
+
+        startBtn.addEventListener('click', startQuiz);
+    </script>
+</body>
+</html>
