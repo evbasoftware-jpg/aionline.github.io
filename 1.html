@@ -1,1 +1,299 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #f0f2f5; display: flex; justify-content: center; padding: 15px 8px; }
+    .container { width: 100%; max-width: 440px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
+    .header { background: #0b69a3; color: white; padding: 16px; text-align: center; font-size: 1.15rem; font-weight: bold; }
 
+    .search-box { padding: 16px; border-bottom: 6px solid #eef1f5; }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 5px; }
+    .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; background: #fff; }
+    
+    .inside-train-box { display: flex; align-items: center; gap: 8px; background: #e3f2fd; padding: 10px 12px; border-radius: 8px; border: 1px solid #bbdefb; }
+    .inside-train-box input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .inside-train-box label { font-size: 0.85rem; font-weight: 600; color: #0b69a3; cursor: pointer; }
+
+    .loader { display: none; text-align: center; padding: 12px; color: #0b69a3; font-weight: bold; font-size: 0.85rem; }
+    .api-log { font-size: 0.75rem; color: #666; margin-top: 4px; }
+    .error-box { display: none; margin: 12px 16px; padding: 10px; background: #ffebee; color: #c62828; border-radius: 6px; font-size: 0.85rem; }
+
+    .result-view { display: none; padding: 16px; }
+    .status-summary { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+    .status-summary h3 { font-size: 1rem; color: #1b5e20; margin-bottom: 4px; }
+    .status-summary p { font-size: 0.85rem; color: #2e7d32; }
+
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 3px; background: #cfd8dc; }
+    .st-item { position: relative; margin-bottom: 18px; }
+    .st-item::before { content: ''; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid #0b69a3; }
+    .st-item.passed::before { background: #0b69a3; }
+
+    .st-item.current::before {
+      content: '🚆';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      left: -28px;
+      top: -2px;
+      transform: none;
+      animation: pulse-train 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-train {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .st-name { font-weight: 600; font-size: 0.9rem; color: #222; }
+    .st-time { font-size: 0.78rem; color: #555; margin-top: 2px; }
+    .badge-delay { color: #d32f2f; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">স্মার্ট লাইভ ট্রেন ট্র্যাকার</div>
+
+  <div class="search-box">
+    <div class="input-group">
+      <label>ট্রেন নম্বর লিখুন (টাইপ করলেই লোড হবে):</label>
+      <input type="text" id="trainNo" placeholder="যেমন: 12347" value="" maxlength="5">
+    </div>
+    
+    <div class="input-group">
+      <label>যাত্রার দিন:</label>
+      <select id="startDay">
+        <option value="0" selected>আজকে ছাড়া ট্রেন (Today)</option>
+        <option value="1">গতকালকে ছাড়া ট্রেন (Yesterday)</option>
+        <option value="2">২ দিন আগে ছাড়া ট্রেন</option>
+      </select>
+    </div>
+
+    <div class="inside-train-box">
+      <input type="checkbox" id="chkInsideTrain">
+      <label for="chkInsideTrain">Are you inside this train? (ট্রেনের ভেতর আছেন?)</label>
+    </div>
+  </div>
+
+  <div id="loader" class="loader">
+    রেলওয়ে সার্ভার থেকে রিয়েল-টাইম তথ্য আনা হচ্ছে...
+    <div id="apiLog" class="api-log"></div>
+  </div>
+  <div id="errorBox" class="error-box"></div>
+
+  <div id="resultView" class="result-view">
+    <div class="status-summary">
+      <h3 id="displayTrainTitle">--</h3>
+      <p id="displayCurrentStatus">--</p>
+    </div>
+    <div class="timeline" id="timelineList"></div>
+  </div>
+</div>
+
+<script>
+  const API_CONFIGS = [
+    {
+      name: "প্রাইমারি API (IRCTC PNR STATUS)",
+      host: "irctc-indian-railway-pnr-status.p.rapidapi.com",
+      key: "83fd06f74dmsh3705fc59b18e1ebp156adejsn9519fe8f08f3",
+      getUrl: (no, day) => `https://irctc-indian-railway-pnr-status.p.rapidapi.com/live-train/${no}/status`
+    },
+    {
+      name: "ব্যাকআপ IRCTC API",
+      host: "irctc1.p.rapidapi.com",
+      key: "20f6a37663mshbbde429a7c65ee4p183095jsn00e073b5d591",
+      getUrl: (no, day) => `https://irctc1.p.rapidapi.com/api/v1/liveTrainStatus?trainNo=${no}&startDay=${day}`
+    }
+  ];
+
+  let autoRefreshTimer = null;
+  let debounceTimer = null;
+
+  function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+    return R * c;
+  }
+
+  function getUserLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("আপনার ব্রাউজারে GPS সাপোর্ট করে না।"));
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+          err => reject(new Error("লোকেশন পারমিশন মেলেনি।"))
+        );
+      }
+    });
+  }
+
+  async function fetchLiveStatusMulti(silent = false) {
+    const trainNo = document.getElementById("trainNo").value.trim();
+    const startDay = document.getElementById("startDay").value;
+    const isInside = document.getElementById("chkInsideTrain").checked;
+    const loader = document.getElementById("loader");
+    const apiLog = document.getElementById("apiLog");
+    const resultView = document.getElementById("resultView");
+    const errorBox = document.getElementById("errorBox");
+
+    if (trainNo.length < 5) {
+      return; 
+    }
+
+    if (!silent) {
+      loader.style.display = "block";
+      errorBox.style.display = "none";
+    }
+
+    let successData = null;
+
+    for (let i = 0; i < API_CONFIGS.length; i++) {
+      const config = API_CONFIGS[i];
+      if (!silent) apiLog.innerText = `চেক করা হচ্ছে: ${config.name}...`;
+
+      try {
+        const response = await fetch(config.getUrl(trainNo, startDay), {
+          method: "GET",
+          headers: {
+            "x-rapidapi-key": config.key,
+            "x-rapidapi-host": config.host
+          }
+        });
+
+        if (!response.ok) throw new Error(`সার্ভার এরর (${response.status})`);
+
+        const res = await response.json();
+
+        if (res.success && res.data) {
+          successData = res.data;
+          break;
+        } else if (res.status && res.data) {
+          successData = res.data;
+          break;
+        }
+      } catch (err) {
+        console.warn(`${config.name} ব্যর্থ হয়েছে:`, err.message);
+      }
+    }
+
+    loader.style.display = "none";
+
+    if (successData) {
+      if (isInside) {
+        try {
+          const userCoords = await getUserLocation();
+          let trainLat = successData.current_lat || successData.lat || null;
+          let trainLon = successData.current_lon || successData.lon || null;
+
+          if (trainLat && trainLon) {
+            const distance = getDistanceFromLatLonInKm(userCoords.lat, userCoords.lon, trainLat, trainLon);
+            if (distance > 20) {
+              alert(`সতর্কতা: আপনি ট্রেন থেকে প্রায় ${Math.round(distance)} কিমি দূরে আছেন! আপনি ট্রেনের ভেতরে নেই, তাই GPS লোকেশন বাতিল করা হলো।`);
+              document.getElementById("chkInsideTrain").checked = false;
+            } else {
+              successData.status_as_of = (successData.status_as_of || "") + " • [মোবাইল GPS দ্বারা ভেরিফায়েড]";
+            }
+          } else {
+            successData.status_as_of = (successData.status_as_of || "") + " • [মোবাইল GPS সক্রিয়]";
+          }
+        } catch (locErr) {
+          alert("লোকেশন ত্রুটি: " + locErr.message);
+          document.getElementById("chkInsideTrain").checked = false;
+        }
+      }
+
+      renderTrainData(successData);
+      resultView.style.display = "block";
+    } else {
+      if (!silent) {
+        errorBox.style.display = "block";
+        errorBox.innerText = "কোনো API থেকেই তথ্য পাওয়া যায়নি। ট্রেন নম্বর যাচাই করুন।";
+      }
+    }
+  }
+
+  function renderTrainData(data) {
+    const trainName = data.train_name || "ট্রেন";
+    const trainNum = data.train_no || data.train_number || "";
+    const currStation = data.current_station || data.current_station_name || "লাইনে চলমান";
+    const statusTime = data.last_update || data.status_as_of || "";
+    const positionText = data.position ? ` (${data.position})` : "";
+
+    document.getElementById("displayTrainTitle").innerText = `${trainNum} - ${trainName}`;
+    document.getElementById("displayCurrentStatus").innerText = `বর্তমান অবস্থান: ${currStation} • ${statusTime}${positionText}`;
+
+    const timeline = document.getElementById("timelineList");
+    timeline.innerHTML = "";
+
+    let stationList = data.stations || [];
+
+    if (stationList.length > 0) {
+      stationList.forEach(st => {
+        const item = document.createElement("div");
+
+        const isCurrent = (st.station_name === currStation) || st.is_current_station || st.is_current || false;
+        const hasPassed = (st.status === "departed") || st.has_departed || st.has_passed || false;
+
+        item.className = `st-item ${hasPassed ? 'passed' : ''} ${isCurrent ? 'current' : ''}`;
+
+        const delayVal = st.arrival_delay_minutes || st.delay_in_arrival || st.delay || 0;
+        const delayText = delayVal > 0 ? `<span class="badge-delay">${delayVal} মিনিট লেট</span>` : 'অন টাইম';
+        
+        const timeShow = st.arrival || st.eta || st.arrival_time || 'N/A';
+        const pfShow = st.platform || st.platform_number || 'N/A';
+
+        item.innerHTML = `
+          <div class="st-name">${st.station_name} ${st.station_code ? `(${st.station_code})` : ''}</div>
+          <div class="st-time">পৌঁছানোর সময়: ${timeShow} • প্ল্যাটফর্ম: ${pfShow} • ${delayText} ${isCurrent ? '• <b>(বর্তমান অবস্থান)</b>' : ''}</div>
+        `;
+        timeline.appendChild(item);
+      });
+    }
+  }
+
+  // ১. ইনপুটে ৫ সংখ্যার ট্রেন নম্বর টাইপ করলেই স্বয়ংক্রিয় সার্চ
+  document.getElementById("trainNo").addEventListener("input", (e) => {
+    clearTimeout(debounceTimer);
+    if (e.target.value.trim().length === 5) {
+      debounceTimer = setTimeout(() => fetchLiveStatusMulti(), 300);
+    }
+  });
+
+  // ২. দিন পরিবর্তন করলে সাথে সাথে সার্চ
+  document.getElementById("startDay").addEventListener("change", () => fetchLiveStatusMulti());
+
+  // ৩. "Are you inside" টিক দিলে তাৎক্ষণিক লোকেশন রিফ্রেশ
+  document.getElementById("chkInsideTrain").addEventListener("change", () => fetchLiveStatusMulti());
+
+  // ৪. অটো-রিফ্রেশ: প্রতি ৩০ সেকেন্ড পরপর ব্যাকগ্রাউন্ডে নতুন স্টেশনের ডেটা চেক ও আপডেট
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    const trainNo = document.getElementById("trainNo").value.trim();
+    if (trainNo.length === 5) {
+      fetchLiveStatusMulti(true); // সাইলেন্ট মোডে আপডেট করবে (স্ক্রিন না কাঁপিয়ে)
+    }
+  }, 30000);
+
+  // পেজ লোডের সময় স্বয়ংক্রিয়ভাবে চালু
+  window.onload = () => fetchLiveStatusMulti();
+</script>
+
+</body>
+</html>
