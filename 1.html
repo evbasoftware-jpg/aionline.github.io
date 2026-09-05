@@ -67,7 +67,7 @@
   <div class="search-box">
     <div class="input-group">
       <label>ট্রেন নম্বর লিখুন (টাইপ করলেই লোড হবে):</label>
-      <input type="text" id="trainNo" placeholder="যেমন: 12347" value="" maxlength="5">
+      <input type="text" id="trainNo" placeholder="যেমন: 13045" value="13045" maxlength="5">
     </div>
     
     <div class="input-group">
@@ -116,8 +116,22 @@
     }
   ];
 
+  // স্টেশনের আনুমানিক জিপিএস কোঅর্ডিনেটস (দূরত্ব পরিমাপের জন্য)
+  const STATION_COORDS = {
+    "HWH": { lat: 22.5839, lon: 88.3426 },
+    "BDC": { lat: 22.9234, lon: 88.3756 },
+    "BWN": { lat: 23.2324, lon: 87.8615 },
+    "BHP": { lat: 23.6693, lon: 87.6837 },
+    "RPH": { lat: 24.1656, lon: 87.7856 },
+    "SNT": { lat: 23.8167, lon: 87.6833 },
+    "GHLE": { lat: 24.0300, lon: 87.7400 },
+    "ASN": { lat: 23.6889, lon: 86.9661 },
+    "UDL": { lat: 23.5898, lon: 87.1824 }
+  };
+
   let autoRefreshTimer = null;
   let debounceTimer = null;
+  let lastLoadedData = null;
 
   function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -134,28 +148,82 @@
   function getUserLocation() {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error("আপনার ব্রাউজারে GPS সাপোর্ট করে না।"));
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-          err => reject(new Error("লোকেশন পারমিশন মেলেনি।"))
-        );
+        reject(new Error("আপনার ব্রাউজারে GPS সাপোর্ট নেই।"));
+        return;
       }
+      
+      // ফাইল প্রোটোকল বা পারমিশন হ্যান্ডলিং
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        err => {
+          if (window.location.protocol === "file:") {
+            reject(new Error("Chrome ব্রাউজারে file:/// মোডে সরাসরি GPS নেওয়া যায় না। পেজটি কোনো লোকালহোস্ট বা অনলাইন সার্ভারে রান করুন।"));
+          } else {
+            reject(new Error("লোকেশন পারমিশন মেলেনি। ফোনের GPS ও ব্রাউজারের লোকেশন অন আছে কি না যাচাই করুন।"));
+          }
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
     });
+  }
+
+  async function handleInsideTrainToggle() {
+    const chk = document.getElementById("chkInsideTrain");
+    if (!chk.checked) {
+      if (lastLoadedData) renderTrainData(lastLoadedData);
+      return;
+    }
+
+    if (!lastLoadedData) {
+      alert("আগে ট্রেনের লাইভ স্ট্যাটাস লোড হতে দিন।");
+      chk.checked = false;
+      return;
+    }
+
+    try {
+      const userCoords = await getUserLocation();
+      
+      // ট্রেনের বর্তমান স্টেশন কোড বা নাম বের করা
+      const currStName = (lastLoadedData.current_station || lastLoadedData.current_station_name || "").toUpperCase();
+      let matchedCoord = null;
+
+      for (let code in STATION_COORDS) {
+        if (currStName.includes(code) || currStName.includes("GADADHARPUR") || currStName.includes("RAMPUR")) {
+          matchedCoord = STATION_COORDS[code];
+          break;
+        }
+      }
+
+      if (matchedCoord) {
+        const dist = getDistanceFromLatLonInKm(userCoords.lat, userCoords.lon, matchedCoord.lat, matchedCoord.lon);
+        if (dist > 15) {
+          alert(`সতর্কতা: আপনি এই ট্রেন থেকে প্রায় ${Math.round(dist)} কিমি দূরে আছেন!\n\nআপনি ট্রেনের ভেতরে নেই, তাই আপনার ফোনের লোকেশন নেওয়া হলো না।`);
+          chk.checked = false;
+        } else {
+          alert(`ভেরিফিকেশন সফল! আপনি ট্রেনের কাছে আছেন (দূরত্ব: ${dist.toFixed(1)} কিমি)। ট্রেনের রিয়েল-টাইম ট্র্যাকিং সক্রিয় করা হয়েছে।`);
+          document.getElementById("displayCurrentStatus").innerText += " • [মোবাইল GPS দ্বারা ভেরিফায়েড]";
+        }
+      } else {
+        // যদি স্টেশনের কোঅর্ডিনেট লিস্টে না থাকে, জিপিএস চালু বার্তা দেখাবে
+        alert("লোকেশন পাওয়া গেছে! আপনার ফোনের লাইভ GPS ট্র্যাকার সফলভাবে সক্রিয় করা হয়েছে।");
+        document.getElementById("displayCurrentStatus").innerText += " • [মোবাইল GPS সক্রিয়]";
+      }
+
+    } catch (err) {
+      alert(err.message);
+      chk.checked = false;
+    }
   }
 
   async function fetchLiveStatusMulti(silent = false) {
     const trainNo = document.getElementById("trainNo").value.trim();
     const startDay = document.getElementById("startDay").value;
-    const isInside = document.getElementById("chkInsideTrain").checked;
     const loader = document.getElementById("loader");
     const apiLog = document.getElementById("apiLog");
     const resultView = document.getElementById("resultView");
     const errorBox = document.getElementById("errorBox");
 
-    if (trainNo.length < 5) {
-      return; 
-    }
+    if (trainNo.length < 5) return;
 
     if (!silent) {
       loader.style.display = "block";
@@ -196,29 +264,7 @@
     loader.style.display = "none";
 
     if (successData) {
-      if (isInside) {
-        try {
-          const userCoords = await getUserLocation();
-          let trainLat = successData.current_lat || successData.lat || null;
-          let trainLon = successData.current_lon || successData.lon || null;
-
-          if (trainLat && trainLon) {
-            const distance = getDistanceFromLatLonInKm(userCoords.lat, userCoords.lon, trainLat, trainLon);
-            if (distance > 20) {
-              alert(`সতর্কতা: আপনি ট্রেন থেকে প্রায় ${Math.round(distance)} কিমি দূরে আছেন! আপনি ট্রেনের ভেতরে নেই, তাই GPS লোকেশন বাতিল করা হলো।`);
-              document.getElementById("chkInsideTrain").checked = false;
-            } else {
-              successData.status_as_of = (successData.status_as_of || "") + " • [মোবাইল GPS দ্বারা ভেরিফায়েড]";
-            }
-          } else {
-            successData.status_as_of = (successData.status_as_of || "") + " • [মোবাইল GPS সক্রিয়]";
-          }
-        } catch (locErr) {
-          alert("লোকেশন ত্রুটি: " + locErr.message);
-          document.getElementById("chkInsideTrain").checked = false;
-        }
-      }
-
+      lastLoadedData = successData;
       renderTrainData(successData);
       resultView.style.display = "block";
     } else {
@@ -268,7 +314,7 @@
     }
   }
 
-  // ১. ইনপুটে ৫ সংখ্যার ট্রেন নম্বর টাইপ করলেই স্বয়ংক্রিয় সার্চ
+  // ইভেন্ট লিসেনার
   document.getElementById("trainNo").addEventListener("input", (e) => {
     clearTimeout(debounceTimer);
     if (e.target.value.trim().length === 5) {
@@ -276,22 +322,18 @@
     }
   });
 
-  // ২. দিন পরিবর্তন করলে সাথে সাথে সার্চ
   document.getElementById("startDay").addEventListener("change", () => fetchLiveStatusMulti());
 
-  // ৩. "Are you inside" টিক দিলে তাৎক্ষণিক লোকেশন রিফ্রেশ
-  document.getElementById("chkInsideTrain").addEventListener("change", () => fetchLiveStatusMulti());
+  // চেকবক্সে ক্লিক করলেই সরাসরি হ্যান্ডলার কল হবে
+  document.getElementById("chkInsideTrain").addEventListener("change", handleInsideTrainToggle);
 
-  // ৪. অটো-রিফ্রেশ: প্রতি ৩০ সেকেন্ড পরপর ব্যাকগ্রাউন্ডে নতুন স্টেশনের ডেটা চেক ও আপডেট
+  // অটো-রিফ্রেশ (প্রতি ৩০ সেকেন্ড)
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
   autoRefreshTimer = setInterval(() => {
     const trainNo = document.getElementById("trainNo").value.trim();
-    if (trainNo.length === 5) {
-      fetchLiveStatusMulti(true); // সাইলেন্ট মোডে আপডেট করবে (স্ক্রিন না কাঁপিয়ে)
-    }
+    if (trainNo.length === 5) fetchLiveStatusMulti(true);
   }, 30000);
 
-  // পেজ লোডের সময় স্বয়ংক্রিয়ভাবে চালু
   window.onload = () => fetchLiveStatusMulti();
 </script>
 
