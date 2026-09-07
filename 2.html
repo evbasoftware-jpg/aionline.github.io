@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box;font-family:system-ui,Arial,sans-serif}body{margin:0;background:#eef2f5;padding:10px}.app{max-width:1100px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #0002}.head{background:#0b69a3;color:#fff;padding:18px;text-align:center}.head h1{margin:0;font-size:1.4rem}.head p{margin:6px 0 0}.panel{padding:18px}.panel label{font-weight:700}.panel input[type=text]{display:block;width:100%;max-width:480px;margin:8px 0 14px;padding:13px;border:1px solid #bbb;border-radius:8px;font-size:1.1rem}.check{padding:14px;background:#e3f2fd;border:1px solid #bbdefb;border-radius:10px;max-width:600px}.check input{width:23px;height:23px;vertical-align:middle;margin-right:10px}.buttons{margin-top:15px;display:flex;gap:10px;flex-wrap:wrap}button,a.btn{border:0;border-radius:8px;padding:12px 17px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer}.start{background:#0b69a3;color:#fff}.stop{background:#c62828;color:#fff}.ntes{background:#f28c00;color:#fff}.msg,.result{display:none;margin:14px 18px;padding:14px;border-radius:9px;font-weight:700;line-height:1.55}.info{background:#e3f2fd;color:#075987}.ok{background:#e8f5e9;color:#1b5e20}.bad{background:#ffebee;color:#b71c1c}.title{padding:16px 18px 8px;font-weight:800;font-size:1.1rem}#map{height:500px}.grid{padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{padding:14px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}.card h3{margin:0 0 8px;color:#0b69a3;font-size:1rem}.card p{margin:0;line-height:1.6;font-size:.88rem;word-break:break-word}.score{text-align:center;font-size:2rem;font-weight:800;color:#0b69a3}.samples{max-height:220px;overflow:auto}.sample{padding:7px 0;border-bottom:1px solid #ddd;font-size:.82rem}@media(max-width:600px){body{padding:4px}#map{height:430px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="head"><h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1><p>Live Train API • User GPS • Accuracy • Multiple Samples • Speed • Direction</p></div>
+<div class="panel">
+<label for="trainNo">ট্রেন নম্বর লিখুন</label>
+<input id="trainNo" type="text" maxlength="5" inputmode="numeric" placeholder="যেমন: 12345">
+<div class="check"><input id="insideTrain" type="checkbox"><label for="insideTrain">আপনি কি ট্রেনের ভেতরে আছেন?</label></div>
+<div class="buttons"><button class="start" id="start">🚆 লাইভ ট্র্যাকিং শুরু করুন</button><button class="stop" id="stop">⏹ ট্র্যাকিং বন্ধ করুন</button><a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank">অফিসিয়াল NTES</a></div>
+</div>
+<div id="status" class="msg"></div><div id="result" class="result"></div>
+<div class="title">📍 ট্রেন এবং ব্যবহারকারীর অবস্থান</div><div id="map"></div>
+<div class="grid">
+<div class="card"><h3>🚆 Train Live Data</h3><p id="trainInfo">অপেক্ষা করছে...</p></div>
+<div class="card"><h3>📱 User GPS</h3><p id="userInfo">অপেক্ষা করছে...</p></div>
+<div class="card"><h3>📏 Distance & Movement</h3><p id="moveInfo">অপেক্ষা করছে...</p></div>
+<div class="card"><h3>🎯 Confidence Score</h3><div class="score" id="score">0%</div><p id="scoreText">Verification শুরু হয়নি।</p></div>
+<div class="card"><h3>📊 GPS Samples</h3><div class="samples" id="samples">Sample নেই।</div></div>
+</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ===================== API CONFIG ===================== */
+/* আপনার RailRadar API Key এখানে বসান */
+const RAILRADAR_API_KEY="rg_79d8dd13e64b46ffa2a0ed473110d983";
+const API_BASE="https://api.railradar.in/v1/trains";
+/* ====================================================== */
+
+const REFRESH_MS=15000, MIN_SAMPLES=5, SAMPLE_MS=4000, MAX_ACC=100;
+const HARD_DISTANCE_KM=3, VERIFY_DISTANCE_KM=1.5, MIN_SCORE=70;
+let map=L.map("map").setView([22.57,88.36],7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
+let train=null, raw=null, samples=[], running=false, watchId=null, timer=null;
+let trainMarker=null,userMarker=null,verifiedMarker=null,line=null,routeLine=null;
+
+function ui(id){return document.getElementById(id)}
+function message(t,c="info"){let e=ui("status");e.style.display="block";e.className="msg "+c;e.innerHTML=t}
+function result(t,c){let e=ui("result");e.style.display="block";e.className="result "+c;e.innerHTML=t}
+function hideResult(){ui("result").style.display="none"}
+function esc(s){return String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+
+function dist(a,b,c,d){const R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180,q=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
+function bear(a,b,c,d){const r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),x=Math.cos(a*r)*Math.sin(c*r)-Math.sin(a*r)*Math.cos(c*r)*Math.cos((d-b)*r);return (Math.atan2(y,x)*180/Math.PI+360)%360}
+function speed(a,b){let h=(b.time-a.time)/3600000;return h>0?dist(a.lat,a.lon,b.lat,b.lon)/h:0}
+function interp(a,b,p){p=Math.max(0,Math.min(1,Number(p)||0));return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p}}
+
+async function fetchTrain(no){
+ if(!RAILRADAR_API_KEY||RAILRADAR_API_KEY==="PASTE_YOUR_RAILRADAR_API_KEY_HERE")throw Error("RailRadar API Key সেট করা হয়নি।");
+ let url=API_BASE+"/"+encodeURIComponent(no)+"/live?authoritative=true&includeCoordinates=true&geometry=true&format=coordinates";
+ let r=await fetch(url,{headers:{Authorization:"Bearer "+RAILRADAR_API_KEY,Accept:"application/json"},cache:"no-store"});
+ let j=await r.json().catch(()=>null);
+ if(!r.ok||!j||j.success===false)throw Error(j?.error?.message||"Train API response পাওয়া যায়নি।");
+ return j.data;
+}
+function point(s){if(!s)return null;let lat=Number(s.lat??s.latitude),lon=Number(s.lng??s.lon??s.longitude);return Number.isFinite(lat)&&Number.isFinite(lon)?{lat,lon}:null}
+function routeIndex(route,c){let i=route.findIndex(x=>Number(x.sequence)===Number(c.sequence));if(i>=0)return i;let code=String(c.stationCode||"").toUpperCase();return route.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code)}
+function locate(data){
+ let c=data.currentLocation||{},route=Array.isArray(data.route)?data.route:[],i=routeIndex(route,c);
+ if(i>=0){let a=point(route[i]),b=point(route[i+1]),p=Number(c.segmentProgress||0),st=String(c.status||"").toLowerCase();
+  if(a&&b&&(st==="departed"||st==="running"||p>0)){let z=interp(a,b,p);return{...z,name:route[i].stationName||route[i].name||c.stationCode,next:route[i+1].stationName||route[i+1].name||"",speed:Number(c.speedKmh??0),bearing:Number(c.bearingDegrees??bear(a.lat,a.lon,b.lat,b.lon)),progress:p}}
+  if(a)return{...a,name:route[i].stationName||route[i].name||c.stationCode,next:"",speed:Number(c.speedKmh??0),bearing:Number(c.bearingDegrees??0),progress:0};
+ }
+ let a=point(data.previousHalt),b=point(data.nextHalt),p=Number(c.segmentProgress||0);
+ if(a&&b){let z=interp(a,b,p);return{...z,name:data.previousHalt.stationName||"Previous Halt",next:data.nextHalt.stationName||"Next Halt",speed:Number(c.speedKmh??0),bearing:Number(c.bearingDegrees??bear(a.lat,a.lon,b.lat,b.lon)),progress:p}}
+ if(b)return{...b,name:data.nextHalt.stationName||"Next Halt",next:"",speed:Number(c.speedKmh??0),bearing:Number(c.bearingDegrees??0),progress:0};
+ throw Error("API response-এ train GPS coordinate পাওয়া যায়নি।");
+}
+function updateRoute(data){
+ let g=data.geometry||data.routeGeometry||data.geojson?.geometry?.coordinates||data.geometry?.coordinates;
+ if(routeLine){routeLine.remove();routeLine=null}
+ if(Array.isArray(g)&&Array.isArray(g[0]))routeLine=L.polyline(g.map(p=>[Number(p[0]),Number(p[1])]),{weight:3,opacity:.6}).addTo(map);
+}
+function updateTrain(){
+ if(trainMarker)trainMarker.remove();
+ trainMarker=L.marker([train.lat,train.lon]).addTo(map).bindPopup("<b>🚆 RailRadar Train</b><br>"+esc(train.name));
+ ui("trainInfo").innerHTML="<b>Train:</b> "+esc(raw.trainName||raw.train?.name||"")+"<br><b>Current:</b> "+esc(train.name)+"<br><b>Next:</b> "+esc(train.next)+"<br><b>Latitude:</b> "+train.lat.toFixed(6)+"<br><b>Longitude:</b> "+train.lon.toFixed(6)+"<br><b>Speed:</b> "+train.speed.toFixed(1)+" km/h<br><b>Direction:</b> "+train.bearing.toFixed(0)+"°<br><b>Delay:</b> "+Number(raw.delayMinutes||0)+" min";
+}
+async function updateTrainLocation(){let no=ui("trainNo").value.trim();raw=await fetchTrain(no);train=locate(raw);train.time=Date.now();updateRoute(raw);updateTrain();verify()}
+
+function startGPS(){
+ if(!navigator.geolocation){message("❌ এই Browser-এ GPS পাওয়া যাচ্ছে না।","bad");return}
+ watchId=navigator.geolocation.watchPosition(pos=>{
+  let s={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:Number(pos.coords.accuracy),speed:pos.coords.speed,heading:pos.coords.heading,time:Number(pos.timestamp)};
+  if(!Number.isFinite(s.accuracy)||s.accuracy>MAX_ACC){message("📡 GPS signal দুর্বল। Accuracy ±"+Math.round(s.accuracy||0)+" m। অপেক্ষা করুন...","info");return}
+  let last=samples.at(-1);if(last&&s.time-last.time<SAMPLE_MS)return;
+  samples.push(s);if(samples.length>20)samples.shift();updateUser(s);verify();
+ },e=>message("❌ GPS Error: "+(["","Location Permission দেওয়া হয়নি।","GPS position পাওয়া যাচ্ছে না।","GPS timeout।"][e.code]||e.message),"bad"),{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+}
+function movement(){if(samples.length<2)return{speed:0,bearing:0};let a=samples.at(-2),b=samples.at(-1),v=speed(a,b),h=bear(a.lat,a.lon,b.lat,b.lon);if(Number.isFinite(Number(b.speed))&&Number(b.speed)>=0)v=Number(b.speed)*3.6;if(Number.isFinite(Number(b.heading))&&Number(b.heading)>=0)h=Number(b.heading);return{speed:v,bearing:h}}
+function updateUser(s){
+ if(userMarker)userMarker.remove();userMarker=L.marker([s.lat,s.lon]).addTo(map).bindPopup("<b>📱 User GPS</b><br>Accuracy ±"+Math.round(s.accuracy)+" m");
+ let m=movement();ui("userInfo").innerHTML="<b>Latitude:</b> "+s.lat.toFixed(6)+"<br><b>Longitude:</b> "+s.lon.toFixed(6)+"<br><b>Accuracy:</b> ±"+Math.round(s.accuracy)+" m<br><b>Speed:</b> "+m.speed.toFixed(1)+" km/h<br><b>Direction:</b> "+m.bearing.toFixed(0)+"°";
+ ui("samples").innerHTML=samples.slice().reverse().map((x,i)=>'<div class="sample"><b>Sample '+(samples.length-i)+"</b><br>Accuracy ±"+Math.round(x.accuracy)+" m<br>"+new Date(x.time).toLocaleTimeString()+"</div>").join("");
+}
+function scoreDistance(d){if(d<=.1)return 100;if(d<=.25)return 97;if(d<=.5)return 92;if(d<=1)return 85;if(d<=1.5)return 75;if(d<=3)return 50;return 0}
+function scoreAccuracy(a){if(a<=10)return 100;if(a<=20)return 95;if(a<=30)return 90;if(a<=50)return 75;if(a<=75)return 55;return 35}
+function scoreSpeed(u,t){if(u<5||t<5)return 50;let d=Math.abs(u-t);return d<=5?100:d<=10?85:d<=20?65:d<=30?40:10}
+function scoreDirection(u,t,us,ts){if(us<5||ts<5)return 50;let d=Math.abs(u-t)%360;if(d>180)d=360-d;return d<=20?100:d<=45?80:d<=90?50:10}
+function scoreTrend(){if(!train||samples.length<4)return 50;let a=samples.slice(-4).map(s=>dist(s.lat,s.lon,train.lat,train.lon)),v=Math.max(...a)-Math.min(...a);return v<.1?100:v<.3?85:v<.7?65:30}
+function verify(){
+ if(!running||!train)return;let box=ui("insideTrain");box.checked=false;
+ if(samples.length<MIN_SAMPLES){message("📡 GPS Sample নেওয়া হচ্ছে... "+samples.length+"/"+MIN_SAMPLES,"info");return}
+ let u=samples.at(-1),m=movement(),d=dist(u.lat,u.lon,train.lat,train.lon);
+ let conf=scoreDistance(d)*.45+scoreAccuracy(u.accuracy)*.15+scoreSpeed(m.speed,train.speed)*.15+scoreDirection(m.bearing,train.bearing,m.speed,train.speed)*.15+scoreTrend()*.10;
+ ui("score").textContent=conf.toFixed(0)+"%";
+ ui("moveInfo").innerHTML="<b>Train Distance:</b> "+d.toFixed(3)+" km<br><b>User Speed:</b> "+m.speed.toFixed(1)+" km/h<br><b>Train Speed:</b> "+train.speed.toFixed(1)+" km/h<br><b>User Direction:</b> "+m.bearing.toFixed(0)+"°<br><b>Train Direction:</b> "+train.bearing.toFixed(0)+"°";
+ if(line)line.remove();line=L.polyline([[train.lat,train.lon],[u.lat,u.lon]],{weight:4,dashArray:"8,8"}).addTo(map);
+ map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});
+ if(verifiedMarker){verifiedMarker.remove();verifiedMarker=null}
+ if(d>HARD_DISTANCE_KM){ui("scoreText").textContent="ট্রেন থেকে দূরত্ব অনেক বেশি।";result("❌ <b>আপনি ট্রেনের ভেতর নেই।</b><br>📏 দূরত্ব: <b>"+d.toFixed(2)+" km</b><br>🎯 Confidence: "+conf.toFixed(0)+"%","bad");return}
+ if(d<=VERIFY_DISTANCE_KM&&conf>=MIN_SCORE){
+  box.checked=true;verifiedMarker=L.circleMarker([u.lat,u.lon],{radius:10,weight:3}).addTo(map).bindPopup("<b>⭐ Verified Train Position</b><br>User GPS accepted");
+  ui("scoreText").textContent="Location, GPS accuracy ও movement যথেষ্ট মিলছে।";
+  result("✅ <b>যাচাই অনুযায়ী আপনি ট্রেনের ভেতরে আছেন।</b><br>📍 আপনার GPS-কে Verified Train Position হিসেবে দেখানো হয়েছে।<br>📏 API Train Distance: "+d.toFixed(3)+" km<br>🎯 Confidence: "+conf.toFixed(0)+"%","ok");
+ }else{
+  ui("scoreText").textContent="যথেষ্ট নিশ্চিত হওয়া যায়নি।";
+  result("❌ <b>আপনি ট্রেনের ভেতরে আছেন বলে নিশ্চিত হওয়া যায়নি।</b><br>📏 Distance: "+d.toFixed(3)+" km<br>🎯 Confidence: "+conf.toFixed(0)+"%<br>Checkbox নির্বাচন করা হয়নি।","bad");
+ }
+}
+async function start(){
+ let no=ui("trainNo").value.trim();
+ if(!/^\d{5}$/.test(no)){message("❌ সঠিক ৫ সংখ্যার ট্রেন নম্বর লিখুন।","bad");return}
+ if(!RAILRADAR_API_KEY||RAILRADAR_API_KEY==="PASTE_YOUR_RAILRADAR_API_KEY_HERE"){message("❌ RailRadar API Key সেট করা হয়নি। কোডের শুরুতে API Key বসান।","bad");return}
+ stop(false);samples=[];train=null;raw=null;running=true;ui("insideTrain").checked=false;hideResult();message("⏳ Train API এবং Phone GPS সংগ্রহ করা হচ্ছে...","info");
+ try{await updateTrainLocation();startGPS();timer=setInterval(()=>updateTrainLocation().catch(e=>message("⚠️ Train update error: "+esc(e.message),"bad")),REFRESH_MS);message("📡 Live Tracking চালু হয়েছে। GPS Sample সংগ্রহ করা হচ্ছে...","info")}catch(e){running=false;message("❌ "+esc(e.message),"bad")}
+}
+function stop(show=true){running=false;if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}if(timer){clearInterval(timer);timer=null}ui("insideTrain").checked=false;if(show)message("⏹ Live Tracking বন্ধ করা হয়েছে।","info")}
+ui("start").addEventListener("click",start);ui("stop").addEventListener("click",()=>stop(true));
+ui("insideTrain").addEventListener("change",e=>{if(e.target.checked){e.target.checked=false;message(running?"📡 যাচাই চলছে। GPS samples, distance, speed ও direction তুলনা করা হচ্ছে...":"⚠️ আগে Live Tracking শুরু করুন।","info")}});
+window.addEventListener("beforeunload",()=>stop(false));
+</script>
+</body>
+</html>
