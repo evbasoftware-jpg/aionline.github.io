@@ -171,13 +171,33 @@ async function fetchTrain(no) {
   if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_YOUR")) {
     throw Error("Google Apps Script Web App URL সেট করা হয়নি।");
   }
-  let r = await fetch(GOOGLE_SCRIPT_URL + "?trainNo=" + encodeURIComponent(no) + "&t=" + Date.now(), { cache: "no-store" });
+
+  let r = await fetch(GOOGLE_SCRIPT_URL + "?trainNo=" + encodeURIComponent(no) + "&t=" + Date.now(), {
+    method: "GET",
+    redirect: "follow",
+    cache: "no-store"
+  });
+
   let j = await r.json().catch(() => null);
-  if (!r.ok || !j || j.success === false) {
-    throw Error(j?.error || "Train data পাওয়া যায়নি।");
+  
+  if (!r.ok || !j) {
+    throw Error("API থেকে কোনো রেসপন্স পাওয়া যায়নি।");
   }
-  return j.data;
+  
+  if (j.success === false) {
+    throw Error(j.error || "Train data পাওয়া যায়নি।");
+  }
+
+  // যদি j.data থাকে তবে সেটি নিবে, না থাকলে পুরো j অবজেক্ট নিবে
+  let payload = j.data !== undefined ? j.data : j;
+
+  if (!payload || typeof payload !== "object") {
+    throw Error("ট্রেনের ডাটা ফরম্যাট সঠিক নয়।");
+  }
+
+  return payload;
 }
+
 
 function routeIndex(route, c) {
   let i = route.findIndex(x => Number(x.sequence) === Number(c.sequence));
@@ -187,9 +207,16 @@ function routeIndex(route, c) {
 }
 
 function locate(d) {
-  let c = d.currentLocation || {}, r = Array.isArray(d.route) ? d.route : [];
-  let i = routeIndex(r, c), a = i >= 0 ? point(r[i]) : null, b = i >= 0 ? point(r[i + 1]) : null;
-  let p = Number(c.segmentProgress || 0);
+  if (!d) throw Error("ট্রেনের কোনো ডাটা পাওয়া যায়নি।");
+
+  // currentLocation যদি অবজেক্ট না থাকে
+  let c = d.currentLocation || d.current_location || {};
+  let r = Array.isArray(d.route) ? d.route : (Array.isArray(d.stations) ? d.stations : []);
+
+  let i = routeIndex(r, c);
+  let a = i >= 0 ? point(r[i]) : null;
+  let b = i >= 0 ? point(r[i + 1]) : null;
+  let p = Number(c.segmentProgress || c.progress || 0);
 
   if (a && b && p > 0) {
     return {
@@ -197,21 +224,23 @@ function locate(d) {
       lon: a.lon + (b.lon - a.lon) * p,
       name: r[i].stationName || r[i].name || c.stationCode,
       next: r[i + 1].stationName || r[i + 1].name || "",
-      speed: Number(c.speedKmh || 0),
+      speed: Number(c.speedKmh || c.speed || 0),
       bearing: Number(c.bearingDegrees ?? bear(a.lat, a.lon, b.lat, b.lon)),
       idx: i
     };
   }
+
   if (a) {
     return {
       ...a,
       name: r[i].stationName || r[i].name || c.stationCode,
       next: "",
-      speed: Number(c.speedKmh || 0),
+      speed: Number(c.speedKmh || c.speed || 0),
       bearing: Number(c.bearingDegrees || 0),
       idx: i
     };
   }
+
   let x = point(d.previousHalt), y = point(d.nextHalt);
   if (x && y) {
     let z = Number(c.segmentProgress || 0);
@@ -225,8 +254,10 @@ function locate(d) {
       idx: -1
     };
   }
-  throw Error("Train coordinate পাওয়া যায়নি।");
+
+  throw Error("API রেসপন্সে লাইভ লোকেশন (currentLocation/Route) পাওয়া যায়নি।");
 }
+
 
 function drawRoute() {
   let r = Array.isArray(raw?.route) ? raw.route : [];
