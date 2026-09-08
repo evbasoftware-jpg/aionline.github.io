@@ -1,43 +1,480 @@
 <!doctype html>
-<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>
-*{box-sizing:border-box;font-family:system-ui,Arial,sans-serif}body{margin:0;background:#eef2f5;padding:10px}.app{max-width:1150px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #0002}.head{background:#0b69a3;color:#fff;padding:18px;text-align:center}.head h1{margin:0;font-size:1.4rem}.head p{margin:6px 0 0}.panel{padding:18px}.panel label{font-weight:700}.panel input[type=text]{display:block;width:100%;max-width:480px;margin:8px 0 14px;padding:13px;border:1px solid #bbb;border-radius:8px;font-size:1.1rem}.check{padding:14px;background:#e3f2fd;border:1px solid #bbdefb;border-radius:10px;max-width:650px}.check input{width:23px;height:23px;vertical-align:middle;margin-right:10px}.buttons{margin-top:15px;display:flex;gap:10px;flex-wrap:wrap}button,a.btn{border:0;border-radius:8px;padding:12px 17px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer}.start{background:#0b69a3;color:#fff}.stop{background:#c62828;color:#fff}.ntes{background:#f28c00;color:#fff}.msg,.result{display:none;margin:14px 18px;padding:14px;border-radius:9px;font-weight:700;line-height:1.55}.info{background:#e3f2fd;color:#075987}.ok{background:#e8f5e9;color:#1b5e20}.bad{background:#ffebee;color:#b71c1c}.route-wrap{padding:18px;border-top:1px solid #e5e7eb}.title{font-weight:800;font-size:1.1rem;margin-bottom:10px}.route-scroll{overflow-x:auto}.route{display:flex;min-width:max-content;padding:15px 5px}.station{width:140px;text-align:center;position:relative}.station:not(:last-child):after{content:"";position:absolute;top:39px;left:70px;width:140px;height:4px;background:#cfd8dc}.dot{position:relative;z-index:1;width:18px;height:18px;margin:25px auto 8px;border-radius:50%;background:#90a4ae;border:3px solid #fff;box-shadow:0 0 0 2px #90a4ae}.station.active .dot{background:#0b69a3;box-shadow:0 0 0 4px #0b69a344}.trainicon{height:24px;font-size:22px}.station-name{font-size:.82rem;font-weight:700}.grid{padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.card{padding:14px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}.card h3{margin:0 0 8px;color:#0b69a3;font-size:1rem}.card p{margin:0;line-height:1.6;font-size:.88rem;word-break:break-word}.score{text-align:center;font-size:2rem;font-weight:800;color:#0b69a3}.samples{max-height:220px;overflow:auto}.sample{padding:7px 0;border-bottom:1px solid #ddd;font-size:.82rem}#map{height:520px}.map-title{padding:16px 18px 8px;font-weight:800}@media(max-width:600px){body{padding:4px}#map{height:430px}.station{width:115px}.station:not(:last-child):after{left:58px;width:115px}.buttons>*{width:100%;text-align:center}}
-</style></head><body><div class="app">
-<div class="head"><h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1><p>Live Train • User GPS • Accuracy • Multiple Samples • Speed • Direction</p></div>
-<div class="panel"><label for="trainNo">ট্রেন নম্বর লিখুন</label><input id="trainNo" type="text" maxlength="5" inputmode="numeric" placeholder="যেমন: 12345">
-<div class="check"><input id="insideTrain" type="checkbox"><label for="insideTrain" style="display:inline">আপনি কি ট্রেনের ভেতরে আছেন?</label></div>
-<div class="buttons"><button class="start" id="start">🚆 লাইভ ট্র্যাকিং শুরু করুন</button><button class="stop" id="stop">⏹ ট্র্যাকিং বন্ধ করুন</button><a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank">অফিসিয়াল NTES</a></div></div>
-<div id="status" class="msg"></div><div id="result" class="result"></div>
-<div class="route-wrap"><div class="title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div><div class="route-scroll"><div id="route" class="route">ট্রেনের তথ্য লোড হলে রুট দেখা যাবে...</div></div></div>
-<div class="grid"><div class="card"><h3>🚆 Train Live Data</h3><p id="trainInfo">অপেক্ষা করছে...</p></div><div class="card"><h3>📱 User GPS</h3><p id="userInfo">অপেক্ষা করছে...</p></div><div class="card"><h3>📏 Distance & Movement</h3><p id="moveInfo">অপেক্ষা করছে...</p></div><div class="card"><h3>🎯 Confidence Score</h3><div class="score" id="score">0%</div><p id="scoreText">Verification শুরু হয়নি।</p></div><div class="card"><h3>📊 GPS Samples</h3><div class="samples" id="samples">Sample নেই।</div></div></div>
-<div class="map-title">📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</div><div id="map"></div></div>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+    body{margin:0;background:#eef2f5;padding:10px}
+    .app{max-width:1150px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.1)}
+    .head{background:#0b69a3;color:#fff;padding:18px;text-align:center}
+    .head h1{margin:0;font-size:1.4rem}
+    .head p{margin:6px 0 0;font-size:0.9rem;opacity:0.9}
+    .panel{padding:18px}
+    .panel label{font-weight:700}
+    .panel input[type=text]{display:block;width:100%;max-width:480px;margin:8px 0 14px;padding:13px;border:1px solid #bbb;border-radius:8px;font-size:1.1rem}
+    .check{padding:14px;background:#e3f2fd;border:1px solid #bbdefb;border-radius:10px;max-width:650px}
+    .check input{width:20px;height:20px;vertical-align:middle;margin-right:10px}
+    .buttons{margin-top:15px;display:flex;gap:10px;flex-wrap:wrap}
+    button,a.btn{border:0;border-radius:8px;padding:12px 17px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .start{background:#0b69a3;color:#fff}
+    .stop{background:#c62828;color:#fff}
+    .ntes{background:#f28c00;color:#fff}
+    .msg,.result{display:none;margin:14px 18px;padding:14px;border-radius:9px;font-weight:700;line-height:1.55}
+    .info{background:#e3f2fd;color:#075987}
+    .ok{background:#e8f5e9;color:#1b5e20}
+    .bad{background:#ffebee;color:#b71c1c}
+    .route-wrap{padding:18px;border-top:1px solid #e5e7eb}
+    .title{font-weight:800;font-size:1.1rem;margin-bottom:10px}
+    .route-scroll{overflow-x:auto}
+    .route{display:flex;min-width:max-content;padding:15px 5px}
+    .station{width:140px;text-align:center;position:relative}
+    .station:not(:last-child):after{content:"";position:absolute;top:39px;left:70px;width:140px;height:4px;background:#cfd8dc}
+    .dot{position:relative;z-index:1;width:18px;height:18px;margin:25px auto 8px;border-radius:50%;background:#90a4ae;border:3px solid #fff;box-shadow:0 0 0 2px #90a4ae}
+    .station.active .dot{background:#0b69a3;box-shadow:0 0 0 4px rgba(11,105,163,0.27)}
+    .trainicon{height:24px;font-size:22px}
+    .station-name{font-size:.82rem;font-weight:700}
+    .grid{padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .card{padding:14px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}
+    .card h3{margin:0 0 8px;color:#0b69a3;font-size:1rem}
+    .card p{margin:0;line-height:1.6;font-size:.88rem;word-break:break-word}
+    .score{text-align:center;font-size:2rem;font-weight:800;color:#0b69a3}
+    .samples{max-height:220px;overflow:auto}
+    .sample{padding:7px 0;border-bottom:1px solid #ddd;font-size:.82rem}
+    #map{height:520px}
+    .map-title{padding:16px 18px 8px;font-weight:800}
+    @media(max-width:600px){
+      body{padding:4px}
+      #map{height:430px}
+      .station{width:115px}
+      .station:not(:last-child):after{left:58px;width:115px}
+      .buttons>*{width:100%;text-align:center}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1>
+    <p>Live Train • User GPS • Accuracy • Multiple Samples • Speed • Direction</p>
+  </div>
+  
+  <div class="panel">
+    <label for="trainNo">ট্রেন নম্বর লিখুন</label>
+    <input id="trainNo" type="text" maxlength="5" inputmode="numeric" placeholder="যেমন: 12345">
+    <div class="check">
+      <input id="insideTrain" type="checkbox">
+      <label for="insideTrain" style="display:inline">আপনি কি ট্রেনের ভেতরে আছেন?</label>
+    </div>
+    <div class="buttons">
+      <button class="start" id="start">🚆 লাইভ ট্র্যাকিং শুরু করুন</button>
+      <button class="stop" id="stop">⏹ ট্র্যাকিং বন্ধ করুন</button>
+      <a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank" rel="noopener">অফিসিয়াল NTES</a>
+    </div>
+  </div>
+
+  <div id="status" class="msg"></div>
+  <div id="result" class="result"></div>
+
+  <div class="route-wrap">
+    <div class="title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div>
+    <div class="route-scroll">
+      <div id="route" class="route">ট্রেনের তথ্য লোড হলে রুট দেখা যাবে...</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>🚆 Train Live Data</h3>
+      <p id="trainInfo">অপেক্ষা করছে...</p>
+    </div>
+    <div class="card">
+      <h3>📱 User GPS</h3>
+      <p id="userInfo">অপেক্ষা করছে...</p>
+    </div>
+    <div class="card">
+      <h3>📏 Distance & Movement</h3>
+      <p id="moveInfo">অপেক্ষা করছে...</p>
+    </div>
+    <div class="card">
+      <h3>🎯 Confidence Score</h3>
+      <div class="score" id="score">0%</div>
+      <p id="scoreText">Verification শুরু হয়নি।</p>
+    </div>
+    <div class="card">
+      <h3>📊 GPS Samples</h3>
+      <div class="samples" id="samples">Sample নেই।</div>
+    </div>
+  </div>
+
+  <div class="map-title">📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</div>
+  <div id="map"></div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const GOOGLE_SCRIPT_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
-const NORMAL_REFRESH_MS=7*60*1000, VERIFIED_REFRESH_MS=20*60*1000, MIN_SAMPLES=5, SAMPLE_MS=4000, MAX_ACC=100, HARD_DISTANCE_KM=3, VERIFY_DISTANCE_KM=1.5, MIN_SCORE=70;
-let map=L.map("map").setView([22.57,88.36],7);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
-let train=null,raw=null,samples=[],running=false,watchId=null,timer=null,trainMarker=null,userMarker=null,verifiedMarker=null,line=null,routeLine=null,inside=false;
-const ui=id=>document.getElementById(id);
-function esc(s){return String(s??"").replace(/[&<>"]/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[x]))}
-function msg(t,c="info"){let e=ui("status");e.style.display="block";e.className="msg "+c;e.innerHTML=t}
-function res(t,c){let e=ui("result");e.style.display="block";e.className="result "+c;e.innerHTML=t}
-function dist(a,b,c,d){const R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180,q=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
-function bear(a,b,c,d){const r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),x=Math.cos(a*r)*Math.sin(c*r)-Math.sin(a*r)*Math.cos(c*r)*Math.cos((d-b)*r);return(Math.atan2(y,x)*180/Math.PI+360)%360}
-function point(s){if(!s)return null;let lat=Number(s.lat??s.latitude),lon=Number(s.lng??s.lon??s.longitude);return Number.isFinite(lat)&&Number.isFinite(lon)?{lat,lon}:null}
-async function fetchTrain(no){if(!GOOGLE_SCRIPT_URL||GOOGLE_SCRIPT_URL.includes("PASTE_YOUR"))throw Error("Google Apps Script Web App URL সেট করা হয়নি।");let r=await fetch(GOOGLE_SCRIPT_URL+"?trainNo="+encodeURIComponent(no)+"&t="+Date.now(),{cache:"no-store"}),j=await r.json().catch(()=>null);if(!r.ok||!j||j.success===false)throw Error(j?.error||"Train data পাওয়া যায়নি।");return j.data}
-function routeIndex(route,c){let i=route.findIndex(x=>Number(x.sequence)===Number(c.sequence));if(i>=0)return i;let code=String(c.stationCode||"").toUpperCase();return route.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code)}
-function locate(d){let c=d.currentLocation||{},r=Array.isArray(d.route)?d.route:[],i=routeIndex(r,c),a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null,p=Number(c.segmentProgress||0);if(a&&b&&p>0){return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p,name:r[i].stationName||r[i].name||c.stationCode,next:r[i+1].stationName||r[i+1].name||"",speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees??bear(a.lat,a.lon,b.lat,b.lon)),idx:i}}if(a)return{...a,name:r[i].stationName||r[i].name||c.stationCode,next:"",speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees||0),idx:i};let x=point(d.previousHalt),y=point(d.nextHalt);if(x&&y){let z=Number(c.segmentProgress||0);return{lat:x.lat+(y.lat-x.lat)*z,lon:x.lon+(y.lon-x.lon)*z,name:d.previousHalt.stationName||"Previous Halt",next:d.nextHalt.stationName||"Next Halt",speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees??bear(x.lat,x.lon,y.lat,y.lon)),idx:-1}}throw Error("Train coordinate পাওয়া যায়নি।")}
-function drawRoute(){let r=Array.isArray(raw.route)?raw.route:[];if(!r.length){ui("route").textContent="Route station পাওয়া যায়নি।";return}ui("route").innerHTML=r.map((s,i)=>`<div class="station ${i===train.idx?"active":""}">${i===train.idx?'<div class="trainicon">🚆</div>':'<div class="trainicon"></div>'}<div class="dot"></div><div class="station-name">${esc(s.stationName||s.name||s.stationCode||"Station")}</div></div>`).join("")}
-function drawTrain(){if(trainMarker)trainMarker.remove();trainMarker=L.marker([train.lat,train.lon]).addTo(map).bindPopup("<b>🚆 Live Train</b><br>"+esc(train.name));ui("trainInfo").innerHTML="<b>Train:</b> "+esc(raw.trainName||raw.train?.name||"")+"<br><b>Current:</b> "+esc(train.name)+"<br><b>Next:</b> "+esc(train.next)+"<br><b>Latitude:</b> "+train.lat.toFixed(6)+"<br><b>Longitude:</b> "+train.lon.toFixed(6)+"<br><b>Speed:</b> "+train.speed.toFixed(1)+" km/h<br><b>Direction:</b> "+train.bearing.toFixed(0)+"°"}
-async function updateTrain(){raw=await fetchTrain(ui("trainNo").value.trim());train=locate(raw);drawRoute();drawTrain();verify()}
-function startGPS(){if(!navigator.geolocation)return msg("❌ এই Browser-এ GPS পাওয়া যাচ্ছে না।","bad");watchId=navigator.geolocation.watchPosition(p=>{let s={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:Number(p.coords.accuracy),speed:p.coords.speed,heading:p.coords.heading,time:Number(p.timestamp)};if(!Number.isFinite(s.accuracy)||s.accuracy>MAX_ACC)return msg("📡 GPS signal দুর্বল। Accuracy ±"+Math.round(s.accuracy||0)+" m।","info");let l=samples.at(-1);if(l&&s.time-l.time<SAMPLE_MS)return;samples.push(s);if(samples.length>20)samples.shift();drawUser(s);verify()},e=>msg("❌ GPS Error: "+(["","Location Permission দেওয়া হয়নি।","GPS position পাওয়া যাচ্ছে না।","GPS timeout।"][e.code]||e.message),"bad"),{enableHighAccuracy:true,maximumAge:0,timeout:20000})}
-function move(){if(samples.length<2)return{speed:0,bearing:0};let a=samples.at(-2),b=samples.at(-1),v=dist(a.lat,a.lon,b.lat,b.lon)/((b.time-a.time)/3600000),h=bear(a.lat,a.lon,b.lat,b.lon);if(Number.isFinite(Number(b.speed))&&b.speed>=0)v=Number(b.speed)*3.6;if(Number.isFinite(Number(b.heading))&&b.heading>=0)h=Number(b.heading);return{speed:v,bearing:h}}
-function drawUser(s){if(userMarker)userMarker.remove();userMarker=L.marker([s.lat,s.lon]).addTo(map).bindPopup("<b>📱 User GPS</b><br>Accuracy ±"+Math.round(s.accuracy)+" m");let m=move();ui("userInfo").innerHTML="<b>Latitude:</b> "+s.lat.toFixed(6)+"<br><b>Longitude:</b> "+s.lon.toFixed(6)+"<br><b>Accuracy:</b> ±"+Math.round(s.accuracy)+" m<br><b>Speed:</b> "+m.speed.toFixed(1)+" km/h<br><b>Direction:</b> "+m.bearing.toFixed(0)+"°";ui("samples").innerHTML=samples.slice().reverse().map((x,i)=>'<div class="sample"><b>Sample '+(samples.length-i)+"</b><br>Accuracy ±"+Math.round(x.accuracy)+" m<br>"+new Date(x.time).toLocaleTimeString()+"</div>").join("")}
-function verify(){if(!running||!train)return;ui("insideTrain").checked=false;if(samples.length<MIN_SAMPLES)return msg("📡 GPS Sample নেওয়া হচ্ছে... "+samples.length+"/"+MIN_SAMPLES,"info");let u=samples.at(-1),m=move(),d=dist(u.lat,u.lon,train.lat,train.lon);let sd=d<=.1?100:d<=.25?97:d<=.5?92:d<=1?85:d<=1.5?75:d<=3?50:0,sa=u.accuracy<=10?100:u.accuracy<=20?95:u.accuracy<=30?90:u.accuracy<=50?75:55,ss=(m.speed<5||train.speed<5)?50:Math.abs(m.speed-train.speed)<=10?85:40,conf=sd*.55+sa*.2+ss*.15+50*.1;ui("score").textContent=conf.toFixed(0)+"%";ui("moveInfo").innerHTML="<b>Train Distance:</b> "+d.toFixed(3)+" km<br><b>User Speed:</b> "+m.speed.toFixed(1)+" km/h<br><b>Train Speed:</b> "+train.speed.toFixed(1)+" km/h";if(line)line.remove();line=L.polyline([[train.lat,train.lon],[u.lat,u.lon]],{weight:4,dashArray:"8,8"}).addTo(map);map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});if(d<=VERIFY_DISTANCE_KM&&conf>=MIN_SCORE){inside=true;ui("insideTrain").checked=true;ui("scoreText").textContent="Location ও GPS যথেষ্ট মিলছে।";res("✅ <b>যাচাই অনুযায়ী আপনি ট্রেনের ভেতরে আছেন।</b><br>📍 আপনার GPS-কে Verified Train Position হিসেবে ব্যবহার করা হচ্ছে।<br>📏 Distance: "+d.toFixed(3)+" km<br>🎯 Confidence: "+conf.toFixed(0)+"%","ok");if(trainMarker&&u.accuracy<=30)trainMarker.setLatLng([u.lat,u.lon])}else{inside=false;ui("scoreText").textContent=d>HARD_DISTANCE_KM?"ট্রেন থেকে দূরত্ব অনেক বেশি।":"যথেষ্ট নিশ্চিত হওয়া যায়নি।";res(d>HARD_DISTANCE_KM?"❌ <b>আপনি ট্রেনের ভেতর নেই।</b><br>📏 দূরত্ব: "+d.toFixed(2)+" km":"❌ <b>আপনি ট্রেনের ভেতরে আছেন বলে নিশ্চিত হওয়া যায়নি।</b><br>📏 Distance: "+d.toFixed(3)+" km<br>🎯 Confidence: "+conf.toFixed(0)+"%","bad")}}
-function schedule(){if(timer)clearTimeout(timer);if(!running)return;timer=setTimeout(async()=>{try{await updateTrain()}catch(e){msg("⚠️ Train update error: "+esc(e.message),"bad")}schedule()},inside?VERIFIED_REFRESH_MS:NORMAL_REFRESH_MS)}
-async function start(){let n=ui("trainNo").value.trim();if(!/^\d{5}$/.test(n))return msg("❌ সঠিক ৫ সংখ্যার ট্রেন নম্বর লিখুন।","bad");if(GOOGLE_SCRIPT_URL.includes("PASTE_YOUR"))return msg("❌ Google Apps Script Web App URL সেট করা হয়নি।","bad");stop(false);samples=[];running=true;inside=false;ui("insideTrain").checked=false;ui("result").style.display="none";msg("⏳ Train API এবং Phone GPS সংগ্রহ করা হচ্ছে...","info");try{await updateTrain();startGPS();schedule();msg("📡 Live Tracking চালু হয়েছে। GPS Sample সংগ্রহ করা হচ্ছে...","info")}catch(e){running=false;msg("❌ "+esc(e.message),"bad")}}
-function stop(show=true){running=false;inside=false;if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}if(timer){clearTimeout(timer);timer=null}ui("insideTrain").checked=false;if(show)msg("⏹ Live Tracking বন্ধ করা হয়েছে।","info")}
-ui("start").onclick=start;ui("stop").onclick=()=>stop(true);ui("insideTrain").onchange=e=>{if(e.target.checked){e.target.checked=false;msg(running?"📡 যাচাই চলছে...":"⚠️ আগে Live Tracking শুরু করুন।","info")}};window.onbeforeunload=()=>stop(false);
-</script></body></html>
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzClqJOmY7C2i3pErBgb2EF8RR2LTFt0I1kNnA67Yi2yRffHYaXP-_IbBnYZslSbrFJIg/exec";
+const NORMAL_REFRESH_MS = 7 * 60 * 1000;
+const VERIFIED_REFRESH_MS = 20 * 60 * 1000;
+const MIN_SAMPLES = 5;
+const SAMPLE_MS = 4000;
+const MAX_ACC = 100;
+const HARD_DISTANCE_KM = 3;
+const VERIFY_DISTANCE_KM = 1.5;
+const MIN_SCORE = 70;
+const API_ONLY_MAX_TRACKING_MS = 20 * 60 * 1000;
+
+let map = L.map("map").setView([22.57, 88.36], 7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "© OpenStreetMap contributors"
+}).addTo(map);
+
+let train = null,
+    raw = null,
+    samples = [],
+    running = false,
+    watchId = null,
+    timer = null,
+    apiOnlyStopTimer = null,
+    trainMarker = null,
+    userMarker = null,
+    line = null,
+    inside = false;
+
+const ui = id => document.getElementById(id);
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, x => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[x])); }
+function msg(t, c = "info") { let e = ui("status"); e.style.display = "block"; e.className = "msg " + c; e.innerHTML = t; }
+function res(t, c) { let e = ui("result"); e.style.display = "block"; e.className = "result " + c; e.innerHTML = t; }
+
+function dist(a, b, c, d) {
+  const R = 6371, x = (c - a) * Math.PI / 180, y = (d - b) * Math.PI / 180;
+  const q = Math.sin(x / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(y / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(q), Math.sqrt(1 - q));
+}
+
+function bear(a, b, c, d) {
+  const r = Math.PI / 180, y = Math.sin((d - b) * r) * Math.cos(c * r);
+  const x = Math.cos(a * r) * Math.sin(c * r) - Math.sin(a*r) * Math.cos(c * r) * Math.cos((d - b) * r);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function point(s) {
+  if (!s) return null;
+  let lat = Number(s.lat ?? s.latitude), lon = Number(s.lng ?? s.lon ?? s.longitude);
+  return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+}
+
+async function fetchTrain(no) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("PASTE_YOUR")) {
+    throw Error("Google Apps Script Web App URL সেট করা হয়নি।");
+  }
+  let r = await fetch(GOOGLE_SCRIPT_URL + "?trainNo=" + encodeURIComponent(no) + "&t=" + Date.now(), { cache: "no-store" });
+  let j = await r.json().catch(() => null);
+  if (!r.ok || !j || j.success === false) {
+    throw Error(j?.error || "Train data পাওয়া যায়নি।");
+  }
+  return j.data;
+}
+
+function routeIndex(route, c) {
+  let i = route.findIndex(x => Number(x.sequence) === Number(c.sequence));
+  if (i >= 0) return i;
+  let code = String(c.stationCode || "").toUpperCase();
+  return route.findIndex(x => String(x.stationCode || x.code || "").toUpperCase() === code);
+}
+
+function locate(d) {
+  let c = d.currentLocation || {}, r = Array.isArray(d.route) ? d.route : [];
+  let i = routeIndex(r, c), a = i >= 0 ? point(r[i]) : null, b = i >= 0 ? point(r[i + 1]) : null;
+  let p = Number(c.segmentProgress || 0);
+
+  if (a && b && p > 0) {
+    return {
+      lat: a.lat + (b.lat - a.lat) * p,
+      lon: a.lon + (b.lon - a.lon) * p,
+      name: r[i].stationName || r[i].name || c.stationCode,
+      next: r[i + 1].stationName || r[i + 1].name || "",
+      speed: Number(c.speedKmh || 0),
+      bearing: Number(c.bearingDegrees ?? bear(a.lat, a.lon, b.lat, b.lon)),
+      idx: i
+    };
+  }
+  if (a) {
+    return {
+      ...a,
+      name: r[i].stationName || r[i].name || c.stationCode,
+      next: "",
+      speed: Number(c.speedKmh || 0),
+      bearing: Number(c.bearingDegrees || 0),
+      idx: i
+    };
+  }
+  let x = point(d.previousHalt), y = point(d.nextHalt);
+  if (x && y) {
+    let z = Number(c.segmentProgress || 0);
+    return {
+      lat: x.lat + (y.lat - x.lat) * z,
+      lon: x.lon + (y.lon - x.lon) * z,
+      name: d.previousHalt.stationName || "Previous Halt",
+      next: d.nextHalt.stationName || "Next Halt",
+      speed: Number(c.speedKmh || 0),
+      bearing: Number(c.bearingDegrees ?? bear(x.lat, x.lon, y.lat, y.lon)),
+      idx: -1
+    };
+  }
+  throw Error("Train coordinate পাওয়া যায়নি।");
+}
+
+function drawRoute() {
+  let r = Array.isArray(raw?.route) ? raw.route : [];
+  if (!r.length) {
+    ui("route").textContent = "Route station পাওয়া যায়নি।";
+    return;
+  }
+  ui("route").innerHTML = r.map((s, i) => `
+    <div class="station ${i === train.idx ? "active" : ""}">
+      ${i === train.idx ? '<div class="trainicon">🚆</div>' : '<div class="trainicon"></div>'}
+      <div class="dot"></div>
+      <div class="station-name">${esc(s.stationName || s.name || s.stationCode || "Station")}</div>
+    </div>
+  `).join("");
+}
+
+function drawTrain() {
+  if (trainMarker) trainMarker.remove();
+  trainMarker = L.marker([train.lat, train.lon]).addTo(map).bindPopup("<b>🚆 Live Train</b><br>" + esc(train.name));
+  
+  ui("trainInfo").innerHTML = 
+    "<b>Train:</b> " + esc(raw.trainName || raw.train?.name || "") +
+    "<br><b>Current:</b> " + esc(train.name) +
+    "<br><b>Next:</b> " + esc(train.next) +
+    "<br><b>Latitude:</b> " + train.lat.toFixed(6) +
+    "<br><b>Longitude:</b> " + train.lon.toFixed(6) +
+    "<br><b>Speed:</b> " + train.speed.toFixed(1) + " km/h" +
+    "<br><b>Direction:</b> " + train.bearing.toFixed(0) + "°";
+}
+
+async function updateTrain() {
+  raw = await fetchTrain(ui("trainNo").value.trim());
+  train = locate(raw);
+  drawRoute();
+  drawTrain();
+  verify();
+}
+
+function startGPS() {
+  if (!navigator.geolocation) return msg("❌ এই Browser-এ GPS পাওয়া যাচ্ছে না।", "bad");
+  watchId = navigator.geolocation.watchPosition(p => {
+    let s = {
+      lat: p.coords.latitude,
+      lon: p.coords.longitude,
+      accuracy: Number(p.coords.accuracy),
+      speed: p.coords.speed,
+      heading: p.coords.heading,
+      time: Number(p.timestamp)
+    };
+    if (!Number.isFinite(s.accuracy) || s.accuracy > MAX_ACC) {
+      return msg("📡 GPS signal দুর্বল। Accuracy ±" + Math.round(s.accuracy || 0) + " m।", "info");
+    }
+    let l = samples.at(-1);
+    if (l && s.time - l.time < SAMPLE_MS) return;
+    samples.push(s);
+    if (samples.length > 20) samples.shift();
+    drawUser(s);
+    verify();
+  }, e => msg("❌ GPS Error: " + (["", "Location Permission দেওয়া হয়নি।", "GPS position পাওয়া যাচ্ছে না।", "GPS timeout।"][e.code] || e.message), "bad"), {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 20000
+  });
+}
+
+function move() {
+  if (samples.length < 2) return { speed: 0, bearing: 0 };
+  let a = samples.at(-2), b = samples.at(-1);
+  let v = dist(a.lat, a.lon, b.lat, b.lon) / ((b.time - a.time) / 3600000);
+  let h = bear(a.lat, a.lon, b.lat, b.lon);
+  if (Number.isFinite(Number(b.speed)) && b.speed >= 0) v = Number(b.speed) * 3.6;
+  if (Number.isFinite(Number(b.heading)) && b.heading >= 0) h = Number(b.heading);
+  return { speed: v, bearing: h };
+}
+
+function drawUser(s) {
+  if (userMarker) userMarker.remove();
+  userMarker = L.marker([s.lat, s.lon]).addTo(map).bindPopup("<b>📱 User GPS</b><br>Accuracy ±" + Math.round(s.accuracy) + " m");
+  let m = move();
+  ui("userInfo").innerHTML = 
+    "<b>Latitude:</b> " + s.lat.toFixed(6) +
+    "<br><b>Longitude:</b> " + s.lon.toFixed(6) +
+    "<br><b>Accuracy:</b> ±" + Math.round(s.accuracy) + " m" +
+    "<br><b>Speed:</b> " + m.speed.toFixed(1) + " km/h" +
+    "<br><b>Direction:</b> " + m.bearing.toFixed(0) + "°";
+  ui("samples").innerHTML = samples.slice().reverse().map((x, i) =>
+    '<div class="sample"><b>Sample ' + (samples.length - i) + "</b><br>Accuracy ±" + Math.round(x.accuracy) + " m<br>" + new Date(x.time).toLocaleTimeString() + "</div>"
+  ).join("");
+}
+
+function verify() {
+  if (!running || !train) return;
+  ui("insideTrain").checked = false;
+  if (samples.length < MIN_SAMPLES) {
+    return msg("📡 GPS Sample নেওয়া হচ্ছে... " + samples.length + "/" + MIN_SAMPLES, "info");
+  }
+  let u = samples.at(-1), m = move(), d = dist(u.lat, u.lon, train.lat, train.lon);
+  let sd = d <= .1 ? 100 : d <= .25 ? 97 : d <= .5 ? 92 : d <= 1 ? 85 : d <= 1.5 ? 75 : d <= 3 ? 50 : 0;
+  let sa = u.accuracy <= 10 ? 100 : u.accuracy <= 20 ? 95 : u.accuracy <= 30 ? 90 : u.accuracy <= 50 ? 75 : 55;
+  let ss = (m.speed < 5 || train.speed < 5) ? 50 : Math.abs(m.speed - train.speed) <= 10 ? 85 : 40;
+  let conf = sd * .55 + sa * .2 + ss * .15 + 50 * .1;
+
+  ui("score").textContent = conf.toFixed(0) + "%";
+  ui("moveInfo").innerHTML = 
+    "<b>Train Distance:</b> " + d.toFixed(3) + " km" +
+    "<br><b>User Speed:</b> " + m.speed.toFixed(1) + " km/h" +
+    "<br><b>Train Speed:</b> " + train.speed.toFixed(1) + " km/h";
+
+  if (line) line.remove();
+  line = L.polyline([[train.lat, train.lon], [u.lat, u.lon]], { weight: 4, dashArray: "8,8", color: "#0b69a3" }).addTo(map);
+  map.fitBounds([[train.lat, train.lon], [u.lat, u.lon]], { padding: [40, 40], maxZoom: 15 });
+
+  if (d <= VERIFY_DISTANCE_KM && conf >= MIN_SCORE) {
+    inside = true;
+    if (apiOnlyStopTimer) {
+      clearTimeout(apiOnlyStopTimer);
+      apiOnlyStopTimer = null;
+    }
+    ui("insideTrain").checked = true;
+    ui("scoreText").textContent = "Location ও GPS যথেষ্ট মিলছে।";
+    res(
+      "✅ <b>যাচাই অনুযায়ী আপনি ট্রেনের ভেতরে আছেন।</b>" +
+      "<br>📍 আপনার GPS-কে Verified Train Position হিসেবে ব্যবহার করা হচ্ছে।" +
+      "<br>📏 Distance: " + d.toFixed(3) + " km" +
+      "<br>🎯 Confidence: " + conf.toFixed(0) + "%",
+      "ok"
+    );
+    if (trainMarker && u.accuracy <= 30) {
+      trainMarker.setLatLng([u.lat, u.lon]);
+    }
+  } else {
+    inside = false;
+    ui("scoreText").textContent = d > HARD_DISTANCE_KM ? "ট্রেন থেকে দূরত্ব অনেক বেশি।" : "যথেষ্ট নিশ্চিত হওয়া যায়নি।";
+    res(
+      d > HARD_DISTANCE_KM
+        ? "❌ <b>আপনি ট্রেনের ভেতর নেই।</b><br>📏 দূরত্ব: " + d.toFixed(2) + " km"
+        : "❌ <b>আপনি ট্রেনের ভেতরে আছেন বলে নিশ্চিত হওয়া যায়নি।</b><br>📏 Distance: " + d.toFixed(3) + " km<br>🎯 Confidence: " + conf.toFixed(0) + "%",
+      "bad"
+    );
+  }
+}
+
+function startApiOnlyAutoStop() {
+  if (apiOnlyStopTimer) {
+    clearTimeout(apiOnlyStopTimer);
+    apiOnlyStopTimer = null;
+  }
+  apiOnlyStopTimer = setTimeout(() => {
+    if (running && !inside) {
+      stop(false);
+      msg(
+        "⏹️ শুধুমাত্র Train API ব্যবহার করে ২০ মিনিট ট্র্যাকিং চলেছে। " +
+        "এই সময়ের মধ্যে ট্রেনের ভেতরে থাকা কোনো ব্যবহারকারীর GPS Location Verified হয়নি। " +
+        "তাই API ব্যবহার কমানোর জন্য Live Tracking স্বয়ংক্রিয়ভাবে বন্ধ করা হয়েছে।",
+        "info"
+      );
+      res(
+        "⏹️ <b>API-only Live Tracking বন্ধ হয়েছে।</b>" +
+        "<br>⏱️ সর্বোচ্চ ২০ মিনিট API ভিত্তিক ট্র্যাকিং সম্পন্ন হয়েছে।" +
+        "<br>🔑 অপ্রয়োজনীয় API request বন্ধ করা হয়েছে।",
+        "info"
+      );
+    }
+  }, API_ONLY_MAX_TRACKING_MS);
+}
+
+function schedule() {
+  if (timer) clearTimeout(timer);
+  if (!running) return;
+  timer = setTimeout(async () => {
+    try {
+      await updateTrain();
+    } catch (e) {
+      msg("⚠️ Train update error: " + esc(e.message), "bad");
+    }
+    schedule();
+  }, inside ? VERIFIED_REFRESH_MS : NORMAL_REFRESH_MS);
+}
+
+async function start() {
+  let n = ui("trainNo").value.trim();
+  if (!/^\d{5}$/.test(n)) return msg("❌ সঠিক ৫ সংখ্যার ট্রেন নম্বর লিখুন।", "bad");
+  if (GOOGLE_SCRIPT_URL.includes("PASTE_YOUR")) return msg("❌ Google Apps Script Web App URL সেট করা হয়নি।", "bad");
+  
+  stop(false);
+  samples = [];
+  running = true;
+  inside = false;
+  ui("insideTrain").checked = false;
+  ui("result").style.display = "none";
+  msg("⏳ Train API এবং Phone GPS সংগ্রহ করা হচ্ছে...", "info");
+
+  try {
+    await updateTrain();
+    startGPS();
+    startApiOnlyAutoStop();
+    schedule();
+    msg(
+      "📡 Live Tracking চালু হয়েছে। GPS Sample সংগ্রহ করা হচ্ছে... " +
+      "User GPS Verified না হলে সর্বোচ্চ ২০ মিনিট API ভিত্তিক ট্র্যাকিং চলবে।",
+      "info"
+    );
+  } catch (e) {
+    running = false;
+    msg("❌ " + esc(e.message), "bad");
+  }
+}
+
+function stop(show = true) {
+  running = false;
+  inside = false;
+
+  if (apiOnlyStopTimer) {
+    clearTimeout(apiOnlyStopTimer);
+    apiOnlyStopTimer = null;
+  }
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+  }
+  if (line) {
+    line.remove();
+    line = null;
+  }
+  if (userMarker) {
+    userMarker.remove();
+    userMarker = null;
+  }
+
+  ui("insideTrain").checked = false;
+  if (show) {
+    msg("⏹ Live Tracking বন্ধ করা হয়েছে।", "info");
+  }
+}
+
+ui("start").onclick = start;
+ui("stop").onclick = () => stop(true);
+ui("insideTrain").onchange = e => {
+  if (e.target.checked) {
+    e.target.checked = false;
+    msg(running ? "📡 যাচাই চলছে..." : "⚠️ আগে Live Tracking শুরু করুন।", "info");
+  }
+};
+window.onbeforeunload = () => stop(false);
+</script>
+</body>
+</html>
