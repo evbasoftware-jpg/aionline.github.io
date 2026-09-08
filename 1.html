@@ -200,26 +200,11 @@ async function fetchTrain(no) {
 
 
 function routeIndex(route, c) {
-  if (!Array.isArray(route) || !c) return -1;
   let i = route.findIndex(x => Number(x.sequence) === Number(c.sequence));
   if (i >= 0) return i;
-
-  let code = String(c.stationCode || c.code || "").trim().toUpperCase();
-  if (code) {
-    let idx = route.findIndex(x => String(x.stationCode || x.code || "").trim().toUpperCase() === code);
-    if (idx >= 0) return idx;
-  }
-
-  // কোড না মিললে স্টেশনের নাম মিলিয়ে সক্রিয় স্টেশন চিহ্নিত করার ফলব্যাক
-  let name = String(c.stationName || c.name || "").trim().toLowerCase();
-  if (name) {
-    let idx = route.findIndex(x => String(x.stationName || x.name || "").trim().toLowerCase() === name);
-    if (idx >= 0) return idx;
-  }
-
-  return -1;
+  let code = String(c.stationCode || "").toUpperCase();
+  return route.findIndex(x => String(x.stationCode || x.code || "").toUpperCase() === code);
 }
-
 
 function locate(d) {
   if (!d) throw Error("ট্রেনের কোনো ডাটা পাওয়া যায়নি।");
@@ -288,21 +273,17 @@ function drawRoute() {
     </div>
   `).join("");
 
-  // নির্ভরযোগ্য কন্টেইনার অটো-স্ক্রোলিং
+  // বর্তমান সক্রিয় স্টেশনে মসৃণভাবে অটোমেটিক স্ক্রোল করার জন্য
   setTimeout(() => {
-    let container = document.querySelector(".route-scroll");
     let activeStation = document.querySelector("#route .station.active");
-
-    if (container && activeStation) {
-      // সক্রিয় স্টেশনকে স্ক্রোলের ঠিক মাঝখানে নিয়ে আসার হিসাব
-      let targetLeft = activeStation.offsetLeft - (container.clientWidth / 2) + (activeStation.offsetWidth / 2);
-      
-      container.scrollTo({
-        left: Math.max(0, targetLeft),
-        behavior: "smooth"
+    if (activeStation) {
+      activeStation.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest"
       });
     }
-  }, 150);
+  }, 100);
 }
 
 function drawTrain() {
