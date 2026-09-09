@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+    body{margin:0;background:#eef2f5;padding:10px}
+    .app{max-width:1150px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.1)}
+    .head{background:#0b69a3;color:#fff;padding:18px;text-align:center}
+    .head h1{margin:0;font-size:1.4rem}
+    .head p{margin:6px 0 0;font-size:0.85rem;opacity:0.9}
+    
+    .panel{padding:18px;border-bottom:1px solid #e5e7eb}
+    .section-title{font-weight:700;font-size:1rem;color:#0b69a3;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .input-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+    .input-group{flex:1;min-width:180px}
+    .input-group label{display:block;font-size:0.85rem;font-weight:600;margin-bottom:4px;color:#333}
+    input[type=text]{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:1rem;text-transform:uppercase}
+    
+    .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button,a.btn{border:0;border-radius:8px;padding:11px 16px;font-weight:700;font-size:0.95rem;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .btn-search{background:#0284c7;color:#fff}
+    .start{background:#0b69a3;color:#fff}
+    .stop{background:#c62828;color:#fff}
+    .ntes{background:#f28c00;color:#fff}
+    
+    .msg{display:none;margin:12px 18px;padding:12px;border-radius:8px;font-weight:600;font-size:0.9rem;line-height:1.5}
+    .info{background:#e0f2fe;color:#0369a1}
+    .ok{background:#dcfce7;color:#15803d}
+    .bad{background:#fee2e2;color:#b91c1c}
+    
+    /* Train List */
+    .train-list-wrap{display:none;padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+    .train-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:8px}
+    .train-card{background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;cursor:pointer;transition:0.2s}
+    .train-card:hover{border-color:#0284c7;box-shadow:0 2px 8px rgba(2,132,199,0.2);transform:translateY(-2px)}
+    .train-card .t-no{font-weight:800;color:#0b69a3;font-size:1.05rem}
+    .train-card .t-name{font-size:0.85rem;color:#475569;margin-top:3px}
+
+    /* Route Timeline */
+    .route-wrap{padding:16px 18px;border-top:1px solid #e5e7eb}
+    .route-scroll{overflow-x:auto}
+    .route{display:flex;min-width:max-content;padding:15px 5px}
+    .station{width:130px;text-align:center;position:relative}
+    .station:not(:last-child):after{content:"";position:absolute;top:39px;left:65px;width:130px;height:4px;background:#cfd8dc}
+    .dot{position:relative;z-index:1;width:16px;height:16px;margin:25px auto 6px;border-radius:50%;background:#90a4ae;border:3px solid #fff;box-shadow:0 0 0 2px #90a4ae}
+    .station.active .dot{background:#0b69a3;box-shadow:0 0 0 4px rgba(11,105,163,0.3)}
+    .trainicon{height:22px;font-size:20px}
+    .station-name{font-size:0.8rem;font-weight:700;color:#333}
+
+    .grid{padding:16px 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+    .card{padding:12px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}
+    .card h3{margin:0 0 6px;color:#0b69a3;font-size:0.95rem}
+    .card p{margin:0;line-height:1.55;font-size:0.85rem}
+
+    #map{height:460px;width:100%}
+    .map-header{padding:14px 18px 8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+    .map-title{font-weight:800;font-size:1rem}
+    .dist-badge{background:#0b69a3;color:#fff;padding:4px 10px;border-radius:20px;font-size:0.85rem;font-weight:700}
+
+    /* Custom Map Marker Pins */
+    .pin-icon{display:flex;align-items:center;justify-content:center;border-radius:50%;width:38px;height:38px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff;font-size:20px}
+    .train-pin{background:#0b69a3}
+    .user-pin{background:#16a34a}
+
+    @media(max-width:600px){
+      .buttons>*{width:100%}
+      #map{height:380px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="head">
+    <h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1>
+    <p>Live Route • Crowd-GPS Navigation • Distance Mapping</p>
+  </div>
+
+  <!-- Search Panel -->
+  <div class="panel">
+    <!-- Option 1: Stations Between -->
+    <div class="section-title">🔍 দুটি স্টেশনের মধ্যে ট্রেন খুঁজুন</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>কোন স্টেশন থেকে (Source Code)</label>
+        <input id="fromStn" type="text" placeholder="যেমন: HWH">
+      </div>
+      <div class="input-group">
+        <label>কোন স্টেশন পর্যন্ত (Destination Code)</label>
+        <input id="toStn" type="text" placeholder="যেমন: NDLS">
+      </div>
+    </div>
+    <button class="btn-search" id="btnFindTrains">🔍 ট্রেন খুঁজুন</button>
+
+    <!-- Option 2: Direct Train No -->
+    <div class="section-title" style="margin-top:20px;">🚆 সরাসরি ট্রেন নম্বর দিয়ে ট্র্যাক করুন</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>ট্রেন নম্বর লিখুন (৫ সংখ্যা)</label>
+        <input id="trainNo" type="text" maxlength="5" inputmode="numeric" placeholder="যেমন: 12301">
+      </div>
+    </div>
+    
+    <div class="buttons">
+      <button class="start" id="start">▶️ লাইভ ট্র্যাকিং শুরু করুন</button>
+      <button class="stop" id="stop">⏹ ট্র্যাকিং বন্ধ করুন</button>
+      <a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank" rel="noopener">NTES সাইট</a>
+    </div>
+  </div>
+
+  <!-- Found Trains Area -->
+  <div id="trainListWrap" class="train-list-wrap">
+    <div style="font-weight:700;font-size:0.95rem;color:#0f172a;">পাওয়া যাওয়া ট্রেনসমূহ (যেকোনো একটিতে ক্লিক করুন):</div>
+    <div id="trainList" class="train-list"></div>
+  </div>
+
+  <div id="status" class="msg"></div>
+
+  <!-- Route & Current Station (Option 8) -->
+  <div class="route-wrap">
+    <div class="section-title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div>
+    <div class="route-scroll">
+      <div id="route" class="route">ট্রেনের তথ্য লোড হলে সম্পূর্ণ রুট দেখা যাবে...</div>
+    </div>
+  </div>
+
+  <!-- Map Header & Map Display -->
+  <div class="map-header">
+    <span class="map-title">📍 ট্রেন ও আপনার লাইভ অবস্থান</span>
+    <span id="liveDistBadge" class="dist-badge" style="display:none;">দূরত্ব: -- কিমি</span>
+  </div>
+  <div id="map"></div>
+
+  <!-- Status Cards -->
+  <div class="grid">
+    <div class="card">
+      <h3>🚆 ট্রেনের লাইভ তথ্য</h3>
+      <p id="trainInfo">অপেক্ষা করছে...</p>
+    </div>
+    <div class="card">
+      <h3>📱 আপনার GPS অবস্থান</h3>
+      <p id="userInfo">অপেক্ষা করছে...</p>
+    </div>
+    <div class="card">
+      <h3>📏 ট্র্যাকিং মোড ও দূরত্ব</h3>
+      <p id="trackMode">ট্র্যাকিং শুরু হয়নি।</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// আপনার Google Apps Script Web App URL
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxpHggaA7sNDXrwcyNid4Yy-Mfm3nLe8M0VGgplD4XHHc7Ul9LTWDJtpjj4C_4MFGopBQ/exec";
+
+// নির্দিষ্ট সময় ব্যবধান (Timeouts)
+const GPS_CROWD_REFRESH_MS = 15 * 1000;   // ট্রেনের ভেতরের GPS মোড: ১৫ সেকেন্ড
+const API_REFRESH_MS = 7 * 60 * 1000;      // API মোড: ৭ মিনিট
+const API_AUTO_STOP_MS = 20 * 60 * 1000;   // API মোড অটো স্টপ: ২০ মিনিট
+
+let map = L.map("map").setView([22.57, 88.36], 7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "© OpenStreetMap contributors"
+}).addTo(map);
+
+// Leaflet Custom HTML Icons
+const trainIcon = L.divIcon({
+  className: "custom-pin",
+  html: '<div class="pin-icon train-pin">🚆</div>',
+  iconSize: [38, 38],
+  iconAnchor: [19, 19]
+});
+
+const userIcon = L.divIcon({
+  className: "custom-pin",
+  html: '<div class="pin-icon user-pin">🚶</div>',
+  iconSize: [38, 38],
+  iconAnchor: [19, 19]
+});
+
+let running = false,
+    activeTrainNo = "",
+    insideTrain = false,
+    trainData = null,
+    trainMarker = null,
+    userMarker = null,
+    distanceLine = null,
+    watchId = null,
+    loopTimer = null,
+    apiAutoStopTimer = null,
+    currentUserPos = null;
+
+const ui = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, x => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[x]));
+
+function msg(t, c = "info") {
+  const e = ui("status");
+  e.style.display = "block";
+  e.className = "msg " + c;
+  e.innerHTML = t;
+}
+
+// Distance calculation in KM
+function getDistKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// 1. স্টেশনের মধ্যে ট্রেন খোঁজা
+ui("btnFindTrains").onclick = async () => {
+  const from = ui("fromStn").value.trim().toUpperCase();
+  const to = ui("toStn").value.trim().toUpperCase();
+  if (!from || !to) return msg("❌ দুটো স্টেশনের কোডই সঠিকভাবে পূরণ করুন।", "bad");
+
+  msg("⏳ স্টেশনের মধ্যবর্তী ট্রেন খোঁজা হচ্ছে...", "info");
+  ui("trainListWrap").style.display = "none";
+
+  try {
+    const res = await fetch(`${BACKEND_URL}?action=betweenStations&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&t=${Date.now()}`);
+    const json = await res.json();
+    if (!json.success || !json.data || !json.data.length) {
+      return msg("⚠️ এই রুটে কোনো ট্রেন পাওয়া যায়নি বা API কোড সঠিক নয়।", "bad");
+    }
+
+    ui("trainList").innerHTML = json.data.map(t => `
+      <div class="train-card" onclick="selectTrain('${esc(t.trainNo)}')">
+        <div class="t-no">🚆 ${esc(t.trainNo)}</div>
+        <div class="t-name">${esc(t.trainName)}</div>
+      </div>
+    `).join("");
+
+    ui("trainListWrap").style.display = "block";
+    msg(`✅ ${json.data.length} টি ট্রেন পাওয়া গেছে। যে কোনো একটিতে ক্লিক করুন।`, "ok");
+  } catch (err) {
+    msg("❌ অনুসন্ধান ব্যর্থ: " + err.message, "bad");
+  }
+};
+
+window.selectTrain = (no) => {
+  ui("trainNo").value = no;
+  ui("trainListWrap").style.display = "none";
+  startTracking(no);
+};
+
+// 2. লাইভ ট্র্যাকিং লুপ এবং ডেটা ফেচিং
+async function fetchLiveData(no) {
+  const res = await fetch(`${BACKEND_URL}?action=live&trainNo=${encodeURIComponent(no)}&t=${Date.now()}`);
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || "ট্রেনের লাইভ লোকেশন পাওয়া যায়নি।");
+  return json;
+}
+
+// ট্রেনের ভেতরের ক্রাউডসোর্সড জিপিএস আপলোড
+async function broadcastCrowdGPS(no, pos) {
+  try {
+    await fetch(`${BACKEND_URL}?action=updateCrowdGPS&trainNo=${encodeURIComponent(no)}&lat=${pos.lat}&lon=${pos.lon}&speed=${pos.speed || 0}`, {
+      method: "POST"
+    });
+  } catch(e) {
+    console.warn("Crowd GPS update failed", e);
+  }
+}
+
+async function updateLoop() {
+  if (!running) return;
+
+  try {
+    const data = await fetchLiveData(activeTrainNo);
+    trainData = data;
+    renderTrainOnMap(data);
+    checkInsideOrOutside();
+
+    // ট্র্যাকিং টাইমিং লজিক (রুল ৬ এবং ৭)
+    let nextDelay = API_REFRESH_MS; // ডিফল্ট: ৭ মিনিট
+
+    if (data.source === "CROWD_GPS" || insideTrain) {
+      nextDelay = GPS_CROWD_REFRESH_MS; // ইউজার ভেতর থাকলে বা লাইভ GPS থাকলে: ১৫ সেকেন্ড
+      ui("trackMode").innerHTML = `<b>📡 মোড:</b> ক্রাউডসোর্স GPS (সক্রিয়)<br><b>🔄 রিফ্রেশ:</b> প্রতি ১৫ সেকেন্ড<br><b>🔑 API:</b> বন্ধ রয়েছে`;
+    } else {
+      ui("trackMode").innerHTML = `<b>🌐 মোড:</b> অফিশিয়াল API<br><b>🔄 রিফ্রেশ:</b> প্রতি ৭ মিনিট<br><b>⏱️ অটো স্টপ:</b> ২০ মিনিট পর বন্ধ হবে`;
+    }
+
+    loopTimer = setTimeout(updateLoop, nextDelay);
+  } catch (err) {
+    msg("⚠️ ডেটা আপডেট ত্রুটি: " + err.message, "bad");
+    loopTimer = setTimeout(updateLoop, API_REFRESH_MS);
+  }
+}
+
+function renderTrainOnMap(data) {
+  const lat = Number(data.currentLocation?.latitude);
+  const lon = Number(data.currentLocation?.longitude);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+  if (trainMarker) trainMarker.remove();
+  trainMarker = L.marker([lat, lon], { icon: trainIcon })
+    .addTo(map)
+    .bindPopup(`<b>🚆 ${esc(data.trainName || activeTrainNo)}</b><br>${esc(data.currentLocation?.stationName || "অন রুট")}`);
+
+  ui("trainInfo").innerHTML = `
+    <b>ট্রেন:</b> ${esc(data.trainName || activeTrainNo)} (${activeTrainNo})<br>
+    <b>অবস্থান:</b> ${esc(data.currentLocation?.stationName || "রানিং")}<br>
+    <b>গতিবেগ:</b> ${Number(data.currentLocation?.speedKmh || 0).toFixed(1)} km/h
+  `;
+
+  renderRoute(data.route, data.currentLocation);
+  renderDistanceAndLine();
+}
+
+function renderRoute(route, cur) {
+  if (!Array.isArray(route) || !route.length) {
+    ui("route").textContent = "রুট ডেটা উপলব্ধ নেই।";
+    return;
+  }
+
+  const curCode = String(cur?.stationCode || "").trim().toUpperCase();
+  ui("route").innerHTML = route.map((s, idx) => {
+    const isActive = (String(s.stationCode).toUpperCase() === curCode);
+    return `
+      <div class="station ${isActive ? "active" : ""}">
+        <div class="trainicon">${isActive ? "🚆" : ""}</div>
+        <div class="dot"></div>
+        <div class="station-name">${esc(s.stationName || s.stationCode)}</div>
+      </div>
+    `;
+  }).join("");
+
+  setTimeout(() => {
+    const activeElem = document.querySelector("#route .station.active");
+    const container = document.querySelector(".route-scroll");
+    if (activeElem && container) {
+      container.scrollTo({ left: activeElem.offsetLeft - (container.clientWidth / 2) + 60, behavior: "smooth" });
+    }
+  }, 100);
+}
+
+// ব্যবহারকারীর লাইভ GPS ট্র্যাক
+function startUserGPS() {
+  if (!navigator.geolocation) return;
+  watchId = navigator.geolocation.watchPosition(pos => {
+    currentUserPos = {
+      lat: pos.coords.latitude,
+      lon: pos.coords.longitude,
+      speed: (pos.coords.speed || 0) * 3.6,
+      accuracy: pos.coords.accuracy
+    };
+
+    if (userMarker) userMarker.remove();
+    userMarker = L.marker([currentUserPos.lat, currentUserPos.lon], { icon: userIcon })
+      .addTo(map)
+      .bindPopup(`<b>🚶 আপনি এখানে আছেন</b><br>Accuracy: ±${Math.round(currentUserPos.accuracy)}m`);
+
+    ui("userInfo").innerHTML = `
+      <b>অক্ষাংশ:</b> ${currentUserPos.lat.toFixed(5)}<br>
+      <b>দ্রাঘিমাংশ:</b> ${currentUserPos.lon.toFixed(5)}<br>
+      <b>গতি:</b> ${currentUserPos.speed.toFixed(1)} km/h
+    `;
+
+    checkInsideOrOutside();
+    renderDistanceAndLine();
+  }, err => console.warn("GPS Warning:", err.message), {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 10000
+  });
+}
+
+// ব্যবহারকারী ট্রেনের ভেতর আছেন কি না স্বয়ংক্রিয় যাচাই
+function checkInsideOrOutside() {
+  if (!currentUserPos || !trainData?.currentLocation?.latitude) return;
+
+  const tLat = Number(trainData.currentLocation.latitude);
+  const tLon = Number(trainData.currentLocation.longitude);
+  const d = getDistKm(currentUserPos.lat, currentUserPos.lon, tLat, tLon);
+
+  // যদি ব্যবহারকারী ট্রেনের ১.৫ কিমির মধ্যে থাকেন এবং গতিশীল থাকেন
+  if (d <= 1.5) {
+    if (!insideTrain) {
+      insideTrain = true;
+      // ট্রেনের ভেতর থাকলে API এর ২০ মিনিট অটো-স্টপ বন্ধ হবে
+      if (apiAutoStopTimer) clearTimeout(apiAutoStopTimer);
+    }
+    // ট্রেনের লোকেশন নিজের জিপিএসে ব্রডকাস্ট করুন
+    broadcastCrowdGPS(activeTrainNo, currentUserPos);
+  } else {
+    insideTrain = false;
+  }
+}
+
+// ট্রেনের সাথে ব্যবহারকারীর লাইভ দূরত্ব এবং সংযোগ লাইন প্রদর্শন (রুল ৫)
+function renderDistanceAndLine() {
+  if (!currentUserPos || !trainMarker) return;
+
+  const tLatLng = trainMarker.getLatLng();
+  const d = getDistKm(currentUserPos.lat, currentUserPos.lon, tLatLng.lat, tLatLng.lng);
+
+  const badge = ui("liveDistBadge");
+  badge.style.display = "inline-block";
+  badge.innerText = `দূরত্ব: ${d >= 1 ? d.toFixed(2) + " কিমি" : Math.round(d * 1000) + " মিটার"}`;
+
+  if (distanceLine) distanceLine.remove();
+  distanceLine = L.polyline([[currentUserPos.lat, currentUserPos.lon], [tLatLng.lat, tLatLng.lng]], {
+    color: "#0b69a3",
+    dashArray: "6,8",
+    weight: 3
+  }).addTo(map);
+
+  map.fitBounds([[currentUserPos.lat, currentUserPos.lon], [tLatLng.lat, tLatLng.lng]], { padding: [50, 50], maxZoom: 14 });
+}
+
+// ট্র্যাকিং শুরু
+async function startTracking(trainNumber) {
+  const no = (trainNumber || ui("trainNo").value).trim();
+  if (!/^\d{5}$/.test(no)) return msg("❌ সঠিক ৫ সংখ্যার ট্রেন নম্বর দিন।", "bad");
+
+  stopTracking(false);
+  activeTrainNo = no;
+  running = true;
+  insideTrain = false;
+  msg(`⏳ ট্রেন নম্বর ${no} ট্র্যাক করা হচ্ছে...`, "info");
+
+  startUserGPS();
+  await updateLoop();
+
+  // ৭ নম্বর নিয়ম: API মোডে চললে ২০ মিনিট পর ট্র্যাকিং বন্ধ করার টাইমার
+  apiAutoStopTimer = setTimeout(() => {
+    if (running && !insideTrain) {
+      stopTracking(false);
+      msg("⏹️ একটানা ২০ মিনিট পর API ট্র্যাকিং স্বয়ংক্রিয়ভাবে বন্ধ করা হয়েছে।", "info");
+    }
+  }, API_AUTO_STOP_MS);
+}
+
+function stopTracking(showMsg = true) {
+  running = false;
+  insideTrain = false;
+  if (loopTimer) clearTimeout(loopTimer);
+  if (apiAutoStopTimer) clearTimeout(apiAutoStopTimer);
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  if (distanceLine) distanceLine.remove();
+  if (userMarker) userMarker.remove();
+  if (trainMarker) trainMarker.remove();
+
+  ui("liveDistBadge").style.display = "none";
+  ui("trackMode").innerText = "ট্র্যাকিং বন্ধ আছে।";
+  if (showMsg) msg("⏹ ট্র্যাকিং বন্ধ করা হয়েছে।", "info");
+}
+
+ui("start").onclick = () => startTracking();
+ui("stop").onclick = () => stopTracking(true);
+window.onbeforeunload = () => stopTracking(false);
+</script>
+</body>
+</html>
