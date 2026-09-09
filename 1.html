@@ -226,8 +226,13 @@ ui("btnFindTrains").onclick = async () => {
   try {
     const res = await fetch(`${BACKEND_URL}?action=betweenStations&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&t=${Date.now()}`);
     const json = await res.json();
-    if (!json.success || !json.data || !json.data.length) {
-      return msg("⚠️ এই রুটে কোনো ট্রেন পাওয়া যায়নি বা API কোড সঠিক নয়।", "bad");
+    
+    if (!json.success) {
+      return msg("⚠️ " + (json.error || "কোনো তথ্য মেলেনি।"), "bad");
+    }
+
+    if (!json.data || !json.data.length) {
+      return msg("⚠️ কোনো ট্রেন পাওয়া যায়নি।", "bad");
     }
 
     ui("trainList").innerHTML = json.data.map(t => `
@@ -238,7 +243,7 @@ ui("btnFindTrains").onclick = async () => {
     `).join("");
 
     ui("trainListWrap").style.display = "block";
-    msg(`✅ ${json.data.length} টি ট্রেন পাওয়া গেছে। যে কোনো একটিতে ক্লিক করুন।`, "ok");
+    msg(`✅ ${json.data.length} টি ট্রেন পাওয়া গেছে। তালিকা থেকে বেছে নিন।`, "ok");
   } catch (err) {
     msg("❌ অনুসন্ধান ব্যর্থ: " + err.message, "bad");
   }
