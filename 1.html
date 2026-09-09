@@ -224,7 +224,11 @@ ui("btnFindTrains").onclick = async () => {
   ui("trainListWrap").style.display = "none";
 
   try {
-    const res = await fetch(`${BACKEND_URL}?action=betweenStations&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&t=${Date.now()}`);
+    const res = await fetch(`${BACKEND_URL}?action=betweenStations&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&t=${Date.now()}`, {
+      method: "GET",
+      redirect: "follow"
+    });
+    
     const json = await res.json();
     
     if (!json.success) {
@@ -249,6 +253,7 @@ ui("btnFindTrains").onclick = async () => {
   }
 };
 
+
 window.selectTrain = (no) => {
   ui("trainNo").value = no;
   ui("trainListWrap").style.display = "none";
@@ -257,11 +262,15 @@ window.selectTrain = (no) => {
 
 // 2. লাইভ ট্র্যাকিং লুপ এবং ডেটা ফেচিং
 async function fetchLiveData(no) {
-  const res = await fetch(`${BACKEND_URL}?action=live&trainNo=${encodeURIComponent(no)}&t=${Date.now()}`);
+  const res = await fetch(`${BACKEND_URL}?action=live&trainNo=${encodeURIComponent(no)}&t=${Date.now()}`, {
+    method: "GET",
+    redirect: "follow"
+  });
   const json = await res.json();
   if (!json.success) throw new Error(json.error || "ট্রেনের লাইভ লোকেশন পাওয়া যায়নি।");
   return json;
 }
+
 
 // ট্রেনের ভেতরের ক্রাউডসোর্সড জিপিএস আপলোড
 async function broadcastCrowdGPS(no, pos) {
