@@ -14,7 +14,40 @@ $("from").oninput=e=>stationSearch(e.target.value,"fromList");$("to").oninput=e=
 async function between(){let f=stationCode("from"),t=stationCode("to");if(!f||!t)return msg("দুটি স্টেশন লিস্ট থেকে নির্বাচন করুন।","bad");try{let j=await get({action:"between",from:f,to:t}),a=j.data?.trains||[];$("trainList").innerHTML=a.length?a.map(x=>`<div class="train" data-no="${esc(x.train?.number)}"><b>🚆 ${esc(x.train?.number)} — ${esc(x.train?.name)}</b><br>${esc(x.from?.departure||"")} → ${esc(x.to?.arrival||"")} • ${Number(x.distance||0).toFixed(1)} km</div>`).join(""):"কোনো ট্রেন পাওয়া যায়নি।";document.querySelectorAll(".train").forEach(e=>e.onclick=()=>{$("trainNo").value=e.dataset.no;start()})}catch(e){msg("❌ "+esc(e.message),"bad")}}
 function stationCode(id){let v=$(id).value.trim(),o=[...$(id+"List").options].find(x=>x.value===v);return o?.dataset.code||v.toUpperCase()}
 $("from").onchange=between;$("to").onchange=between;
-function locate(d){let c=d.currentLocation||{},r=d.route||[],i=r.findIndex(x=>String(x.stationCode||x.code).toUpperCase()===String(c.stationCode||"").toUpperCase()),a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null,p=Number(c.segmentProgress||0);if(a&&b&&p>0)return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p,name:r[i].stationName||r[i].name,next:r[i+1]?.stationName||"",speed:Number(c.speedKmh||c.speed||0),bearing:Number(c.bearingDegrees||bear(a.lat,a.lon,b.lat,b.lon)),idx:i};if(point(c))return{...point(c),name:c.stationName||"বর্তমান অবস্থান",next:"",speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees||0),idx:i};let x=point(d.previousHalt),y=point(d.nextHalt);if(x&&y)return{lat:x.lat+(y.lat-x.lat)*p,lon:x.lon+(y.lon-x.lon)*p,name:d.previousHalt.stationName,next:d.nextHalt.stationName,speed:Number(c.speedKmh||0),bearing:bear(x.lat,x.lon,y.lat,y.lon),idx:-1};throw Error("লাইভ লোকেশন পাওয়া যায়নি।")}
+function locate(d){
+  const c=d.currentLocation||{},r=Array.isArray(d.route)?d.route:[],code=String(c.stationCode||c.code||"").toUpperCase();
+  let i=r.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code);
+  if(i<0 && Number.isFinite(Number(c.sequence))) i=r.findIndex(x=>Number(x.sequence)===Number(c.sequence));
+  const p=Math.max(0,Math.min(1,Number(c.segmentProgress??0)));
+  const a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null;
+  const direct=point(c);
+  const speed=Number(c.speedKmh??c.speed??0);
+  const bearing=Number(c.bearingDegrees??c.bearing??0);
+
+  // RailRadar live response normally gives segmentProgress + station coordinates in route.
+  // Handle 0% progress too (the old code incorrectly rejected p=0).
+  if(a && b){
+    return {
+      lat:a.lat+(b.lat-a.lat)*p,
+      lon:a.lon+(b.lon-a.lon)*p,
+      name:r[i].stationName||r[i].name||code||"বর্তমান অবস্থান",
+      next:r[i+1]?.stationName||r[i+1]?.name||"",
+      speed:Number.isFinite(speed)?speed:0,
+      bearing:Number.isFinite(bearing)&&bearing>0?bearing:bear(a.lat,a.lon,b.lat,b.lon),
+      idx:i
+    };
+  }
+  if(a){
+    return {
+      lat:a.lat,lon:a.lon,name:r[i].stationName||r[i].name||code||"বর্তমান অবস্থান",
+      next:"",speed:Number.isFinite(speed)?speed:0,bearing:Number.isFinite(bearing)?bearing:0,idx:i
+    };
+  }
+  if(direct){
+    return {...direct,name:c.stationName||"বর্তমান অবস্থান",next:"",speed:Number.isFinite(speed)?speed:0,bearing:Number.isFinite(bearing)?bearing:0,idx:i};
+  }
+  throw Error("লাইভ লোকেশনের coordinate পাওয়া যায়নি। RailRadar response-এ currentLocation-এর lat/lng নেই এবং route-এ matching station coordinate-ও নেই।");
+}
 function drawRoute(){let r=raw?.route||[];$("route").innerHTML=r.length?r.map((s,i)=>`<div class="station ${i===train.idx?"active":""}">${i===train.idx?'<div class="trainicon">🚆</div>':'<div class="trainicon"></div>'}<div class="dot"></div><div class="station-name">${esc(s.stationName||s.name||s.stationCode)}</div></div>`).join(""):"Route station পাওয়া যায়নি।"}
 function icon(t){return L.divIcon({html:`<div style="font-size:28px">${t}</div>`,className:"",iconSize:[30,30],iconAnchor:[15,15]})}
 function drawTrain(){if(trainMarker)trainMarker.remove();trainMarker=L.marker([train.lat,train.lon],{icon:icon("🚆")}).addTo(map).bindPopup("<b>🚆 Train</b><br>"+esc(train.name));$("trainInfo").innerHTML=`<b>Train:</b> ${esc(raw.trainName||$("trainNo").value)}<br><b>Current:</b> ${esc(train.name)}<br><b>Next:</b> ${esc(train.next)}<br><b>Source:</b> ${raw.source==="gps"?"📱 অন্য/ভেতরের GPS":"🔑 API Key"}<br><b>Speed:</b> ${train.speed.toFixed(1)} km/h`;}
