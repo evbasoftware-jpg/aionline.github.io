@@ -185,41 +185,8 @@
             align-items: center;
             z-index: 1;
         }
-    
         .shop-interior i { font-size: 50px; opacity: 0.15; }
 
-  /*      .shop-interior {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #ffffff;
-}*/
-
-.shop-interior img {
-    width: 80%;
-    height: 55%;
-    object-fit: contain;
-    display: block;
-}
-
-.train-title {
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.75);
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: bold;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    border-radius: 6px;
-    white-space: nowrap;
-    z-index: 5;
-}
-    
         .shop-number {
             position: absolute;
             top: 10px; left: 15px;
@@ -227,6 +194,7 @@
             background: rgba(0,0,0,0.8);
             padding: 2px 6px; border-radius: 4px;
         }
+    
         .border-blue .shop-number { color: var(--neon-blue); }
         .border-green .shop-number { color: var(--neon-green); }
         .border-pink .shop-number { color: var(--neon-pink); }
@@ -327,19 +295,26 @@
 </header>
     
     <div class="mall-grid">
-        <div class="shop border-blue"
-         onclick="openElevatorDoor(this, 'https://aionline.in.net/TrainLocation.html')">
-        <div class="shop-number"></div>
-        <!-- ট্রেনের ছবি + পরিষ্কার লেখা -->
-        <div class="shop-interior">
-            <img src="train.png" alt="Live Train Location">
-            <div class="train-title">Live Train Location</div>
-        </div>
-        <div class="shop-light-flash"></div>
-        <div class="elevator-door door-left"></div>
-        <div class="elevator-door door-right"></div>
-        </div>
+        
+    <div class="shop border-blue" onclick="openElevatorDoor(this, 'https://aionline.in.net/TrainLocation.html')">
+    <div class="shop-number"></div>
+    <div class="shop-interior"><i class="fas fa-train"></i></div>
+    <div class="shop-light-flash"></div>
 
+    <!-- বাম পাশের দরজা -->
+    <div class="elevator-door door-left">
+        <img src="train.jpg" alt="Train" style="position: absolute; left: 0; top: 0; width: 200%; height: 100%; object-fit: cover; opacity: 0.85;">
+        <div class="door-text">Live Train Location</div>
+    </div>
+
+    <!-- ডান পাশের দরজা -->
+    <div class="elevator-door door-right">
+        <img src="train.jpg" alt="Train" style="position: absolute; right: 0; top: 0; width: 200%; height: 100%; object-fit: cover; opacity: 0.85;">
+        <div class="door-text">Live Train Location</div>
+    </div>
+
+    <div class="open-status">OPEN 24/7</div>
+</div>
     
     <div class="shop border-yellow" onclick="openElevatorDoor(this, 'https://whatsapp.com/channel/0029VbDLXAgJUM2dIGBAll0U')">
         <div class="shop-number">01</div>
