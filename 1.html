@@ -23,8 +23,47 @@ body{margin:0;background:#eef2f5;padding:8px}
   color:#333;
 }
 .translate-bar span{display:flex;align-items:center;gap:4px}
-.goog-te-gadget{font-size:0 !important}
-.goog-te-gadget .goog-te-combo{
+/* Translate Box Width ও Height ফিক্স */
+.translate-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+#google_translate_element {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* উচ্চতা কমানো এবং প্রস্থ বড় করা */
+.goog-te-gadget .goog-te-combo {
+  height: 34px !important;            /* উচ্চতা ছোট করা হলো */
+  width: 170px !important;            /* প্রস্থ বড় (wide) করা হলো */
+  padding: 4px 8px !important;
+  font-size: 14px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  outline: none !important;
+}
+
+/* অতিরিক্ত টেক্সট ও লোগো লুকানো */
+.goog-te-gadget {
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+.goog-te-gadget span, 
+.goog-te-gadget a, 
+.goog-logo-link {
+  display: none !important;
+}
+
+ .goog-te-gadget .goog-te-combo{
   margin:0 !important;
   padding:5px 8px !important;
   border:1px solid #bbb !important;
