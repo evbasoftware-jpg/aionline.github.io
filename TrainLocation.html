@@ -121,22 +121,30 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
   .translate-top-bar{justify-content:center}
   .goog-te-gadget .goog-te-combo{width:180px !important}
 }
+  /* Logo + Text */
+.logo-box{position: static;}
+
+/* Logo */
+.logo{height:67px; width:auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
 </style>
 </head>
 <body>
-
+  
+<div class="logo-box" style="color: blue; font-size:20px">
+     <img src="logo.png" alt="AI Online Logo" class="logo">
+</div>
+  <a href='https://aionline.in.net' style='text-decoration: none;'>https://aionline.in.net</a>
+  
 <div class="app">
   <!-- অনুবাদ বার -->
   <div class="translate-top-bar">
     <span>🌐 ভাষা:</span>
     <div id="google_translate_element"></div>
   </div>
-
   <div class="head">
     <h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1>
     <p>Live Train • User GPS • Distance • Route</p>
   </div>
-
   <div class="panel">
     <div class="row">
       <div class="field">
@@ -159,17 +167,14 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
       <a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank" rel="noopener">অফিসিয়াল NTES</a>
     </div>
   </div>
-
   <div id="status" class="msg"></div>
   <div id="result" class="result"></div>
-
   <div class="route-wrap">
     <div class="title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div>
     <div class="route-scroll">
       <div id="route" class="route">ট্রেনের তথ্য লোড হলে রুট দেখা যাবে...</div>
     </div>
   </div>
-
   <div class="grid">
     <div class="card"><h3>🚆 Train Live Data</h3><p id="trainInfo">অপেক্ষা করছে...</p></div>
     <div class="card"><h3>📱 User GPS</h3><p id="userInfo">অপেক্ষা করছে...</p></div>
@@ -177,11 +182,13 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
     <div class="card"><h3>🎯 Confidence Score</h3><div class="score" id="score">0%</div><p id="scoreText">Verification শুরু হয়নি।</p></div>
     <div class="card"><h3>📊 GPS Samples</h3><div class="samples" id="samples">Sample নেই।</div></div>
   </div>
-
   <div class="map-title">📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</div>
   <div id="map"></div>
 </div>
 
+  <footer style="text-align:center; width:100%;">
+  © 2026 AI Online | All Rights Reserved <br> </footer>
+  
 <!-- সমস্ত ভাষা সমর্থিত গুগল ট্রান্সলেট স্ক্রিপ্ট -->
 <script type="text/javascript">
 function googleTranslateElementInit() {
