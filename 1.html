@@ -1,166 +1,78 @@
 <!doctype html>
 <html lang="bn">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>স্মার্ট লাইভ ট্রেন ট্র্যাকার</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
-/* সোর্স কোড ও টেক্সট কপি সুরক্ষা */
-body{
-  margin:0;background:#eef2f5;padding:8px;top:0 !important;
-  -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
-}
-
-/* --- Translate Top Bar --- */
-.translate-top-bar{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  background:#f8fafc;
-  padding:6px 12px;
-  border-bottom:1px solid #e2e8f0;
-  gap:8px;
-}
-.translate-top-bar span{
-  font-size:13px;
-  font-weight:700;
-  color:#334155;
-}
-
-#google_translate_element{
-  display:inline-flex;
-  align-items:center;
-}
-.goog-te-gadget{
-  font-size:0 !important;
-  line-height:0 !important;
-}
-.goog-te-gadget span,
-.goog-te-gadget a,
-.goog-logo-link{
-  display:none !important;
-}
-
-/* স্লিম ও ওয়াইড সিলেক্ট বক্স */
-.goog-te-gadget .goog-te-combo{
-  height:32px !important;
-  width:220px !important;
-  max-width:100% !important;
-  margin:0 !important;
-  padding:2px 8px !important;
-  font-size:13px !important;
-  font-weight:600 !important;
-  color:#1e293b !important;
-  background:#fff !important;
-  border:1px solid #cbd5e1 !important;
-  border-radius:6px !important;
-  outline:none !important;
-  cursor:pointer !important;
-}
-
-.goog-te-menu-frame{
-  max-height:75vh !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch !important;
-}
-.goog-te-menu2{
-  max-height:75vh !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch !important;
-}
+body{margin:0;background:#eef2f5;padding:8px;top:0 !important;-webkit-user-select:none;user-select:none}
+.translate-top-bar{display:flex;align-items:center;justify-content:flex-end;background:#f8fafc;padding:6px 12px;border-bottom:1px solid #e2e8f0;gap:8px}
+.translate-top-bar span{font-size:13px;font-weight:700;color:#334155}
+#google_translate_element{display:inline-flex;align-items:center}
+.goog-te-gadget{font-size:0 !important;line-height:0 !important}
+.goog-te-gadget span,.goog-te-gadget a,.goog-logo-link{display:none !important}
+.goog-te-gadget .goog-te-combo{height:32px !important;width:220px !important;max-width:100% !important;margin:0 !important;padding:2px 8px !important;font-size:13px !important;font-weight:600 !important;color:#1e293b !important;background:#fff !important;border:1px solid #cbd5e1 !important;border-radius:6px !important;outline:none !important;cursor:pointer !important}
+.goog-te-menu-frame,.goog-te-menu2{max-height:75vh !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important}
 .skiptranslate>iframe{display:none !important}
-
-/* --- App Main Styles --- */
 .app{max-width:1150px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #0002}
-.head{background:#0b69a3;color:#fff;padding:18px;text-align:center}
-.head h1{margin:0;font-size:1.4rem}
-.head p{margin:6px 0 0;font-size:.9rem}
-.panel{padding:16px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field{position:relative}
-.field label{font-weight:700}
+.head{background:#0b69a3;color:#fff;padding:18px;text-align:center}.head h1{margin:0;font-size:1.4rem}.head p{margin:6px 0 0;font-size:.9rem}
+.panel{padding:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{position:relative}.field label{font-weight:700}
 .field input{display:block;width:100%;margin:7px 0 12px;padding:12px;border:1px solid #bbb;border-radius:8px;font-size:1rem}
-.buttons{display:flex;gap:10px;flex-wrap:wrap}
-button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer}
-.start{background:#0b69a3;color:#fff}
-.stop{background:#c62828;color:#fff}
-.ntes{background:#f28c00;color:#fff}
+.buttons{display:flex;gap:10px;flex-wrap:wrap}button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer}
+.start{background:#0b69a3;color:#fff}.stop{background:#c62828;color:#fff}.ntes{background:#f28c00;color:#fff}
 .msg,.result{display:none;margin:12px 16px;padding:13px;border-radius:9px;font-weight:700;line-height:1.55}
-.info{background:#e3f2fd;color:#075987}
-.ok{background:#e8f5e9;color:#1b5e20}
-.bad{background:#ffebee;color:#b71c1c}
+.info{background:#e3f2fd;color:#075987}.ok{background:#e8f5e9;color:#1b5e20}.bad{background:#ffebee;color:#b71c1c}
 .list{margin:4px 0 12px;display:grid;gap:7px;max-height:300px;overflow:auto}
-.train{padding:10px;border:1px solid #ddd;border-radius:8px;background:#fafbfd;cursor:pointer}
-.train:hover{background:#eaf5ff}
-.route-wrap{padding:16px;border-top:1px solid #eee}
-.title{font-weight:800;font-size:1.1rem;margin-bottom:9px}
-.route-scroll{overflow-x:auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-.route{display:flex;min-width:max-content;padding:12px 5px}
+.train{padding:10px;border:1px solid #ddd;border-radius:8px;background:#fafbfd;cursor:pointer}.train:hover{background:#eaf5ff}
+.route-wrap{padding:16px;border-top:1px solid #eee}.title{font-weight:800;font-size:1.1rem;margin-bottom:9px}
+.route-scroll{overflow-x:auto;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.route{display:flex;min-width:max-content;padding:12px 5px}
 .station{width:140px;text-align:center;position:relative}
 .station:not(:last-child):after{content:"";position:absolute;top:39px;left:70px;width:140px;height:4px;background:#cfd8dc}
 .dot{position:relative;z-index:1;width:18px;height:18px;margin:25px auto 8px;border-radius:50%;background:#90a4ae;border:3px solid #fff;box-shadow:0 0 0 2px #90a4ae}
-.station.active .dot{background:#0b69a3;box-shadow:0 0 0 4px #0b69a344}
-.trainicon{height:24px;font-size:22px}
-.station-name{font-size:.82rem;font-weight:700}
+.station.active .dot{background:#0b69a3;box-shadow:0 0 0 4px #0b69a344}.trainicon{height:24px;font-size:22px}.station-name{font-size:.82rem;font-weight:700}
 .grid{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.card{padding:13px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}
-.card h3{margin:0 0 7px;color:#0b69a3;font-size:1rem}
-.card p{margin:0;line-height:1.55;font-size:.88rem;word-break:break-word}
-.score{text-align:center;font-size:2rem;font-weight:800;color:#0b69a3}
-.samples{max-height:180px;overflow:auto}
-.sample{padding:6px 0;border-bottom:1px solid #ddd;font-size:.82rem}
-#map{height:500px}
+.card{padding:13px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}.card h3{margin:0 0 7px;color:#0b69a3;font-size:1rem}
+.card p{margin:0;line-height:1.55;font-size:.88rem;word-break:break-word}.score{text-align:center;font-size:2rem;font-weight:800;color:#0b69a3}
+.samples{max-height:180px;overflow:auto}.sample{padding:6px 0;border-bottom:1px solid #ddd;font-size:.82rem}#map{height:500px}
 .user-pin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#1565c0;border:3px solid #fff;box-shadow:0 2px 8px #0006;display:flex;align-items:center;justify-content:center}
-.user-pin span{transform:rotate(45deg);font-size:19px;color:#fff}
-.map-title{padding:14px 16px 8px;font-weight:800}
+.user-pin span{transform:rotate(45deg);font-size:19px;color:#fff}.map-title{padding:14px 16px 8px;font-weight:800}
 
-/* GPS লক ব্যানার */
-#gpsBanner{
-  display:none;background:#b71c1c;color:#fff;text-align:center;padding:12px;font-weight:700;font-size:0.95rem;
-}
+/* GPS Lock Modal */
+#gpsModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gps-box{background:#fff;padding:25px;border-radius:12px;text-align:center;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.gps-box h2{margin:0 0 10px;color:#c62828;font-size:1.3rem}
+.gps-box p{font-size:0.9rem;color:#444;line-height:1.5;margin-bottom:20px}
+.btn-gps{background:#0b69a3;color:#fff;border:0;padding:12px 24px;font-size:1rem;font-weight:700;border-radius:8px;cursor:pointer;width:100%;transition:0.3s}
+.btn-gps:hover{background:#084c77}
 
-@media(max-width:600px){
-  .row{grid-template-columns:1fr}
-  .station{width:115px}
-  .station:not(:last-child):after{left:58px;width:115px}
-  #map{height:420px}
-  .buttons>*{width:100%;text-align:center}
-  .translate-top-bar{justify-content:center}
-  .goog-te-gadget .goog-te-combo{width:180px !important}
-}
+@media(max-width:600px){.row{grid-template-columns:1fr}.station{width:115px}.station:not(:last-child):after{left:58px;width:115px}#map{height:420px}.buttons>*{width:100%;text-align:center}.translate-top-bar{justify-content:center}.goog-te-gadget .goog-te-combo{width:180px !important}}
 </style>
 </head>
-<body oncontextmenu="return false;">
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
 
-<div id="gpsBanner">⚠️ মোবাইলের GPS/Location চালু না করলে এই সাইট ব্যবহার করা যাবে না। অনুগ্রহ করে ফোনের Location চালু করুন।</div>
+<!-- GPS অ্যাক্টিভেশন পপআপ -->
+<div id="gpsModal">
+  <div class="gps-box">
+    <h2>📍 GPS/Location প্রয়োজন</h2>
+    <p>মোবাইলের GPS বা লোকেশন চালু না করলে সাইটের কোনো ফিচার কাজ করবে না। নিচে ক্লিক করে লোকেশন চালু করুন।</p>
+    <button class="btn-gps" id="btnActivateGps">Activate Device GPS/Location</button>
+  </div>
+</div>
 
 <div class="app">
-  <!-- অনুবাদ বার -->
   <div class="translate-top-bar">
     <span>🌐 ভাষা:</span>
     <div id="google_translate_element"></div>
   </div>
-
   <div class="head">
     <h1>🚆 স্মার্ট লাইভ ট্রেন ট্র্যাকার</h1>
     <p>Live Train • User GPS • Distance • Route</p>
   </div>
-
   <div class="panel">
     <div class="row">
-      <div class="field">
-        <label>স্টেশন থেকে</label>
-        <input id="from" list="fromList" placeholder="স্টেশনের নাম/কোড লিখুন" disabled>
-        <datalist id="fromList"></datalist>
-      </div> 
-      <br>
-      <div class="field">
-        <label>স্টেশন পর্যন্ত</label>
-        <input id="to" list="toList" placeholder="স্টেশনের নাম/কোড লিখুন" disabled>
-        <datalist id="toList"></datalist>
-      </div>
+      <div class="field"><label>স্টেশন থেকে</label><input id="from" list="fromList" placeholder="স্টেশনের নাম/কোড লিখুন" disabled><datalist id="fromList"></datalist></div>
+      <div class="field"><label>স্টেশন পর্যন্ত</label><input id="to" list="toList" placeholder="স্টেশনের নাম/কোড লিখুন" disabled><datalist id="toList"></datalist></div>
     </div>
     <div id="trainList" class="list"></div>
     <label for="trainNo"><b>ট্রেন নম্বর লিখুন</b></label>
@@ -170,17 +82,12 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
       <a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank" rel="noopener">অফিসিয়াল NTES</a>
     </div>
   </div>
-
   <div id="status" class="msg"></div>
   <div id="result" class="result"></div>
-
   <div class="route-wrap">
     <div class="title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div>
-    <div class="route-scroll">
-      <div id="route" class="route">ট্রেনের তথ্য লোড হলে রুট দেখা যাবে...</div>
-    </div>
+    <div class="route-scroll"><div id="route" class="route">ট্রেনের তথ্য লোড হলে রুট দেখা যাবে...</div></div>
   </div>
-
   <div class="grid">
     <div class="card"><h3>🚆 Train Live Data</h3><p id="trainInfo">অপেক্ষা করছে...</p></div>
     <div class="card"><h3>📱 User GPS</h3><p id="userInfo">অপেক্ষা করছে...</p></div>
@@ -188,368 +95,85 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
     <div class="card"><h3>🎯 Confidence Score</h3><div class="score" id="score">0%</div><p id="scoreText">Verification শুরু হয়নি।</p></div>
     <div class="card"><h3>📊 GPS Samples</h3><div class="samples" id="samples">Sample নেই।</div></div>
   </div>
-
   <div class="map-title">📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</div>
   <div id="map"></div>
 </div>
 
-<!-- সমস্ত ভাষা সমর্থিত গুগল ট্রান্সলেট স্ক্রিপ্ট -->
 <script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'bn',
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-
-const observer = new MutationObserver(() => {
-  const iframe = document.querySelector('.goog-te-menu-frame');
-  if (iframe && iframe.contentDocument) {
-    const doc = iframe.contentDocument;
-    if (doc.body) {
-      doc.body.style.overflowY = 'auto';
-      doc.body.style.maxHeight = '75vh';
-      doc.body.style.webkitOverflowScrolling = 'touch';
-    }
-  }
-});
-observer.observe(document.body, { childList: true, subtree: true });
+function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'bn',autoDisplay:false},'google_translate_element')}
+new MutationObserver(()=>{let f=document.querySelector('.goog-te-menu-frame');if(f&&f.contentDocument?.body){f.contentDocument.body.style.overflowY='auto';f.contentDocument.body.style.maxHeight='75vh';f.contentDocument.body.style.webkitOverflowScrolling='touch'}}).observe(document.body,{childList:true,subtree:true});
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ==========================================================
-   ১. সোর্স কোড ও ইন্সপেক্ট সুরক্ষা লজিক
-   ========================================================== */
-document.addEventListener("contextmenu", e => e.preventDefault());
-document.onkeydown = function(e) {
-  if (e.keyCode === 123) return false; // F12
-  if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) return false; // Ctrl+Shift+I/J/C
-  if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83)) return false; // Ctrl+U, Ctrl+S
-};
+/* ১. সোর্স কোড ও শর্টকাট সুরক্ষা */
+document.addEventListener("contextmenu",e=>e.preventDefault());
+document.onkeydown=e=>{if(e.keyCode===123||(e.ctrlKey&&e.shiftKey&&[73,74,67].includes(e.keyCode))||(e.ctrlKey&&[85,83].includes(e.keyCode)))return false};
 
-/* ==========================================================
-   ২. ট্র্যাকিং ও কোর লজিক
-   ========================================================== */
+/* ২. মূল ট্র্যাকার ইঞ্জিন */
 const API="https://script.google.com/macros/s/AKfycbxpHggaA7sNDXrwcyNid4Yy-Mfm3nLe8M0VGgplD4XHHc7Ul9LTWDJtpjj4C_4MFGopBQ/exec",
 API_MS=420000,GPS_MS=15000,MAX_ACC=200,VERIFY=1.5,MAX_API=1200000;
-let map=L.map("map").setView([22.57,88.36],7),train=null,raw=null,samples=[],running=false,inside=false,watchId=null,timer=null,stopTimer=null,trainMarker=null,userMarker=null,line=null,distanceMarker=null,lastPublish=0;
-let isGpsActive = false;
-
+let map=L.map("map").setView([22.57,88.36],7),train=null,raw=null,samples=[],running=false,inside=false,watchId=null,timer=null,stopTimer=null,trainMarker=null,userMarker=null,line=null,distanceMarker=null,lastPublish=0,isGpsActive=false;
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"]/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[x])),msg=(t,c="info")=>{$("status").style.display="block";$("status").className="msg "+c;$("status").innerHTML=t},res=(t,c)=>{$("result").style.display="block";$("result").className="result "+c;$("result").innerHTML=t};
 function dist(a,b,c,d){let R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180,q=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function point(s){if(!s)return null;let lat=Number(s.lat??s.latitude),lon=Number(s.lng??s.lon??s.longitude);return Number.isFinite(lat)&&Number.isFinite(lon)?{lat,lon}:null}
 function bear(a,b,c,d){let r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),x=Math.cos(a*r)*Math.sin(c*r)-Math.sin(a*r)*Math.cos(c*r)*Math.cos((d-b)*r);return(Math.atan2(y,x)*180/Math.PI+360)%360}
+async function get(q){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),12000);try{let r=await fetch(API+"?"+new URLSearchParams(q),{cache:"no-store",signal:ctl.signal}),j=await r.json();if(!r.ok||j.success===false)throw Error(j.error?.message||j.error||"API error");return j}catch(e){if(e.name==="AbortError")throw Error("সার্ভার থেকে উত্তর পেতে বেশি সময় লাগছে।");throw e}finally{clearTimeout(tm)}}
 
-async function get(q){
- const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),12000);
- try{
-   let r=await fetch(API+"?"+new URLSearchParams(q),{cache:"no-store",signal:ctl.signal});
-   let j=await r.json();
-   if(!r.ok||j.success===false)throw Error(j.error?.message||j.error||"API error");
-   return j;
- }catch(e){if(e.name==="AbortError")throw Error("সার্ভার থেকে উত্তর পেতে বেশি সময় লাগছে।");throw e}
- finally{clearTimeout(tm)}
-}
-
-/* --- API Key ছাড়া ফ্রি স্টেশন ডাটাবেস লোড ও সার্চ --- */
-let stationDB = [];
-fetch("https://cdn.jsdelivr.net/gh/datameet/railways/stations.json")
-  .then(res => res.json())
-  .then(data => {
-    stationDB = (data.features || []).map(f => ({
-      name: f.properties.name || "",
-      code: (f.properties.code || "").toUpperCase()
-    }));
-  })
-  .catch(() => {});
-
-function stationSearch(v, listId) {
-  if (!isGpsActive) return;
-  let val = v.trim().toUpperCase();
-  if (val.length < 2) return;
-
-  let matches = stationDB.filter(s => 
-    s.code.includes(val) || s.name.toUpperCase().includes(val)
-  ).slice(0, 15);
-
-  $(listId).innerHTML = matches.map(x => 
-    `<option value="${esc(x.name)} (${esc(x.code)})" data-code="${esc(x.code)}">${esc(x.code)}</option>`
-  ).join("");
-}
-
-$("from").oninput=e=>stationSearch(e.target.value,"fromList");
-$("to").oninput=e=>stationSearch(e.target.value,"toList");
-
-function stationCode(id){
-  let v = $(id).value.trim();
-  let opt = [...$(id+"List").options].find(x => x.value === v);
-  if (opt?.dataset?.code) return opt.dataset.code;
-  let match = v.match(/\(([A-Z0-9]+)\)$/);
-  return match ? match[1] : v.toUpperCase();
-}
-
-async function between(){
-  if (!isGpsActive) return;
-  let f=stationCode("from"),t=stationCode("to");
-  if(!f||!t)return msg("দুটি স্টেশন লিস্ট থেকে নির্বাচন করুন।","bad");
-  try{
-    let j=await get({action:"between",from:f,to:t}),a=j.data?.trains||[];
-    $("trainList").innerHTML=a.length?a.map(x=>`<div class="train" data-no="${esc(x.train?.number)}"><b>🚆 ${esc(x.train?.number)} — ${esc(x.train?.name)}</b><br>${esc(x.from?.departure||"")} → ${esc(x.to?.arrival||"")} • ${Number(x.distance||0).toFixed(1)} km</div>`).join(""):"কোনো ট্রেন পাওয়া যায়নি।";
-    document.querySelectorAll(".train").forEach(e=>e.onclick=()=>{
-      $("trainNo").value=e.dataset.no;
-      start();
-    });
-  }catch(e){msg("❌ "+esc(e.message),"bad")}
-}
+/* ৩. ফ্রি স্টেশন ডাটাবেস ও হ্যান্ডলার */
+let stationDB=[];fetch("https://cdn.jsdelivr.net/gh/datameet/railways/stations.json").then(r=>r.json()).then(d=>{stationDB=(d.features||[]).map(f=>({name:f.properties.name||"",code:(f.properties.code||"").toUpperCase()}))}).catch(()=>{});
+function stationSearch(v,listId){if(!isGpsActive)return;let val=v.trim().toUpperCase();if(val.length<2)return;let matches=stationDB.filter(s=>s.code.includes(val)||s.name.toUpperCase().includes(val)).slice(0,15);$(listId).innerHTML=matches.map(x=>`<option value="${esc(x.name)} (${esc(x.code)})" data-code="${esc(x.code)}">${esc(x.code)}</option>`).join("")}
+$("from").oninput=e=>stationSearch(e.target.value,"fromList");$("to").oninput=e=>stationSearch(e.target.value,"toList");
+function stationCode(id){let v=$(id).value.trim(),opt=[...$(id+"List").options].find(x=>x.value===v);return opt?.dataset?.code||(v.match(/\(([A-Z0-9]+)\)$/)?.[1]||v.toUpperCase())}
+async function between(){if(!isGpsActive)return;let f=stationCode("from"),t=stationCode("to");if(!f||!t)return msg("দুটি স্টেশন লিস্ট থেকে নির্বাচন করুন।","bad");try{let j=await get({action:"between",from:f,to:t}),a=j.data?.trains||[];$("trainList").innerHTML=a.length?a.map(x=>`<div class="train" data-no="${esc(x.train?.number)}"><b>🚆 ${esc(x.train?.number)} — ${esc(x.train?.name)}</b><br>${esc(x.from?.departure||"")} → ${esc(x.to?.arrival||"")} • ${Number(x.distance||0).toFixed(1)} km</div>`).join(""):"কোনো ট্রেন পাওয়া যায়নি।";document.querySelectorAll(".train").forEach(e=>e.onclick=()=>{$("trainNo").value=e.dataset.no;start()})}catch(e){msg("❌ "+esc(e.message),"bad")}}
 $("from").onchange=between;$("to").onchange=between;
 
-function locate(d){
- let c=d.currentLocation||{},r=Array.isArray(d.route)?d.route:[],
-     code=String(c.stationCode||c.code||"").toUpperCase(),
-     seq=Number(c.sequence),i=-1;
- if(code)i=r.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code);
- if(i<0&&Number.isFinite(seq))i=r.findIndex(x=>Number(x.sequence)===seq);
- let cp=point(c);
- if(cp)return{...cp,name:c.stationName||r[i]?.stationName||r[i]?.name||"বর্তমান অবস্থান",
-   next:r[i+1]?.stationName||r[i+1]?.name||"",speed:Number(c.speedKmh||c.speed||0),
-   bearing:Number(c.bearingDegrees||0),idx:i};
- let a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null,p=Math.max(0,Math.min(1,Number(c.segmentProgress??0)));
- if(a&&b)return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p,
-   name:r[i]?.stationName||r[i]?.name||r[i]?.stationCode||"",next:r[i+1]?.stationName||r[i+1]?.name||"",
-   speed:Number(c.speedKmh||c.speed||0),bearing:Number(c.bearingDegrees||bear(a.lat,a.lon,b.lat,b.lon)),idx:i};
- let x=point(d.previousHalt),y=point(d.nextHalt);
- if(x&&y)return{lat:x.lat+(y.lat-x.lat)*p,lon:x.lon+(y.lon-x.lon)*p,
-   name:d.previousHalt.stationName||d.previousHalt.name||"",next:d.nextHalt.stationName||d.nextHalt.name||"",
-   speed:Number(c.speedKmh||0),bearing:bear(x.lat,x.lon,y.lat,y.lon),idx:i};
- if(a)return{lat:a.lat,lon:a.lon,name:r[i]?.stationName||r[i]?.name||"",next:r[i+1]?.stationName||"",
-   speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees||0),idx:i};
- throw Error("লাইভ লোকেশন পাওয়া যায়নি। API route/coordinates আসেনি।");
-}
-
-function drawRoute(){
- let r=raw?.route||[],box=document.querySelector(".route-scroll");
- $("route").innerHTML=r.length?r.map((s,i)=>`<div class="station ${i===train.idx?"active":""}">${i===train.idx?'<div class="trainicon">🚆</div>':'<div class="trainicon"></div>'}<div class="dot"></div><div class="station-name">${esc(s.stationName||s.name||s.stationCode||s.code)}</div></div>`).join(""):"Route station পাওয়া যায়নি।";
- if(r.length&&train.idx>=0){
-   requestAnimationFrame(()=>{
-     const el=$("route").children[train.idx];
-     if(el) el.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
-   });
- }
-}
-
-function trainIcon(){return L.divIcon({html:"<div style='font-size:30px;line-height:30px'>🚆</div>",className:"",iconSize:[34,34],iconAnchor:[17,17]})}
-function userIcon(){return L.divIcon({html:"<div class='user-pin'><span>●</span></div>",className:"",iconSize:[34,34],iconAnchor:[10,30]})}
-
-function drawTrain(){
-  if(trainMarker)trainMarker.remove();
-  trainMarker=L.marker([train.lat,train.lon],{icon:trainIcon()}).addTo(map).bindPopup("<b>🚆 Train</b><br>"+esc(train.name));
-  $("trainInfo").innerHTML=`<b>Train:</b> ${esc(raw.trainName||$("trainNo").value)}<br><b>Current:</b> ${esc(train.name)}<br><b>Next:</b> ${esc(train.next)}<br><b>Source:</b> ${raw.source==="gps"?"📱 অন্য/ভেতরের GPS":"🔑 API Key"}<br><b>Speed:</b> ${train.speed.toFixed(1)} km/h`;
-}
-
-async function update(){
-  let j=await get({action:"live",trainNo:$("trainNo").value.trim()}),old=train;
-  raw=j;train=locate(j);drawRoute();drawTrain();
-  if(old&&raw.source==="gps")msg("📡 অন্য ব্যবহারকারীর GPS থেকে ট্রেনের অবস্থান দেখানো হচ্ছে।","ok");
-  verify();
-}
-
-/* ==========================================================
-   বাধ্যতামূলক GPS এনফোর্সমেন্ট ফাংশন
-   ========================================================== */
-function unlockApp() {
-  isGpsActive = true;
-  $("gpsBanner").style.display = "none";
-  $("from").disabled = false;
-  $("to").disabled = false;
-  $("trainNo").disabled = false;
-  $("stop").disabled = false;
-}
-
-function lockApp(errText) {
-  isGpsActive = false;
-  $("gpsBanner").style.display = "block";
-  $("gpsBanner").innerText = "⚠️ " + errText;
-  $("from").disabled = true;
-  $("to").disabled = true;
-  $("trainNo").disabled = true;
-  $("stop").disabled = true;
-  stop(false);
-}
+/* ৪. GPS Activation ও Enforcement */
+function unlockApp(){isGpsActive=true;$("gpsModal").style.display="none";$("from").disabled=$("to").disabled=$("trainNo").disabled=$("stop").disabled=false}
+function lockApp(){isGpsActive=false;$("gpsModal").style.display="flex";$("from").disabled=$("to").disabled=$("trainNo").disabled=$("stop").disabled=true;stop(false)}
+$("btnActivateGps").onclick=()=>startGPS();
 
 function startGPS(){
- if(!window.isSecureContext){
-   lockApp("GPS চালাতে HTTPS সুরক্ষিত সংযোগ প্রয়োজন।");
-   return msg("❌ GPS চালাতে HTTPS প্রয়োজন। এই পেজটি HTTPS URL-এ খুলুন।","bad");
- }
- if(!navigator.geolocation){
-   lockApp("এই ডিভাইসে GPS সুবিধা নেই।");
-   return msg("❌ এই ব্রাউজারে Location/GPS নেই।","bad");
- }
+ if(!window.isSecureContext)return alert("GPS চালানোর জন্য পেজটি HTTPS সিকিউর লিংকে খুলুন।");
+ if(!navigator.geolocation)return alert("আপনার ডিভাইসে GPS সুবিধা পাওয়া যায়নি।");
  if(watchId!==null)navigator.geolocation.clearWatch(watchId);
  const options={enableHighAccuracy:true,maximumAge:5000,timeout:12000};
- const low={enableHighAccuracy:false,maximumAge:10000,timeout:15000};
- let got=false;
- 
  const onPos=p=>{
-   got=true;
-   unlockApp(); // GPS সফলভাবে কাজ করছে
-   let s={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:Number(p.coords.accuracy)||999,
-          speed:p.coords.speed,heading:p.coords.heading,time:p.timestamp||Date.now()};
+   unlockApp();
+   let s={lat:p.coords.latitude,lon:p.coords.longitude,accuracy:Number(p.coords.accuracy)||999,speed:p.coords.speed,heading:p.coords.heading,time:p.timestamp||Date.now()};
    if(!Number.isFinite(s.lat)||!Number.isFinite(s.lon))return;
-   if(s.accuracy>MAX_ACC){
-     $("userInfo").innerHTML=`<b>GPS:</b> সিগন্যাল পাওয়া গেছে, কিন্তু accuracy ±${Math.round(s.accuracy)}m`;
-     return;
-   }
+   if(s.accuracy>MAX_ACC){$("userInfo").innerHTML=`<b>GPS:</b> সিগন্যাল পাওয়া গেছে, কিন্তু accuracy ±${Math.round(s.accuracy)}m`;return}
    samples.push(s);if(samples.length>20)samples.shift();drawUser(s);verify();
  };
-
- const onErr=e=>{
-   if(!got){
-     if(e.code===1) {
-       lockApp("Location permission বন্ধ আছে। ব্রাউজার সেটিং থেকে Location Allow করুন।");
-       msg("❌ Location permission বন্ধ আছে। Chrome → Site settings → Location → Allow করুন।","bad");
-     } else {
-       lockApp("মোবাইলের GPS/Location বন্ধ আছে। অনুগ্রহ করে ফোনের Location চালু করুন।");
-       msg("📡 GPS signal ধীর—network/Wi‑Fi location চেষ্টা করছি...","info");
-       watchId=navigator.geolocation.watchPosition(onPos,ee=>{
-         if(ee.code===1) {
-           lockApp("Location permission বন্ধ আছে। Location Allow করুন।");
-         } else {
-           lockApp("মোবাইলের Location/GPS বন্ধ আছে। অন না করলে সাইট কাজ করবে না।");
-         }
-       },low);
-     }
-   }
- };
+ const onErr=e=>{lockApp();alert("লোকেশন পাওয়া যাচ্ছে না! অনুগ্রহ করে ফোনের লোকেশন/GPS অন করুন এবং ব্রাউজারে Allow পারমিশন দিন।")};
  watchId=navigator.geolocation.watchPosition(onPos,onErr,options);
 }
+// পেজ লোড হলেই স্বয়ংক্রিয় চেষ্টা
+if(navigator.geolocation)navigator.geolocation.getCurrentPosition(()=>startGPS(),()=>lockApp());
 
-// পেজ ওপেন হওয়া মাত্রই GPS চেক শুরু হবে
-startGPS();
-
-function movement(){
-  if(samples.length<2)return{speed:0,bearing:0};
-  let a=samples.at(-2),b=samples.at(-1),v=dist(a.lat,a.lon,b.lat,b.lon)/((b.time-a.time)/3600000);
-  return{speed:Number.isFinite(b.speed)&&b.speed>=0?b.speed*3.6:v,bearing:Number.isFinite(b.heading)&&b.heading>=0?b.heading:bear(a.lat,a.lon,b.lat,b.lon)};
-}
-
-function drawUser(s){
- if(!userMarker){
-   userMarker=L.marker([s.lat,s.lon],{icon:userIcon(),zIndexOffset:1000}).addTo(map)
-     .bindPopup("📱 আপনার বর্তমান অবস্থান");
- }else userMarker.setLatLng([s.lat,s.lon]);
- userMarker.setPopupContent("📱 আপনার বর্তমান অবস্থান<br>Accuracy ±"+Math.round(s.accuracy)+"m");
- let m=movement();
- $("userInfo").innerHTML=`<b>Lat:</b> ${s.lat.toFixed(6)}<br><b>Lng:</b> ${s.lon.toFixed(6)}<br><b>Accuracy:</b> ±${Math.round(s.accuracy)} m<br><b>Speed:</b> ${m.speed.toFixed(1)} km/h`;
- $("samples").innerHTML=samples.slice().reverse().map((x,i)=>`<div class="sample"><b>Sample ${samples.length-i}</b> • ±${Math.round(x.accuracy)}m • ${new Date(x.time).toLocaleTimeString()}</div>`).join("");
-}
-
-async function publish(s){
-  if(Date.now()-lastPublish<GPS_MS)return;
-  lastPublish=Date.now();
-  try{await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"gps",trainNo:$("trainNo").value.trim(),lat:s.lat,lon:s.lon,accuracy:s.accuracy,speed:s.speed,heading:s.heading,time:s.time,trainName:raw?.trainName||""})})}catch(e){}
-}
-
-function showMapDistance(d){
- if(!train||!samples.length)return;
- const u=samples.at(-1);
- const lat=(train.lat+u.lat)/2, lon=(train.lon+u.lon)/2;
- const html=`<div style="background:#fff;border:2px solid #1565c0;border-radius:18px;padding:5px 10px;box-shadow:0 2px 8px #0005;font-weight:800;font-size:13px;white-space:nowrap">📏 ${d.toFixed(2)} km</div>`;
- const ic=L.divIcon({html,className:"",iconSize:null,iconAnchor:[0,0]});
- if(!distanceMarker){
-   distanceMarker=L.marker([lat,lon],{icon:ic,interactive:false,zIndexOffset:800}).addTo(map);
- }else{
-   distanceMarker.setLatLng([lat,lon]);
-   distanceMarker.setIcon(ic);
- }
-}
-
-function verify(){
-  if(!running||!train||!samples.length)return;
-  let u=samples.at(-1),m=movement(),d=dist(u.lat,u.lon,train.lat,train.lon),sd=d<=.1?100:d<=.25?97:d<=.5?92:d<=1?85:d<=1.5?75:d<=3?50:0,sa=u.accuracy<=10?100:u.accuracy<=20?95:u.accuracy<=30?90:u.accuracy<=50?75:55,ss=(m.speed<5||train.speed<5)?50:Math.abs(m.speed-train.speed)<=10?85:40,conf=sd*.55+sa*.2+ss*.15+5;
-  $("score").textContent=conf.toFixed(0)+"%";
-  $("moveInfo").innerHTML=`<b>Train Distance:</b> ${d.toFixed(3)} km<br><b>User Speed:</b> ${m.speed.toFixed(1)} km/h<br><b>Train Speed:</b> ${train.speed.toFixed(1)} km/h`;
-  if(line)line.remove();
-  line=L.polyline([[train.lat,train.lon],[u.lat,u.lon]],{weight:4,dashArray:"8,8"}).addTo(map);
-  showMapDistance(d);
-  map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});
-  if(d<=VERIFY&&conf>=70){
-    if(!inside){inside=true;if(stopTimer){clearTimeout(stopTimer);stopTimer=null}msg("📱 GPS যাচাই হয়েছে। এখন আপনার GPS-ই ট্রেনের shared location হিসেবে ব্যবহৃত হবে; API Key বন্ধ।","ok")}
-    if(trainMarker)trainMarker.setLatLng([u.lat,u.lon]);
-    publish(u);
-    $("scoreText").textContent="GPS verified; shared train location চালু।";
-    res("📍 <b>ট্রেনের লোকেশন আপনার GPS থেকে আপডেট হচ্ছে।</b><br>অন্যরাও এই ট্রেনের shared location দেখতে পারবে।","ok");
-  }else{
-    $("scoreText").textContent="GPS দিয়ে ট্রেনের অবস্থান যাচাই হয়নি।";
-    res("📏 <b>ট্রেনের সঙ্গে দূরত্ব:</b> "+d.toFixed(3)+" km","info");
-  }
-}
-
-function schedule(){
-  if(timer)clearTimeout(timer);
-  if(!running)return;
-  timer=setTimeout(async()=>{
-    try{await update()}catch(e){msg("⚠️ "+esc(e.message),"bad")}schedule()
-  },inside?GPS_MS:API_MS);
-}
-
+/* ৫. লোকেশন রুট ও ম্যাপ ডিসপ্লে */
+function locate(d){let c=d.currentLocation||{},r=Array.isArray(d.route)?d.route:[],code=String(c.stationCode||c.code||"").toUpperCase(),seq=Number(c.sequence),i=-1;if(code)i=r.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code);if(i<0&&Number.isFinite(seq))i=r.findIndex(x=>Number(x.sequence)===seq);let cp=point(c);if(cp)return{...cp,name:c.stationName||r[i]?.stationName||r[i]?.name||"বর্তমান অবস্থান",next:r[i+1]?.stationName||r[i+1]?.name||"",speed:Number(c.speedKmh||c.speed||0),bearing:Number(c.bearingDegrees||0),idx:i};let a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null,p=Math.max(0,Math.min(1,Number(c.segmentProgress??0)));if(a&&b)return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p,name:r[i]?.stationName||r[i]?.name||r[i]?.stationCode||"",next:r[i+1]?.stationName||r[i+1]?.name||"",speed:Number(c.speedKmh||c.speed||0),bearing:Number(c.bearingDegrees||bear(a.lat,a.lon,b.lat,b.lon)),idx:i};let x=point(d.previousHalt),y=point(d.nextHalt);if(x&&y)return{lat:x.lat+(y.lat-x.lat)*p,lon:x.lon+(y.lon-x.lon)*p,name:d.previousHalt.stationName||d.previousHalt.name||"",next:d.nextHalt.stationName||d.nextHalt.name||"",speed:Number(c.speedKmh||0),bearing:bear(x.lat,x.lon,y.lat,y.lon),idx:i};if(a)return{lat:a.lat,lon:a.lon,name:r[i]?.stationName||r[i]?.name||"",next:r[i+1]?.stationName||"",speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees||0),idx:i};throw Error("লাইভ লোকেশন পাওয়া যায়নি।")}
+function drawRoute(){let r=raw?.route||[];$("route").innerHTML=r.length?r.map((s,i)=>`<div class="station ${i===train.idx?"active":""}">${i===train.idx?'<div class="trainicon">🚆</div>':'<div class="trainicon"></div>'}<div class="dot"></div><div class="station-name">${esc(s.stationName||s.name||s.stationCode||s.code)}</div></div>`).join(""):"Route station পাওয়া যায়নি।";if(r.length&&train.idx>=0)requestAnimationFrame(()=>{const el=$("route").children[train.idx];if(el)el.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})})}
+function trainIcon(){return L.divIcon({html:"<div style='font-size:30px;line-height:30px'>🚆</div>",className:"",iconSize:[34,34],iconAnchor:[17,17]})}
+function userIcon(){return L.divIcon({html:"<div class='user-pin'><span>●</span></div>",className:"",iconSize:[34,34],iconAnchor:[10,30]})}
+function drawTrain(){if(trainMarker)trainMarker.remove();trainMarker=L.marker([train.lat,train.lon],{icon:trainIcon()}).addTo(map).bindPopup("<b>🚆 Train</b><br>"+esc(train.name));$("trainInfo").innerHTML=`<b>Train:</b> ${esc(raw.trainName||$("trainNo").value)}<br><b>Current:</b> ${esc(train.name)}<br><b>Next:</b> ${esc(train.next)}<br><b>Source:</b> ${raw.source==="gps"?"📱 অন্য/ভেতরের GPS":"🔑 API Key"}<br><b>Speed:</b> ${train.speed.toFixed(1)} km/h`}
+async function update(){let j=await get({action:"live",trainNo:$("trainNo").value.trim()}),old=train;raw=j;train=locate(j);drawRoute();drawTrain();if(old&&raw.source==="gps")msg("📡 অন্য ব্যবহারকারীর GPS থেকে ট্রেনের অবস্থান দেখানো হচ্ছে।","ok");verify()}
+function movement(){if(samples.length<2)return{speed:0,bearing:0};let a=samples.at(-2),b=samples.at(-1),v=dist(a.lat,a.lon,b.lat,b.lon)/((b.time-a.time)/3600000);return{speed:Number.isFinite(b.speed)&&b.speed>=0?b.speed*3.6:v,bearing:Number.isFinite(b.heading)&&b.heading>=0?b.heading:bear(a.lat,a.lon,b.lat,b.lon)}}
+function drawUser(s){if(!userMarker){userMarker=L.marker([s.lat,s.lon],{icon:userIcon(),zIndexOffset:1000}).addTo(map).bindPopup("📱 আপনার বর্তমান অবস্থান")}else userMarker.setLatLng([s.lat,s.lon]);userMarker.setPopupContent("📱 আপনার বর্তমান অবস্থান<br>Accuracy ±"+Math.round(s.accuracy)+"m");let m=movement();$("userInfo").innerHTML=`<b>Lat:</b> ${s.lat.toFixed(6)}<br><b>Lng:</b> ${s.lon.toFixed(6)}<br><b>Accuracy:</b> ±${Math.round(s.accuracy)} m<br><b>Speed:</b> ${m.speed.toFixed(1)} km/h`;$("samples").innerHTML=samples.slice().reverse().map((x,i)=>`<div class="sample"><b>Sample ${samples.length-i}</b> • ±${Math.round(x.accuracy)}m • ${new Date(x.time).toLocaleTimeString()}</div>`).join("")}
+async function publish(s){if(Date.now()-lastPublish<GPS_MS)return;lastPublish=Date.now();try{await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"gps",trainNo:$("trainNo").value.trim(),lat:s.lat,lon:s.lon,accuracy:s.accuracy,speed:s.speed,heading:s.heading,time:s.time,trainName:raw?.trainName||""})})}catch(e){}}
+function showMapDistance(d){if(!train||!samples.length)return;const u=samples.at(-1),lat=(train.lat+u.lat)/2,lon=(train.lon+u.lon)/2,html=`<div style="background:#fff;border:2px solid #1565c0;border-radius:18px;padding:5px 10px;box-shadow:0 2px 8px #0005;font-weight:800;font-size:13px;white-space:nowrap">📏 ${d.toFixed(2)} km</div>`,ic=L.divIcon({html,className:"",iconSize:null,iconAnchor:[0,0]});if(!distanceMarker)distanceMarker=L.marker([lat,lon],{icon:ic,interactive:false,zIndexOffset:800}).addTo(map);else{distanceMarker.setLatLng([lat,lon]);distanceMarker.setIcon(ic)}}
+function verify(){if(!running||!train||!samples.length)return;let u=samples.at(-1),m=movement(),d=dist(u.lat,u.lon,train.lat,train.lon),sd=d<=.1?100:d<=.25?97:d<=.5?92:d<=1?85:d<=1.5?75:d<=3?50:0,sa=u.accuracy<=10?100:u.accuracy<=20?95:u.accuracy<=30?90:u.accuracy<=50?75:55,ss=(m.speed<5||train.speed<5)?50:Math.abs(m.speed-train.speed)<=10?85:40,conf=sd*.55+sa*.2+ss*.15+5;$("score").textContent=conf.toFixed(0)+"%";$("moveInfo").innerHTML=`<b>Train Distance:</b> ${d.toFixed(3)} km<br><b>User Speed:</b> ${m.speed.toFixed(1)} km/h<br><b>Train Speed:</b> ${train.speed.toFixed(1)} km/h`;if(line)line.remove();line=L.polyline([[train.lat,train.lon],[u.lat,u.lon]],{weight:4,dashArray:"8,8"}).addTo(map);showMapDistance(d);map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});if(d<=VERIFY&&conf>=70){if(!inside){inside=true;if(stopTimer){clearTimeout(stopTimer);stopTimer=null}msg("📱 GPS যাচাই হয়েছে। এখন আপনার GPS-ই ট্রেনের shared location হিসেবে ব্যবহৃত হবে; API Key বন্ধ।","ok")}if(trainMarker)trainMarker.setLatLng([u.lat,u.lon]);publish(u);$("scoreText").textContent="GPS verified; shared train location চালু।";res("📍 <b>ট্রেনের লোকেশন আপনার GPS থেকে আপডেট হচ্ছে।</b><br>অন্যরাও এই ট্রেনের shared location দেখতে পারবে।","ok")}else{$("scoreText").textContent="GPS দিয়ে ট্রেনের অবস্থান যাচাই হয়নি।";res("📏 <b>ট্রেনের সঙ্গে দূরত্ব:</b> "+d.toFixed(3)+" km","info")}}
+function schedule(){if(timer)clearTimeout(timer);if(!running)return;timer=setTimeout(async()=>{try{await update()}catch(e){msg("⚠️ "+esc(e.message),"bad")}schedule()},inside?GPS_MS:API_MS)}
 let startToken=0;
-function start(){
- if(!isGpsActive) return msg("❌ ট্র্যাকিং শুরু করতে ফোনের Location অন করুন।","bad");
- let n=$("trainNo").value.trim();
- if(!/^\d{5}$/.test(n))return;
- const token=++startToken;
- stop(false);running=true;inside=false;samples=[];
- $("result").style.display="none";
- $("trainInfo").innerHTML="⏳ ট্রেনের live তথ্য খোঁজা হচ্ছে...";
- $("userInfo").innerHTML="📍 আপনার Location-এর অপেক্ষায়...";
- msg("⏳ ট্রেন "+n+" এর live তথ্য খোঁজা হচ্ছে...","info");
- startGPS();
- update().then(()=>{
-   if(token!==startToken||!running)return;
-   schedule();
-   stopTimer=setTimeout(()=>{if(running&&!inside){stop(false);msg("⏹️ API-only tracking 20 মিনিট পরে বন্ধ হয়েছে।","info")}},MAX_API);
- }).catch(e=>{
-   if(token!==startToken||!running)return;
-   msg("❌ "+esc(e.message),"bad");
-   schedule();
- });
-}
-
-function stop(show=true){
-  running=false;inside=false;
-  if(timer)clearTimeout(timer);
-  if(stopTimer)clearTimeout(stopTimer);
-  timer=stopTimer=null;
-  if(watchId!==null)navigator.geolocation.clearWatch(watchId);
-  watchId=null;
-  if(line)line.remove();line=null;
-  if(distanceMarker)distanceMarker.remove();distanceMarker=null;
-  if(userMarker)userMarker.remove();userMarker=null;
-  if(show)msg("⏹ ট্র্যাকিং বন্ধ করা হয়েছে।","info");
-}
-
+function start(){if(!isGpsActive)return msg("❌ ট্র্যাকিং শুরু করতে ফোনের Location অন করুন।","bad");let n=$("trainNo").value.trim();if(!/^\d{5}$/.test(n))return;const token=++startToken;stop(false);running=true;inside=false;samples=[];$("result").style.display="none";$("trainInfo").innerHTML="⏳ ট্রেনের live তথ্য খোঁজা হচ্ছে...";$("userInfo").innerHTML="📍 আপনার Location-এর অপেক্ষায়...";msg("⏳ ট্রেন "+n+" এর live তথ্য খোঁজা হচ্ছে...","info");startGPS();update().then(()=>{if(token!==startToken||!running)return;schedule();stopTimer=setTimeout(()=>{if(running&&!inside){stop(false);msg("⏹️ API-only tracking 20 মিনিট পরে বন্ধ হয়েছে।","info")}},MAX_API)}).catch(e=>{if(token!==startToken||!running)return;msg("❌ "+esc(e.message),"bad");schedule()})}
+function stop(show=true){running=false;inside=false;if(timer)clearTimeout(timer);if(stopTimer)clearTimeout(stopTimer);timer=stopTimer=null;if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;if(line)line.remove();line=null;if(distanceMarker)distanceMarker.remove();distanceMarker=null;if(userMarker)userMarker.remove();userMarker=null;if(show)msg("⏹ ট্র্যাকিং বন্ধ করা হয়েছে।","info")}
 $("stop").onclick=()=>stop(true);
-
 let trainInputTimer=null,lastTrainNo="";
-$("trainNo").addEventListener("input",()=>{
- if(!isGpsActive) return;
- clearTimeout(trainInputTimer);
- const n=$("trainNo").value.replace(/\D/g,"").slice(0,5);
- $("trainNo").value=n;
- if(n.length===5 && n!==lastTrainNo){
-   lastTrainNo=n;
-   trainInputTimer=setTimeout(start,250);
- }
- if(n.length<5)lastTrainNo="";
-});
-
+$("trainNo").addEventListener("input",()=>{if(!isGpsActive)return;clearTimeout(trainInputTimer);const n=$("trainNo").value.replace(/\D/g,"").slice(0,5);$("trainNo").value=n;if(n.length===5&&n!==lastTrainNo){lastTrainNo=n;trainInputTimer=setTimeout(start,250)}if(n.length<5)lastTrainNo=""});
 window.onbeforeunload=()=>stop(false);
 </script>
-<a href='http://www.freevisitorcounters.com'>freevisitorcounters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=346fb794ef1f6334e88749d3ddd1a33f690b71fe'></script>
+<a href='http://www.freevisitorcounters.com'>freevisitorcounters</a><script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=346fb794ef1f6334e88749d3ddd1a33f690b71fe'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1641366/t/1"></script>
 </body>
-</html>
+</html>  
