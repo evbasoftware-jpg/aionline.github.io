@@ -68,7 +68,25 @@ button,a.btn{border:0;border-radius:8px;padding:11px 15px;font-weight:700;font-s
 #map{height:420px}
 .buttons>*{width:100%;text-align:center}
 }
-</style></head><body><div class="app"><div class="head">
+</style></head><body>
+<div id="google_translate_element" style="position:sticky;top:0;z-index:9999;background:#fff;padding:7px;text-align:center;border-bottom:1px solid #ddd"><b style="margin-right:6px">🌐 Select Language</b><span id="google_translate_box"></span></div>
+<style>
+.goog-te-gadget{font-family:inherit!important;font-size:0!important}
+.goog-te-gadget .goog-te-combo{font-family:inherit!important;font-size:15px!important;padding:7px 10px!important;border:1px solid #aaa!important;border-radius:7px!important;background:#fff!important;max-width:95vw}
+.goog-logo-link,.goog-te-gadget span{display:none!important}
+body{top:0!important}
+</style>
+<script>
+function googleTranslateElementInit(){
+ new google.translate.TranslateElement({
+   pageLanguage:'bn',
+   includedLanguages:'',
+   autoDisplay:false
+ },'google_translate_element');
+}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<div class="app"><div class="head">
 <img src="logo.png" class="logo" alt="AI Online">
 <br>
 <a href="https://aionline.in.net" target="_blank">https://aionline.in.net</a>
@@ -915,28 +933,21 @@ msg(
 "✅ Bus Stop সফলভাবে যুক্ত হয়েছে।",
 "ok"
 );
-
 $("stopForm").classList.remove("show");
-
 $("stopName").value="";
-
 }
-
 }catch(e){
 
 msg(
 "❌ "+esc(e.message),
 "bad"
 );
-
 }
-
 };
 
 /* ================================
    AUTO GPS CHECK
    ================================ */
-
 window.addEventListener("load",()=>{
 
 if(location.protocol!=="https:" &&
@@ -946,9 +957,7 @@ msg(
 "⚠️ GPS ব্যবহারের জন্য HTTPS প্রয়োজন।",
 "bad"
 );
-
 }
-
 });
 
 window.onbeforeunload=stop;
