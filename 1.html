@@ -137,6 +137,7 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
       </div>
     </div>
     <div id="trainList" class="list"></div>
+    <div id="status" class="msg"></div>
     <label for="trainNo"><b>ট্রেন নম্বর লিখুন</b></label>
     <input id="trainNo" type="text" maxlength="5" inputmode="numeric" placeholder="যেমন: 12345" style="display:block;width:100%;max-width:480px;margin:7px 0 12px;padding:12px;border:1px solid #bbb;border-radius:8px;font-size:1rem">
     <div class="buttons">
@@ -144,7 +145,6 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
       <a class="btn ntes" href="https://enquiry.indianrail.gov.in/mntes/" target="_blank" rel="noopener">অফিসিয়াল NTES</a>
     </div>
   </div>
-  <div id="status" class="msg"></div>
   <div id="result" class="result"></div>
   <div class="route-wrap">
     <div class="title">🛤️ ট্রেনের রুট ও বর্তমান অবস্থান</div>
@@ -279,7 +279,7 @@ function stationCode(id){
   return match ? match[1] : v.toUpperCase();
 }
 
-async function between(){let f=stationCode("from"),t=stationCode("to");if(!f||!t)return msg("দুটি স্টেশন লিস্ট থেকে নির্বাচন করুন।","bad");try{let j=await get({action:"between",from:f,to:t}),a=j.data?.trains||[];$("trainList").innerHTML=a.length?a.map(x=>`<div class="train" data-no="${esc(x.train?.number)}"><b>🚆 ${esc(x.train?.number)} — ${esc(x.train?.name)}</b><br>${esc(x.from?.departure||"")} → ${esc(x.to?.arrival||"")} • ${Number(x.distance||0).toFixed(1)} km</div>`).join(""):"কোনো ট্রেন পাওয়া যায়নি।";document.querySelectorAll(".train").forEach(e=>e.onclick=()=>{$("trainNo").value=e.dataset.no;start()})}catch(e){msg("❌ "+esc(e.message),"bad")}}
+async function between(){let f=stationCode("from"),t=stationCode("to");if(!f||!t)return msg("উপরের লিস্ট থেকে যেকোনো ট্রেন নির্বাচন করুন।","bad");try{let j=await get({action:"between",from:f,to:t}),a=j.data?.trains||[];$("trainList").innerHTML=a.length?a.map(x=>`<div class="train" data-no="${esc(x.train?.number)}"><b>🚆 ${esc(x.train?.number)} — ${esc(x.train?.name)}</b><br>${esc(x.from?.departure||"")} → ${esc(x.to?.arrival||"")} • ${Number(x.distance||0).toFixed(1)} km</div>`).join(""):"কোনো ট্রেন পাওয়া যায়নি।";document.querySelectorAll(".train").forEach(e=>e.onclick=()=>{$("trainNo").value=e.dataset.no;start()})}catch(e){msg("❌ "+esc(e.message),"bad")}}
 $("from").onchange=between;$("to").onchange=between;
 
 function locate(d){
