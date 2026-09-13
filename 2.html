@@ -1,0 +1,957 @@
+<!doctype html>
+
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🚌 স্মার্ট লাইভ বাস ট্র্যাকার</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial}
+body{margin:0;background:#eef2f5;padding:8px}
+.app{max-width:1150px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #0002}
+.head{background:#fdffc4;color:#173fd7;padding:15px;text-align:center}
+.head h1{margin:5px 0;font-size:1.4rem}
+.head p{margin:5px 0;font-size:.9rem}
+.logo{height:62px;width:auto}
+.panel{padding:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field label{font-weight:700}
+input,select,textarea{display:block;width:100%;margin:6px 0 11px;padding:11px;border:1px solid #bbb;border-radius:8px;font-size:1rem;background:#fff}
+textarea{min-height:75px;resize:vertical}
+button,a.btn{border:0;border-radius:8px;padding:11px 15px;font-weight:700;font-size:.95rem;text-decoration:none;cursor:pointer}
+.buttons{display:flex;gap:8px;flex-wrap:wrap}
+.start{background:#087f23;color:#fff}
+.stop{background:#c62828;color:#fff}
+.add{background:#1565c0;color:#fff}
+.location{background:#6a1b9a;color:#fff}
+.ntes{background:#f28c00;color:#fff}
+.msg,.result{display:none;margin:10px 0;padding:12px;border-radius:9px;font-weight:700;line-height:1.5}
+.info{background:#e3f2fd;color:#075987}
+.ok{background:#e8f5e9;color:#1b5e20}
+.bad{background:#ffebee;color:#b71c1c}
+
+.box{border:1px solid #d9e0e5;border-radius:10px;padding:13px;margin-top:12px;background:#fafbfd}
+.box h3{margin:0 0 10px;color:#075987}
+.form{display:none}
+.form.show{display:block}
+
+.buslist{display:grid;gap:7px;max-height:300px;overflow:auto;margin-top:10px}
+.bus{padding:11px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+.bus:hover{background:#eaf5ff}
+
+.route-wrap{padding:15px;border-top:1px solid #eee}
+.title{font-weight:800;font-size:1.05rem;margin-bottom:8px}
+.route-scroll{overflow-x:auto;scroll-behavior:smooth}
+.route{display:flex;min-width:max-content;padding:10px 4px}
+.station{width:125px;text-align:center;position:relative}
+.station:not(:last-child):after{content:"";position:absolute;top:39px;left:62px;width:125px;height:4px;background:#cfd8dc}
+.dot{position:relative;z-index:1;width:18px;height:18px;margin:24px auto 8px;border-radius:50%;background:#90a4ae;border:3px solid #fff;box-shadow:0 0 0 2px #90a4ae}
+.station.active .dot{background:#087f23;box-shadow:0 0 0 4px #087f2344}
+.busicon{height:24px;font-size:21px}
+.station-name{font-size:.78rem;font-weight:700}
+
+.grid{padding:15px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.card{padding:12px;border:1px solid #dde3e6;border-radius:10px;background:#fafbfd}
+.card h3{margin:0 0 7px;color:#087f23;font-size:1rem}
+.card p{margin:0;line-height:1.5;font-size:.87rem}
+.score{text-align:center;font-size:2rem;font-weight:800;color:#087f23}
+
+#map{height:500px}
+.user-pin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#1565c0;border:3px solid #fff;box-shadow:0 2px 8px #0006}
+.user-pin span{transform:rotate(45deg);font-size:18px;color:#fff}
+
+.stop-add{background:#00838f;color:#fff}
+.small{font-size:.78rem;color:#64748b}
+
+@media(max-width:600px){
+.row{grid-template-columns:1fr}
+#map{height:420px}
+.buttons>*{width:100%;text-align:center}
+}
+</style></head><body><div class="app"><div class="head">
+<img src="logo.png" class="logo" alt="AI Online">
+<br>
+<a href="https://aionline.in.net" target="_blank">https://aionline.in.net</a>
+<h1>🚌 স্মার্ট লাইভ বাস ট্র্যাকার</h1>
+<p>Live Bus • GPS • Bus Stop • Route • Distance • ETA</p>
+</div><div class="panel"><div class="buttons">
+<button class="add" id="newBusBtn">➕ নতুন বাস যুক্ত করুন</button>
+<button class="stop-add" id="addStopBtn">📍 এই জায়গা বাসস্টপ হিসাবে যুক্ত করুন</button>
+<button class="location" id="myLocationBtn">📍 আমার Location</button>
+</div><div id="status" class="msg"></div><!-- NEW BUS FORM --><div id="busForm" class="box form"><h3>🚌 নতুন বাসের তথ্য যুক্ত করুন</h3><div class="row"><div>
+<label>রাজ্য *</label>
+<input id="busState" placeholder="যেমন: West Bengal">
+</div><div>
+<label>জেলা *</label>
+<input id="busDistrict" placeholder="যেমন: South 24 Parganas">
+</div><div>
+<label>বাস নম্বর *</label>
+<input id="busNumber" placeholder="যেমন: WB04A1234">
+</div><div>
+<label>বাসের নাম</label>
+<input id="busName" placeholder="যেমন: Canning Express">
+</div><div>
+<label>বাস ক্যাটাগরি *</label>
+<select id="busCategory">
+<option value="">Select Category</option>
+<option>PUBLIC</option>
+<option>NBSTC</option>
+<option>SBSTC</option>
+<option>CSTS</option>
+<option>Other Govt. Bus</option>
+<option>Private Bus</option>
+<option>Other</option>
+</select>
+</div><div>
+<label>আপ বাস ছাড়ার সময়</label>
+<input id="upTime" type="time">
+</div><div>
+<label>ডাউন বাস ছাড়ার সময়</label>
+<input id="downTime" type="time">
+</div><div>
+<label>চলাচলের দিন</label>
+<select id="days">
+<option>Everyday</option>
+<option>Monday-Friday</option>
+<option>Saturday-Sunday</option>
+<option>Monday-Saturday</option>
+<option>Other</option>
+</select>
+</div></div><label>বাসের Route *</label>
+
+<textarea id="busRoute" placeholder="যেমন: Canning → Baruipur → Sonarpur → Garia → Kolkata"></textarea><label>Operator / সংস্থার নাম</label>
+<input id="operator" placeholder="ঐচ্ছিক">
+
+<label>যোগাযোগ নম্বর</label>
+<input id="busContact" inputmode="tel" placeholder="ঐচ্ছিক">
+
+<label>অতিরিক্ত তথ্য</label>
+
+<textarea id="busRemarks" placeholder="অন্য কোনো তথ্য"></textarea><div class="buttons">
+<button class="start" id="saveBus">💾 বাসের তথ্য সংরক্ষণ</button>
+<button class="stop" id="cancelBus">✖ বন্ধ করুন</button>
+</div></div><!-- STOP FORM --><div id="stopForm" class="box form"><h3>📍 নতুন বাসস্টপ যুক্ত করুন</h3><label>বাসস্টপের নাম *</label>
+<input id="stopName" placeholder="যেমন: Baruipur Station">
+
+<div class="row"><div>
+<label>রাজ্য</label>
+<input id="stopState" placeholder="State">
+</div><div>
+<label>জেলা</label>
+<input id="stopDistrict" placeholder="District">
+</div></div><p class="small">
+GPS Location স্বয়ংক্রিয়ভাবে নেওয়া হবে। Bus Stop detection radius: <b>50 মিটার</b>
+</p><p id="stopGPS">📍 GPS নেওয়া হচ্ছে...</p><div class="buttons">
+<button class="start" id="saveStop">📍 বাসস্টপ সংরক্ষণ</button>
+<button class="stop" id="cancelStop">✖ বন্ধ করুন</button>
+</div></div><hr><div class="row"><div class="field">
+<label>📍 কোথা থেকে</label>
+<input id="from" placeholder="শহর / বাসস্টপ">
+</div><div class="field">
+<label>📍 কোথায় যাবেন</label>
+<input id="to" placeholder="শহর / বাসস্টপ">
+</div></div><label style="font-weight:700;color:#075987">
+🚌 বাস নম্বর / নাম / Route
+</label><input id="busSearch" placeholder="বাস নম্বর বা নাম লিখুন"><div id="busList" class="buslist"></div><label style="font-weight:700;color:#075987">
+🚌 নির্বাচিত বাস নম্বর
+</label><input id="busNo" placeholder="যেমন: WB04A1234"><div class="buttons">
+<button class="stop" id="stop">⏹ Tracking বন্ধ করুন</button>
+</div></div><div id="result" class="result"></div><div class="route-wrap">
+<div class="title">🛣️ বাসের Route ও বর্তমান অবস্থান</div>
+<div class="route-scroll">
+<div id="route" class="route">
+বাস নির্বাচন করলে Route দেখা যাবে...
+</div>
+</div>
+</div><div class="grid"><div class="card">
+<h3>🚌 Bus Live Data</h3>
+<p id="busInfo">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>📍 Current Bus Stop</h3>
+<p id="currentStop">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>➡️ Next Bus Stop</h3>
+<p id="nextStop">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>📏 Distance</h3>
+<p id="distanceInfo">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>⏱️ ETA</h3>
+<p id="eta">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>📱 User GPS</h3>
+<p id="userInfo">অপেক্ষা করছে...</p>
+</div><div class="card">
+<h3>🎯 GPS Confidence</h3>
+<div class="score" id="score">0%</div>
+<p id="scoreText">Verification শুরু হয়নি।</p>
+</div></div><div class="route-wrap">
+<div class="title">📍 বাস এবং ব্যবহারকারীর Live Location</div>
+<div id="map"></div>
+</div></div><footer style="text-align:center;padding:12px">
+© 2026 AI Online | All Rights Reserved
+</footer><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+
+/* ================================
+   GOOGLE APPS SCRIPT API
+   ================================ */
+
+const API="YOUR_APPS_SCRIPT_WEB_APP_URL";
+
+const GPS_RADIUS=50;
+const GPS_INTERVAL=15000;
+const API_INTERVAL=420000;
+
+let map=L.map("map").setView([22.57,88.36],7);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+maxZoom:19,
+attribution:"© OpenStreetMap contributors"
+}).addTo(map);
+
+let userMarker=null;
+let busMarker=null;
+let routeLine=null;
+let userWatch=null;
+let busTimer=null;
+let currentGPS=null;
+let selectedBus=null;
+let running=false;
+
+const $=id=>document.getElementById(id);
+
+function msg(t,c="info"){
+$("status").style.display="block";
+$("status").className="msg "+c;
+$("status").innerHTML=t;
+}
+
+function result(t,c="info"){
+$("result").style.display="block";
+$("result").className="result "+c;
+$("result").innerHTML=t;
+}
+
+function esc(s){
+return String(s??"").replace(/[&<>"]/g,x=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;"
+}[x]));
+}
+
+/* Distance in KM */
+
+function distance(lat1,lon1,lat2,lon2){
+
+let R=6371;
+let p=Math.PI/180;
+
+let a=
+Math.sin((lat2-lat1)*p/2)**2+
+Math.cos(lat1*p)*
+Math.cos(lat2*p)*
+Math.sin((lon2-lon1)*p/2)**2;
+
+return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+}
+
+/* ================================
+   GPS
+   ================================ */
+
+function startGPS(){
+
+if(!window.isSecureContext){
+msg("❌ GPS-এর জন্য HTTPS প্রয়োজন।","bad");
+return;
+}
+
+if(!navigator.geolocation){
+msg("❌ এই browser-এ GPS নেই।","bad");
+return;
+}
+
+if(userWatch!==null)
+navigator.geolocation.clearWatch(userWatch);
+
+userWatch=navigator.geolocation.watchPosition(
+
+p=>{
+
+currentGPS={
+lat:p.coords.latitude,
+lon:p.coords.longitude,
+accuracy:p.coords.accuracy,
+speed:p.coords.speed,
+time:p.timestamp||Date.now()
+};
+
+drawUser();
+
+checkNearbyStop();
+
+},
+
+e=>{
+
+if(e.code===1)
+msg("❌ Location Permission Allow করুন।","bad");
+else
+msg("❌ GPS Location পাওয়া যাচ্ছে না। Device Location ON করুন।","bad");
+
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:5000,
+timeout:15000
+}
+
+);
+
+}
+
+function drawUser(){
+
+if(!currentGPS)return;
+
+let p=[currentGPS.lat,currentGPS.lon];
+
+if(!userMarker){
+
+userMarker=L.marker(p,{
+zIndexOffset:1000
+}).addTo(map)
+.bindPopup("📱 আপনার বর্তমান অবস্থান");
+
+}else{
+
+userMarker.setLatLng(p);
+
+}
+
+$("userInfo").innerHTML=
+"Latitude: "+currentGPS.lat.toFixed(6)+
+"<br>Longitude: "+currentGPS.lon.toFixed(6)+
+"<br>Accuracy: ±"+Math.round(currentGPS.accuracy)+" m";
+
+}
+
+/* ================================
+   BUS STOP DETECTION
+   50 METERS
+   ================================ */
+
+async function checkNearbyStop(){
+
+if(!currentGPS)return;
+
+try{
+
+let j=await api({
+action:"nearbyStops",
+lat:currentGPS.lat,
+lon:currentGPS.lon,
+radius:GPS_RADIUS
+});
+
+let stops=j.data?.stops||[];
+
+if(stops.length){
+
+let s=stops[0];
+
+$("currentStop").innerHTML=
+"🟢 <b>"+esc(s.name)+"</b>"+
+"<br>Distance: "+Number(s.distance||0).toFixed(0)+" m";
+
+let next=stops[1];
+
+if(next)
+$("nextStop").innerHTML=
+"➡️ "+esc(next.name);
+
+}
+
+}catch(e){}
+
+}
+
+/* ================================
+   API
+   ================================ */
+
+async function api(params,method="GET"){
+
+let url=API;
+
+if(method==="GET")
+url+="?"+new URLSearchParams(params);
+
+let options={
+method,
+cache:"no-store"
+};
+
+if(method==="POST"){
+
+options.headers={
+"Content-Type":"text/plain;charset=utf-8"
+};
+
+options.body=JSON.stringify(params);
+
+}
+
+let r=await fetch(url,options);
+let j=await r.json();
+
+if(!r.ok || j.success===false)
+throw Error(j.error||"API Error");
+
+return j;
+
+}
+
+/* ================================
+   BUS LIST
+   ================================ */
+
+let searchTimer=null;
+
+$("busSearch").oninput=()=>{
+
+clearTimeout(searchTimer);
+
+searchTimer=setTimeout(loadBuses,300);
+
+};
+
+async function loadBuses(){
+
+let q=$("busSearch").value.trim();
+
+if(q.length<2){
+$("busList").innerHTML="";
+return;
+}
+
+try{
+
+let j=await api({
+action:"buses",
+search:q
+});
+
+let buses=j.data?.buses||[];
+
+$("busList").innerHTML=buses.length?
+
+buses.map(b=>`
+
+<div class="bus"
+data-id="${esc(b.id||"")}"
+onclick='selectBus(${JSON.stringify(b).replace(/'/g,"&#39;")})'>
+
+<b>🚌 ${esc(b.number||b.busNumber||"")}</b>
+<br>
+
+${esc(b.name||"")}
+
+<br>
+
+<span class="small">
+${esc(b.category||"")} •
+${esc(b.route||"")}
+</span>
+
+</div>
+
+`).join(""):
+
+"কোনো বাস পাওয়া যায়নি।";
+
+}catch(e){
+
+msg("❌ Bus list পাওয়া যায়নি।","bad");
+
+}
+
+}
+
+/* ================================
+   SELECT BUS
+   ================================ */
+
+window.selectBus=function(b){
+
+selectedBus=b;
+
+$("busNo").value=b.number||b.busNumber||"";
+
+$("busInfo").innerHTML=
+"<b>Bus:</b> "+esc(b.number||b.busNumber)+
+"<br><b>Name:</b> "+esc(b.name||"")+
+"<br><b>Category:</b> "+esc(b.category||"")+
+"<br><b>Route:</b> "+esc(b.route||"")+
+"<br><b>Up:</b> "+esc(b.upTime||"-")+
+"<br><b>Down:</b> "+esc(b.downTime||"-");
+
+loadRoute();
+
+startTracking();
+
+};
+
+/* ================================
+   ROUTE
+   ================================ */
+
+async function loadRoute(){
+
+if(!selectedBus)return;
+
+try{
+
+let j=await api({
+action:"route",
+busId:selectedBus.id,
+busNo:selectedBus.number||selectedBus.busNumber
+});
+
+let route=j.data?.route||[];
+
+$("route").innerHTML=route.length?
+
+route.map((s,i)=>`
+
+<div class="station"
+id="stop-${i}">
+
+<div class="busicon"></div>
+
+<div class="dot"></div>
+
+<div class="station-name">
+${esc(s.name||s.stationName||s.stopName||"")}
+</div>
+
+</div>
+
+`).join(""):
+
+"Route পাওয়া যায়নি।";
+
+}catch(e){
+
+$("route").innerHTML="Route পাওয়া যায়নি।";
+
+}
+
+}
+
+/* ================================
+   LIVE BUS
+   ================================ */
+
+async function updateBus(){
+
+if(!running)return;
+
+let no=$("busNo").value.trim();
+
+if(!no)return;
+
+try{
+
+let j=await api({
+action:"liveBus",
+busNo:no
+});
+
+let b=j.data?.bus||j.data||null;
+
+if(!b || !Number.isFinite(Number(b.lat)))
+throw Error("Bus location পাওয়া যায়নি।");
+
+let lat=Number(b.lat);
+let lon=Number(b.lon??b.lng);
+
+drawBus(lat,lon,b);
+
+if(currentGPS){
+
+let d=distance(
+currentGPS.lat,
+currentGPS.lon,
+lat,
+lon
+);
+
+$("distanceInfo").innerHTML=
+"<b>Bus Distance:</b> "+d.toFixed(2)+" km";
+
+}
+
+}catch(e){
+
+msg("⚠️ "+esc(e.message),"bad");
+
+}
+
+}
+
+/* ================================
+   BUS MARKER
+   ================================ */
+
+function drawBus(lat,lon,b){
+
+let icon=L.divIcon({
+html:"<div style='font-size:30px'>🚌</div>",
+className:"",
+iconSize:[35,35],
+iconAnchor:[17,17]
+});
+
+if(!busMarker){
+
+busMarker=L.marker([lat,lon],{
+icon:icon
+}).addTo(map);
+
+}else{
+
+busMarker.setLatLng([lat,lon]);
+
+}
+
+busMarker.bindPopup(
+"<b>🚌 "+esc(b.number||$("busNo").value)+"</b>"+
+"<br>"+esc(b.name||"")+
+"<br>Speed: "+Number(b.speed||0).toFixed(1)+" km/h"
+);
+
+if(b.currentStop)
+$("currentStop").innerHTML=
+"🟢 <b>"+esc(b.currentStop)+"</b>";
+
+if(b.nextStop)
+$("nextStop").innerHTML=
+"➡️ <b>"+esc(b.nextStop)+"</b>";
+
+if(b.eta)
+$("eta").innerHTML=
+"⏱️ <b>"+esc(b.eta)+"</b>";
+
+if(b.speed!==undefined)
+$("busInfo").innerHTML+=
+"<br><b>Speed:</b> "+Number(b.speed||0).toFixed(1)+" km/h";
+
+}
+
+/* ================================
+   START TRACKING
+   ================================ */
+
+function startTracking(){
+
+if(running)return;
+
+running=true;
+
+startGPS();
+
+updateBus();
+
+if(busTimer)clearInterval(busTimer);
+
+busTimer=setInterval(updateBus,API_INTERVAL);
+
+msg(
+"🚌 Bus Live Tracking শুরু হয়েছে।",
+"ok"
+);
+
+}
+
+/* ================================
+   STOP
+   ================================ */
+
+function stop(){
+
+running=false;
+
+if(busTimer)
+clearInterval(busTimer);
+
+busTimer=null;
+
+if(userWatch!==null)
+navigator.geolocation.clearWatch(userWatch);
+
+userWatch=null;
+
+if(userMarker){
+userMarker.remove();
+userMarker=null;
+}
+
+if(busMarker){
+busMarker.remove();
+busMarker=null;
+}
+
+msg("⏹ Bus Tracking বন্ধ করা হয়েছে।","info");
+
+}
+
+$("stop").onclick=stop;
+
+/* ================================
+   MY LOCATION
+   ================================ */
+
+$("myLocationBtn").onclick=()=>{
+
+startGPS();
+
+if(currentGPS)
+map.setView(
+[currentGPS.lat,currentGPS.lon],
+16
+);
+
+};
+
+/* ================================
+   NEW BUS FORM
+   ================================ */
+
+$("newBusBtn").onclick=()=>{
+
+$("busForm").classList.toggle("show");
+
+$("stopForm").classList.remove("show");
+
+};
+
+$("cancelBus").onclick=()=>{
+
+$("busForm").classList.remove("show");
+
+};
+
+/* ================================
+   SAVE BUS
+   ================================ */
+
+$("saveBus").onclick=async()=>{
+
+let b={
+
+action:"addBus",
+
+state:$("busState").value.trim(),
+
+district:$("busDistrict").value.trim(),
+
+number:$("busNumber").value.trim(),
+
+name:$("busName").value.trim(),
+
+category:$("busCategory").value,
+
+upTime:$("upTime").value,
+
+downTime:$("downTime").value,
+
+days:$("days").value,
+
+route:$("busRoute").value.trim(),
+
+operator:$("operator").value.trim(),
+
+contact:$("busContact").value.trim(),
+
+remarks:$("busRemarks").value.trim(),
+
+latitude:currentGPS?.lat||"",
+
+longitude:currentGPS?.lon||""
+
+};
+
+if(!b.state||!b.district||!b.number||!b.category||!b.route){
+
+msg("❌ * চিহ্নিত তথ্যগুলো পূরণ করুন।","bad");
+return;
+
+}
+
+try{
+
+msg("⏳ Bus তথ্য সংরক্ষণ হচ্ছে...","info");
+
+let j=await api(b,"POST");
+
+if(j.success!==false){
+
+msg(
+"✅ নতুন বাস সফলভাবে যুক্ত হয়েছে।",
+"ok"
+);
+
+$("busForm").classList.remove("show");
+
+loadBuses();
+
+}
+
+}catch(e){
+
+msg("❌ "+esc(e.message),"bad");
+
+}
+
+};
+
+/* ================================
+   ADD BUS STOP
+   ================================ */
+
+$("addStopBtn").onclick=()=>{
+
+$("stopForm").classList.toggle("show");
+
+$("busForm").classList.remove("show");
+
+startGPS();
+
+if(currentGPS){
+
+$("stopGPS").innerHTML=
+"📍 "+currentGPS.lat.toFixed(6)+
+", "+currentGPS.lon.toFixed(6);
+
+}
+
+};
+
+$("cancelStop").onclick=()=>{
+
+$("stopForm").classList.remove("show");
+
+};
+
+/* ================================
+   SAVE STOP
+   ================================ */
+
+$("saveStop").onclick=async()=>{
+
+if(!currentGPS){
+
+msg(
+"❌ GPS Location পাওয়া যায়নি।",
+"bad"
+);
+
+startGPS();
+
+return;
+
+}
+
+let name=$("stopName").value.trim();
+
+if(!name){
+
+msg(
+"❌ Bus Stop-এর নাম লিখুন।",
+"bad"
+);
+
+return;
+
+}
+
+let s={
+
+action:"addStop",
+
+name:name,
+
+state:$("stopState").value.trim(),
+
+district:$("stopDistrict").value.trim(),
+
+lat:currentGPS.lat,
+
+lon:currentGPS.lon,
+
+accuracy:currentGPS.accuracy,
+
+radius:GPS_RADIUS
+
+};
+
+try{
+
+msg(
+"⏳ Bus Stop সংরক্ষণ হচ্ছে...",
+"info"
+);
+
+let j=await api(s,"POST");
+
+if(j.success!==false){
+
+msg(
+"✅ Bus Stop সফলভাবে যুক্ত হয়েছে।",
+"ok"
+);
+
+$("stopForm").classList.remove("show");
+
+$("stopName").value="";
+
+}
+
+}catch(e){
+
+msg(
+"❌ "+esc(e.message),
+"bad"
+);
+
+}
+
+};
+
+/* ================================
+   AUTO GPS CHECK
+   ================================ */
+
+window.addEventListener("load",()=>{
+
+if(location.protocol!=="https:" &&
+location.hostname!=="localhost"){
+
+msg(
+"⚠️ GPS ব্যবহারের জন্য HTTPS প্রয়োজন।",
+"bad"
+);
+
+}
+
+});
+
+window.onbeforeunload=stop;
+
+</script></body>
+</html>
