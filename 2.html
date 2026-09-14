@@ -7,16 +7,67 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
-    body { margin: 0; background: #eef2f5; padding: 10px; }
-    .container { max-width: 1000px; margin: auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    body {
+      margin: 0;
+      background: #eef2f5;
+      padding: 0 10px 10px 10px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      top: 0 !important;
+    }
+    input, select, textarea {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    #google_translate_wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      background: #fff;
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .goog-te-gadget { font-family: inherit !important; font-size: 0 !important; display: inline-flex !important; align-items: center !important; }
+    .goog-te-gadget .goog-te-combo { font-family: inherit !important; font-size: 15px !important; padding: 6px 12px !important; border: 1px solid #aaa !important; border-radius: 8px !important; background: #fff !important; margin: 0 !important; }
+    .goog-logo-link, .goog-te-gadget span { display: none !important; }
+
+    .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
     .btn { background: #1565c0; color: #fff; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; }
     .btn-stop { background: #00796b; }
     .btn-cancel { background: #c62828; }
-    input, select { width: 100%; padding: 10px; margin: 5px 0 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hidden { display: none; }
     .box { background: #f1f8e9; border: 1px solid #c5e1a5; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    
+    .time-picker-row { display: flex; gap: 6px; }
+    .time-picker-row input { flex: 2; margin: 5px 0 10px; }
+    .ampm-select {
+      flex: 1;
+      font-size: 18px !important;
+      font-weight: 900 !important;
+      color: #0d47a1;
+      background: #e3f2fd !important;
+      border: 2px solid #1565c0 !important;
+      text-align: center;
+      padding: 8px !important;
+    }
+
     .bus-item { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin: 6px 0; background: #fafafa; cursor: pointer; transition: 0.2s; }
     .bus-item:hover { background: #e3f2fd; border-color: #1565c0; }
     #currentLocationBox { text-align: center; font-size: 17px; font-weight: bold; color: #2e7d32; background: #e8f5e9; padding: 12px; border-radius: 8px; margin: 12px 0; }
@@ -29,13 +80,16 @@
 </head>
 <body>
 
+<div id="google_translate_wrapper">
+  <b>🌐 ভাষা:</b>
+  <div id="google_translate_element"></div>
+</div>
+
 <div class="container">
   <h2>🚌 লাইভ বাস ট্র্যাকার (ভারত)</h2>
 
-  <!-- নতুন বাস যুক্ত করার টগল বাটন -->
   <button id="toggleBusFormBtn" class="btn">➕ নতুন বাসের তথ্য যুক্ত করুন</button>
 
-  <!-- নতুন বাস যুক্ত করার ফর্ম -->
   <div id="busFormBox" class="box hidden">
     <h3>নতুন বাসের বিবরণ</h3>
     <div class="grid">
@@ -55,20 +109,39 @@
       </div>
       <div><label>চলাচলের দিন</label><input type="text" id="days" placeholder="DAILY / MON-FRI"></div>
       <div><label>কোথা থেকে ছাড়বে?</label><input type="text" id="src" placeholder="FROM"></div>
-      <div><label>কখন ছাড়বে?</label><input type="time" id="srcTime"></div>
+      
+      <div>
+        <label>কখন ছাড়বে?</label>
+        <div class="time-picker-row">
+          <input type="text" id="srcTimeVal" placeholder="04:10">
+          <select id="srcTimeAmpm" class="ampm-select">
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+
       <div><label>কতদূর যাবে (গন্তব্য)?</label><input type="text" id="dest" placeholder="TO"></div>
-      <div><label>কখন পৌঁছাবে?</label><input type="time" id="destTime"></div>
+
+      <div>
+        <label>কখন পৌঁছাবে?</label>
+        <div class="time-picker-row">
+          <input type="text" id="destTimeVal" placeholder="06:00">
+          <select id="destTimeAmpm" class="ampm-select">
+            <option value="AM">AM</option>
+            <option value="PM" selected>PM</option>
+          </select>
+        </div>
+      </div>
     </div>
     <button class="btn" onclick="saveNewBus()">সংরক্ষণ করুন</button>
     <button class="btn btn-cancel" onclick="toggleBusForm(false)">বন্ধ করুন</button>
   </div>
 
-  <!-- স্টপেজ যুক্ত করার বোতাম -->
   <button id="addStopBtn" class="btn btn-stop hidden" onclick="addCurrentStop()">📍 এই জায়গা ও এই সময় বাসের স্টপেজ হিসাবে যুক্ত করুন</button>
 
   <hr>
 
-  <!-- অটো-সার্চিং ড্রপডাউন ইনপুট -->
   <div class="grid">
     <div>
       <label>কোথা থেকে বাসে উঠবেন?</label>
@@ -82,17 +155,13 @@
     </div>
   </div>
 
-  <!-- বাস সার্চ বা সরাসরি নম্বর ইনপুট -->
   <label>বাস নম্বর / নাম</label>
-  <input type="text" id="busTrackInput" placeholder="বাস নম্বর বা নাম লিখুন (সরাসরি ট্র্যাকিংয়ের জন্য)">
+  <input type="text" id="busTrackInput" placeholder="বাস নম্বর বা নাম লিখুন">
   
-  <!-- অটোমেটিক বাসের তালিকা -->
   <div id="busList"></div>
 
-  <!-- বাসের বর্তমান অবস্থান টেক্সট -->
   <div id="currentLocationBox">বাসের বর্তমান অবস্থান: কোনো বাস নির্বাচিত হয়নি</div>
 
-  <!-- রিয়েল-টাইম স্টেটাস কার্ড -->
   <div class="card-grid">
     <div class="card"><b>বর্তমান স্টপেজ:</b> <span id="infoCurStop">--</span></div>
     <div class="card"><b>পরবর্তী স্টপেজ:</b> <span id="infoNextStop">--</span></div>
@@ -102,13 +171,31 @@
     <div class="card"><b>GPS কনফিডেন্স:</b> <span id="infoConfidence">--</span></div>
   </div>
 
-  <!-- ম্যাপ একদম নিচে স্থাপন করা হয়েছে -->
   <div id="map"></div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyQefdRODbWqWTub3rkvqbeG1alnhBfeN2IFbHvj7lnJshcrs8Qwb38a-QZimeV4-_v8A/exec"; // আপনার Web App URL দিন
+  // রাইট ক্লিক ও ইন্সপেক্ট বন্ধ
+  document.addEventListener('contextmenu', e => e.preventDefault(), false);
+  document.addEventListener('keydown', e => {
+    if (e.key === "F12" || e.keyCode === 123) return e.preventDefault();
+    if (e.ctrlKey && (e.key === "u" || e.key === "U" || e.keyCode === 85)) return e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.keyCode === 73 || e.keyCode === 74)) return e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (e.key === "C" || e.key === "c" || e.keyCode === 67)) return e.preventDefault();
+    if (e.ctrlKey && (e.key === "s" || e.key === "S" || e.keyCode === 83)) return e.preventDefault();
+  }, false);
+</script>
+
+<script>
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({ pageLanguage: 'bn', autoDisplay: false }, 'google_translate_element');
+  }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbyQefdRODbWqWTub3rkvqbeG1alnhBfeN2IFbHvj7lnJshcrs8Qwb38a-QZimeV4-_v8A/exec";
 
   let map = L.map('map').setView([22.5726, 88.3639], 12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -120,7 +207,29 @@
   const busIcon = L.divIcon({ html: '<div style="font-size:28px;">🚌</div>', className: '', iconSize: [30, 30] });
   const userIcon = L.divIcon({ html: '<div style="font-size:28px;">👤</div>', className: '', iconSize: [30, 30] });
 
-  // ব্যবহারকারীর জিপিএস ট্র্যাক
+  // সঠিক সময় দেখানোর ফাংশন (শিটের টেক্সটকে অবিকল রাখা)
+  function formatCleanTime(timeStr) {
+    if (!timeStr) return "";
+    let str = String(timeStr).trim();
+    
+    // যদি শিট থেকে AM/PM সরাসরি টেক্সট হিসেবে আসে (যেমন 4:10 PM)
+    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(str)) {
+      return str.toUpperCase();
+    }
+    
+    // যদি শুধু 14:30 এমন 24-hr থাকে
+    let simpleMatch = str.match(/^(\d{1,2}):(\d{2})$/);
+    if (simpleMatch) {
+      let h = parseInt(simpleMatch[1], 10);
+      let m = simpleMatch[2];
+      let ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+    }
+
+    return str;
+  }
+
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -136,7 +245,6 @@
       if (!userMarker) userMarker = L.marker([userPos.lat, userPos.lon], { icon: userIcon }).addTo(map).bindPopup("আপনার অবস্থান");
       else userMarker.setLatLng([userPos.lat, userPos.lon]);
 
-      // ৫০ মিটারের মধ্যে গতি শেয়ারিং
       if (trackingBus && busMarker) {
         let d = getDistanceMeters(userPos.lat, userPos.lon, busMarker.getLatLng().lat, busMarker.getLatLng().lng);
         if (d <= 50) {
@@ -146,7 +254,6 @@
     }, err => console.log(err), { enableHighAccuracy: true });
   }
 
-  // অটো-কমপ্লিট ডাটা ফেচ
   window.addEventListener("DOMContentLoaded", async () => {
     try {
       let res = await fetch(`${API_URL}?action=getBuses`);
@@ -173,7 +280,6 @@
     });
   }
 
-  // অটোমেটিক সার্চিং লজিক (বাটন ছাড়া)
   const handleAutoSearch = () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(autoSearchBuses, 350);
@@ -193,7 +299,6 @@
 
     let res = await fetch(`${API_URL}?action=getBuses&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
     let data = await res.json();
-    
     let listDiv = document.getElementById("busList");
     listDiv.innerHTML = "";
 
@@ -203,15 +308,17 @@
     }
 
     data.buses.forEach(b => {
+      let depTimeFormatted = formatCleanTime(b.depTime);
+      let arrTimeFormatted = formatCleanTime(b.arrTime);
+
       let div = document.createElement("div");
       div.className = "bus-item";
-      div.innerHTML = `<b>🚌 ${b.number} - ${b.name}</b> (${b.category})<br><small>রুট: ${b.source} [${b.depTime}] ➔ ${b.dest} [${b.arrTime}]</small>`;
+      div.innerHTML = `<b>🚌 ${b.number} - ${b.name}</b> (${b.category})<br><small>রুট: ${b.source} [${depTimeFormatted}] ➔ ${b.dest} [${arrTimeFormatted}]</small>`;
       div.onclick = () => selectBus(b);
       listDiv.appendChild(div);
     });
   }
 
-  // বাস সিলেক্ট ও তাৎক্ষণিক ট্র্যাকিং শুরু
   function selectBus(b) {
     trackingBus = b;
     document.getElementById("busTrackInput").value = `${b.number} - ${b.name}`;
@@ -235,7 +342,7 @@
   function trackBus(busNo) {
     if (trackingInterval) clearInterval(trackingInterval);
     fetchBusLive(busNo);
-    trackingInterval = setInterval(() => fetchBusLive(busNo), 10000); // ১০ সেকেন্ড পর পর আপডেট
+    trackingInterval = setInterval(() => fetchBusLive(busNo), 10000);
   }
 
   async function fetchBusLive(busNo) {
@@ -269,12 +376,11 @@
       document.getElementById("infoCurStop").innerText = data.stops[0].name;
       if (data.stops[1]) {
         document.getElementById("infoNextStop").innerText = data.stops[1].name;
-        document.getElementById("infoEta").innerText = data.stops[1].time || "শীঘ্রই";
+        document.getElementById("infoEta").innerText = formatCleanTime(data.stops[1].time) || "শীঘ্রই";
       }
     }
   }
 
-  // ফর্ম টগল ও সেভ
   document.getElementById("toggleBusFormBtn").onclick = () => toggleBusForm(true);
   function toggleBusForm(show) {
     document.getElementById("busFormBox").classList.toggle("hidden", !show);
@@ -282,6 +388,9 @@
   }
 
   async function saveNewBus() {
+    let srcTime = `${document.getElementById("srcTimeVal").value.trim()} ${document.getElementById("srcTimeAmpm").value}`;
+    let destTime = `${document.getElementById("destTimeVal").value.trim()} ${document.getElementById("destTimeAmpm").value}`;
+
     let payload = {
       action: "addBus",
       state: document.getElementById("state").value,
@@ -291,15 +400,25 @@
       category: document.getElementById("category").value,
       days: document.getElementById("days").value,
       source: document.getElementById("src").value,
-      depTime: document.getElementById("srcTime").value,
+      depTime: srcTime,
       dest: document.getElementById("dest").value,
-      arrTime: document.getElementById("destTime").value
+      arrTime: destTime
     };
-    if (!payload.busNumber || !payload.source) return alert("প্রয়োজনীয় তথ্য দিন!");
 
-    await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-    alert("বাস তথ্য সফলভাবে সংরক্ষণ হয়েছে!");
-    toggleBusForm(false);
+    if (!payload.busNumber || !payload.source) return alert("প্রয়োজনীয় তথ্য পূরণ করুন!");
+
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      alert("বাস তথ্য সফলভাবে সংরক্ষণ হয়েছে!");
+      toggleBusForm(false);
+      location.reload();
+    } catch (e) {
+      alert("সংরক্ষণ ব্যর্থ হয়েছে!");
+    }
   }
 
   async function addCurrentStop() {
@@ -308,7 +427,11 @@
     if (!stopName) return;
 
     let now = new Date();
-    let timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    let hours = now.getHours();
+    let minutes = String(now.getMinutes()).padStart(2, '0');
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    let timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
 
     let payload = {
       action: "addStop",
@@ -321,13 +444,25 @@
       accuracy: userPos.acc
     };
 
-    await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-    alert("স্টপ সফলভাবে যুক্ত হয়েছে!");
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      alert("স্টপ সফলভাবে যুক্ত হয়েছে!");
+    } catch (e) {
+      alert("স্টপ যুক্ত করা সম্ভব হয়নি!");
+    }
   }
 
   async function syncUserGPSAsBus(busNo, lat, lon, speed, acc) {
     let payload = { action: "updateGPS", busNumber: busNo, lat: lat, lon: lon, speed: speed, accuracy: acc };
-    fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
   }
 
   function getDistanceMeters(lat1, lon1, lat2, lon2) {
