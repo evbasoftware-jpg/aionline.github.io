@@ -8,22 +8,21 @@
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
     
+    /* ১) গুগলের উপরের বিরক্তিজনক ব্যানার লুকানো */
+    .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame, iframe.goog-te-banner-frame {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+    }
     body {
       margin: 0;
       background: #eef2f5;
       padding: 0 10px 10px 10px;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      top: 0 !important;
+      top: 0px !important;
+      position: static !important;
     }
 
     input, select, textarea {
-      -webkit-user-select: text !important;
-      -moz-user-select: text !important;
-      -ms-user-select: text !important;
-      user-select: text !important;
       width: 100%;
       padding: 10px;
       margin: 5px 0 10px;
@@ -55,7 +54,7 @@
     .btn-stop { background: #00796b; border: 2px solid #004d40; }
     .btn-cancel { background: #c62828; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .box { background: #f1f8e9; border: 1px solid #c5e1a5; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
     
     .time-picker-row { display: flex; gap: 6px; }
@@ -78,13 +77,29 @@
     .card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; }
     .card b { color: #1565c0; }
     #map { height: 420px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc; }
+    
+    /* ২) ট্রান্সলেটেবল কাস্টম ডায়ালগ পপ-আপ */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 10000;
+      display: flex; align-items: center; justify-content: center; padding: 15px;
+    }
+    .modal-card {
+      background: #fff; width: 100%; max-width: 380px;
+      border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    }
+    .modal-card h4 { margin: 0 0 10px 0; color: #d32f2f; font-size: 18px; }
+    .modal-card p { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 15px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions button { flex: 1; margin: 0; }
+
     @media(max-width: 600px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
 <div id="google_translate_wrapper">
-  <b>🌐 ভাষা:</b>
+  <b>🌐 ভাষা / LANGUAGE:</b>
   <div id="google_translate_element"></div>
 </div>
 
@@ -141,8 +156,7 @@
     <button class="btn btn-cancel" onclick="toggleBusForm(false)">বন্ধ করুন</button>
   </div>
 
-  <!-- লাইভ স্টপেজ যুক্ত করার বাটন -->
-  <button id="addStopBtn" class="btn btn-stop hidden" onclick="addCurrentStop()">📍 এই জায়গা ও এই সময় বাসের স্টপেজ হিসাবে যুক্ত করুন</button>
+  <button id="addStopBtn" class="btn btn-stop hidden" onclick="openConfirmDialog()">📍 এই জায়গা ও এই সময় বাসের স্টপেজ হিসাবে যুক্ত করুন</button>
 
   <hr>
 
@@ -178,20 +192,37 @@
   <div id="map"></div>
 </div>
 
-<script>
-  document.addEventListener('contextmenu', e => e.preventDefault(), false);
-  document.addEventListener('keydown', e => {
-    if (e.key === "F12" || e.keyCode === 123) return e.preventDefault();
-    if (e.ctrlKey && (e.key === "u" || e.key === "U" || e.keyCode === 85)) return e.preventDefault();
-    if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.keyCode === 73 || e.keyCode === 74)) return e.preventDefault();
-    if (e.ctrlKey && e.shiftKey && (e.key === "C" || e.key === "c" || e.keyCode === 67)) return e.preventDefault();
-    if (e.ctrlKey && (e.key === "s" || e.key === "S" || e.keyCode === 83)) return e.preventDefault();
-  }, false);
-</script>
+<!-- ২) কাস্টম ডায়ালগ (যা গুগল অনুবাদ স্বয়ংক্রিয়ভাবে অনুবাদ করবে) -->
+<div id="confirmModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h4>⚠️ সতর্কবার্তা</h4>
+    <p>বাস চলার সময় স্টপেজ এলে এই এন্ট্রি করুন।<br><br>আপনি কি বর্তমান অবস্থানকে এই বাসের স্টপেজ হিসেবে যুক্ত করতে চান?</p>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModals()">Cancel</button>
+      <button class="btn" onclick="proceedToNamePrompt()">OK</button>
+    </div>
+  </div>
+</div>
 
+<div id="nameModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h4>📍 স্টপেজের নাম</h4>
+    <p>বাস স্টপের নাম লিখুন (ইংরেজিতে):</p>
+    <input type="text" id="manualStopName" placeholder="যেমন: CHOWHATTA">
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModals()">Cancel</button>
+      <button class="btn" onclick="saveCurrentStopAction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- গুগল অনুবাদ স্ক্রিপ্ট (বাংলাসহ যেকোনো ভাষায় ফেরার উপযোগী কনফিগারেশন) -->
 <script>
   function googleTranslateElementInit() {
-    new google.translate.TranslateElement({ pageLanguage: 'bn', autoDisplay: false }, 'google_translate_element');
+    new google.translate.TranslateElement({
+      pageLanguage: 'auto',
+      autoDisplay: false
+    }, 'google_translate_element');
   }
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -225,7 +256,6 @@
     return str;
   }
 
-  // ব্যবহারকারীর লাইভ জিপিএস
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -250,7 +280,6 @@
     }, err => console.log(err), { enableHighAccuracy: true });
   }
 
-  // ড্রপডাউনে শুরু, শেষ এবং মাঝের সমস্ত স্টপ লোড করা
   window.addEventListener("DOMContentLoaded", async () => {
     loadDatalistSuggestions();
   });
@@ -417,21 +446,29 @@
     }
   }
 
-  // লাইভ স্টপ যুক্ত করা (সতর্কবার্তা, ক্যাপিটাল রূপান্তর ও স্বয়ংক্রিয় সময়সহ)
-  async function addCurrentStop() {
+  /* ২) অনুবাদযোগ্য ডায়ালগ কন্ট্রোল লজিক */
+  function openConfirmDialog() {
     if (!userPos || !trackingBus) return alert("জিপিএস ও বাস নির্বাচন আবশ্যক!");
+    document.getElementById("confirmModal").classList.remove("hidden");
+  }
 
-    // সতর্কবার্তা মেসেজ
-    let confirmAdd = confirm("⚠️ সতর্কবার্তা:\nবাস চলার সময় স্টপেজ এলে এই এন্ট্রি করুন।\n\nআপনি কি বর্তমান অবস্থানকে এই বাসের স্টপেজ হিসেবে যুক্ত করতে চান?");
-    if (!confirmAdd) return;
+  function closeModals() {
+    document.getElementById("confirmModal").classList.add("hidden");
+    document.getElementById("nameModal").classList.add("hidden");
+    document.getElementById("manualStopName").value = "";
+  }
 
-    let stopName = prompt("বাস স্টপের নাম লিখুন (ইংরেজিতে):");
-    if (!stopName || !stopName.trim()) return;
+  function proceedToNamePrompt() {
+    document.getElementById("confirmModal").classList.add("hidden");
+    document.getElementById("nameModal").classList.remove("hidden");
+  }
 
-    // ক্যাপিটাল লেটারে রূপান্তর
+  async function saveCurrentStopAction() {
+    let stopName = document.getElementById("manualStopName").value;
+    if (!stopName || !stopName.trim()) return alert("বাস স্টপের নাম লিখুন!");
+
     stopName = stopName.trim().toUpperCase();
 
-    // বর্তমান ডিভাইসের সময় (hh:mm AM/PM)
     let now = new Date();
     let hours = now.getHours();
     let minutes = String(now.getMinutes()).padStart(2, '0');
@@ -457,6 +494,7 @@
         body: JSON.stringify(payload)
       });
       alert(`✅ ${stopName} [${timeStr}] সফলভাবে যুক্ত হয়েছে!`);
+      closeModals();
       loadDatalistSuggestions();
     } catch (e) {
       alert("স্টপ যুক্ত করা সম্ভব হয়নি!");
