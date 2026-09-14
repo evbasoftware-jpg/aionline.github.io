@@ -7,20 +7,33 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
-    
-    /* ১) গুগলের উপরের বিরক্তিজনক ব্যানার লুকানো */
-    .goog-te-banner-frame.skiptranslate, .goog-te-banner-frame, iframe.goog-te-banner-frame {
-      display: none !important;
-      visibility: hidden !important;
-      height: 0 !important;
-    }
+
     body {
       margin: 0;
       background: #eef2f5;
       padding: 0 10px 10px 10px;
-      top: 0px !important;
+      top: 0 !important;
       position: static !important;
     }
+
+    /* --- 1.html এর মতো Translate Top Bar ও স্টাইল --- */
+    .translate-top-bar{ display:flex; align-items:center; justify-content:flex-end; background:#f8fafc; padding:6px 12px; border-bottom:1px solid #e2e8f0; gap:8px;}
+    .translate-top-bar span{ font-size:13px; font-weight:700; color:#334155;}
+
+    #google_translate_element{ display:inline-flex; align-items:center;}
+    .goog-te-gadget{ font-size:0 !important; line-height:0 !important;}
+    .goog-te-gadget span, .goog-te-gadget a, .goog-logo-link{ display:none !important;}
+
+    /* স্লিম ও ওয়াইড সিলেক্ট বক্স */
+    .goog-te-gadget .goog-te-combo{
+      height:32px !important; width:220px !important; max-width:100% !important; margin:0 !important; padding:2px 8px !important; font-size:13px !important; font-weight:600 !important;
+      color:#1e293b !important; background:#fff !important; border:1px solid #cbd5e1 !important; border-radius:6px !important; outline:none !important; cursor:pointer !important;}
+
+    .goog-te-menu-frame{
+      max-height:75vh !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important;}
+    .goog-te-menu2{
+      max-height:75vh !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important;}
+    .skiptranslate>iframe{display:none !important}
 
     input, select, textarea {
       width: 100%;
@@ -30,23 +43,6 @@
       border-radius: 6px;
       font-size: 15px;
     }
-
-    #google_translate_wrapper {
-      position: sticky;
-      top: 0;
-      z-index: 9999;
-      background: #fff;
-      padding: 8px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .goog-te-gadget { font-family: inherit !important; font-size: 0 !important; display: inline-flex !important; align-items: center !important; }
-    .goog-te-gadget .goog-te-combo { font-family: inherit !important; font-size: 15px !important; padding: 6px 12px !important; border: 1px solid #aaa !important; border-radius: 8px !important; background: #fff !important; margin: 0 !important; }
-    .goog-logo-link, .goog-te-gadget span { display: none !important; }
 
     .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
@@ -78,7 +74,6 @@
     .card b { color: #1565c0; }
     #map { height: 420px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc; }
     
-    /* ২) ট্রান্সলেটেবল কাস্টম ডায়ালগ পপ-আপ */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6); z-index: 10000;
@@ -93,13 +88,18 @@
     .modal-actions { display: flex; gap: 10px; }
     .modal-actions button { flex: 1; margin: 0; }
 
-    @media(max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    @media(max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      .translate-top-bar{justify-content:center}
+      .goog-te-gadget .goog-te-combo{width:180px !important}
+    }
   </style>
 </head>
 <body>
 
-<div id="google_translate_wrapper">
-  <b>🌐 ভাষা / LANGUAGE:</b>
+<!-- 1.html এর মতো Translate Bar HTML -->
+<div class="translate-top-bar">
+  <span>🌐 ভাষা:</span>
   <div id="google_translate_element"></div>
 </div>
 
@@ -192,7 +192,6 @@
   <div id="map"></div>
 </div>
 
-<!-- ২) কাস্টম ডায়ালগ (যা গুগল অনুবাদ স্বয়ংক্রিয়ভাবে অনুবাদ করবে) -->
 <div id="confirmModal" class="modal-overlay hidden">
   <div class="modal-card">
     <h4>⚠️ সতর্কবার্তা</h4>
@@ -216,16 +215,30 @@
   </div>
 </div>
 
-<!-- গুগল অনুবাদ স্ক্রিপ্ট (বাংলাসহ যেকোনো ভাষায় ফেরার উপযোগী কনফিগারেশন) -->
-<script>
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'auto',
-      autoDisplay: false
-    }, 'google_translate_element');
+<!-- 1.html এর মতো Translate Script এবং MutationObserver লজিক -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'bn',
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+
+const observer = new MutationObserver(() => {
+  const iframe = document.querySelector('.goog-te-menu-frame');
+  if (iframe && iframe.contentDocument) {
+    const doc = iframe.contentDocument;
+    if (doc.body) {
+      doc.body.style.overflowY = 'auto';
+      doc.body.style.maxHeight = '75vh';
+      doc.body.style.webkitOverflowScrolling = 'touch';
+    }
   }
+});
+observer.observe(document.body, { childList: true, subtree: true });
 </script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -446,7 +459,6 @@
     }
   }
 
-  /* ২) অনুবাদযোগ্য ডায়ালগ কন্ট্রোল লজিক */
   function openConfirmDialog() {
     if (!userPos || !trackingBus) return alert("জিপিএস ও বাস নির্বাচন আবশ্যক!");
     document.getElementById("confirmModal").classList.remove("hidden");
