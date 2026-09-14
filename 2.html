@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
+    
     body {
       margin: 0;
       background: #eef2f5;
@@ -17,6 +18,7 @@
       user-select: none;
       top: 0 !important;
     }
+
     input, select, textarea {
       -webkit-user-select: text !important;
       -moz-user-select: text !important;
@@ -29,6 +31,7 @@
       border-radius: 6px;
       font-size: 15px;
     }
+
     #google_translate_wrapper {
       position: sticky;
       top: 0;
@@ -48,8 +51,8 @@
 
     .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
-    .btn { background: #1565c0; color: #fff; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; }
-    .btn-stop { background: #00796b; }
+    .btn { background: #1565c0; color: #fff; padding: 12px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; font-size: 14px; }
+    .btn-stop { background: #00796b; border: 2px solid #004d40; }
     .btn-cancel { background: #c62828; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hidden { display: none; }
@@ -138,6 +141,7 @@
     <button class="btn btn-cancel" onclick="toggleBusForm(false)">বন্ধ করুন</button>
   </div>
 
+  <!-- লাইভ স্টপেজ যুক্ত করার বাটন -->
   <button id="addStopBtn" class="btn btn-stop hidden" onclick="addCurrentStop()">📍 এই জায়গা ও এই সময় বাসের স্টপেজ হিসাবে যুক্ত করুন</button>
 
   <hr>
@@ -145,12 +149,12 @@
   <div class="grid">
     <div>
       <label>কোথা থেকে বাসে উঠবেন?</label>
-      <input type="text" id="searchFrom" list="fromList" placeholder="শুরু করার স্থান লিখুন..." autocomplete="off">
+      <input type="text" id="searchFrom" list="fromList" placeholder="শুরু বা মাঝের যেকোনো স্থান..." autocomplete="off">
       <datalist id="fromList"></datalist>
     </div>
     <div>
       <label>কোথায় যাবেন?</label>
-      <input type="text" id="searchTo" list="toList" placeholder="গন্তব্য স্থান লিখুন..." autocomplete="off">
+      <input type="text" id="searchTo" list="toList" placeholder="গন্তব্য বা মাঝের যেকোনো স্থান..." autocomplete="off">
       <datalist id="toList"></datalist>
     </div>
   </div>
@@ -175,7 +179,6 @@
 </div>
 
 <script>
-  // রাইট ক্লিক ও ইন্সপেক্ট বন্ধ
   document.addEventListener('contextmenu', e => e.preventDefault(), false);
   document.addEventListener('keydown', e => {
     if (e.key === "F12" || e.keyCode === 123) return e.preventDefault();
@@ -207,17 +210,10 @@
   const busIcon = L.divIcon({ html: '<div style="font-size:28px;">🚌</div>', className: '', iconSize: [30, 30] });
   const userIcon = L.divIcon({ html: '<div style="font-size:28px;">👤</div>', className: '', iconSize: [30, 30] });
 
-  // সঠিক সময় দেখানোর ফাংশন (শিটের টেক্সটকে অবিকল রাখা)
   function formatCleanTime(timeStr) {
     if (!timeStr) return "";
     let str = String(timeStr).trim();
-    
-    // যদি শিট থেকে AM/PM সরাসরি টেক্সট হিসেবে আসে (যেমন 4:10 PM)
-    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(str)) {
-      return str.toUpperCase();
-    }
-    
-    // যদি শুধু 14:30 এমন 24-hr থাকে
+    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(str)) return str.toUpperCase();
     let simpleMatch = str.match(/^(\d{1,2}):(\d{2})$/);
     if (simpleMatch) {
       let h = parseInt(simpleMatch[1], 10);
@@ -226,10 +222,10 @@
       h = h % 12 || 12;
       return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
     }
-
     return str;
   }
 
+  // ব্যবহারকারীর লাইভ জিপিএস
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -254,21 +250,21 @@
     }, err => console.log(err), { enableHighAccuracy: true });
   }
 
+  // ড্রপডাউনে শুরু, শেষ এবং মাঝের সমস্ত স্টপ লোড করা
   window.addEventListener("DOMContentLoaded", async () => {
+    loadDatalistSuggestions();
+  });
+
+  async function loadDatalistSuggestions() {
     try {
-      let res = await fetch(`${API_URL}?action=getBuses`);
+      let res = await fetch(`${API_URL}?action=getStopsList`);
       let data = await res.json();
-      if (data.buses) {
-        let fromSet = new Set(), toSet = new Set();
-        data.buses.forEach(b => {
-          if (b.source) fromSet.add(b.source.trim());
-          if (b.dest) toSet.add(b.dest.trim());
-        });
-        fillDatalist("fromList", fromSet);
-        fillDatalist("toList", toSet);
+      if (data.stops) {
+        fillDatalist("fromList", data.stops);
+        fillDatalist("toList", data.stops);
       }
     } catch (e) {}
-  });
+  }
 
   function fillDatalist(elementId, items) {
     let dl = document.getElementById(elementId);
@@ -373,10 +369,10 @@
     }
 
     if (data.stops && data.stops.length > 0) {
-      document.getElementById("infoCurStop").innerText = data.stops[0].name;
-      if (data.stops[1]) {
-        document.getElementById("infoNextStop").innerText = data.stops[1].name;
-        document.getElementById("infoEta").innerText = formatCleanTime(data.stops[1].time) || "শীঘ্রই";
+      document.getElementById("infoCurStop").innerText = data.stops[data.stops.length - 1].name;
+      if (data.stops.length > 1) {
+        document.getElementById("infoNextStop").innerText = data.stops[data.stops.length - 2].name;
+        document.getElementById("infoEta").innerText = formatCleanTime(data.stops[data.stops.length - 2].time) || "শীঘ্রই";
       }
     }
   }
@@ -415,17 +411,27 @@
       });
       alert("বাস তথ্য সফলভাবে সংরক্ষণ হয়েছে!");
       toggleBusForm(false);
-      location.reload();
+      loadDatalistSuggestions();
     } catch (e) {
       alert("সংরক্ষণ ব্যর্থ হয়েছে!");
     }
   }
 
+  // লাইভ স্টপ যুক্ত করা (সতর্কবার্তা, ক্যাপিটাল রূপান্তর ও স্বয়ংক্রিয় সময়সহ)
   async function addCurrentStop() {
     if (!userPos || !trackingBus) return alert("জিপিএস ও বাস নির্বাচন আবশ্যক!");
-    let stopName = prompt("বাস স্টপের নাম লিখুন:");
-    if (!stopName) return;
 
+    // সতর্কবার্তা মেসেজ
+    let confirmAdd = confirm("⚠️ সতর্কবার্তা:\nবাস চলার সময় স্টপেজ এলে এই এন্ট্রি করুন।\n\nআপনি কি বর্তমান অবস্থানকে এই বাসের স্টপেজ হিসেবে যুক্ত করতে চান?");
+    if (!confirmAdd) return;
+
+    let stopName = prompt("বাস স্টপের নাম লিখুন (ইংরেজিতে):");
+    if (!stopName || !stopName.trim()) return;
+
+    // ক্যাপিটাল লেটারে রূপান্তর
+    stopName = stopName.trim().toUpperCase();
+
+    // বর্তমান ডিভাইসের সময় (hh:mm AM/PM)
     let now = new Date();
     let hours = now.getHours();
     let minutes = String(now.getMinutes()).padStart(2, '0');
@@ -450,7 +456,8 @@
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
-      alert("স্টপ সফলভাবে যুক্ত হয়েছে!");
+      alert(`✅ ${stopName} [${timeStr}] সফলভাবে যুক্ত হয়েছে!`);
+      loadDatalistSuggestions();
     } catch (e) {
       alert("স্টপ যুক্ত করা সম্ভব হয়নি!");
     }
