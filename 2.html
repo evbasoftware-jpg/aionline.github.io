@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🚌 ভারতীয় লাইভ বাস ট্র্যাকার</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
 
@@ -16,7 +15,6 @@
       position: static !important;
     }
 
-    /* --- 1.html এর মতো Translate Top Bar ও স্টাইল --- */
     .translate-top-bar{ display:flex; align-items:center; justify-content:flex-end; background:#f8fafc; padding:6px 12px; border-bottom:1px solid #e2e8f0; gap:8px;}
     .translate-top-bar span{ font-size:13px; font-weight:700; color:#334155;}
 
@@ -24,14 +22,11 @@
     .goog-te-gadget{ font-size:0 !important; line-height:0 !important;}
     .goog-te-gadget span, .goog-te-gadget a, .goog-logo-link{ display:none !important;}
 
-    /* স্লিম ও ওয়াইড সিলেক্ট বক্স */
     .goog-te-gadget .goog-te-combo{
       height:32px !important; width:220px !important; max-width:100% !important; margin:0 !important; padding:2px 8px !important; font-size:13px !important; font-weight:600 !important;
       color:#1e293b !important; background:#fff !important; border:1px solid #cbd5e1 !important; border-radius:6px !important; outline:none !important; cursor:pointer !important;}
 
-    .goog-te-menu-frame{
-      max-height:75vh !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important;}
-    .goog-te-menu2{
+    .goog-te-menu-frame, .goog-te-menu2 {
       max-height:75vh !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important;}
     .skiptranslate>iframe{display:none !important}
 
@@ -45,6 +40,7 @@
     }
   
     .head{background:#fdffc4;color:#3a34ed;padding:18px;text-align:center}
+    .head a { text-transform: lowercase !important; }
     .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
     .btn { background: #1565c0; color: #fff; padding: 12px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; font-size: 14px; }
@@ -73,7 +69,7 @@
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; }
     .card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; }
     .card b { color: #1565c0; }
-    #map { height: 420px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc; }
+    #map { height: 450px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc; width: 100%; }
     
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -95,28 +91,23 @@
       .goog-te-gadget .goog-te-combo{width:180px !important}
     }
   
-   /* Logo + Text */
-.logo-box{position: static;}
-
-/* Logo */
-.logo{height:67px; width:auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
-
+    .logo-box{position: static;}
+    .logo{height:67px; width:auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
   </style>
 </head>
 <body>
 
-<!-- 1.html এর মতো Translate Bar HTML -->
 <div class="translate-top-bar">
   <span>🌐 ভাষা:</span>
   <div id="google_translate_element"></div>
 </div>
     
-  <div class="head">
-    <div class="logo-box">
-     <img src="logo.png" alt="AI Online Logo" class="logo">
-    </div>
-    <a href='https://aionline.in.net' style='text-decoration: none; font-size: 21px;'>https://aionline.in.net</a>
+<div class="head">
+  <div class="logo-box">
+    <img src="logo.png" alt="AI Online Logo" class="logo">
   </div>
+  <a href='https://aionline.in.net' style='text-decoration: none; font-size: 21px; text-transform: lowercase;'>https://aionline.in.net</a>
+</div>
 
 <div class="container">
   <h2>🚌 লাইভ বাস ট্র্যাকার (ভারত)</h2>
@@ -230,7 +221,6 @@
   </div>
 </div>
 
-<!-- 1.html এর মতো Translate Script এবং MutationObserver লজিক -->
 <script type="text/javascript">
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
@@ -254,20 +244,88 @@ observer.observe(document.body, { childList: true, subtree: true });
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbyQefdRODbWqWTub3rkvqbeG1alnhBfeN2IFbHvj7lnJshcrs8Qwb38a-QZimeV4-_v8A/exec";
 
-  let map = L.map('map').setView([22.5726, 88.3639], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-  let busMarker = null, userMarker = null;
-  let userPos = null, trackingBus = null, trackingInterval = null;
+  let map, busMarker = null, userMarker = null, routeLine = null;
+  let userPos = null, busPos = null, trackingBus = null, trackingInterval = null;
   let debounceTimer = null;
+  let busInfoWindow = null, userInfoWindow = null;
 
-  const busIcon = L.divIcon({ html: '<div style="font-size:28px;">🚌</div>', className: '', iconSize: [30, 30] });
-  const userIcon = L.divIcon({ html: '<div style="font-size:28px;">👤</div>', className: '', iconSize: [30, 30] });
+  function initMap() {
+    const defaultLoc = { lat: 22.5726, lng: 88.3639 };
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 12,
+      center: defaultLoc,
+      mapTypeControl: false,
+      streetViewControl: false
+    });
+
+    busInfoWindow = new google.maps.InfoWindow();
+    userInfoWindow = new google.maps.InfoWindow();
+
+    routeLine = new google.maps.Polyline({
+      strokeColor: '#1565c0',
+      strokeOpacity: 0.8,
+      strokeWeight: 4,
+      map: map
+    });
+
+    startGeolocation();
+  }
+
+  function startGeolocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(pos => {
+      userPos = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        acc: pos.coords.accuracy,
+        speed: pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(1) : 0
+      };
+
+      document.getElementById("infoUserGPS").innerText = `${userPos.lat.toFixed(4)}, ${userPos.lng.toFixed(4)} (±${Math.round(userPos.acc)}m)`;
+      document.getElementById("infoConfidence").innerText = userPos.acc < 20 ? "HIGH (99%)" : userPos.acc < 50 ? "MEDIUM (85%)" : "LOW (50%)";
+
+      if (!userMarker) {
+        userMarker = new google.maps.Marker({
+          position: userPos,
+          map: map,
+          title: "আপনার অবস্থান",
+          icon: {
+            url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          }
+        });
+        userMarker.addListener("click", () => {
+          userInfoWindow.setContent("<b>আপনার অবস্থান</b>");
+          userInfoWindow.open(map, userMarker);
+        });
+      } else {
+        userMarker.setPosition(userPos);
+      }
+
+      updateDistanceAndTracking();
+    }, err => console.log(err), { enableHighAccuracy: true, maximumAge: 0 });
+  }
+
+  function updateDistanceAndTracking() {
+    if (!userPos || !busPos) return;
+
+    let distM = getDistanceMeters(userPos.lat, userPos.lng, busPos.lat, busPos.lng);
+    let distKm = (distM / 1000).toFixed(2);
+
+    routeLine.setPath([userPos, busPos]);
+
+    let content = `<b>বাস: ${trackingBus ? trackingBus.number : ''}</b><br>দূরত্ব: ${distKm} KM`;
+    busInfoWindow.setContent(content);
+    busInfoWindow.open(map, busMarker);
+
+    document.getElementById("infoDistSpeed").innerText = `${distKm} KM | গতি: ${busPos.speed || 0} KM/H`;
+
+    if (trackingBus && distM <= 50) {
+      syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lng, userPos.speed, userPos.acc);
+    }
+  }
 
   function formatCleanTime(timeStr) {
     if (!timeStr) return "";
@@ -284,31 +342,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     return str;
   }
 
-  if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(pos => {
-      userPos = {
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-        acc: pos.coords.accuracy,
-        speed: pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(1) : 0
-      };
-
-      document.getElementById("infoUserGPS").innerText = `${userPos.lat.toFixed(4)}, ${userPos.lon.toFixed(4)} (±${Math.round(userPos.acc)}m)`;
-      document.getElementById("infoConfidence").innerText = userPos.acc < 20 ? "HIGH (99%)" : userPos.acc < 50 ? "MEDIUM (85%)" : "LOW (50%)";
-
-      if (!userMarker) userMarker = L.marker([userPos.lat, userPos.lon], { icon: userIcon }).addTo(map).bindPopup("আপনার অবস্থান");
-      else userMarker.setLatLng([userPos.lat, userPos.lon]);
-
-      if (trackingBus && busMarker) {
-        let d = getDistanceMeters(userPos.lat, userPos.lon, busMarker.getLatLng().lat, busMarker.getLatLng().lng);
-        if (d <= 50) {
-          syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lon, userPos.speed, userPos.acc);
-        }
-      }
-    }, err => console.log(err), { enableHighAccuracy: true });
-  }
-
-  window.addEventListener("DOMContentLoaded", async () => {
+  window.addEventListener("DOMContentLoaded", () => {
     loadDatalistSuggestions();
   });
 
@@ -409,20 +443,36 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
 
     let b = data.live;
-    let lat = Number(b.lat), lon = Number(b.lon);
+    busPos = { lat: Number(b.lat), lng: Number(b.lon), speed: b.speed || 0 };
 
-    locBox.innerText = `বাসের বর্তমান অবস্থান: LAT ${lat.toFixed(4)}, LON ${lon.toFixed(4)} (গতি: ${b.speed || 0} KM/H)`;
+    locBox.innerText = `বাসের বর্তমান অবস্থান: LAT ${busPos.lat.toFixed(4)}, LON ${busPos.lng.toFixed(4)} (গতি: ${busPos.speed} KM/H)`;
     locBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    if (!busMarker) busMarker = L.marker([lat, lon], { icon: busIcon }).addTo(map);
-    else busMarker.setLatLng([lat, lon]);
-
-    map.setView([lat, lon], 14);
+    if (!busMarker) {
+      busMarker = new google.maps.Marker({
+        position: busPos,
+        map: map,
+        title: `বাস: ${b.busNumber}`,
+        icon: {
+          url: "https://maps.google.com/mapfiles/kml/shapes/bus.png"
+        }
+      });
+      busMarker.addListener("click", () => {
+        busInfoWindow.open(map, busMarker);
+      });
+    } else {
+      busMarker.setPosition(busPos);
+    }
 
     if (userPos) {
-      let d = (getDistanceMeters(userPos.lat, userPos.lon, lat, lon) / 1000).toFixed(2);
-      busMarker.bindPopup(`বাস: ${b.busNumber}<br>দূরত্ব: ${d} KM`).openPopup();
-      document.getElementById("infoDistSpeed").innerText = `${d} KM | গতি: ${b.speed || 0} KM/H`;
+      let bounds = new google.maps.LatLngBounds();
+      bounds.extend(userPos);
+      bounds.extend(busPos);
+      map.fitBounds(bounds, 80);
+      updateDistanceAndTracking();
+    } else {
+      map.setCenter(busPos);
+      map.setZoom(15);
     }
 
     if (data.stops && data.stops.length > 0) {
@@ -510,7 +560,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       stopName: stopName,
       time: timeStr,
       lat: userPos.lat,
-      lon: userPos.lon,
+      lon: userPos.lng,
       accuracy: userPos.acc
     };
 
@@ -543,7 +593,12 @@ observer.observe(document.body, { childList: true, subtree: true });
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 </script>
-   <a href='http://www.freevisitorcounters.com'>http://freevisitorcounters.com</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=86f4225f2871b9af4b36108c7b9d88573ad5caa2'></script>
+
+<!-- Google Maps JavaScript API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"></script>
+
+<a href='http://www.freevisitorcounters.com'>http://freevisitorcounters.com</a>
+<script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=86f4225f2871b9af4b36108c7b9d88573ad5caa2'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1643797/t/1"></script>
 </body>
 </html>
