@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🚌 ভারতীয় লাইভ বাস ট্র্যাকার</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; text-transform: uppercase; }
 
@@ -244,88 +245,23 @@ observer.observe(document.body, { childList: true, subtree: true });
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
+<!-- Leaflet Library (Free, No API Key needed) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbyQefdRODbWqWTub3rkvqbeG1alnhBfeN2IFbHvj7lnJshcrs8Qwb38a-QZimeV4-_v8A/exec";
 
-  let map, busMarker = null, userMarker = null, routeLine = null;
+  let map = L.map('map').setView([22.5726, 88.3639], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  let busMarker = null, userMarker = null, routeLine = null;
   let userPos = null, busPos = null, trackingBus = null, trackingInterval = null;
   let debounceTimer = null;
-  let busInfoWindow = null, userInfoWindow = null;
 
-  function initMap() {
-    const defaultLoc = { lat: 22.5726, lng: 88.3639 };
-    map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 12,
-      center: defaultLoc,
-      mapTypeControl: false,
-      streetViewControl: false
-    });
-
-    busInfoWindow = new google.maps.InfoWindow();
-    userInfoWindow = new google.maps.InfoWindow();
-
-    routeLine = new google.maps.Polyline({
-      strokeColor: '#1565c0',
-      strokeOpacity: 0.8,
-      strokeWeight: 4,
-      map: map
-    });
-
-    startGeolocation();
-  }
-
-  function startGeolocation() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.watchPosition(pos => {
-      userPos = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        acc: pos.coords.accuracy,
-        speed: pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(1) : 0
-      };
-
-      document.getElementById("infoUserGPS").innerText = `${userPos.lat.toFixed(4)}, ${userPos.lng.toFixed(4)} (±${Math.round(userPos.acc)}m)`;
-      document.getElementById("infoConfidence").innerText = userPos.acc < 20 ? "HIGH (99%)" : userPos.acc < 50 ? "MEDIUM (85%)" : "LOW (50%)";
-
-      if (!userMarker) {
-        userMarker = new google.maps.Marker({
-          position: userPos,
-          map: map,
-          title: "আপনার অবস্থান",
-          icon: {
-            url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-          }
-        });
-        userMarker.addListener("click", () => {
-          userInfoWindow.setContent("<b>আপনার অবস্থান</b>");
-          userInfoWindow.open(map, userMarker);
-        });
-      } else {
-        userMarker.setPosition(userPos);
-      }
-
-      updateDistanceAndTracking();
-    }, err => console.log(err), { enableHighAccuracy: true, maximumAge: 0 });
-  }
-
-  function updateDistanceAndTracking() {
-    if (!userPos || !busPos) return;
-
-    let distM = getDistanceMeters(userPos.lat, userPos.lng, busPos.lat, busPos.lng);
-    let distKm = (distM / 1000).toFixed(2);
-
-    routeLine.setPath([userPos, busPos]);
-
-    let content = `<b>বাস: ${trackingBus ? trackingBus.number : ''}</b><br>দূরত্ব: ${distKm} KM`;
-    busInfoWindow.setContent(content);
-    busInfoWindow.open(map, busMarker);
-
-    document.getElementById("infoDistSpeed").innerText = `${distKm} KM | গতি: ${busPos.speed || 0} KM/H`;
-
-    if (trackingBus && distM <= 50) {
-      syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lng, userPos.speed, userPos.acc);
-    }
-  }
+  const busIcon = L.divIcon({ html: '<div style="font-size:30px; line-height:1;">🚌</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
+  const userIcon = L.divIcon({ html: '<div style="font-size:30px; line-height:1;">📍</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 30] });
 
   function formatCleanTime(timeStr) {
     if (!timeStr) return "";
@@ -342,7 +278,56 @@ observer.observe(document.body, { childList: true, subtree: true });
     return str;
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(pos => {
+      userPos = {
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        acc: pos.coords.accuracy,
+        speed: pos.coords.speed ? (pos.coords.speed * 3.6).toFixed(1) : 0
+      };
+
+      document.getElementById("infoUserGPS").innerText = `${userPos.lat.toFixed(4)}, ${userPos.lon.toFixed(4)} (±${Math.round(userPos.acc)}m)`;
+      document.getElementById("infoConfidence").innerText = userPos.acc < 20 ? "HIGH (99%)" : userPos.acc < 50 ? "MEDIUM (85%)" : "LOW (50%)";
+
+      if (!userMarker) {
+        userMarker = L.marker([userPos.lat, userPos.lon], { icon: userIcon }).addTo(map).bindPopup("<b>আপনার অবস্থান</b>");
+      } else {
+        userMarker.setLatLng([userPos.lat, userPos.lon]);
+      }
+
+      updateDistanceAndTracking();
+    }, err => console.log(err), { enableHighAccuracy: true, maximumAge: 0 });
+  }
+
+  function updateDistanceAndTracking() {
+    if (!userPos || !busPos) return;
+
+    let distM = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
+    let distKm = (distM / 1000).toFixed(2);
+
+    if (!routeLine) {
+      routeLine = L.polyline([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]], {
+        color: '#1565c0',
+        weight: 4,
+        opacity: 0.7,
+        dashArray: '5, 10'
+      }).addTo(map);
+    } else {
+      routeLine.setLatLngs([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+    }
+
+    let popupContent = `<b>বাস: ${trackingBus ? trackingBus.number : ''}</b><br>আপনার থেকে দূরত্ব: <b>${distKm} KM</b>`;
+    busMarker.bindPopup(popupContent).openPopup();
+
+    document.getElementById("infoDistSpeed").innerText = `${distKm} KM | গতি: ${busPos.speed || 0} KM/H`;
+
+    if (trackingBus && distM <= 50) {
+      syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lon, userPos.speed, userPos.acc);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", async () => {
     loadDatalistSuggestions();
   });
 
@@ -443,36 +428,23 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
 
     let b = data.live;
-    busPos = { lat: Number(b.lat), lng: Number(b.lon), speed: b.speed || 0 };
+    busPos = { lat: Number(b.lat), lon: Number(b.lon), speed: b.speed || 0 };
 
-    locBox.innerText = `বাসের বর্তমান অবস্থান: LAT ${busPos.lat.toFixed(4)}, LON ${busPos.lng.toFixed(4)} (গতি: ${busPos.speed} KM/H)`;
+    locBox.innerText = `বাসের বর্তমান অবস্থান: LAT ${busPos.lat.toFixed(4)}, LON ${busPos.lon.toFixed(4)} (গতি: ${busPos.speed} KM/H)`;
     locBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     if (!busMarker) {
-      busMarker = new google.maps.Marker({
-        position: busPos,
-        map: map,
-        title: `বাস: ${b.busNumber}`,
-        icon: {
-          url: "https://maps.google.com/mapfiles/kml/shapes/bus.png"
-        }
-      });
-      busMarker.addListener("click", () => {
-        busInfoWindow.open(map, busMarker);
-      });
+      busMarker = L.marker([busPos.lat, busPos.lon], { icon: busIcon }).addTo(map);
     } else {
-      busMarker.setPosition(busPos);
+      busMarker.setLatLng([busPos.lat, busPos.lon]);
     }
 
     if (userPos) {
-      let bounds = new google.maps.LatLngBounds();
-      bounds.extend(userPos);
-      bounds.extend(busPos);
-      map.fitBounds(bounds, 80);
+      let group = new L.featureGroup([userMarker, busMarker]);
+      map.fitBounds(group.getBounds().pad(0.2));
       updateDistanceAndTracking();
     } else {
-      map.setCenter(busPos);
-      map.setZoom(15);
+      map.setView([busPos.lat, busPos.lon], 14);
     }
 
     if (data.stops && data.stops.length > 0) {
@@ -560,7 +532,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       stopName: stopName,
       time: timeStr,
       lat: userPos.lat,
-      lon: userPos.lng,
+      lon: userPos.lon,
       accuracy: userPos.acc
     };
 
@@ -593,9 +565,6 @@ observer.observe(document.body, { childList: true, subtree: true });
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 </script>
-
-<!-- Google Maps JavaScript API -->
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"></script>
 
 <a href='http://www.freevisitorcounters.com'>http://freevisitorcounters.com</a>
 <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=86f4225f2871b9af4b36108c7b9d88573ad5caa2'></script>
