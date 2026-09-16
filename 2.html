@@ -16,6 +16,16 @@
       position: static !important;
     }
 
+    /* গুগল ট্রান্সলেটের বিরক্তি পপআপ/টুলটিপ এবং ব্যানার বন্ধ */
+    #goog-gt-tt, .goog-te-balloon-frame, .goog-tooltip, .goog-tooltip:hover {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    .goog-text-highlight {
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
+
     .translate-top-bar{ display:flex; align-items:center; justify-content:flex-end; background:#f8fafc; padding:6px 12px; border-bottom:1px solid #e2e8f0; gap:8px;}
     .translate-top-bar span{ font-size:13px; font-weight:700; color:#334155;}
 
@@ -41,7 +51,8 @@
     }
   
     .head{background:#fdffc4;color:#3a34ed;padding:18px;text-align:center}
-    .head a { text-transform: lowercase !important; }
+    /* সবসময় small letter রাখার নির্দেশ */
+    .head a, .force-lower { text-transform: lowercase !important; }
     .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
     .btn { background: #1565c0; color: #fff; padding: 12px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; font-size: 14px; }
@@ -66,6 +77,8 @@
 
     .bus-item { border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin: 6px 0; background: #fafafa; cursor: pointer; transition: 0.2s; }
     .bus-item:hover { background: #e3f2fd; border-color: #1565c0; }
+    .stop-badge { display: inline-block; margin-top: 5px; background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid #bbdefb; font-size: 12px; }
+    
     #currentLocationBox { text-align: center; font-size: 17px; font-weight: bold; color: #2e7d32; background: #e8f5e9; padding: 12px; border-radius: 8px; margin: 12px 0; }
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; }
     .card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; }
@@ -107,7 +120,7 @@
   <div class="logo-box">
     <img src="logo.png" alt="AI Online Logo" class="logo">
   </div>
-  <a href='https://aionline.in.net' style='text-decoration: none; font-size: 21px; text-transform: lowercase;'>https://aionline.in.net</a>
+  <a href='https://aionline.in.net' class="notranslate force-lower" style='text-decoration: none; font-size: 21px;'>https://aionline.in.net</a>
 </div>
 
 <div class="container">
@@ -199,6 +212,7 @@
   <div id="map"></div>
 </div>
 
+<!-- সতর্কবার্তা মডাল -->
 <div id="confirmModal" class="modal-overlay hidden">
   <div class="modal-card">
     <h4>⚠️ সতর্কবার্তা</h4>
@@ -210,6 +224,7 @@
   </div>
 </div>
 
+<!-- স্টপেজ নাম এন্ট্রি মডাল -->
 <div id="nameModal" class="modal-overlay hidden">
   <div class="modal-card">
     <h4>📍 স্টপেজের নাম</h4>
@@ -218,6 +233,17 @@
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModals()">Cancel</button>
       <button class="btn" onclick="saveCurrentStopAction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- কাস্টম ডাইনামিক অ্যালার্ট মডাল (যাতে সব ভাষায় অনুবাদ হয়) -->
+<div id="customAlertModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h4 id="customAlertTitle">বিজ্ঞপ্তি</h4>
+    <p id="customAlertMsg"></p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAlertModal()">OK</button>
     </div>
   </div>
 </div>
@@ -240,18 +266,22 @@ const observer = new MutationObserver(() => {
       doc.body.style.webkitOverflowScrolling = 'touch';
     }
   }
+  // পপআপ ব্যানার ঠেকানো
+  const tooltip = document.querySelector('.goog-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
 });
 observer.observe(document.body, { childList: true, subtree: true });
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<!-- Leaflet Library (Free, No API Key needed) -->
+<!-- Leaflet Library -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbyQefdRODbWqWTub3rkvqbeG1alnhBfeN2IFbHvj7lnJshcrs8Qwb38a-QZimeV4-_v8A/exec";
 
-  let map = L.map('map').setView([22.5726, 88.3639], 12);
+  // ম্যাপ ইনিশিয়ালাইজেশন
+  let map = L.map('map');
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
   }).addTo(map);
@@ -259,9 +289,21 @@ observer.observe(document.body, { childList: true, subtree: true });
   let busMarker = null, userMarker = null, routeLine = null;
   let userPos = null, busPos = null, trackingBus = null, trackingInterval = null;
   let debounceTimer = null;
+  let hasCenteredUser = false;
 
   const busIcon = L.divIcon({ html: '<div style="font-size:30px; line-height:1;">🚌</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
   const userIcon = L.divIcon({ html: '<div style="font-size:30px; line-height:1;">📍</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 30] });
+
+  // ডাইনামিক অ্যালার্ট
+  function showAppAlert(msg, title = "বিজ্ঞপ্তি") {
+    document.getElementById("customAlertTitle").innerText = title;
+    document.getElementById("customAlertMsg").innerText = msg;
+    document.getElementById("customAlertModal").classList.remove("hidden");
+  }
+
+  function closeAlertModal() {
+    document.getElementById("customAlertModal").classList.add("hidden");
+  }
 
   function formatCleanTime(timeStr) {
     if (!timeStr) return "";
@@ -278,6 +320,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     return str;
   }
 
+  // ব্যবহারকারীর লাইভ লোকেশন নিয়ে সরাসরি ম্যাপ সেখানে ফোকাস করানো
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -296,8 +339,21 @@ observer.observe(document.body, { childList: true, subtree: true });
         userMarker.setLatLng([userPos.lat, userPos.lon]);
       }
 
+      if (!hasCenteredUser) {
+        map.setView([userPos.lat, userPos.lon], 15);
+        hasCenteredUser = true;
+      }
+
       updateDistanceAndTracking();
-    }, err => console.log(err), { enableHighAccuracy: true, maximumAge: 0 });
+    }, err => {
+      console.log(err);
+      if (!hasCenteredUser) {
+        map.setView([20.5937, 78.9629], 5);
+        hasCenteredUser = true;
+      }
+    }, { enableHighAccuracy: true, maximumAge: 0 });
+  } else {
+    map.setView([20.5937, 78.9629], 5);
   }
 
   function updateDistanceAndTracking() {
@@ -360,6 +416,7 @@ observer.observe(document.body, { childList: true, subtree: true });
   document.getElementById("searchFrom").addEventListener("input", handleAutoSearch);
   document.getElementById("searchTo").addEventListener("input", handleAutoSearch);
 
+  // বাসের তালিকা সার্চ ও মধ্যবর্তী স্টপের সময় ডিসপ্লে করার লজিক
   async function autoSearchBuses() {
     let from = document.getElementById("searchFrom").value.trim();
     let to = document.getElementById("searchTo").value.trim();
@@ -379,13 +436,35 @@ observer.observe(document.body, { childList: true, subtree: true });
       return;
     }
 
+    let searchTarget = (to || from).toUpperCase().trim();
+
     data.buses.forEach(b => {
       let depTimeFormatted = formatCleanTime(b.depTime);
       let arrTimeFormatted = formatCleanTime(b.arrTime);
 
+      // মধ্যবর্তী স্টপেজের সময় খোঁজা
+      let intermediateTimeHtml = "";
+      if (b.stops && Array.isArray(b.stops)) {
+        let matchedStop = b.stops.find(s => {
+          let sName = (s.name || s.stopName || "").toUpperCase().trim();
+          return sName === searchTarget;
+        });
+
+        if (matchedStop && matchedStop.time) {
+          intermediateTimeHtml = `<br><span class="stop-badge">⏱️ ${matchedStop.name || matchedStop.stopName} পৌঁছানোর সময়: ${formatCleanTime(matchedStop.time)}</span>`;
+        }
+      }
+
+      // যদি API-তে স্টপের সময় না-ও পাঠানো থাকে, সরাসরি মিলিয়ে নেওয়া
+      if (!intermediateTimeHtml && b.intermediateStop && b.intermediateTime) {
+        if (b.intermediateStop.toUpperCase().trim() === searchTarget) {
+          intermediateTimeHtml = `<br><span class="stop-badge">⏱️ ${b.intermediateStop} পৌঁছানোর সময়: ${formatCleanTime(b.intermediateTime)}</span>`;
+        }
+      }
+
       let div = document.createElement("div");
       div.className = "bus-item";
-      div.innerHTML = `<b>🚌 ${b.number} - ${b.name}</b> (${b.category})<br><small>রুট: ${b.source} [${depTimeFormatted}] ➔ ${b.dest} [${arrTimeFormatted}]</small>`;
+      div.innerHTML = `<b>🚌 ${b.number} - ${b.name}</b> (${b.category})<br><small>রুট: ${b.source} [${depTimeFormatted}] ➔ ${b.dest} [${arrTimeFormatted}]</small>${intermediateTimeHtml}`;
       div.onclick = () => selectBus(b);
       listDiv.appendChild(div);
     });
@@ -480,7 +559,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       arrTime: destTime
     };
 
-    if (!payload.busNumber || !payload.source) return alert("প্রয়োজনীয় তথ্য পূরণ করুন!");
+    if (!payload.busNumber || !payload.source) return showAppAlert("প্রয়োজনীয় তথ্য পূরণ করুন!");
 
     try {
       await fetch(API_URL, {
@@ -488,16 +567,16 @@ observer.observe(document.body, { childList: true, subtree: true });
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
-      alert("বাস তথ্য সফলভাবে সংরক্ষণ হয়েছে!");
+      showAppAlert("বাস তথ্য সফলভাবে সংরক্ষণ হয়েছে!");
       toggleBusForm(false);
       loadDatalistSuggestions();
     } catch (e) {
-      alert("সংরক্ষণ ব্যর্থ হয়েছে!");
+      showAppAlert("সংরক্ষণ ব্যর্থ হয়েছে!");
     }
   }
 
   function openConfirmDialog() {
-    if (!userPos || !trackingBus) return alert("জিপিএস ও বাস নির্বাচন আবশ্যক!");
+    if (!userPos || !trackingBus) return showAppAlert("জিপিএস ও বাস নির্বাচন আবশ্যক!");
     document.getElementById("confirmModal").classList.remove("hidden");
   }
 
@@ -514,7 +593,7 @@ observer.observe(document.body, { childList: true, subtree: true });
 
   async function saveCurrentStopAction() {
     let stopName = document.getElementById("manualStopName").value;
-    if (!stopName || !stopName.trim()) return alert("বাস স্টপের নাম লিখুন!");
+    if (!stopName || !stopName.trim()) return showAppAlert("বাস স্টপের নাম লিখুন!");
 
     stopName = stopName.trim().toUpperCase();
 
@@ -542,11 +621,11 @@ observer.observe(document.body, { childList: true, subtree: true });
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
-      alert(`✅ ${stopName} [${timeStr}] সফলভাবে যুক্ত হয়েছে!`);
+      showAppAlert(`✅ ${stopName} [${timeStr}] সফলভাবে যুক্ত হয়েছে!`);
       closeModals();
       loadDatalistSuggestions();
     } catch (e) {
-      alert("স্টপ যুক্ত করা সম্ভব হয়নি!");
+      showAppAlert("স্টপ যুক্ত করা সম্ভব হয়নি!");
     }
   }
 
@@ -566,8 +645,5 @@ observer.observe(document.body, { childList: true, subtree: true });
   }
 </script>
 
-<a href='http://www.freevisitorcounters.com'>http://freevisitorcounters.com</a>
-<script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=86f4225f2871b9af4b36108c7b9d88573ad5caa2'></script>
-<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1643797/t/1"></script>
 </body>
 </html>
