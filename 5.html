@@ -724,12 +724,12 @@ observer.observe(document.body, { childList: true, subtree: true });
       let htmlContent = "";
       
       if (fromTimeStr && normFrom) {
-        htmlContent += `📍 ${fromInput.trim().toUpperCase()} স্থানে বাস পাবেন: <b>${formatCleanTime(fromTimeStr)}</b>`;
+        htmlContent += `📍 ${fromInput.trim().toUpperCase()} বাস পাবেন: <b>${formatCleanTime(fromTimeStr)}</b>`;
       }
       
       if (toTimeStr && normTo) {
         if (htmlContent !== "") htmlContent += "<br>";
-        htmlContent += `📍 ${toInput.trim().toUpperCase()} স্থানে বাস পৌঁছাবে: <b>${formatCleanTime(toTimeStr)}</b>`;
+        htmlContent += `📍 ${toInput.trim().toUpperCase()} বাস পৌঁছাবে: <b>${formatCleanTime(toTimeStr)}</b>`;
       }
 
       if (htmlContent !== "") {
