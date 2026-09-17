@@ -73,7 +73,6 @@
       padding: 8px !important;
     }
 
-    /* নতুন বাসের লিস্ট কার্ড স্টাইল */
     .bus-item { 
       border: 1px solid #cfd8dc; 
       border-radius: 8px; 
@@ -413,6 +412,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     return name.replace(/^[^a-zA-Z0-9]+/, '').replace(/^[iI|]\s+/, '').trim().toUpperCase();
   }
 
+  // ব্যবহারকারীর লাইভ জিপিএস ট্র্যাকিং ও অটো-ফোকাস
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -431,11 +431,14 @@ observer.observe(document.body, { childList: true, subtree: true });
         userMarker.setLatLng([userPos.lat, userPos.lon]);
       }
 
+      // প্রথমবার পেজ খোলার সাথে সাথে সেন্টারিং
       if (!hasCenteredUser) {
         map.setView([userPos.lat, userPos.lon], 15);
         hasCenteredUser = true;
       }
 
+      // বাসের অবস্থান বাইরে চলে যাওয়া আটকাতে অটো-সেন্টার ও ট্র্যাকিং সিঙ্ক
+      keepMarkersInView();
       checkPassengerRideAndSync();
       updateDistanceAndTracking();
     }, err => {
@@ -449,63 +452,88 @@ observer.observe(document.body, { childList: true, subtree: true });
     map.setView([20.5937, 78.9629], 5);
   }
 
+  // বাসের ও ব্যবহারকারীর অবস্থান সবসময় ম্যাপ স্ক্রিনে ধরে রাখা
+  function keepMarkersInView() {
+    if (busPos && userPos) {
+      let bounds = L.latLngBounds([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+      map.fitBounds(bounds.pad(0.25), { animate: true });
+    } else if (busPos) {
+      map.panTo([busPos.lat, busPos.lon], { animate: true });
+    } else if (userPos && trackingBus) {
+      map.panTo([userPos.lat, userPos.lon], { animate: true });
+    }
+  }
+
+  // যাত্রী যদি বাসে থাকেন এবং চলমান থাকেন, তবে লাইভ গতি ও অবস্থান সার্ভারে সিঙ্ক হবে
   function checkPassengerRideAndSync() {
     if (!userPos || !trackingBus) return;
 
     let isNearBus = false;
     if (busPos) {
       let distToBus = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
-      if (distToBus <= 100) isNearBus = true;
+      if (distToBus <= 150) isNearBus = true;
     }
 
     if (!isNearBus && currentBusStopsList && currentBusStopsList.length > 0) {
       for (let s of currentBusStopsList) {
         let sLat = Number(s.latitude || s.lat);
         let sLon = Number(s.longitude || s.lon);
-        if (sLat && sLon && getDistanceMeters(userPos.lat, userPos.lon, sLat, sLon) <= 150) {
+        if (sLat && sLon && getDistanceMeters(userPos.lat, userPos.lon, sLat, sLon) <= 200) {
           isNearBus = true;
           break;
         }
       }
     }
 
-    if (isNearBus && userPos.speed > 8) {
-      if (busPos) busPos.speed = userPos.speed;
-      syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lon, userPos.speed, userPos.acc);
+    // বাস না পাওয়া গেলেও যাত্রী চলমান থাকলে বাসের পজিশন হিসেবে যাত্রীর পজিশনই গণ্য হবে
+    if (isNearBus || !busPos) {
+      if (!busPos) {
+        busPos = { lat: userPos.lat, lon: userPos.lon, speed: userPos.speed };
+      }
+      if (userPos.speed > 5) {
+        busPos.speed = userPos.speed;
+        syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lon, userPos.speed, userPos.acc);
+      }
     }
   }
 
   function updateDistanceAndTracking() {
-    if (!userPos || !busPos) return;
+    if (!trackingBus) return;
 
-    let distM = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
-    let distKm = (distM / 1000).toFixed(2);
+    // বাস বা যাত্রীর কার্যকর অবস্থান
+    let effectiveBusLat = busPos ? busPos.lat : (userPos ? userPos.lat : null);
+    let effectiveBusLon = busPos ? busPos.lon : (userPos ? userPos.lon : null);
 
-    if (!routeLine) {
-      routeLine = L.polyline([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]], {
-        color: '#1565c0',
-        weight: 4,
-        opacity: 0.7,
-        dashArray: '5, 10'
-      }).addTo(map);
-    } else {
-      routeLine.setLatLngs([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+    if (!effectiveBusLat || !effectiveBusLon) return;
+
+    let distKm = 0;
+    if (userPos && busPos) {
+      let distM = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
+      distKm = (distM / 1000).toFixed(2);
+
+      if (!routeLine) {
+        routeLine = L.polyline([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]], {
+          color: '#1565c0',
+          weight: 4,
+          opacity: 0.7,
+          dashArray: '5, 10'
+        }).addTo(map);
+      } else {
+        routeLine.setLatLngs([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+      }
     }
 
-    let currentEffectiveSpeed = busPos.speed || (userPos && userPos.speed > 5 ? userPos.speed : 0);
-    let popupContent = `<b>বাস: ${trackingBus ? trackingBus.number : ''}</b><br>আপনার থেকে দূরত্ব: <b>${distKm} KM</b>`;
-    busMarker.bindPopup(popupContent).openPopup();
-
+    let currentEffectiveSpeed = (busPos && busPos.speed) ? busPos.speed : (userPos && userPos.speed > 5 ? userPos.speed : 0);
+    
     document.getElementById("infoDistSpeed").innerText = `${distKm} KM | গতি: ${currentEffectiveSpeed} KM/H`;
 
-    evaluateStoppagesAndEta(distKm, currentEffectiveSpeed);
+    // বর্তমান স্টপ, পরবর্তী স্টপ ও সম্ভাব্য সময় (ETA) গণনা করা
+    evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
 
-  function evaluateStoppagesAndEta(distKmBusUser, speed) {
+  // BusStops শিটের ডেটা দিয়ে বর্তমান ও পরবর্তী স্টপেজ এবং সম্ভাব্য সময় (ETA) নিখুঁত হিসাব
+  function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
     if (!currentBusStopsList || currentBusStopsList.length === 0) return;
-
-    let refLat = busPos ? busPos.lat : userPos.lat;
-    let refLon = busPos ? busPos.lon : userPos.lon;
 
     let validStops = currentBusStopsList.filter(s => {
       let lat = Number(s.latitude || s.lat);
@@ -542,7 +570,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     document.getElementById("infoNextStop").innerText = `${nextStopName} (${distToNextStopKm.toFixed(1)} KM)`;
 
     let effectiveSpeed = Number(speed) > 5 ? Number(speed) : 28;
-    let targetDist = distKmBusUser ? parseFloat(distKmBusUser) : distToNextStopKm;
+    let targetDist = parseFloat(distKmBusUser) > 0 ? parseFloat(distKmBusUser) : distToNextStopKm;
 
     if (targetDist > 0 && effectiveSpeed > 0) {
       let hours = targetDist / effectiveSpeed;
@@ -619,7 +647,6 @@ observer.observe(document.body, { childList: true, subtree: true });
     return null;
   }
 
-  // বাসের তালিকা সার্চ এবং ১২ AM থেকে ক্রমানুসারে সাজানো
   async function autoSearchBuses() {
     let from = document.getElementById("searchFrom").value.trim();
     let to = document.getElementById("searchTo").value.trim();
@@ -642,7 +669,6 @@ observer.observe(document.body, { childList: true, subtree: true });
         return;
       }
 
-      // প্রতিটি বাসের স্টপ ও সময় ভ্যালিডেশন
       let validatedBuses = [];
       for (let b of data.buses) {
         let validInfo = await processBusDirectionAndTime(b, from, to);
@@ -656,19 +682,15 @@ observer.observe(document.body, { childList: true, subtree: true });
         return;
       }
 
-      // From স্থানের সময় অনুযায়ী (12 AM থেকে 11:59 PM পর্যন্ত) সাজানো (Ascending Order)
       validatedBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
 
       listDiv.innerHTML = "";
 
-      // সাজানো বাসগুলো রেন্ডার করা
       validatedBuses.forEach(item => {
         let b = item.bus;
         let div = document.createElement("div");
         div.className = "bus-item";
 
-        // রো ১: From স্থান [সময়] - To স্থান [সময়]
-        // রো ২: বাসের নাম, নম্বর ও ক্যাটাগরি
         div.innerHTML = `
           <div class="bus-row-1">
             <span>📍 ${item.fromDisplayName}: ${item.fromTimeStr}</span>
@@ -693,7 +715,6 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 
-  // বাসের দিক ও From-To সময় নির্ভুলভাবে বের করার ফাংশন
   async function processBusDirectionAndTime(bus, fromInput, toInput) {
     let busNo = bus.number;
     let stops = stopsCache[busNo];
@@ -716,7 +737,6 @@ observer.observe(document.body, { childList: true, subtree: true });
     let normSrc = cleanStopName(bus.source);
     let normDst = cleanStopName(bus.dest);
 
-    // ১. Lat, Long বিশ্লেষণ করে দিক যাচাই
     let srcCoords = resolvePlaceCoords(normSrc, stops);
     let dstCoords = resolvePlaceCoords(normDst, stops);
     let fromCoords = normFrom ? resolvePlaceCoords(normFrom, stops) : null;
@@ -726,7 +746,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       if (srcCoords) {
         let distSrcToFrom = getDistanceMeters(srcCoords.lat, srcCoords.lon, fromCoords.lat, fromCoords.lon);
         let distSrcToTo = getDistanceMeters(srcCoords.lat, srcCoords.lon, toCoords.lat, toCoords.lon);
-        if (distSrcToFrom > distSrcToTo) return null; // ভুল দিক
+        if (distSrcToFrom > distSrcToTo) return null;
       } else if (dstCoords) {
         let distDstToFrom = getDistanceMeters(dstCoords.lat, dstCoords.lon, fromCoords.lat, fromCoords.lon);
         let distDstToTo = getDistanceMeters(dstCoords.lat, dstCoords.lon, toCoords.lat, toCoords.lon);
@@ -734,7 +754,6 @@ observer.observe(document.body, { childList: true, subtree: true });
       }
     }
 
-    // ২. ট্রিপ রেঞ্জের স্টপগুলো ফিল্টার করা
     let tripStops = stops.filter(s => isTimeInTripRange(s.time, bus.depTime, bus.arrTime));
 
     let fromTimeStr = null;
@@ -742,7 +761,6 @@ observer.observe(document.body, { childList: true, subtree: true });
     let fromDisplayName = fromInput.trim().toUpperCase() || bus.source;
     let toDisplayName = toInput.trim().toUpperCase() || bus.dest;
 
-    // From স্থানের সময়
     if (normFrom) {
       if (normFrom === normSrc) {
         fromTimeStr = bus.depTime;
@@ -761,7 +779,6 @@ observer.observe(document.body, { childList: true, subtree: true });
       fromDisplayName = bus.source;
     }
 
-    // To স্থানের সময়
     if (normTo) {
       if (normTo === normDst) {
         toTimeStr = bus.arrTime;
@@ -780,7 +797,6 @@ observer.observe(document.body, { childList: true, subtree: true });
       toDisplayName = bus.dest;
     }
 
-    // সময় না পাওয়া গেলে বাসের ডিফল্ট সময় নেওয়া
     if (!fromTimeStr) fromTimeStr = bus.depTime;
     if (!toTimeStr) toTimeStr = bus.arrTime;
 
@@ -820,7 +836,7 @@ observer.observe(document.body, { childList: true, subtree: true });
   function trackBus(busNo) {
     if (trackingInterval) clearInterval(trackingInterval);
     fetchBusLive(busNo);
-    trackingInterval = setInterval(() => fetchBusLive(busNo), 10000);
+    trackingInterval = setInterval(() => fetchBusLive(busNo), 5000);
   }
 
   async function fetchBusLive(busNo) {
@@ -828,20 +844,24 @@ observer.observe(document.body, { childList: true, subtree: true });
     let data = await res.json();
     let locBox = document.getElementById("currentLocationBox");
 
+    if (data.stops && data.stops.length > 0) {
+      currentBusStopsList = data.stops;
+    }
+
+    // বাস জিপিএস না পেলেও যাত্রীর অবস্থান দিয়ে গণনা অব্যাহত রাখা
     if (!data.ok || !data.live) {
       locBox.innerText = `বাসের অবস্থান এখনও পাওয়া যায়নি (${busNo})`;
+      if (userPos) {
+        updateDistanceAndTracking();
+        keepMarkersInView();
+      }
       return;
     }
 
     let b = data.live;
     busPos = { lat: Number(b.lat), lon: Number(b.lon), speed: b.speed || 0 };
 
-    if (data.stops && data.stops.length > 0) {
-      currentBusStopsList = data.stops;
-    }
-
     locBox.innerText = `বাসের বর্তমান অবস্থান: LAT ${busPos.lat.toFixed(4)}, LON ${busPos.lon.toFixed(4)} (গতি: ${busPos.speed} KM/H)`;
-    locBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     if (!busMarker) {
       busMarker = L.marker([busPos.lat, busPos.lon], { icon: busIcon }).addTo(map);
@@ -849,14 +869,8 @@ observer.observe(document.body, { childList: true, subtree: true });
       busMarker.setLatLng([busPos.lat, busPos.lon]);
     }
 
-    if (userPos) {
-      let group = new L.featureGroup([userMarker, busMarker]);
-      map.fitBounds(group.getBounds().pad(0.2));
-      updateDistanceAndTracking();
-    } else {
-      map.setView([busPos.lat, busPos.lon], 14);
-      evaluateStoppagesAndEta(0, busPos.speed);
-    }
+    updateDistanceAndTracking();
+    keepMarkersInView();
   }
 
   document.getElementById("toggleBusFormBtn").onclick = () => toggleBusForm(true);
