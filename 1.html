@@ -132,7 +132,7 @@
     .card b { color: #1565c0; }
     #map { height: 450px; border-radius: 8px; margin-top: 15px; border: 1px solid #ccc; width: 100%; }
 
-    /* =================== নতুন রুট ও অবস্থান কার্ড ডিজাইন =================== */
+    /* =================== উন্নত ও পরিষ্কার বাস রুট কার্ড ডিজাইন =================== */
     .route-tracker-card {
       background: #ffffff;
       border: 1px solid #cfd8dc;
@@ -151,30 +151,33 @@
     }
     .route-timeline-container {
       overflow-x: auto;
-      padding: 24px 10px 10px 10px;
+      padding: 55px 15px 55px 15px;
       position: relative;
+      scrollbar-width: thin;
     }
     .route-track-bar {
       display: flex;
-      justify-content: space-between;
       position: relative;
-      min-width: 320px;
+      min-width: 100%;
+      height: 24px;
+      align-items: center;
     }
     .route-line-bg {
       position: absolute;
-      top: 10px;
-      left: 20px;
-      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 30px;
+      right: 30px;
       height: 4px;
       background: #cfd8dc;
       z-index: 1;
     }
     .route-live-bus-indicator {
       position: absolute;
-      top: -24px;
+      top: -26px;
       transform: translateX(-50%);
       font-size: 24px;
-      z-index: 3;
+      z-index: 5;
       transition: left 0.4s ease;
       animation: busBounce 1.5s infinite;
     }
@@ -189,6 +192,7 @@
       position: relative;
       z-index: 2;
       flex: 1;
+      min-width: 100px;
       text-align: center;
     }
     .route-stop-circle {
@@ -198,7 +202,6 @@
       background: #fff;
       border: 3px solid #78909c;
       box-shadow: 0 0 0 3px #cfd8dc;
-      margin-bottom: 8px;
     }
     .route-stop-circle.passed {
       background: #1e88e5;
@@ -210,15 +213,38 @@
       border-color: #01579b;
       box-shadow: 0 0 0 4px #b3e5fc;
     }
+
+    /* স্টপেজের নাম উপরে-নিচে দেখানোর অল্টারনেট স্টাইল */
     .route-stop-name {
       font-size: 11px;
       font-weight: 700;
       color: #37474f;
-      max-width: 85px;
-      line-height: 1.2;
+      width: 95px;
+      line-height: 1.25;
       word-wrap: break-word;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: normal;
     }
-    /* ==================================================================== */
+    .route-stop-name.pos-bottom {
+      top: 30px;
+    }
+    .route-stop-name.pos-top {
+      bottom: 30px;
+    }
+
+    .stop-marker-label {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #1565c0;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #0d47a1;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -335,7 +361,7 @@
   <label>বাস নম্বর / নাম</label>
   <input type="text" id="busTrackInput" placeholder="বাস নম্বর বা নাম লিখুন">
 
-  <!-- ছবিতে চিহ্নিত অংশের অনুরূপ বাস রুট ও অবস্থান কার্ড -->
+  <!-- বাসের রুট ও বর্তমান অবস্থান সেকশন -->
   <div id="routeTrackerCard" class="route-tracker-card hidden">
     <h4>🛣️ বাসের রুট ও বর্তমান অবস্থান</h4>
     <div class="route-timeline-container">
@@ -442,11 +468,12 @@ observer.observe(document.body, { childList: true, subtree: true });
   };
 
   let map = L.map('map');
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
   let busMarker = null, userMarker = null, routeLine = null;
+  let stopMarkersLayer = L.layerGroup().addTo(map);
+  let stopRoutePolyline = null;
+
   let userPos = null, busPos = null, trackingBus = null, trackingInterval = null;
   let debounceTimer = null;
   let hasCenteredUser = false;
@@ -511,7 +538,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     return name.replace(/^[^a-zA-Z0-9]+/, '').replace(/^[iI|]\s+/, '').trim().toUpperCase();
   }
 
-  // ব্যবহারকারীর লাইভ জিপিএস ট্র্যাকিং ও অটো-ফোকাস
+  // ব্যবহারকারীর লাইভ জিপিএস
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(pos => {
       userPos = {
@@ -531,28 +558,33 @@ observer.observe(document.body, { childList: true, subtree: true });
       }
 
       if (!hasCenteredUser) {
-        map.setView([userPos.lat, userPos.lon], 15);
+        map.setView([userPos.lat, userPos.lon], 14);
         hasCenteredUser = true;
       }
 
-      keepMarkersInView();
       checkPassengerRideAndSync();
       updateDistanceAndTracking();
+      keepMarkersInView();
     }, err => {
       console.log(err);
       if (!hasCenteredUser) {
-        map.setView([20.5937, 78.9629], 5);
+        map.setView([23.82, 87.75], 11);
         hasCenteredUser = true;
       }
     }, { enableHighAccuracy: true, maximumAge: 0 });
   } else {
-    map.setView([20.5937, 78.9629], 5);
+    map.setView([23.82, 87.75], 11);
   }
 
   function keepMarkersInView() {
     if (busPos && userPos) {
-      let bounds = L.latLngBounds([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
-      map.fitBounds(bounds.pad(0.25), { animate: true });
+      let d = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
+      if (d > 100) {
+        let bounds = L.latLngBounds([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+        map.fitBounds(bounds.pad(0.25), { animate: true });
+      } else {
+        map.panTo([busPos.lat, busPos.lon], { animate: true });
+      }
     } else if (busPos) {
       map.panTo([busPos.lat, busPos.lon], { animate: true });
     } else if (userPos && trackingBus) {
@@ -566,26 +598,30 @@ observer.observe(document.body, { childList: true, subtree: true });
     let isNearBus = false;
     if (busPos) {
       let distToBus = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
-      if (distToBus <= 150) isNearBus = true;
+      if (distToBus <= 200) isNearBus = true;
     }
 
     if (!isNearBus && currentBusStopsList && currentBusStopsList.length > 0) {
       for (let s of currentBusStopsList) {
         let sLat = Number(s.latitude || s.lat);
         let sLon = Number(s.longitude || s.lon);
-        if (sLat && sLon && getDistanceMeters(userPos.lat, userPos.lon, sLat, sLon) <= 200) {
+        if (sLat && sLon && getDistanceMeters(userPos.lat, userPos.lon, sLat, sLon) <= 300) {
           isNearBus = true;
           break;
         }
       }
     }
 
-    if (isNearBus || !busPos) {
-      if (!busPos) {
-        busPos = { lat: userPos.lat, lon: userPos.lon, speed: userPos.speed };
+    if (isNearBus || !busPos || userPos.speed > 8) {
+      busPos = { lat: userPos.lat, lon: userPos.lon, speed: userPos.speed };
+      
+      if (busMarker) {
+        busMarker.setLatLng([busPos.lat, busPos.lon]);
+      } else {
+        busMarker = L.marker([busPos.lat, busPos.lon], { icon: busIcon }).addTo(map);
       }
+
       if (userPos.speed > 5) {
-        busPos.speed = userPos.speed;
         syncUserGPSAsBus(trackingBus.number, userPos.lat, userPos.lon, userPos.speed, userPos.acc);
       }
     }
@@ -604,50 +640,84 @@ observer.observe(document.body, { childList: true, subtree: true });
       let distM = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
       distKm = (distM / 1000).toFixed(2);
 
-      if (!routeLine) {
-        routeLine = L.polyline([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]], {
-          color: '#1565c0',
-          weight: 4,
-          opacity: 0.7,
-          dashArray: '5, 10'
-        }).addTo(map);
-      } else {
-        routeLine.setLatLngs([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+      if (distM > 100) {
+        if (!routeLine) {
+          routeLine = L.polyline([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]], {
+            color: '#1565c0', weight: 4, opacity: 0.7, dashArray: '5, 10'
+          }).addTo(map);
+        } else {
+          routeLine.setLatLngs([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
+        }
+      } else if (routeLine) {
+        map.removeLayer(routeLine);
+        routeLine = null;
       }
     }
 
     let currentEffectiveSpeed = (busPos && busPos.speed) ? busPos.speed : (userPos && userPos.speed > 5 ? userPos.speed : 0);
-    
     document.getElementById("infoDistSpeed").innerText = `${distKm} KM | গতি: ${currentEffectiveSpeed} KM/H`;
 
     evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
 
-  // বাসের রুট প্রগ্রেস বার ও বর্তমান অবস্থানের লজিক
-  function updateRouteVisualTimeline(validStops, nearestStopIndex, busLat, busLon) {
+  // স্টপেজের নাম উপরে ও নিচে অল্টারনেট করে সাজানো যাতে লেখা ওভারল্যাপ না করে
+  function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
+    stopMarkersLayer.clearLayers();
+    if (stopRoutePolyline) {
+      map.removeLayer(stopRoutePolyline);
+      stopRoutePolyline = null;
+    }
+
+    if (!orderedStops || orderedStops.length === 0) return;
+
+    let latLngs = [];
+
+    orderedStops.forEach((s, i) => {
+      let sLat = Number(s.latitude || s.lat);
+      let sLon = Number(s.longitude || s.lon);
+      let sName = s.name || s.stopName || `STOP ${i+1}`;
+
+      if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
+        latLngs.push([sLat, sLon]);
+
+        let circleMarker = L.circleMarker([sLat, sLon], {
+          radius: 7,
+          fillColor: i <= nearestStopIndex ? "#1565c0" : "#ffffff",
+          color: "#0d47a1",
+          weight: 3,
+          opacity: 1,
+          fillOpacity: 0.9
+        });
+
+        circleMarker.bindTooltip(`${i+1}. ${sName}`, {
+          permanent: true,
+          direction: 'top',
+          className: 'stop-marker-label',
+          offset: [0, -8]
+        });
+
+        stopMarkersLayer.addLayer(circleMarker);
+      }
+    });
+
+    if (latLngs.length > 1) {
+      stopRoutePolyline = L.polyline(latLngs, {
+        color: '#00796b',
+        weight: 5,
+        opacity: 0.75,
+        lineJoin: 'round'
+      }).addTo(map);
+    }
+
     let card = document.getElementById("routeTrackerCard");
     let trackBar = document.getElementById("routeTrackBar");
-    if (!validStops || validStops.length === 0) {
-      card.classList.add("hidden");
-      return;
-    }
     card.classList.remove("hidden");
 
-    let displayStops = [];
-    let activeRelativeIndex = 0;
+    let displayStops = orderedStops;
+    let activeRelativeIndex = nearestStopIndex;
 
-    if (validStops.length <= 4) {
-      displayStops = validStops;
-      activeRelativeIndex = nearestStopIndex;
-    } else {
-      let start = Math.max(0, nearestStopIndex - 1);
-      let end = Math.min(validStops.length, start + 3);
-      if (end - start < 3 && start > 0) {
-        start = Math.max(0, end - 3);
-      }
-      displayStops = validStops.slice(start, end);
-      activeRelativeIndex = nearestStopIndex - start;
-    }
+    // টাইমলাইনের প্রস্থ ডাইনামিক করা যাতে সব নাম স্ক্রোল করে ভালোভাবে দেখা যায়
+    trackBar.style.minWidth = `${Math.max(displayStops.length * 110, 320)}px`;
 
     trackBar.innerHTML = `
       <div class="route-line-bg"></div>
@@ -667,15 +737,15 @@ observer.observe(document.body, { childList: true, subtree: true });
       }
 
       let label = document.createElement("div");
-      label.className = "route-stop-name";
-      label.innerText = s.name || s.stopName || s.time || "STOP";
+      // একটি নিচে (pos-bottom) এবং একটি উপরে (pos-top) অল্টারনেট পজিশনিং
+      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'}`;
+      label.innerText = s.name || s.stopName || "STOP";
 
       node.appendChild(circle);
       node.appendChild(label);
       trackBar.appendChild(node);
     });
 
-    // সঠিক দূরত্ব হিসেব করে বাসের আইকনকে পয়েন্টের মাঝে বসানো
     let indicator = document.getElementById("routeBusIndicator");
     let count = displayStops.length;
     if (count > 1) {
@@ -703,15 +773,39 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 
-  function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
-    if (!currentBusStopsList || currentBusStopsList.length === 0) return;
+  function sortStopsAlongTrip(stops, bus) {
+    if (!stops || stops.length === 0) return [];
 
-    let validStops = currentBusStopsList.filter(s => {
+    let valid = stops.filter(s => {
       let lat = Number(s.latitude || s.lat);
       let lon = Number(s.longitude || s.lon);
       return !isNaN(lat) && !isNaN(lon) && lat !== 0;
     });
 
+    if (valid.length <= 1) return valid;
+
+    let srcCoords = resolvePlaceCoords(bus.source, valid);
+
+    let hasTimes = valid.every(s => s.time && timeToMinutes(s.time) !== null);
+    if (hasTimes) {
+      return valid.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+    }
+
+    if (srcCoords) {
+      return valid.sort((a, b) => {
+        let da = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(a.latitude||a.lat), Number(a.longitude||a.lon));
+        let db = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(b.latitude||b.lat), Number(b.longitude||b.lon));
+        return da - db;
+      });
+    }
+
+    return valid;
+  }
+
+  function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
+    if (!currentBusStopsList || currentBusStopsList.length === 0) return;
+
+    let validStops = sortStopsAlongTrip(currentBusStopsList, trackingBus || {});
     if (validStops.length === 0) return;
 
     let stopsWithDist = validStops.map((s, idx) => {
@@ -726,8 +820,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
     document.getElementById("infoCurStop").innerText = curStopName;
 
-    // ভিজ্যুয়াল রুট কার্ড আপডেট
-    updateRouteVisualTimeline(validStops, nearest.index, refLat, refLon);
+    renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
 
     let nextStopName = "--";
     let distToNextStopKm = 0;
@@ -852,12 +945,11 @@ observer.observe(document.body, { childList: true, subtree: true });
       }
 
       if (validatedBuses.length === 0) {
-        listDiv.innerHTML = `<div style="padding:8px;color:#c62828;">কোনো উপযুক্ত বাস পাওয়া যায়নি।</div>`;
+        listDiv.innerHTML = `<div style="padding:8px;color:#c62828;">এই অভিমুখে কোনো বাস পাওয়া যায়নি।</div>`;
         return;
       }
 
       validatedBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
-
       listDiv.innerHTML = "";
 
       validatedBuses.forEach(item => {
@@ -904,7 +996,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       } catch (e) {}
     }
 
-    if (!stops || stops.length === 0) stops = [];
+    if (!stops) stops = [];
 
     let normFrom = cleanStopName(fromInput);
     let normTo = cleanStopName(toInput);
@@ -918,35 +1010,36 @@ observer.observe(document.body, { childList: true, subtree: true });
 
     if (fromCoords && toCoords) {
       if (srcCoords) {
-        let distSrcToFrom = getDistanceMeters(srcCoords.lat, srcCoords.lon, fromCoords.lat, fromCoords.lon);
-        let distSrcToTo = getDistanceMeters(srcCoords.lat, srcCoords.lon, toCoords.lat, toCoords.lon);
-        if (distSrcToFrom > distSrcToTo) return null;
+        let dFrom = getDistanceMeters(srcCoords.lat, srcCoords.lon, fromCoords.lat, fromCoords.lon);
+        let dTo = getDistanceMeters(srcCoords.lat, srcCoords.lon, toCoords.lat, toCoords.lon);
+        if (dFrom >= dTo) return null;
       } else if (dstCoords) {
-        let distDstToFrom = getDistanceMeters(dstCoords.lat, dstCoords.lon, fromCoords.lat, fromCoords.lon);
-        let distDstToTo = getDistanceMeters(dstCoords.lat, dstCoords.lon, toCoords.lat, toCoords.lon);
-        if (distDstToFrom < distDstToTo) return null;
+        let dFrom = getDistanceMeters(dstCoords.lat, dstCoords.lon, fromCoords.lat, fromCoords.lon);
+        let dTo = getDistanceMeters(dstCoords.lat, dstCoords.lon, toCoords.lat, toCoords.lon);
+        if (dFrom <= dTo) return null;
       }
     }
 
     let tripStops = stops.filter(s => isTimeInTripRange(s.time, bus.depTime, bus.arrTime));
 
-    let fromTimeStr = null;
-    let toTimeStr = null;
+    let fromTimeStr = null, toTimeStr = null;
+    let fromIndex = -1, toIndex = -1;
     let fromDisplayName = fromInput.trim().toUpperCase() || bus.source;
     let toDisplayName = toInput.trim().toUpperCase() || bus.dest;
 
     if (normFrom) {
       if (normFrom === normSrc) {
         fromTimeStr = bus.depTime;
+        fromIndex = -999;
       } else {
-        let m = tripStops.find(s => {
+        tripStops.forEach((s, idx) => {
           let n = cleanStopName(s.name || s.stopName);
-          return n === normFrom || n.includes(normFrom) || normFrom.includes(n);
+          if (n === normFrom || n.includes(normFrom) || normFrom.includes(n)) {
+            fromTimeStr = s.time;
+            fromDisplayName = s.name || s.stopName || fromDisplayName;
+            fromIndex = idx;
+          }
         });
-        if (m && m.time) {
-          fromTimeStr = m.time;
-          fromDisplayName = m.name || m.stopName || fromDisplayName;
-        }
       }
     } else {
       fromTimeStr = bus.depTime;
@@ -956,26 +1049,37 @@ observer.observe(document.body, { childList: true, subtree: true });
     if (normTo) {
       if (normTo === normDst) {
         toTimeStr = bus.arrTime;
+        toIndex = 9999;
       } else {
-        let m = tripStops.find(s => {
+        tripStops.forEach((s, idx) => {
           let n = cleanStopName(s.name || s.stopName);
-          return n === normTo || n.includes(normTo) || normTo.includes(n);
+          if (n === normTo || n.includes(normTo) || normTo.includes(n)) {
+            toTimeStr = s.time;
+            toDisplayName = s.name || s.stopName || toDisplayName;
+            toIndex = idx;
+          }
         });
-        if (m && m.time) {
-          toTimeStr = m.time;
-          toDisplayName = m.name || m.stopName || toDisplayName;
-        }
       }
     } else {
       toTimeStr = bus.arrTime;
       toDisplayName = bus.dest;
     }
 
+    if (fromIndex !== -1 && toIndex !== -1 && fromIndex > toIndex) {
+      return null;
+    }
+
     if (!fromTimeStr) fromTimeStr = bus.depTime;
     if (!toTimeStr) toTimeStr = bus.arrTime;
 
-    let sortMins = timeToMinutes(fromTimeStr);
-    if (sortMins === null) sortMins = timeToMinutes(bus.depTime) || 0;
+    let tFromMins = timeToMinutes(fromTimeStr);
+    let tToMins = timeToMinutes(toTimeStr);
+    
+    if (tFromMins !== null && tToMins !== null && normFrom && normTo && (tToMins < tFromMins)) {
+      return null;
+    }
+
+    let sortMins = tFromMins || timeToMinutes(bus.depTime) || 0;
 
     return {
       bus: bus,
@@ -1023,8 +1127,9 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
 
     if (!data.ok || !data.live) {
-      locBox.innerText = `বাসের অবস্থান এখনও পাওয়া যায়নি (${busNo})`;
+      locBox.innerText = `বাসের লাইভ জিপিএস সিগন্যাল সক্রিয় নেই (${busNo})`;
       if (userPos) {
+        checkPassengerRideAndSync();
         updateDistanceAndTracking();
         keepMarkersInView();
       }
@@ -1042,6 +1147,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       busMarker.setLatLng([busPos.lat, busPos.lon]);
     }
 
+    checkPassengerRideAndSync();
     updateDistanceAndTracking();
     keepMarkersInView();
   }
@@ -1158,7 +1264,5 @@ observer.observe(document.body, { childList: true, subtree: true });
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 </script>
-<a href='https://free-hit-counters.net/'>free-hit-counters.net</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=1df45c3e13686f777139e3904b8f43675a41c02c'></script>
-<script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1646886/t/1"></script>
 </body>
-</html>  
+</html>
