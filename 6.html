@@ -978,7 +978,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 
-  // Lat, Long এবং স্টপেজের নিখুঁত উভয়মুখী (Bidirectional) ডিরেকশন ও সময় ফিল্টারিং
+ // Lat, Long এবং স্টপেজের নিখুঁত উভয়মুখী (Bidirectional) ডিরেকশন ও সময় ফিল্টারিং
   async function processBusDirectionAndTime(bus, fromInput, toInput) {
     let busNo = bus.number;
     let stops = stopsCache[busNo];
@@ -996,11 +996,11 @@ observer.observe(document.body, { childList: true, subtree: true });
 
     if (!stops) stops = [];
 
-    // বাসের সমস্ত স্টপকে তালিকাভুক্ত করা
-    let rawTripStops = [];
+    // বাসের সম্পূর্ণ ট্রিপের স্টপ তালিকা তৈরি (Source + মধ্যবর্তী স্টপসমূহ + Dest)
+    let fullTripStops = [];
     let srcCoords = resolvePlaceCoords(bus.source, stops);
     if (srcCoords) {
-      rawTripStops.push({
+      fullTripStops.push({
         stopName: bus.source,
         lat: srcCoords.lat,
         lon: srcCoords.lon,
@@ -1013,7 +1013,7 @@ observer.observe(document.body, { childList: true, subtree: true });
       let lat = Number(s.latitude || s.lat);
       let lon = Number(s.longitude || s.lon);
       if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
-        rawTripStops.push({
+        fullTripStops.push({
           stopName: s.name || s.stopName,
           lat: lat,
           lon: lon,
@@ -1025,7 +1025,7 @@ observer.observe(document.body, { childList: true, subtree: true });
 
     let dstCoords = resolvePlaceCoords(bus.dest, stops);
     if (dstCoords) {
-      rawTripStops.push({
+      fullTripStops.push({
         stopName: bus.dest,
         lat: dstCoords.lat,
         lon: dstCoords.lon,
@@ -1034,70 +1034,91 @@ observer.observe(document.body, { childList: true, subtree: true });
       });
     }
 
+    if (fullTripStops.length < 2) return null;
+
     let normFrom = cleanStopName(fromInput);
     let normTo = cleanStopName(toInput);
 
+    // স্টপ খোঁজার হেল্পার ফাংশন
     function matchNode(nameTarget) {
       if (!nameTarget) return null;
-      for (let s of rawTripStops) {
+      for (let s of fullTripStops) {
         let n = cleanStopName(s.stopName);
         if (n === nameTarget || n.includes(nameTarget) || nameTarget.includes(n)) {
           return s;
         }
       }
-      let coords = resolvePlaceCoords(nameTarget, rawTripStops);
+      let coords = resolvePlaceCoords(nameTarget, fullTripStops);
       if (coords) {
-        for (let s of rawTripStops) {
-          if (getDistanceMeters(s.lat, s.lon, coords.lat, coords.lon) <= 1500) {
-            return s;
+        let best = null, minDist = 2000;
+        for (let s of fullTripStops) {
+          let d = getDistanceMeters(s.lat, s.lon, coords.lat, coords.lon);
+          if (d < minDist) {
+            minDist = d;
+            best = s;
           }
         }
+        if (best) return best;
       }
       return null;
     }
 
-    let fromNode = normFrom ? matchNode(normFrom) : rawTripStops[0];
-    let toNode = normTo ? matchNode(normTo) : rawTripStops[rawTripStops.length - 1];
+    let fromNode = normFrom ? matchNode(normFrom) : fullTripStops[0];
+    let toNode = normTo ? matchNode(normTo) : fullTripStops[fullTripStops.length - 1];
 
-    // From অথবা To কোনো নির্দিষ্ট স্টপ যদি এই বাসের রুটে না থাকে, তবে বাদ দেওয়া হবে
+    // কাঙ্ক্ষিত স্টপ দুটোই এই বাসের রুটে অবশ্যই থাকতে হবে
     if (normFrom && !fromNode) return null;
     if (normTo && !toNode) return null;
     if (!fromNode || !toNode) return null;
 
-    // একই স্টপ হলে বাদ দেওয়া হবে
     if (cleanStopName(fromNode.stopName) === cleanStopName(toNode.stopName)) return null;
 
-    // বাসের গতিপথের প্রাথমিক স্থানাঙ্ক (সোর্স বা প্রথম স্টপের অবস্থান)
-    let originLat = srcCoords ? srcCoords.lat : rawTripStops[0].lat;
-    let originLon = srcCoords ? srcCoords.lon : rawTripStops[0].lon;
-
-    let dFrom = getDistanceMeters(originLat, originLon, fromNode.lat, fromNode.lon);
-    let dTo = getDistanceMeters(originLat, originLon, toNode.lat, toNode.lon);
-
-    // Lat, Long দূরত্ব অনুযায়ী বাসের যাত্রাপথের শুরু থেকে From স্টপ To স্টপের আগে পড়তে হবে
-    if (dFrom >= dTo) {
-      return null; // উল্টো দিকের রুট (যেমন AHMADPUR থেকে LABPUR এর বাস খোঁজার সময় Labpur থেকে Ahmadpur-এর বাস)
-    }
-
-    // সময় যাচাই: From স্টপের পৌঁছানোর/ছাড়ার সময় To স্টপের আগের হতে হবে
-    let fTime = fromNode.time || bus.depTime;
-    let tTime = toNode.time || bus.arrTime;
-
+    // ১. সময় অনুযায়ী ক্রম যাচাই (যদি উভয়েরই সময় থাকে)
+    let fTime = fromNode.time;
+    let tTime = toNode.time;
     let fMins = timeToMinutes(fTime);
     let tMins = timeToMinutes(tTime);
 
-    if (fMins !== null && tMins !== null && tMins <= fMins) {
-      return null; // ভুল সময় ক্রম
+    if (fMins !== null && tMins !== null) {
+      // যদি From স্টপে পৌঁছানোর সময় To স্টপের পরের হয়, তবে এটি নিশ্চিতভাবে উল্টো দিকের বাস
+      if (fMins >= tMins) return null;
     }
 
+    // ২. Lat, Long ভিত্তিক বাসের ভ্রমণের অভিমুখ (Trajectory Projection) যাচাই
+    let busStart = fullTripStops[0];
+    let busEnd = fullTripStops[fullTripStops.length - 1];
+
+    // বাসের মোট যাত্রাপথের ভেক্টর
+    let dLat = busEnd.lat - busStart.lat;
+    let dLon = busEnd.lon - busStart.lon;
+    let lenSq = dLat * dLat + dLon * dLon;
+
+    if (lenSq > 0) {
+      // যাত্রাপথের সরলরেখায় From ও To স্টপের প্রজেকশন
+      let projFrom = ((fromNode.lat - busStart.lat) * dLat + (fromNode.lon - busStart.lon) * dLon) / lenSq;
+      let projTo = ((toNode.lat - busStart.lat) * dLat + (toNode.lon - busStart.lon) * dLon) / lenSq;
+
+      // বাসের যাত্রাপথে From স্টপ অবশ্যই To স্টপের পূর্বে পড়বে (projFrom < projTo)
+      if (projFrom >= projTo) {
+        return null;
+      }
+    } else {
+      let dFrom = getDistanceMeters(busStart.lat, busStart.lon, fromNode.lat, fromNode.lon);
+      let dTo = getDistanceMeters(busStart.lat, busStart.lon, toNode.lat, toNode.lon);
+      if (dFrom >= dTo) return null;
+    }
+
+    // প্রদর্শনের জন্য সঠিক সময় নির্বাচন
+    let displayFromTime = fTime || bus.depTime;
+    let displayToTime = tTime || bus.arrTime;
     let sortMins = fMins !== null ? fMins : (timeToMinutes(bus.depTime) || 0);
 
     return {
       bus: bus,
-      fromDisplayName: fromNode.stopName || fromInput.toUpperCase(),
-      fromTimeStr: formatCleanTime(fTime),
-      toDisplayName: toNode.stopName || toInput.toUpperCase(),
-      toTimeStr: formatCleanTime(tTime),
+      fromDisplayName: fromNode.stopName,
+      fromTimeStr: formatCleanTime(displayFromTime),
+      toDisplayName: toNode.stopName,
+      toTimeStr: formatCleanTime(displayToTime),
       sortMinutes: sortMins
     };
   }
