@@ -435,7 +435,7 @@ function verify(){
   let conf = sd * 0.55 + sa * 0.2 + ss * 0.15 + 5;
 
   $("score").textContent = conf.toFixed(0) + "%";
-  $("moveInfo").innerHTML = `<b>Train Distance:</b> ${(d * 1000).toFixed(1)} m<br>` +
+  $("moveInfo").innerHTML = `<b>Train Distance:</b> ${(d * 1000).toFixed(1)} m (${d.toFixed(2)} km)<br>` +
                             `<b>Track Offset:</b> ${(crossTrack * 1000).toFixed(1)} m | <b>Length Offset:</b> ${(alongTrack * 1000).toFixed(1)} m<br>` +
                             `<b>User Speed:</b> ${m.speed.toFixed(1)} km/h<br><b>Train Speed:</b> ${train.speed.toFixed(1)} km/h`;
 
