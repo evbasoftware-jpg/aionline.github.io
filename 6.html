@@ -911,133 +911,199 @@ observer.observe(document.body, { childList: true, subtree: true });
   }
 
   async function autoSearchBuses() {
-    let from = document.getElementById("searchFrom").value.trim();
-    let to = document.getElementById("searchTo").value.trim();
+  let from = document.getElementById("searchFrom").value.trim();
+  let to = document.getElementById("searchTo").value.trim();
+  let listDiv = document.getElementById("busList");
 
-    let listDiv = document.getElementById("busList");
-
+  // ১. ব্যবহারকারী যদি From এবং To দুটোর কোনো একটি খালি রাখেন, তবে খোঁজা থামিয়ে নির্দেশ দেওয়া
+  if (!from || !to) {
     if (!from && !to) {
       listDiv.innerHTML = "";
+    } else {
+      listDiv.innerHTML = `<div style="padding:10px;text-align:center;color:#607d8b;font-size:13px;">উভয় স্টপেজের নাম লিখুন (From এবং To)...</div>`;
+    }
+    return;
+  }
+
+  listDiv.innerHTML = `<div style="padding:12px;text-align:center;color:#1565c0;font-weight:bold;">বাসের তথ্য ও সময়সূচি খোঁজা হচ্ছে...</div>`;
+
+  try {
+    let res = await fetch(`${API_URL}?action=getBuses&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+    let data = await res.json();
+
+    if (!data.buses || data.buses.length === 0) {
+      listDiv.innerHTML = `<div style="padding:12px;color:#c62828;text-align:center;font-weight:bold;">কোনো বাস পাওয়া যায়নি।</div>`;
       return;
     }
 
-    listDiv.innerHTML = `<div style="padding:10px;text-align:center;color:#1565c0;">বাসের তথ্য খোঁজা হচ্ছে...</div>`;
+    // ২. Promise.all ব্যবহার করে দ্রুত সমান্তরালভাবে (Parallel) বাসগুলোর ডিরেকশন ও সময় যাচাই
+    let results = await Promise.all(
+      data.buses.map(b => processBusDirectionAndTime(b, from, to))
+    );
 
-    try {
-      let res = await fetch(`${API_URL}?action=getBuses&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-      let data = await res.json();
+    // যেগুলো সঠিক অভিমুখে চলেছে শুধু সেগুলোই নেওয়া
+    let validatedBuses = results.filter(item => item !== null);
 
-      if (!data.buses || data.buses.length === 0) {
-        listDiv.innerHTML = `<div style="padding:8px;color:#c62828;">কোনো বাস পাওয়া যায়নি।</div>`;
-        return;
-      }
-
-      let validatedBuses = [];
-      for (let b of data.buses) {
-        let validInfo = await processBusDirectionAndTime(b, from, to);
-        if (validInfo) {
-          validatedBuses.push(validInfo);
-        }
-      }
-
-      if (validatedBuses.length === 0) {
-        listDiv.innerHTML = `<div style="padding:8px;color:#c62828;">এই অভিমুখে কোনো বাস পাওয়া যায়নি।</div>`;
-        return;
-      }
-
-      // From স্টপেজের সময় অনুযায়ী ছোট থেকে বড় (Ascending Order) সাজানো
-      validatedBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
-      listDiv.innerHTML = "";
-
-      validatedBuses.forEach(item => {
-        let b = item.bus;
-        let div = document.createElement("div");
-        div.className = "bus-item";
-
-        div.innerHTML = `
-          <div class="bus-row-1">
-            <span>📍 ${item.fromDisplayName}: ${item.fromTimeStr}</span>
-            <span>➔ 📍 ${item.toDisplayName}: ${item.toTimeStr}</span>
-          </div>
-          <div class="bus-row-2">
-            🚌 ${b.name} - ${b.number} (${b.category})
-          </div>
-        `;
-        div.onclick = () => selectBus(b);
-        listDiv.appendChild(div);
-      });
-
-      let hintDiv = document.createElement("div");
-      hintDiv.id = "busListHint";
-      hintDiv.className = "bus-select-hint";
-      hintDiv.innerText = "👆 উপরের লিস্ট থেকে যেকোনো বাস বেছে নিন";
-      listDiv.appendChild(hintDiv);
-
-    } catch (e) {
-      listDiv.innerHTML = `<div style="padding:8px;color:#c62828;">বাসের তালিকা লোড করা যায়নি।</div>`;
-    }
-  }
-
- // Lat, Long এবং স্টপেজের নিখুঁত উভয়মুখী (Bidirectional) ডিরেকশন ও সময় ফিল্টারিং
-  async function processBusDirectionAndTime(bus, fromInput, toInput) {
-    let busNo = bus.number;
-    let stops = stopsCache[busNo];
-
-    if (!stops) {
-      try {
-        let res = await fetch(`${API_URL}?action=getLive&busNo=${encodeURIComponent(busNo)}`);
-        let data = await res.json();
-        if (data && data.stops) {
-          stopsCache[busNo] = data.stops;
-          stops = data.stops;
-        }
-      } catch (e) {}
+    if (validatedBuses.length === 0) {
+      listDiv.innerHTML = `<div style="padding:12px;color:#c62828;text-align:center;font-weight:bold;">"${from.toUpperCase()}" থেকে "${to.toUpperCase()}" অভিমুখে কোনো বাস পাওয়া যায়নি।</div>`;
+      return;
     }
 
-    if (!stops) stops = [];
+    // ৩. From স্টপেজের সময় অনুযায়ী ছোট থেকে বড় (Ascending Order) সাজানো
+    validatedBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
+    listDiv.innerHTML = "";
 
-    // বাসের সম্পূর্ণ ট্রিপের স্টপ তালিকা তৈরি (Source + মধ্যবর্তী স্টপসমূহ + Dest)
-    let fullTripStops = [];
-    let srcCoords = resolvePlaceCoords(bus.source, stops);
-    if (srcCoords) {
-      fullTripStops.push({
-        stopName: bus.source,
-        lat: srcCoords.lat,
-        lon: srcCoords.lon,
-        time: bus.depTime,
-        isTerminal: true
-      });
-    }
+    // ৪. সঠিক স্টপ ও বাসের নাম-নম্বর সহ কার্ড তৈরি
+    validatedBuses.forEach(item => {
+      let b = item.bus;
+      let div = document.createElement("div");
+      div.className = "bus-item";
 
-    stops.forEach(s => {
-      let lat = Number(s.latitude || s.lat);
-      let lon = Number(s.longitude || s.lon);
-      if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
-        fullTripStops.push({
-          stopName: s.name || s.stopName,
-          lat: lat,
-          lon: lon,
-          time: s.time,
-          isTerminal: false
-        });
-      }
+      div.innerHTML = `
+        <div class="bus-row-1">
+          <span>📍 ${item.fromDisplayName}: ${item.fromTimeStr}</span>
+          <span>➔ 📍 ${item.toDisplayName}: ${item.toTimeStr}</span>
+        </div>
+        <div class="bus-row-2">
+          🚌 <b>${b.name || 'বাস'}</b> - ${b.number} (${b.category || 'PUBLIC'})
+        </div>
+      `;
+      div.onclick = () => selectBus(b);
+      listDiv.appendChild(div);
     });
 
-    let dstCoords = resolvePlaceCoords(bus.dest, stops);
-    if (dstCoords) {
-      fullTripStops.push({
-        stopName: bus.dest,
-        lat: dstCoords.lat,
-        lon: dstCoords.lon,
-        time: bus.arrTime,
-        isTerminal: true
-      });
+    let hintDiv = document.createElement("div");
+    hintDiv.id = "busListHint";
+    hintDiv.className = "bus-select-hint";
+    hintDiv.innerText = "👆 লাইভ ট্র্যাকিংয়ের জন্য উপরের লিস্ট থেকে যেকোনো বাস বেছে নিন";
+    listDiv.appendChild(hintDiv);
+
+  } catch (e) {
+    console.error(e);
+    listDiv.innerHTML = `<div style="padding:12px;color:#c62828;text-align:center;font-weight:bold;">বাসের তালিকা লোড করা সম্ভব হয়নি। নেটওয়ার্ক চেক করুন।</div>`;
+  }
+}
+
+ // সংশোধিত ও নির্ভুল ডিরেকশন ও স্টপ ফিল্টারিং ফাংশন
+async function processBusDirectionAndTime(bus, fromInput, toInput) {
+  let busNo = bus.number;
+  let stops = stopsCache[busNo];
+
+  if (!stops) {
+    try {
+      let res = await fetch(`${API_URL}?action=getLive&busNo=${encodeURIComponent(busNo)}`);
+      let data = await res.json();
+      if (data && data.stops) {
+        stopsCache[busNo] = data.stops;
+        stops = data.stops;
+      }
+    } catch (e) {}
+  }
+
+  if (!stops) stops = [];
+
+  // ১. সম্পূর্ণ যাত্রাপথের স্টপ তালিকা ক্রমানুসারে সাজানো
+  let fullTripStops = [];
+
+  // শুরুর স্টপ
+  fullTripStops.push({
+    stopName: bus.source,
+    time: bus.depTime,
+    isTerminal: true
+  });
+
+  // মধ্যবর্তী স্টপসমূহ (সময়ের ওপর ভিত্তি করে সাজানো)
+  let midStops = stops.filter(s => {
+    let sName = cleanStopName(s.name || s.stopName);
+    return sName !== cleanStopName(bus.source) && sName !== cleanStopName(bus.dest);
+  });
+
+  // স্টপগুলোতে সময় থাকলে তা দিয়ে সাজানো
+  midStops.sort((a, b) => {
+    let tA = timeToMinutes(a.time);
+    let tB = timeToMinutes(b.time);
+    if (tA !== null && tB !== null) return tA - tB;
+    return 0;
+  });
+
+  midStops.forEach(s => {
+    fullTripStops.push({
+      stopName: s.name || s.stopName,
+      time: s.time,
+      isTerminal: false
+    });
+  });
+
+  // গন্তব্য স্টপ
+  fullTripStops.push({
+    stopName: bus.dest,
+    time: bus.arrTime,
+    isTerminal: true
+  });
+
+  let normFrom = cleanStopName(fromInput);
+  let normTo = cleanStopName(toInput);
+
+  // ইনপুট করা নামের সাথে স্টপ মেলানোর লজিক
+  function findStopIndexAndNode(targetName) {
+    if (!targetName) return { index: -1, node: null };
+    for (let i = 0; i < fullTripStops.length; i++) {
+      let s = fullTripStops[i];
+      let n = cleanStopName(s.stopName);
+      if (n === targetName || n.includes(targetName) || targetName.includes(n)) {
+        return { index: i, node: s };
+      }
     }
+    return { index: -1, node: null };
+  }
 
-    if (fullTripStops.length < 2) return null;
+  let fromMatch = findStopIndexAndNode(normFrom);
+  let toMatch = findStopIndexAndNode(normTo);
 
-    let normFrom = cleanStopName(fromInput);
-    let normTo = cleanStopName(toInput);
+  // যদি ইউজার From বা To দেননি এমন ক্ষেত্র ছাড়া অন্যথায় স্টপ অবশ্যই রুটে থাকতে হবে
+  let fromIndex = normFrom ? fromMatch.index : 0;
+  let fromNode = normFrom ? fromMatch.node : fullTripStops[0];
+
+  let toIndex = normTo ? toMatch.index : (fullTripStops.length - 1);
+  let toNode = normTo ? toMatch.node : fullTripStops[fullTripStops.length - 1];
+
+  // যেকোনো একটি স্টপ খুঁজে না পেলে এই বাস বাদ
+  if (fromIndex === -1 || toIndex === -1 || !fromNode || !toNode) {
+    return null;
+  }
+
+  // একই স্টপ হলে বাদ
+  if (fromIndex === toIndex) return null;
+
+  // ২. উল্টো অভিমুখ ফিল্টারিং:
+  // রুটের ক্রমানুসারে From অবশ্যই To-এর আগে থাকতে হবে (fromIndex < toIndex)
+  if (fromIndex > toIndex) {
+    return null; // এটি উল্টো যাত্রাপথের বাস, তাই বাদ দেওয়া হলো
+  }
+
+  // ৩. সময় ভিত্তিক ক্রস-চেক
+  let fMins = timeToMinutes(fromNode.time);
+  let tMins = timeToMinutes(toNode.time);
+
+  if (fMins !== null && tMins !== null && fMins >= tMins) {
+    return null; // সময় অনুযায়ী উল্টো যাত্রা হলে বাদ
+  }
+
+  // প্রদর্শনের জন্য সঠিক স্টপ নাম ও সময় নির্ধারণ
+  let displayFromTime = fromNode.time ? formatCleanTime(fromNode.time) : (fromIndex === 0 ? formatCleanTime(bus.depTime) : "--:--");
+  let displayToTime = toNode.time ? formatCleanTime(toNode.time) : (toIndex === fullTripStops.length - 1 ? formatCleanTime(bus.arrTime) : "--:--");
+
+  let sortMins = fMins !== null ? fMins : (timeToMinutes(bus.depTime) || 0);
+
+  return {
+    bus: bus,
+    fromDisplayName: fromNode.stopName,   // ব্যবহারকারীর দেওয়া/ম্যাচ করা সঠিক From স্টপেজ
+    fromTimeStr: displayFromTime,          // সঠিক From সময়
+    toDisplayName: toNode.stopName,       // ব্যবহারকারীর দেওয়া/ম্যাচ করা সঠিক To স্টপেজ
+    toTimeStr: displayToTime,              // সঠিক To সময়
+    sortMinutes: sortMins
+  };
+}
 
     // স্টপ খোঁজার হেল্পার ফাংশন
     function matchNode(nameTarget) {
