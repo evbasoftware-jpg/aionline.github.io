@@ -688,15 +688,6 @@ function keepMarkersInView() {
       }
     });
 
-    if (latLngs.length > 1) {
-      stopRoutePolyline = L.polyline(latLngs, {
-        color: '#00796b',
-        weight: 5,
-        opacity: 0.75,
-        lineJoin: 'round'
-      }).addTo(map);
-    }
-
     let card = document.getElementById("routeTrackerCard");
     let trackBar = document.getElementById("routeTrackBar");
     card.classList.remove("hidden");
