@@ -687,7 +687,7 @@ function keepMarkersInView() {
         stopMarkersLayer.addLayer(circleMarker);
       }
     });
-
+    
     let card = document.getElementById("routeTrackerCard");
     let trackBar = document.getElementById("routeTrackBar");
     card.classList.remove("hidden");
@@ -750,7 +750,7 @@ function keepMarkersInView() {
     }
   }
 
-        function sortStopsAlongTrip(stops, bus) {
+   function sortStopsAlongTrip(stops, bus) {
     if (!stops || stops.length === 0) return [];
 
     let valid = stops.filter(s => {
@@ -758,6 +758,18 @@ function keepMarkersInView() {
       let lon = Number(s.longitude || s.lon);
       return !isNaN(lat) && !isNaN(lon) && lat !== 0;
     });
+
+     // ইউনিক স্টপ নাম রাখার ফিল্টার
+let uniqueStops = [];
+let seenNames = new Set();
+valid.forEach(s => {
+  let name = cleanStopName(s.name || s.stopName);
+  if (!seenNames.has(name)) {
+    seenNames.add(name);
+    uniqueStops.push(s);
+  }
+});
+valid = uniqueStops;
 
     if (valid.length <= 1) return valid;
 
