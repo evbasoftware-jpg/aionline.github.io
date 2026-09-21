@@ -751,92 +751,87 @@ function keepMarkersInView() {
   }
 
    function sortStopsAlongTrip(stops, bus) {
-    if (!stops || stops.length === 0) return [];
+  if (!stops || stops.length === 0) return [];
 
-    let valid = stops.filter(s => {
-      let lat = Number(s.latitude || s.lat);
-      let lon = Number(s.longitude || s.lon);
-      return !isNaN(lat) && !isNaN(lon) && lat !== 0;
-    });
+  // শুধুমাত্র বৈধ Lat, Lon থাকা স্টপগুলো ফিল্টার করা
+  let valid = stops.filter(s => {
+    let lat = Number(s.latitude || s.lat);
+    let lon = Number(s.longitude || s.lon);
+    return !isNaN(lat) && !isNaN(lon) && lat !== 0;
+  });
 
-     // ইউনিক স্টপ নাম রাখার ফিল্টার
-let uniqueStops = [];
-let seenNames = new Set();
-valid.forEach(s => {
-  let name = cleanStopName(s.name || s.stopName);
-  if (!seenNames.has(name)) {
-    seenNames.add(name);
-    uniqueStops.push(s);
+  // ডুপ্লিকেট স্টপ নাম দূর করা
+  let uniqueStops = [];
+  let seenNames = new Set();
+  valid.forEach(s => {
+    let name = cleanStopName(s.name || s.stopName);
+    if (!seenNames.has(name)) {
+      seenNames.add(name);
+      uniqueStops.push(s);
+    }
+  });
+  valid = uniqueStops;
+
+  if (valid.length <= 1) return valid;
+
+  // শুরুর স্থান (Source) ও গন্তব্যের (Dest) কো-অর্ডিনেট বের করা
+  let srcName = (bus && bus.source) ? bus.source : document.getElementById("searchFrom").value.trim();
+  let destName = (bus && bus.dest) ? bus.dest : document.getElementById("searchTo").value.trim();
+
+  let srcCoords = resolvePlaceCoords(srcName, valid);
+  let destCoords = resolvePlaceCoords(destName, valid);
+
+  // সোর্স না পেলে তালিকার প্রথম স্টপকে রেফারেন্স ধরা হবে
+  if (!srcCoords && valid.length > 0) {
+    srcCoords = {
+      lat: Number(valid[0].latitude || valid[0].lat),
+      lon: Number(valid[0].longitude || valid[0].lon)
+    };
   }
-});
-valid = uniqueStops;
 
-    if (valid.length <= 1) return valid;
+  // --- Lat-Long ভিত্তিক চেইনিং লজিক (ম্যাপের প্রকৃত রোড সিকোয়েন্স) ---
+  let pool = [...valid];
 
-    // ১. স্টপেজগুলোতে সময় থাকলে সময় অনুসারে সাজানো
-    let stopsWithValidTime = valid.filter(s => s.time && timeToMinutes(s.time) !== null);
-    if (stopsWithValidTime.length === valid.length) {
-      return valid.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
-    }
+  // ১. সোর্সের সবচেয়ে কাছের স্টপ দিয়ে যাত্রা শুরু
+  pool.sort((a, b) => {
+    let da = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(a.latitude || a.lat), Number(a.longitude || a.lon));
+    let db = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(b.latitude || b.lat), Number(b.longitude || b.lon));
+    return da - db;
+  });
 
-    // ২. শুরুর টার্মিনাল ও গন্তব্য নির্ধারণ
-    let srcName = (bus && bus.source) ? bus.source : document.getElementById("searchFrom").value.trim();
-    let destName = (bus && bus.dest) ? bus.dest : document.getElementById("searchTo").value.trim();
+  let ordered = [pool.shift()];
 
-    let srcCoords = resolvePlaceCoords(srcName, valid);
-    let destCoords = resolvePlaceCoords(destName, valid);
+  // ২. পরপর নিকটতম ভৌগোলিক দূরত্ব অনুসারে স্টপগুলো জোড়া লাগানো
+  while (pool.length > 0) {
+    let lastStop = ordered[ordered.length - 1];
+    let lastLat = Number(lastStop.latitude || lastStop.lat);
+    let lastLon = Number(lastStop.longitude || lastStop.lon);
 
-    // সোর্স না পেলে প্রথম স্টপকে স্টার্ট পয়েন্ট ধরবে
-    if (!srcCoords && valid.length > 0) {
-      srcCoords = {
-        lat: Number(valid[0].latitude || valid[0].lat),
-        lon: Number(valid[0].longitude || valid[0].lon)
-      };
-    }
+    let nearestIdx = 0;
+    let minD = Infinity;
 
-    // ৩. রোড-পাথ সিকোয়েন্সিং (ম্যাপের প্রকৃত ক্রম বজায় রাখা)
-    let pool = [...valid];
-
-    // সোর্সের সবচেয়ে কাছের স্টপ দিয়ে রুট শুরু
-    pool.sort((a, b) => {
-      let da = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(a.latitude || a.lat), Number(a.longitude || a.lon));
-      let db = getDistanceMeters(srcCoords.lat, srcCoords.lon, Number(b.latitude || b.lat), Number(b.longitude || b.lon));
-      return da - db;
-    });
-
-    let ordered = [pool.shift()];
-
-    // একটির পর একটি নিকটবর্তী স্টপ চেইনের মতো যুক্ত হবে
-    while (pool.length > 0) {
-      let lastStop = ordered[ordered.length - 1];
-      let lastLat = Number(lastStop.latitude || lastStop.lat);
-      let lastLon = Number(lastStop.longitude || lastStop.lon);
-
-      let nearestIdx = 0;
-      let minD = Infinity;
-
-      for (let i = 0; i < pool.length; i++) {
-        let d = getDistanceMeters(lastLat, lastLon, Number(pool[i].latitude || pool[i].lat), Number(pool[i].longitude || pool[i].lon));
-        if (d < minD) {
-          minD = d;
-          nearestIdx = i;
-        }
-      }
-      ordered.push(pool.splice(nearestIdx, 1)[0]);
-    }
-
-    // ৪. যদি কোনো কারণে রুট উল্টো দিক থেকে তৈরি হয়, গন্তব্য অনুযায়ী রিভার্স যাচাই
-    if (destCoords && ordered.length > 1) {
-      let startDistToDest = getDistanceMeters(Number(ordered[0].latitude || ordered[0].lat), Number(ordered[0].longitude || ordered[0].lon), destCoords.lat, destCoords.lon);
-      let endDistToDest = getDistanceMeters(Number(ordered[ordered.length - 1].latitude || ordered[ordered.length - 1].lat), Number(ordered[ordered.length - 1].longitude || ordered[ordered.length - 1].lon), destCoords.lat, destCoords.lon);
-
-      if (startDistToDest < endDistToDest) {
-        ordered.reverse();
+    for (let i = 0; i < pool.length; i++) {
+      let d = getDistanceMeters(lastLat, lastLon, Number(pool[i].latitude || pool[i].lat), Number(pool[i].longitude || pool[i].lon));
+      if (d < minD) {
+        minD = d;
+        nearestIdx = i;
       }
     }
-
-    return ordered;
+    ordered.push(pool.splice(nearestIdx, 1)[0]);
   }
+
+  // ৩. গন্তব্য অনুযায়ী ডিরেকশন যাচাই (প্রয়োজনে রিভার্স)
+  if (destCoords && ordered.length > 1) {
+    let startDistToDest = getDistanceMeters(Number(ordered[0].latitude || ordered[0].lat), Number(ordered[0].longitude || ordered[0].lon), destCoords.lat, destCoords.lon);
+    let endDistToDest = getDistanceMeters(Number(ordered[ordered.length - 1].latitude || ordered[ordered.length - 1].lat), Number(ordered[ordered.length - 1].longitude || ordered[ordered.length - 1].lon), destCoords.lat, destCoords.lon);
+
+    if (startDistToDest < endDistToDest) {
+      ordered.reverse();
+    }
+  }
+
+  return ordered;
+}
 
   function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
     if (!currentBusStopsList || currentBusStopsList.length === 0) return;
