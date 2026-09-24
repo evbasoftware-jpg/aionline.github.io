@@ -1037,24 +1037,20 @@ function keepMarkersInView() {
     return null;
   }
 
-  async function autoSearchBuses() {
+    async function autoSearchBuses() {
     let from = document.getElementById("searchFrom").value.trim();
     let to = document.getElementById("searchTo").value.trim();
     let listDiv = document.getElementById("busList");
 
     if (!from || !to) {
-      if (!from && !to) {
-        listDiv.innerHTML = "";
-      } else {
-        listDiv.innerHTML = `<div style="padding:10px;text-align:center;color:#607d8b;font-size:13px;">উভয় স্টপেজের নাম লিখুন (From এবং To)...</div>`;
-      }
+      listDiv.innerHTML = (!from && !to) ? "" : `<div style="padding:10px;text-align:center;color:#607d8b;font-size:13px;">উভয় স্টপেজের নাম লিখুন (From এবং To)...</div>`;
       return;
     }
 
-    listDiv.innerHTML = `<div style="padding:12px;text-align:center;color:#1565c0;font-weight:bold;">বাসের তথ্য ও সময়সূচি খোঁজা হচ্ছে...</div>`;
+    listDiv.innerHTML = `<div style="padding:12px;text-align:center;color:#1565c0;font-weight:bold;">বাসের তথ্য খোঁজা হচ্ছে...</div>`;
 
     try {
-      let res = await fetch(`${API_URL}?action=getBuses&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+      let res = await fetch(`${API_URL}?action=getBuses`);
       let data = await res.json();
 
       if (!data.buses || data.buses.length === 0) {
@@ -1062,8 +1058,20 @@ function keepMarkersInView() {
         return;
       }
 
+      // ১. প্রতিটি আলাদা ট্রিপকে ইউনিক রাখা (বাস নম্বর + ছাড়ার সময় দিয়ে ট্রিপ চেনা হবে)
+      let uniqueTrips = [];
+      let seenTrips = new Set();
+      data.buses.forEach(b => {
+        let tripKey = `${b.id || ''}_${b.number}_${b.source}_${b.depTime}_${b.dest}_${b.arrTime}`;
+        if (!seenTrips.has(tripKey)) {
+          seenTrips.add(tripKey);
+          uniqueTrips.push(b);
+        }
+      });
+
+      // প্রসেস করা
       let results = await Promise.all(
-        data.buses.map(b => processBusDirectionAndTime(b, from, to))
+        uniqueTrips.map(b => processBusDirectionAndTime(b, from, to))
       );
 
       let validatedBuses = results.filter(item => item !== null);
@@ -1073,10 +1081,24 @@ function keepMarkersInView() {
         return;
       }
 
-      validatedBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
+           // ২. একই বাসের একই ট্রিপ যেন দুবার না আসে
+      let finalBuses = [];
+      let seenResultKeys = new Set();
+      validatedBuses.forEach(item => {
+        let b = item.bus;
+        // আরও সুনির্দিষ্ট ও নির্ভরযোগ্য ইউনিক কি তৈরি
+        let uniqueCardKey = `${(b.number || '').trim()}_${(b.name || '').trim()}_${(item.fromDisplayName || '').trim()}_${(item.fromTimeStr || '').trim()}_${(item.toDisplayName || '').trim()}_${(item.toTimeStr || '').trim()}`.toUpperCase();
+        
+        if (!seenResultKeys.has(uniqueCardKey)) {
+          seenResultKeys.add(uniqueCardKey);
+          finalBuses.push(item);
+        }
+      });
+
+      finalBuses.sort((a, b) => a.sortMinutes - b.sortMinutes);
       listDiv.innerHTML = "";
 
-      validatedBuses.forEach(item => {
+      finalBuses.forEach(item => {
         let b = item.bus;
         let div = document.createElement("div");
         div.className = "bus-item";
@@ -1106,7 +1128,7 @@ function keepMarkersInView() {
     }
   }
 
-  async function processBusDirectionAndTime(bus, fromInput, toInput) {
+async function processBusDirectionAndTime(bus, fromInput, toInput) {
     let busNo = bus.number;
     let stops = stopsCache[busNo];
 
@@ -1163,12 +1185,21 @@ function keepMarkersInView() {
     let normFrom = cleanStopName(fromInput);
     let normTo = cleanStopName(toInput);
 
+    // সঠিক নাম মেলানোর লজিক (Exact match আগে, Partial match পরে)
     function findStopIndexAndNode(targetName) {
       if (!targetName) return { index: -1, node: null };
+      
       for (let i = 0; i < fullTripStops.length; i++) {
         let s = fullTripStops[i];
         let n = cleanStopName(s.stopName);
-        if (n === targetName || n.includes(targetName) || targetName.includes(n)) {
+        if (n === targetName) {
+          return { index: i, node: s };
+        }
+      }
+      for (let i = 0; i < fullTripStops.length; i++) {
+        let s = fullTripStops[i];
+        let n = cleanStopName(s.stopName);
+        if (n.includes(targetName) || targetName.includes(n)) {
           return { index: i, node: s };
         }
       }
@@ -1188,19 +1219,13 @@ function keepMarkersInView() {
       return null;
     }
 
-    if (fromIndex === toIndex) return null;
+    if (fromIndex >= toIndex) return null; // উল্টো দিক বা একই স্টপ বাদ
 
-    // উল্টো দিকের ট্রিপ হলে বাদ
-    if (fromIndex > toIndex) {
-      return null;
-    }
-
-        let fMins = timeToMinutes(fromNode.time);
+    let fMins = timeToMinutes(fromNode.time);
     let tMins = timeToMinutes(toNode.time);
 
-    // যদি রাত পেরিয়ে পরদিন ভোরে পৌঁছায় (Overnight trip)
     if (fMins !== null && tMins !== null && tMins < fMins) {
-      tMins += 24 * 60; // পৌঁছানোর সময়ের সাথে ২৪ ঘণ্টা (১৪৪০ মিনিট) যোগ হবে
+      tMins += 24 * 60; // Overnight
     }
 
     if (fMins !== null && tMins !== null && fMins >= tMins) {
