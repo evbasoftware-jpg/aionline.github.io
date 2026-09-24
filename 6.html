@@ -713,7 +713,7 @@ function keepMarkersInView() {
     evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
 
-  function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
+    function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
     stopMarkersLayer.clearLayers();
     if (stopRoutePolyline) {
       map.removeLayer(stopRoutePolyline);
@@ -754,6 +754,7 @@ function keepMarkersInView() {
     
     let card = document.getElementById("routeTrackerCard");
     let trackBar = document.getElementById("routeTrackBar");
+    let timelineContainer = document.querySelector(".route-timeline-container");
     card.classList.remove("hidden");
 
     let displayStops = orderedStops;
@@ -772,10 +773,12 @@ function keepMarkersInView() {
       
       let circle = document.createElement("div");
       circle.className = "route-stop-circle";
+      
       if (idx < activeRelativeIndex) {
         circle.classList.add("passed");
       } else if (idx === activeRelativeIndex) {
         circle.classList.add("active");
+        node.id = "currentActiveTimelineNode"; // বর্তমান নোড চিহ্নিত করা হলো
       }
 
       let label = document.createElement("div");
@@ -792,58 +795,51 @@ function keepMarkersInView() {
 
     if (count > 1) {
       let stepPercent = 100 / (count - 1);
-      let progressIndex = activeRelativeIndex;
-      let ratio = 0;
-
-      // যদি বাস কোনো স্টপের ১০০ মিটারের মধ্যে থাকে, তবে সরাসরি সেই স্টপের ওপর বসবে
+      
       let curStop = displayStops[activeRelativeIndex];
       let curLat = Number(curStop.latitude || curStop.lat);
       let curLon = Number(curStop.longitude || curStop.lon);
-      let distToNearest = getDistanceMeters(busLat, busLon, curLat, curLon);
+      let distToCur = getDistanceMeters(busLat, busLon, curLat, curLon);
 
-      if (distToNearest > 100) {
-        if (activeRelativeIndex < count - 1) {
-          let nextStop = displayStops[activeRelativeIndex + 1];
-          let nextLat = Number(nextStop.latitude || nextStop.lat);
-          let nextLon = Number(nextStop.longitude || nextStop.lon);
+      let finalProgressPercent = activeRelativeIndex * stepPercent;
 
-          let totalSegmentDist = getDistanceMeters(curLat, curLon, nextLat, nextLon);
-          let distToNext = getDistanceMeters(busLat, busLon, nextLat, nextLon);
+      if (distToCur <= 200) {
+        finalProgressPercent = activeRelativeIndex * stepPercent;
+      } else if (activeRelativeIndex < count - 1) {
+        let nextStop = displayStops[activeRelativeIndex + 1];
+        let nextLat = Number(nextStop.latitude || nextStop.lat);
+        let nextLon = Number(nextStop.longitude || nextStop.lon);
 
-          // বাস যদি বর্তমান স্টপ ও পরবর্তী স্টপের মাঝখানে থাকে
-          if (distToNext < totalSegmentDist && distToNearest < totalSegmentDist) {
-            progressIndex = activeRelativeIndex;
-            ratio = Math.min(Math.max(distToNearest / totalSegmentDist, 0), 1);
-          } 
-          // বাস যদি বর্তমান স্টপেজের আগেই থাকে (পূর্ববর্তী সেগমেন্টে)
-          else if (activeRelativeIndex > 0) {
-            let prevStop = displayStops[activeRelativeIndex - 1];
-            let prevLat = Number(prevStop.latitude || prevStop.lat);
-            let prevLon = Number(prevStop.longitude || prevStop.lon);
-            let prevSegmentDist = getDistanceMeters(prevLat, prevLon, curLat, curLon);
-            
-            progressIndex = activeRelativeIndex - 1;
-            let distFromPrev = getDistanceMeters(busLat, busLon, prevLat, prevLon);
-            ratio = Math.min(Math.max(distFromPrev / prevSegmentDist, 0), 1);
-          }
-        } else if (activeRelativeIndex > 0) {
-          // শেষ স্টপের ক্ষেত্রে
-          let prevStop = displayStops[activeRelativeIndex - 1];
-          let prevLat = Number(prevStop.latitude || prevStop.lat);
-          let prevLon = Number(prevStop.longitude || prevStop.lon);
-          let prevSegmentDist = getDistanceMeters(prevLat, prevLon, curLat, curLon);
+        let segDist = getDistanceMeters(curLat, curLon, nextLat, nextLon);
+        let distToNext = getDistanceMeters(busLat, busLon, nextLat, nextLon);
 
-          progressIndex = activeRelativeIndex - 1;
-          let distFromPrev = getDistanceMeters(busLat, busLon, prevLat, prevLon);
-          ratio = Math.min(Math.max(distFromPrev / prevSegmentDist, 0), 1);
+        if (segDist > 0) {
+          let ratio = Math.min(Math.max((segDist - distToNext) / segDist, 0), 1);
+          finalProgressPercent = (activeRelativeIndex + ratio) * stepPercent;
         }
       }
 
-      let busPercent = (progressIndex + ratio) * stepPercent;
-      indicator.style.left = `${Math.min(Math.max(busPercent, 2), 98)}%`;
+      indicator.style.left = `${Math.min(Math.max(finalProgressPercent, 2), 98)}%`;
     } else {
       indicator.style.left = "50%";
     }
+
+    // --- বর্তমান স্টপেজকে নিজে থেকেই স্ক্রিনের মাঝে দেখানোর লজিক (Auto Center Scroll) ---
+    setTimeout(() => {
+      let activeElem = document.getElementById("currentActiveTimelineNode");
+      if (activeElem && timelineContainer) {
+        let containerWidth = timelineContainer.clientWidth;
+        let nodeLeft = activeElem.offsetLeft;
+        let nodeWidth = activeElem.clientWidth;
+        
+        // বর্তমান স্টপেজটিকে ঠিক মাঝখানে স্ক্রোল করে আনা
+        let scrollTarget = nodeLeft - (containerWidth / 2) + (nodeWidth / 2);
+        timelineContainer.scrollTo({
+          left: scrollTarget,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   }
 
    function sortStopsAlongTrip(stops, bus) {
