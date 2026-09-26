@@ -1012,8 +1012,8 @@ function keepMarkersInView() {
       return;
     }
 
-    // টাইপিং শেষ হওয়া পর্যন্ত অপেক্ষা করার সময় 1000ms করা হলো
-    debounceTimer = setTimeout(autoSearchBuses,1000);
+    // টাইপিং শেষ হওয়া পর্যন্ত অপেক্ষা করার সময় 500ms করা হলো
+    debounceTimer = setTimeout(autoSearchBuses,500);
   };
 
   document.getElementById("searchFrom").addEventListener("input", handleAutoSearch);
