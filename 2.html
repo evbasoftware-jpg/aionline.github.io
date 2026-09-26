@@ -174,16 +174,18 @@
     }
     .route-live-bus-indicator {
       position: absolute;
-      top: -26px;
-      transform: translateX(-50%);
+      top: 50%;
+      transform: translate(-50%, -50%);
       font-size: 24px;
       z-index: 5;
       transition: left 0.4s ease;
       animation: busBounce 1.5s infinite;
+      pointer-events: none; /* ক্লিকের সুবিধা বজায় রাখার জন্য */
     }
+
     @keyframes busBounce {
-      0%, 100% { transform: translate(-50%, 0); }
-      50% { transform: translate(-50%, -4px); }
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, calc(-50% - 3px)); }
     }
   
   .route-stop-node {
