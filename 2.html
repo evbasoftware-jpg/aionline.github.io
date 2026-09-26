@@ -54,7 +54,7 @@
     .container { max-width: 1000px; margin: 12px auto; background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     h2, h3 { text-align: center; color: #0d47a1; margin-top: 5px; }
     .btn { background: #1565c0; color: #fff; padding: 12px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin: 6px 0; font-size: 14px; }
-    .btn-stop { background: #00796b; border: 2px solid #004d40; }
+    .btn-stop { background: #caf6fa; color: blue; border: 2px solid #004d40; }
     .btn-cancel { background: #c62828; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hidden { display: none !important; }
@@ -126,7 +126,7 @@
       border: 1px dashed #90caf9;
     }
 
-    #currentLocationBox { text-align: center; font-size: 17px; font-weight: bold; color: #2e7d32; background: #e8f5e9; padding: 12px; border-radius: 8px; margin: 12px 0; }
+    #currentLocationBox { text-align: center; font-size: 17px; font-weight: bold; color: #de12b2; background: #ffedfb; padding: 12px; border-radius: 8px; margin: 12px 0; }
     .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px; }
     .card { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 13px; }
     .card b { color: #1565c0; }
@@ -229,11 +229,31 @@
       transform: translateX(-50%);
       white-space: normal;
     }
+  
+        /* নামের পজিশন ও প্যাডিং ঠিক করা */
     .route-stop-name.pos-bottom {
-      top: 30px;
+      top: 23px;
     }
     .route-stop-name.pos-top {
-      bottom: 30px;
+      bottom: 25px;
+    }
+
+    /* নিচের নামের জন্য উপরের গোলকের দিকে নির্দেশক তির চিহ্ন (↑) */
+    .route-stop-name.pos-bottom::before {
+      content: "↑";
+      display: block;
+      font-size: 34px;
+      color: orange;
+      line-height: 0.7;
+    }
+
+    /* উপরের নামের জন্য নিচের গোলকের দিকে নির্দেশক তির চিহ্ন (↓) */
+    .route-stop-name.pos-top::after {
+      content: "↓";
+      display: block;
+      font-size: 34px;
+      color: orange;
+      line-height: 0.7;
     }
 
     .stop-marker-label {
