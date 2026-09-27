@@ -629,32 +629,50 @@ observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function formatCleanTime(timeStr) {
-    if (!timeStr) return "";
-    let str = String(timeStr).trim();
-    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(str)) return str.toUpperCase();
-    let simpleMatch = str.match(/^(\d{1,2}):(\d{2})$/);
-    if (simpleMatch) {
-      let h = parseInt(simpleMatch[1], 10);
-      let m = simpleMatch[2];
-      let ampm = h >= 12 ? 'PM' : 'AM';
+  if (!timeStr) return "--:--";
+  let str = String(timeStr).trim();
+
+  // যদি গুগল শিটের সেই ১৮৯৯ তারিখযুক্ত স্ট্রিং আসে (যেমন: SAT DEC 30 1899 11:20:00...)
+  let matchFullDate = str.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+  if (matchFullDate) {
+    let h = parseInt(matchFullDate[1], 10);
+    let m = matchFullDate[2];
+    let ampm = matchFullDate[3] ? matchFullDate[3].toUpperCase() : '';
+
+    // যদি AM/PM না থাকে কিন্তু ২৪ ঘণ্টার ফরম্যাটে থাকে
+    if (!ampm) {
+      ampm = h >= 12 ? 'PM' : 'AM';
       h = h % 12 || 12;
-      return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
     }
-    return str;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
   }
 
-  function timeToMinutes(tStr) {
-    if (!tStr) return null;
-    let str = String(tStr).trim().toUpperCase();
-    let m = str.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/);
-    if (!m) return null;
-    let h = parseInt(m[1], 10);
-    let min = parseInt(m[2], 10);
-    let ampm = m[3];
-    if (ampm === 'PM' && h < 12) h += 12;
-    if (ampm === 'AM' && h === 12) h = 0;
-    return h * 60 + min;
+  // যদি 11.20 বা 11:20 এমন থাকে
+  let dotMatch = str.match(/^(\d{1,2})[.:](\d{2})\s*(AM|PM)?$/i);
+  if (dotMatch) {
+    let h = parseInt(dotMatch[1], 10);
+    let m = dotMatch[2];
+    let ampm = dotMatch[3] ? dotMatch[3].toUpperCase() : (h >= 12 ? 'PM' : 'AM');
+    h = h % 12 || 12;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
   }
+
+  return str.toUpperCase();
+}
+
+function timeToMinutes(tStr) {
+  if (!tStr) return null;
+  let str = String(tStr).trim().toUpperCase();
+  let m = str.match(/(\d{1,2})[.:](\d{2})\s*(AM|PM)?/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  let min = parseInt(m[2], 10);
+  let ampm = m[3];
+
+  if (ampm === 'PM' && h < 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
+}
 
   function cleanStopName(name) {
     if (!name) return "";
