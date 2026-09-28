@@ -852,7 +852,7 @@ function timeToMinutes(tStr) {
     evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
 
-  // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (স্কিপ স্টপ আলাদা চিহ্ন সহ)
+   // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (Lat-Long দূরত্বের ভিত্তিতে আনুপাতিক গ্যাপ সহ)
   function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
     stopMarkersLayer.clearLayers();
     if (stopRoutePolyline) {
@@ -867,6 +867,7 @@ function timeToMinutes(tStr) {
 
     let latLngs = [];
 
+    // ১. ম্যাপে স্টপ মার্কার যোগ করা
     orderedStops.forEach((s, i) => {
       let sLat = Number(s.latitude || s.lat);
       let sLon = Number(s.longitude || s.lon);
@@ -905,6 +906,7 @@ function timeToMinutes(tStr) {
     let displayStops = orderedStops;
     let activeRelativeIndex = nearestStopIndex;
 
+    // ২. Lat-Long অনুযায়ী প্রতিটি স্টপের ক্রমপুঞ্জিত দূরত্ব (Cumulative Distance) নির্ণয়
     let cumulativeDists = [0];
     let totalTripDist = 0;
 
@@ -919,77 +921,76 @@ function timeToMinutes(tStr) {
       cumulativeDists.push(totalTripDist);
     }
 
-    // dynamicBarWidth বাড়িয়ে দিন যাতে স্ক্রল করে প্রতিটি স্টপ স্পষ্ট দেখা যায়
-let dynamicBarWidth = Math.max(
-  Math.round((totalTripDist / 1000) * 80), 
-  displayStops.length * 130, // প্রতি স্টপের জন্য কমপক্ষে ১৩০ পিক্সেল জায়গা
-  450
-);
-trackBar.style.minWidth = `${dynamicBarWidth}px`;
+    // ৩. Lat-Long দূরত্বের স্কেল ও পিক্সেল পজিশন হিসাব
+    const PIXELS_PER_KM = 25;   // প্রতি ১ কিলোমিটারে ২৫ পিক্সেল দূরত্ব
+    const MIN_STOP_GAP_PX = 75; // পাশাপাশি দুটি স্টপের মধ্যে ন্যূনতম গ্যাপ যাতে নাম না মেশে
 
-trackBar.innerHTML = `
-  <div class="route-line-bg"></div>
-  <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
-`;
+    let stopPixelPositions = [35]; // শুরুর স্টপের জন্য বামদিকের মার্জিন (35px)
 
-// ন্যূনতম পার্সেন্টেজ গ্যাপ নিশ্চিত করার লজিক
-let minPercentGap = 100 / (displayStops.length + 1); // প্রতিটি স্টপের মধ্যে ন্যূনতম ফাঁক
-let rawPercents = displayStops.map((s, idx) => {
-  return totalTripDist > 0 ? (cumulativeDists[idx] / totalTripDist) * 90 + 5 : 50;
-});
+    for (let i = 1; i < displayStops.length; i++) {
+      let segmentDistMeters = cumulativeDists[i] - cumulativeDists[i - 1];
+      let segmentDistKm = segmentDistMeters / 1000;
 
-// যদি দুটি স্টপের পার্সেন্টেজ খুব কাছাকাছি চলে আসে, তবে কিছুটা ফাঁকা করে দেওয়া
-for (let i = 1; i < rawPercents.length; i++) {
-  if (rawPercents[i] - rawPercents[i - 1] < 8) { // ৮% এর কম ফাঁক থাকলে
-    rawPercents[i] = rawPercents[i - 1] + 8;
-  }
-}
-
-displayStops.forEach((s, idx) => {
-  let sName = s.name || s.stopName || "STOP";
-  let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cleanStopName(sName));
-
-  let node = document.createElement("div");
-  node.className = "route-stop-node";
-
-  // সংশোধিত পার্সেন্টেজ পজিশন ব্যবহার করুন
-  let percentPos = rawPercents[idx];
-  node.style.left = `${percentPos}%`;
-
-  let circle = document.createElement("div");
-  circle.className = "route-stop-circle";
-
-  if (isSkipped) {
-    circle.classList.add("skipped");
-  } else {
-    if (idx < activeRelativeIndex) {
-      circle.classList.add("passed");
-    } else if (idx === activeRelativeIndex) {
-      circle.classList.add("active");
-      node.id = "currentActiveTimelineNode";
+      // বাস্তব দূরত্বের পিক্সেল (কিন্তু সর্বনিম্ন ৭৫ পিক্সেল বজায় রাখবে)
+      let actualPxGap = Math.max(segmentDistKm * PIXELS_PER_KM, MIN_STOP_GAP_PX);
+      stopPixelPositions.push(stopPixelPositions[i - 1] + actualPxGap);
     }
-  }
 
-  let label = document.createElement("div");
-  label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'} ${isSkipped ? 'skipped-name' : ''}`;
-  
-  if (isSkipped) {
-    label.innerHTML = `${sName}<span class="skip-badge">(দাঁড়াবে না)</span>`;
-  } else {
-    label.innerText = sName;
-  }
+    // টাইমলাইনের মোট প্রস্থ নির্ধারণ
+    let dynamicBarWidth = stopPixelPositions[stopPixelPositions.length - 1] + 55;
+    trackBar.style.minWidth = `${dynamicBarWidth}px`;
 
-  node.appendChild(circle);
-  node.appendChild(label);
-  trackBar.appendChild(node);
-});
+    trackBar.innerHTML = `
+      <div class="route-line-bg"></div>
+      <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
+    `;
 
-        let indicator = document.getElementById("routeBusIndicator");
+    // ৪. স্টপ নোড ও লেবেল তৈরি করে টাইমলাইনে বসানো
+    displayStops.forEach((s, idx) => {
+      let sName = s.name || s.stopName || "STOP";
+      let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cleanStopName(sName));
+
+      let node = document.createElement("div");
+      node.className = "route-stop-node";
+
+      // বাস্তব দূরত্বের পিক্সেল অবস্থান
+      node.style.left = `${stopPixelPositions[idx]}px`;
+
+      let circle = document.createElement("div");
+      circle.className = "route-stop-circle";
+
+      if (isSkipped) {
+        circle.classList.add("skipped");
+      } else {
+        if (idx < activeRelativeIndex) {
+          circle.classList.add("passed");
+        } else if (idx === activeRelativeIndex) {
+          circle.classList.add("active");
+          node.id = "currentActiveTimelineNode";
+        }
+      }
+
+      let label = document.createElement("div");
+      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'} ${isSkipped ? 'skipped-name' : ''}`;
+      
+      if (isSkipped) {
+        label.innerHTML = `${sName}<span class="skip-badge">(দাঁড়াবে না)</span>`;
+      } else {
+        label.innerText = sName;
+      }
+
+      node.appendChild(circle);
+      node.appendChild(label);
+      trackBar.appendChild(node);
+    });
+
+    // ৫. বাসের লাইভ ইন্ডিকেটরের পজিশন বাস্তব দূরত্বের সাপেক্ষে নির্ধারণ
+    let indicator = document.getElementById("routeBusIndicator");
     let count = displayStops.length;
 
     if (count > 1 && totalTripDist > 0) {
-      let curStopPercent = rawPercents[activeRelativeIndex];
-      let finalBusPercent = curStopPercent;
+      let curStopPx = stopPixelPositions[activeRelativeIndex];
+      let finalBusPx = curStopPx;
 
       if (activeRelativeIndex < count - 1) {
         let curStop = displayStops[activeRelativeIndex];
@@ -1005,17 +1006,17 @@ displayStops.forEach((s, idx) => {
 
         if (segDist > 0) {
           let progressRatio = Math.min(Math.max((segDist - distToNext) / segDist, 0), 1);
-          let nextStopPercent = rawPercents[activeRelativeIndex + 1];
-          finalBusPercent = curStopPercent + (progressRatio * (nextStopPercent - curStopPercent));
+          let nextStopPx = stopPixelPositions[activeRelativeIndex + 1];
+          finalBusPx = curStopPx + (progressRatio * (nextStopPx - curStopPx));
         }
       }
 
-      indicator.style.left = `${Math.min(Math.max(finalBusPercent, 3), 97)}%`;
+      indicator.style.left = `${finalBusPx}px`;
     } else {
-      indicator.style.left = "50%";
+      indicator.style.left = "35px";
     }
 
-
+    // ৬. সক্রিয় (বর্তমান) স্টপটিকে স্ক্রিনের মাঝখানে অটো-স্ক্রোল করা
     setTimeout(() => {
       let activeElem = document.getElementById("currentActiveTimelineNode");
       if (activeElem && timelineContainer) {
