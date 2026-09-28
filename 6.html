@@ -1369,6 +1369,42 @@ function renderStopsCheckboxes() {
     }
   }
 
+    // সোর্স ও ডেস্টিনেশনের দূরত্বের ভিত্তিতে মাঝের স্টপের আনুমানিক সময় বের করার হেল্পার ফাংশন
+  function estimateStopTime(targetStop, srcCoords, destCoords, depTimeStr, arrTimeStr) {
+    let depMins = timeToMinutes(depTimeStr);
+    let arrMins = timeToMinutes(arrTimeStr);
+
+    if (depMins === null || arrMins === null || !srcCoords || !destCoords) return null;
+    let sLat = Number(targetStop.lat || targetStop.latitude);
+    let sLon = Number(targetStop.lon || targetStop.longitude);
+    if (!sLat || !sLon) return null;
+
+    // মধ্যরাত পার হলে সময় সমন্বয়
+    if (arrMins < depMins) arrMins += 24 * 60;
+    let totalTripMinutes = arrMins - depMins;
+
+    let totalTripDistance = getDistanceMeters(srcCoords.lat, srcCoords.lon, destCoords.lat, destCoords.lon);
+    if (totalTripDistance <= 0) return null;
+
+    let stopDistance = getDistanceMeters(srcCoords.lat, srcCoords.lon, sLat, sLon);
+
+    // দূরত্বের আনুপাতিক সময়
+    let ratio = Math.min(Math.max(stopDistance / totalTripDistance, 0), 1);
+    let estimatedMins = Math.round(depMins + (ratio * totalTripMinutes));
+
+    // মিনিটে রূপান্তর থেকে HH:MM AM/PM তৈরি
+    let estHour = Math.floor(estimatedMins / 60) % 24;
+    let estMinute = estimatedMins % 60;
+    let ampm = estHour >= 12 ? 'PM' : 'AM';
+    estHour = estHour % 12 || 12;
+
+    let hStr = String(estHour).padStart(2, '0');
+    let mStr = String(estMinute).padStart(2, '0');
+
+    return `${hStr}:${mStr} ${ampm}`;
+  }
+
+  // বাসের দিক ও প্রতিটি স্টপের সঠিক/আনুমানিক সময় নির্ণয়কারী মূল ফাংশন
   async function processBusDirectionAndTime(bus, fromInput, toInput) {
     let busNo = bus.number;
     let stops = stopsCache[busNo];
@@ -1386,14 +1422,19 @@ function renderStopsCheckboxes() {
 
     if (!stops) stops = [];
 
+    // মাস্টার স্টপ থেকেও তথ্য নেওয়া যাতে সব স্টপের ল্যাট-লং পাওয়া যায়
+    let allKnownStops = [...stops];
+    if (masterStopsList && masterStopsList.length > 0) {
+      allKnownStops.push(...masterStopsList);
+    }
+
     let normFrom = cleanStopName(fromInput);
     let normTo = cleanStopName(toInput);
 
-    // যদি বাসটির কোনো নির্বাচিত স্টপ থাকে, তবে যাত্রীর স্টপ সেখানে দাঁড়ায় কি না দেখা
+    // বাসের নির্বাচিত স্টপ অনুযায়ী ফিল্টার
     let allowed = bus.selectedStops ? bus.selectedStops : [];
     if (allowed.length > 0) {
       if (!allowed.includes(normFrom) || !allowed.includes(normTo)) {
-        // যাত্রী যেখান থেকে উঠবে বা নামবে সেখানে যদি বাস না থামে তবে এই বাস বাদ
         return null;
       }
     }
@@ -1402,78 +1443,75 @@ function renderStopsCheckboxes() {
       if (!targetName) return { index: -1, node: null };
       for (let i = 0; i < stopList.length; i++) {
         let s = stopList[i];
-        let n = cleanStopName(s.stopName);
+        let n = cleanStopName(s.stopName || s.name);
         if (n === targetName) return { index: i, node: s };
       }
       for (let i = 0; i < stopList.length; i++) {
         let s = stopList[i];
-        let n = cleanStopName(s.stopName);
+        let n = cleanStopName(s.stopName || s.name);
         if (n.includes(targetName) || targetName.includes(n)) return { index: i, node: s };
       }
       return { index: -1, node: null };
     }
 
-    let sortedBusStops = stops.map(s => ({
-      stopName: s.name || s.stopName,
-      time: s.time,
-      isTerminal: false
-    })).sort((a, b) => {
-      let tA = timeToMinutes(a.time);
-      let tB = timeToMinutes(b.time);
-      if (tA !== null && tB !== null) return tA - tB;
-      return 0;
+    // ১. সোর্স ও ডেস্টিনেশনের ভৌগোলিক কোঅর্ডিনেট (Lat/Lon) বের করা
+    let srcCoords = resolvePlaceCoords(bus.source, allKnownStops);
+    let destCoords = resolvePlaceCoords(bus.dest, allKnownStops);
+
+    // ২. মধ্যবর্তী সব স্টপ সাজানো
+    let midStops = allKnownStops
+      .filter(s => {
+        let sName = cleanStopName(s.stopName || s.name);
+        return sName && sName !== cleanStopName(bus.source) && sName !== cleanStopName(bus.dest);
+      })
+      .map(s => ({
+        stopName: s.stopName || s.name,
+        time: s.time || "",
+        lat: Number(s.latitude || s.lat),
+        lon: Number(s.longitude || s.lon),
+        isTerminal: false
+      }));
+
+    // ডুপ্লিকেট স্টপ বাদ দেওয়া
+    let uniqueMidStops = [];
+    let seenNames = new Set();
+    midStops.forEach(s => {
+      let nm = cleanStopName(s.stopName);
+      if (!seenNames.has(nm)) {
+        seenNames.add(nm);
+        uniqueMidStops.push(s);
+      }
     });
 
-    let fromMatch1 = findStopIndexAndNode(sortedBusStops, normFrom);
-    let toMatch1 = findStopIndexAndNode(sortedBusStops, normTo);
-
-    if (fromMatch1.index !== -1 && toMatch1.index !== -1 && fromMatch1.index < toMatch1.index) {
-      let fMins = timeToMinutes(fromMatch1.node.time);
-      let tMins = timeToMinutes(toMatch1.node.time);
-
-      if (fMins !== null && tMins !== null && tMins < fMins) {
-        tMins += 24 * 60;
-      }
-
-      if (fMins === null || tMins === null || fMins < tMins) {
-        return {
-          bus: bus,
-          fromDisplayName: fromMatch1.node.stopName,
-          fromTimeStr: fromMatch1.node.time ? formatCleanTime(fromMatch1.node.time) : "--:--",
-          toDisplayName: toMatch1.node.stopName,
-          toTimeStr: toMatch1.node.time ? formatCleanTime(toMatch1.node.time) : "--:--",
-          sortMinutes: fMins !== null ? fMins : 0
-        };
-      }
-    }
-
+    // ৩. সম্পূর্ণ রুটের পূর্ণ তালিকা তৈরি
     let fullTripStops = [];
     fullTripStops.push({
       stopName: bus.source,
       time: bus.depTime,
+      lat: srcCoords ? srcCoords.lat : null,
+      lon: srcCoords ? srcCoords.lon : null,
       isTerminal: true
     });
 
-    let midStops = sortedBusStops.filter(s => {
-      let sName = cleanStopName(s.stopName);
-      return sName !== cleanStopName(bus.source) && sName !== cleanStopName(bus.dest);
-    });
-    fullTripStops.push(...midStops);
+    fullTripStops.push(...uniqueMidStops);
 
     fullTripStops.push({
       stopName: bus.dest,
       time: bus.arrTime,
+      lat: destCoords ? destCoords.lat : null,
+      lon: destCoords ? destCoords.lon : null,
       isTerminal: true
     });
 
-    let fromMatch2 = findStopIndexAndNode(fullTripStops, normFrom);
-    let toMatch2 = findStopIndexAndNode(fullTripStops, normTo);
+    // ৪. যাত্রী যেখান থেকে উঠবে (From) এবং নামবে (To) তা খোঁজা
+    let fromMatch = findStopIndexAndNode(fullTripStops, normFrom);
+    let toMatch = findStopIndexAndNode(fullTripStops, normTo);
 
-    let fromIndex = normFrom ? fromMatch2.index : 0;
-    let fromNode = normFrom ? fromMatch2.node : fullTripStops[0];
+    let fromIndex = normFrom ? fromMatch.index : 0;
+    let fromNode = normFrom ? fromMatch.node : fullTripStops[0];
 
-    let toIndex = normTo ? toMatch2.index : (fullTripStops.length - 1);
-    let toNode = normTo ? toMatch2.node : fullTripStops[fullTripStops.length - 1];
+    let toIndex = normTo ? toMatch.index : (fullTripStops.length - 1);
+    let toNode = normTo ? toMatch.node : fullTripStops[fullTripStops.length - 1];
 
     if (fromIndex === -1 || toIndex === -1 || !fromNode || !toNode) {
       return null;
@@ -1481,27 +1519,34 @@ function renderStopsCheckboxes() {
 
     if (fromIndex >= toIndex) return null;
 
-    let fMins = timeToMinutes(fromNode.time);
-    let tMins = timeToMinutes(toNode.time);
-
-    if (fMins !== null && tMins !== null && tMins < fMins) {
-      tMins += 24 * 60;
+    // ৫. সময়ের হিসাব (সময় লেখা থাকলে সেটি নেবে, না থাকলে দূরত্বের ভিত্তিতে আনুমানিক সময় বের করবে)
+    let fTime = fromNode.time;
+    if (!fTime) {
+      if (fromIndex === 0) {
+        fTime = bus.depTime;
+      } else {
+        fTime = estimateStopTime(fromNode, srcCoords, destCoords, bus.depTime, bus.arrTime);
+      }
     }
 
-    if (fMins !== null && tMins !== null && fMins >= tMins) {
-      return null;
+    let tTime = toNode.time;
+    if (!tTime) {
+      if (toIndex === fullTripStops.length - 1) {
+        tTime = bus.arrTime;
+      } else {
+        tTime = estimateStopTime(toNode, srcCoords, destCoords, bus.depTime, bus.arrTime);
+      }
     }
 
-    let displayFromTime = fromNode.time ? formatCleanTime(fromNode.time) : (fromIndex === 0 ? formatCleanTime(bus.depTime) : "--:--");
-    let displayToTime = toNode.time ? formatCleanTime(toNode.time) : (toIndex === fullTripStops.length - 1 ? formatCleanTime(bus.arrTime) : "--:--");
+    let fMins = timeToMinutes(fTime);
     let sortMins = fMins !== null ? fMins : (timeToMinutes(bus.depTime) || 0);
 
     return {
       bus: bus,
       fromDisplayName: fromNode.stopName,
-      fromTimeStr: displayFromTime,
+      fromTimeStr: fTime ? formatCleanTime(fTime) : "--:--",
       toDisplayName: toNode.stopName,
-      toTimeStr: displayToTime,
+      toTimeStr: tTime ? formatCleanTime(tTime) : "--:--",
       sortMinutes: sortMins
     };
   }
