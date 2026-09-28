@@ -178,12 +178,14 @@
       align-items: center;
       gap: 8px;
     }
-    .route-timeline-container {
-      overflow-x: auto;
-      padding: 60px 15px 60px 15px;
-      position: relative;
-      scrollbar-width: thin;
-    }
+  
+  /* route-timeline-container-এর প্যাডিং ও স্ক্রল ঠিক রাখুন */
+.route-timeline-container {
+  overflow-x: auto;
+  padding: 70px 25px 70px 25px; /* উপরে নিচে একটু বেশি জায়গা */
+  position: relative;
+  scrollbar-width: thin;
+}
   
     .route-track-bar {
       display: block;
@@ -254,18 +256,21 @@
       border-style: dashed !important;
     }
 
-    .route-stop-name {
-      font-size: 11px;
-      font-weight: 700;
-      color: #37474f;
-      width: 95px;
-      line-height: 1.25;
-      word-wrap: break-word;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: normal;
-    }
+   /* স্টপের নামের স্টাইল আপডেট করুন */
+.route-stop-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #37474f;
+  width: 80px;
+  line-height: 1.2;
+  word-wrap: break-word;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+}
 
     .route-stop-name.skipped-name {
       color: #90a4ae;
@@ -286,24 +291,27 @@
       bottom: 25px;
     }
 
-    .route-stop-name.pos-bottom::before {
-      content: "↑";
-      display: block;
-      font-size: 34px;
-      color: orange;
-      line-height: 0.7;
-    }
+    /* উপরে-নিচে তীরের সাইজ সামান্য কমিয়ে সামঞ্জস্য রাখুন */
+.route-stop-name.pos-bottom::before {
+  content: "↑";
+  display: block;
+  font-size: 20px;
+  color: orange;
+  line-height: 1;
+  margin-bottom: 2px;
+}
     .route-stop-name.skipped-name.pos-bottom::before {
       color: #b0bec5;
     }
 
     .route-stop-name.pos-top::after {
-      content: "↓";
-      display: block;
-      font-size: 34px;
-      color: orange;
-      line-height: 0.7;
-    }
+  content: "↓";
+  display: block;
+  font-size: 20px;
+  color: orange;
+  line-height: 1;
+  margin-top: 2px;
+}
     .route-stop-name.skipped-name.pos-top::after {
       color: #b0bec5;
     }
@@ -911,51 +919,70 @@ function timeToMinutes(tStr) {
       cumulativeDists.push(totalTripDist);
     }
 
-    let dynamicBarWidth = Math.max(Math.round((totalTripDist / 1000) * 50), displayStops.length * 110, 360);
-    trackBar.style.minWidth = `${dynamicBarWidth}px`;
+    // dynamicBarWidth বাড়িয়ে দিন যাতে স্ক্রল করে প্রতিটি স্টপ স্পষ্ট দেখা যায়
+let dynamicBarWidth = Math.max(
+  Math.round((totalTripDist / 1000) * 80), 
+  displayStops.length * 130, // প্রতি স্টপের জন্য কমপক্ষে ১৩০ পিক্সেল জায়গা
+  450
+);
+trackBar.style.minWidth = `${dynamicBarWidth}px`;
 
-    trackBar.innerHTML = `
-      <div class="route-line-bg"></div>
-      <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
-    `;
+trackBar.innerHTML = `
+  <div class="route-line-bg"></div>
+  <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
+`;
 
-    displayStops.forEach((s, idx) => {
-      let sName = s.name || s.stopName || "STOP";
-      let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cleanStopName(sName));
+// ন্যূনতম পার্সেন্টেজ গ্যাপ নিশ্চিত করার লজিক
+let minPercentGap = 100 / (displayStops.length + 1); // প্রতিটি স্টপের মধ্যে ন্যূনতম ফাঁক
+let rawPercents = displayStops.map((s, idx) => {
+  return totalTripDist > 0 ? (cumulativeDists[idx] / totalTripDist) * 90 + 5 : 50;
+});
 
-      let node = document.createElement("div");
-      node.className = "route-stop-node";
+// যদি দুটি স্টপের পার্সেন্টেজ খুব কাছাকাছি চলে আসে, তবে কিছুটা ফাঁকা করে দেওয়া
+for (let i = 1; i < rawPercents.length; i++) {
+  if (rawPercents[i] - rawPercents[i - 1] < 8) { // ৮% এর কম ফাঁক থাকলে
+    rawPercents[i] = rawPercents[i - 1] + 8;
+  }
+}
 
-      let percentPos = totalTripDist > 0 ? (cumulativeDists[idx] / totalTripDist) * 94 + 3 : 50;
-      node.style.left = `${percentPos}%`;
+displayStops.forEach((s, idx) => {
+  let sName = s.name || s.stopName || "STOP";
+  let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cleanStopName(sName));
 
-      let circle = document.createElement("div");
-      circle.className = "route-stop-circle";
+  let node = document.createElement("div");
+  node.className = "route-stop-node";
 
-      if (isSkipped) {
-        circle.classList.add("skipped");
-      } else {
-        if (idx < activeRelativeIndex) {
-          circle.classList.add("passed");
-        } else if (idx === activeRelativeIndex) {
-          circle.classList.add("active");
-          node.id = "currentActiveTimelineNode";
-        }
-      }
+  // সংশোধিত পার্সেন্টেজ পজিশন ব্যবহার করুন
+  let percentPos = rawPercents[idx];
+  node.style.left = `${percentPos}%`;
 
-      let label = document.createElement("div");
-      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'} ${isSkipped ? 'skipped-name' : ''}`;
-      
-      if (isSkipped) {
-        label.innerHTML = `${sName}<span class="skip-badge">(দাঁড়াবে না)</span>`;
-      } else {
-        label.innerText = sName;
-      }
+  let circle = document.createElement("div");
+  circle.className = "route-stop-circle";
 
-      node.appendChild(circle);
-      node.appendChild(label);
-      trackBar.appendChild(node);
-    });
+  if (isSkipped) {
+    circle.classList.add("skipped");
+  } else {
+    if (idx < activeRelativeIndex) {
+      circle.classList.add("passed");
+    } else if (idx === activeRelativeIndex) {
+      circle.classList.add("active");
+      node.id = "currentActiveTimelineNode";
+    }
+  }
+
+  let label = document.createElement("div");
+  label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'} ${isSkipped ? 'skipped-name' : ''}`;
+  
+  if (isSkipped) {
+    label.innerHTML = `${sName}<span class="skip-badge">(দাঁড়াবে না)</span>`;
+  } else {
+    label.innerText = sName;
+  }
+
+  node.appendChild(circle);
+  node.appendChild(label);
+  trackBar.appendChild(node);
+});
 
     let indicator = document.getElementById("routeBusIndicator");
     let count = displayStops.length;
