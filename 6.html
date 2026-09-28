@@ -984,17 +984,19 @@ displayStops.forEach((s, idx) => {
   trackBar.appendChild(node);
 });
 
-    let indicator = document.getElementById("routeBusIndicator");
+        let indicator = document.getElementById("routeBusIndicator");
     let count = displayStops.length;
 
     if (count > 1 && totalTripDist > 0) {
-      let curPassedDist = cumulativeDists[activeRelativeIndex];
-      let curStop = displayStops[activeRelativeIndex];
-      let curLat = Number(curStop.latitude || curStop.lat);
-      let curLon = Number(curStop.longitude || curStop.lon);
+      let curStopPercent = rawPercents[activeRelativeIndex];
+      let finalBusPercent = curStopPercent;
 
       if (activeRelativeIndex < count - 1) {
+        let curStop = displayStops[activeRelativeIndex];
         let nextStop = displayStops[activeRelativeIndex + 1];
+
+        let curLat = Number(curStop.latitude || curStop.lat);
+        let curLon = Number(curStop.longitude || curStop.lon);
         let nLat = Number(nextStop.latitude || nextStop.lat);
         let nLon = Number(nextStop.longitude || nextStop.lon);
 
@@ -1002,16 +1004,17 @@ displayStops.forEach((s, idx) => {
         let distToNext = getDistanceMeters(busLat, busLon, nLat, nLon);
 
         if (segDist > 0) {
-          let progressInSeg = Math.min(Math.max(segDist - distToNext, 0), segDist);
-          curPassedDist += progressInSeg;
+          let progressRatio = Math.min(Math.max((segDist - distToNext) / segDist, 0), 1);
+          let nextStopPercent = rawPercents[activeRelativeIndex + 1];
+          finalBusPercent = curStopPercent + (progressRatio * (nextStopPercent - curStopPercent));
         }
       }
 
-      let busPercent = (curPassedDist / totalTripDist) * 94 + 3;
-      indicator.style.left = `${Math.min(Math.max(busPercent, 3), 97)}%`;
+      indicator.style.left = `${Math.min(Math.max(finalBusPercent, 3), 97)}%`;
     } else {
       indicator.style.left = "50%";
     }
+
 
     setTimeout(() => {
       let activeElem = document.getElementById("currentActiveTimelineNode");
