@@ -1758,7 +1758,7 @@ function renderStopsCheckboxes() {
     document.getElementById("nameModal").classList.remove("hidden");
   }
 
-  async function saveCurrentStopAction() {
+    async function saveCurrentStopAction() {
     let stopName = document.getElementById("manualStopName").value;
     if (!stopName || !stopName.trim()) return showAppAlert("বাস স্টপের নাম লিখুন!");
 
@@ -1791,9 +1791,20 @@ function renderStopsCheckboxes() {
 
       delete stopsCache[trackingBus.number];
 
+      // ১. বাসের দাঁড়ানোর অনুমোদিত তালিকায় নতুন স্টপটি তাৎক্ষণিক ঢুকিয়ে দেওয়া
+      if (!trackingBus.selectedStops) trackingBus.selectedStops = [];
+      let cStop = cleanStopName(stopName);
+      if (!trackingBus.selectedStops.includes(cStop)) {
+        trackingBus.selectedStops.push(cStop);
+      }
+
       showAppAlert(`✅ ${stopName} [${timeStr}] সফলভাবে যুক্ত হয়েছে!`);
       closeModals();
       loadDatalistSuggestions();
+
+      // ২. স্ক্রিনের ম্যাপ ও টাইমলাইন সাথে সাথে রিফ্রেশ করা যাতে 'থামবে না' উঠে যায়
+      updateDistanceAndTracking();
+
     } catch (e) {
       showAppAlert("স্টপ যুক্ত করা সম্ভব হয়নি!");
     }
