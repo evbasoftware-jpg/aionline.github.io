@@ -1098,10 +1098,63 @@ function timeToMinutes(tStr) {
     return valid;
   }
 
-  function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
-    if (!currentBusStopsList || currentBusStopsList.length === 0) return;
+    function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
+    if (!trackingBus) return;
 
-    let validStops = sortStopsAlongTrip(currentBusStopsList, trackingBus || {});
+    // বাসের অনুমোদিত স্টপ তালিকা নেওয়া
+    let allowedStops = [];
+    if (trackingBus && trackingBus.selectedStops) {
+      if (typeof trackingBus.selectedStops === "string") {
+        allowedStops = trackingBus.selectedStops.split(",").map(s => cleanStopName(s));
+      } else if (Array.isArray(trackingBus.selectedStops)) {
+        allowedStops = trackingBus.selectedStops.map(s => cleanStopName(s));
+      }
+    }
+
+    // ১. সম্পূর্ণ স্টপ তালিকা তৈরি (সোর্স, ডেস্টিনেশন ও মাঝের সমস্ত মাস্টার স্টপ মিলিয়ে)
+    let fullStops = [];
+
+    // বাসের নিজস্ব সেভ করা স্টপ থাকলে তা আগে নেওয়া
+    if (currentBusStopsList && currentBusStopsList.length > 0) {
+      fullStops.push(...currentBusStopsList);
+    }
+
+    // সোর্স ও ডেস্টিনেশন কো-অর্ডিনেট বের করা
+    let srcName = trackingBus.source || document.getElementById("searchFrom").value.trim();
+    let destName = trackingBus.dest || document.getElementById("searchTo").value.trim();
+
+    let allAvailable = [...fullStops, ...(masterStopsList || [])];
+    let srcCoords = resolvePlaceCoords(srcName, allAvailable);
+    let destCoords = resolvePlaceCoords(destName, allAvailable);
+
+    // মাস্টার স্টপ থেকে রুটের অন্তর্গত সব স্টপ নেওয়া (যেখানে থামবে এবং যেখানে থামবে না উভয়ই)
+    if (masterStopsList && masterStopsList.length > 0) {
+      let minLat = srcCoords && destCoords ? Math.min(srcCoords.lat, destCoords.lat) - 0.08 : -90;
+      let maxLat = srcCoords && destCoords ? Math.max(srcCoords.lat, destCoords.lat) + 0.08 : 90;
+      let minLon = srcCoords && destCoords ? Math.min(srcCoords.lon, destCoords.lon) - 0.08 : -180;
+      let maxLon = srcCoords && destCoords ? Math.max(srcCoords.lon, destCoords.lon) + 0.08 : 180;
+
+      masterStopsList.forEach(ms => {
+        let cleanName = cleanStopName(ms.name || ms.stopName);
+        let sLat = Number(ms.latitude || ms.lat);
+        let sLon = Number(ms.longitude || ms.lon);
+
+        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
+          // রুটের ভৌগোলিক বাউন্ডিং বক্সের মধ্যে থাকলে অন্তর্ভুক্ত করা হবে
+          if (sLat >= minLat && sLat <= maxLat && sLon >= minLon && sLon <= maxLon) {
+            let isAlreadyIn = fullStops.some(s => cleanStopName(s.name || s.stopName) === cleanName);
+            if (!isAlreadyIn) {
+              fullStops.push(ms);
+            }
+          }
+        }
+      });
+    }
+
+    if (fullStops.length === 0) return;
+
+    // ২. যাত্রাপথ অনুযায়ী ক্রমানুসারে সাজানো
+    let validStops = sortStopsAlongTrip(fullStops, trackingBus || {});
     if (validStops.length === 0) return;
 
     let stopsWithDist = validStops.map((s, idx) => {
@@ -1116,18 +1169,18 @@ function timeToMinutes(tStr) {
     let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
     document.getElementById("infoCurStop").innerText = curStopName;
 
+    // ম্যাপ ও টাইমলাইনে সম্পূর্ণ রুট প্রদর্শন (থামা ও না থামা উভয় স্টপসহ)
     renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
 
-    // পরবর্তী স্টপ বের করার সময় শুধুমাত্র দাঁড়ানোর স্টপগুলো অগ্রাধিকার পাবে
-    let allowedStops = trackingBus && trackingBus.selectedStops ? trackingBus.selectedStops : [];
+    // পরবর্তী স্টপ বের করা (শুধুমাত্র যে স্টপে বাস দাঁড়াবে)
     let nextStopName = "--";
     let distToNextStopKm = 0;
-
     let nextValidStop = null;
+
     for (let j = nearest.index + 1; j < validStops.length; j++) {
       let candidate = validStops[j];
-      let candName = candidate.name || candidate.stopName;
-      if (allowedStops.length === 0 || allowedStops.includes(cleanStopName(candName))) {
+      let candName = cleanStopName(candidate.name || candidate.stopName);
+      if (allowedStops.length === 0 || allowedStops.includes(candName)) {
         nextValidStop = candidate;
         break;
       }
