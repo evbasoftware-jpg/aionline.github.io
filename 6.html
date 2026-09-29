@@ -836,154 +836,168 @@ function timeToMinutes(tStr) {
 
     evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
-
-   // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (Lat-Long দূরত্বের ভিত্তিতে আনুপাতিক গ্যাপ সহ)
+  
+  // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (হাইব্রিড ডায়নামিক পিক্সেল স্পেসিং সহ)
   function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
-  stopMarkersLayer.clearLayers();
-  if (stopRoutePolyline) {
-    map.removeLayer(stopRoutePolyline);
-    stopRoutePolyline = null;
-  }
-
-  if (!orderedStops || orderedStops.length === 0) return;
-
-  let latLngs = [];
-
-  // ১. ম্যাপে স্টপেজের মার্কার রেন্ডার করা
-  orderedStops.forEach((s, i) => {
-    let sLat = Number(s.latitude || s.lat);
-    let sLon = Number(s.longitude || s.lon);
-    let sName = s.name || s.stopName || `STOP ${i+1}`;
-
-    if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
-      latLngs.push([sLat, sLon]);
-
-      let circleMarker = L.circleMarker([sLat, sLon], {
-        radius: 7,
-        fillColor: i <= nearestStopIndex ? "#1565c0" : "#ffffff",
-        color: "#0d47a1",
-        weight: 3,
-        opacity: 1,
-        fillOpacity: 0.9
-      });
-
-      circleMarker.bindTooltip(`${sName}`, {
-        permanent: true,
-        direction: 'top',
-        className: 'stop-marker-label',
-        offset: [0, -8]
-      });
-
-      stopMarkersLayer.addLayer(circleMarker);
-    }
-  });
-
-  let card = document.getElementById("routeTrackerCard");
-  let trackBar = document.getElementById("routeTrackBar");
-  let timelineContainer = document.querySelector(".route-timeline-container");
-  card.classList.remove("hidden");
-
-  let displayStops = orderedStops;
-  let activeRelativeIndex = nearestStopIndex;
-
-  // ২. Lat, Long অনুযায়ী প্রতিটি স্টপের বাস্তব ক্রমবর্ধমান দূরত্ব (Cumulative Distance) হিসাব করা
-  let cumulativeDists = [0];
-  let totalTripDist = 0;
-
-  for (let i = 1; i < displayStops.length; i++) {
-    let prevLat = Number(displayStops[i - 1].latitude || displayStops[i - 1].lat);
-    let prevLon = Number(displayStops[i - 1].longitude || displayStops[i - 1].lon);
-    let curLat = Number(displayStops[i].latitude || displayStops[i].lat);
-    let curLon = Number(displayStops[i].longitude || displayStops[i].lon);
-
-    let d = getDistanceMeters(prevLat, prevLon, curLat, curLon);
-    totalTripDist += d;
-    cumulativeDists.push(totalTripDist);
-  }
-
-  // মোট দূরত্বের ওপর ভিত্তি করে স্ক্রোলযোগ্য ট্র্যাকবারের মাপ নির্ধারণ
-  let dynamicBarWidth = Math.max(Math.round((totalTripDist / 1000) * 50), displayStops.length * 110, 360);
-  trackBar.style.minWidth = `${dynamicBarWidth}px`;
-
-  trackBar.innerHTML = `
-    <div class="route-line-bg"></div>
-    <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
-  `;
-
-  // ৩. দূরত্বের অনুপাত (Proportional %) অনুযায়ী টাইমলাইনে স্টপ নোড স্থাপন
-  displayStops.forEach((s, idx) => {
-    let node = document.createElement("div");
-    node.className = "route-stop-node";
-
-    // প্রারম্ভিক ৩% ও শেষে ৩% মার্জিন রেখে ৯৪% দূরত্বের স্কেলিং
-    let percentPos = totalTripDist > 0 ? (cumulativeDists[idx] / totalTripDist) * 94 + 3 : 50;
-    node.style.left = `${percentPos}%`;
-
-    let circle = document.createElement("div");
-    circle.className = "route-stop-circle";
-
-    if (idx < activeRelativeIndex) {
-      circle.classList.add("passed");
-    } else if (idx === activeRelativeIndex) {
-      circle.classList.add("active");
-      node.id = "currentActiveTimelineNode";
+    stopMarkersLayer.clearLayers();
+    if (stopRoutePolyline) {
+      map.removeLayer(stopRoutePolyline);
+      stopRoutePolyline = null;
     }
 
-    let label = document.createElement("div");
-    label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'}`;
-    label.innerText = s.name || s.stopName || "STOP";
+    if (!orderedStops || orderedStops.length === 0) return;
 
-    node.appendChild(circle);
-    node.appendChild(label);
-    trackBar.appendChild(node);
-  });
+    let latLngs = [];
 
-  // ৪. লাইভ বাসের অবস্থান (Indicator) দূরত্বের আনুপাতিক হারে নির্ধারণ
-  let indicator = document.getElementById("routeBusIndicator");
-  let count = displayStops.length;
+    // ১. ম্যাপে স্টপেজের মার্কার রেন্ডার করা
+    orderedStops.forEach((s, i) => {
+      let sLat = Number(s.latitude || s.lat);
+      let sLon = Number(s.longitude || s.lon);
+      let sName = s.name || s.stopName || `STOP ${i+1}`;
 
-  if (count > 1 && totalTripDist > 0) {
-    let curPassedDist = cumulativeDists[activeRelativeIndex];
-    let curStop = displayStops[activeRelativeIndex];
-    let curLat = Number(curStop.latitude || curStop.lat);
-    let curLon = Number(curStop.longitude || curStop.lon);
+      if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
+        latLngs.push([sLat, sLon]);
 
-    if (activeRelativeIndex < count - 1) {
-      let nextStop = displayStops[activeRelativeIndex + 1];
-      let nLat = Number(nextStop.latitude || nextStop.lat);
-      let nLon = Number(nextStop.longitude || nextStop.lon);
+        let circleMarker = L.circleMarker([sLat, sLon], {
+          radius: 7,
+          fillColor: i <= nearestStopIndex ? "#1565c0" : "#ffffff",
+          color: "#0d47a1",
+          weight: 3,
+          opacity: 1,
+          fillOpacity: 0.9
+        });
 
-      let segDist = getDistanceMeters(curLat, curLon, nLat, nLon);
-      let distToNext = getDistanceMeters(busLat, busLon, nLat, nLon);
+        circleMarker.bindTooltip(`${sName}`, {
+          permanent: true,
+          direction: 'top',
+          className: 'stop-marker-label',
+          offset: [0, -8]
+        });
 
-      if (segDist > 0) {
-        let progressInSeg = Math.min(Math.max(segDist - distToNext, 0), segDist);
-        curPassedDist += progressInSeg;
+        stopMarkersLayer.addLayer(circleMarker);
       }
+    });
+
+    let card = document.getElementById("routeTrackerCard");
+    let trackBar = document.getElementById("routeTrackBar");
+    let timelineContainer = document.querySelector(".route-timeline-container");
+    card.classList.remove("hidden");
+
+    let displayStops = orderedStops;
+    let activeRelativeIndex = nearestStopIndex;
+
+    // ২. হাইব্রিড দূরত্বের ভিত্তিতে প্রতিটি স্টপের জন্য সুনির্দিষ্ট পিক্সেল পজিশন হিসাব করা
+    // MIN_GAP_PX: দুটি স্টপ খুব কাছাকাছি হলেও নাম যাতে না ঠেকে তার সর্বনিম্ন ফাঁকা জায়গা
+    // PX_PER_KM: দূরত্বের তারতম্য বোঝানোর জন্য প্রতি কিলোমিটারে বাড়তি পিক্সেল
+    let stopPixelPositions = [40]; // প্রথম স্টপটি শুরু থেকে ৪০ পিক্সেল দূরে থাকবে
+    const MIN_GAP_PX = 120;
+    const PX_PER_KM = 35;
+
+    for (let i = 1; i < displayStops.length; i++) {
+      let prevLat = Number(displayStops[i - 1].latitude || displayStops[i - 1].lat);
+      let prevLon = Number(displayStops[i - 1].longitude || displayStops[i - 1].lon);
+      let curLat = Number(displayStops[i].latitude || displayStops[i].lat);
+      let curLon = Number(displayStops[i].longitude || displayStops[i].lon);
+
+      let distMeters = 0;
+      if (!isNaN(prevLat) && !isNaN(prevLon) && !isNaN(curLat) && !isNaN(curLon)) {
+        distMeters = getDistanceMeters(prevLat, prevLon, curLat, curLon);
+      }
+      let distKm = distMeters / 1000;
+
+      // সর্বনিম্ন ১২০ পিক্সেল নিশ্চিত করে দূরত্বের সাথে সামঞ্জস্য রাখা
+      let gap = MIN_GAP_PX + (distKm * PX_PER_KM);
+      let nextPos = stopPixelPositions[i - 1] + gap;
+      stopPixelPositions.push(nextPos);
     }
 
-    let busPercent = (curPassedDist / totalTripDist) * 94 + 3;
-    indicator.style.left = `${Math.min(Math.max(busPercent, 3), 97)}%`;
-  } else {
-    indicator.style.left = "50%";
+    // ট্র্যাকবারের মোট দৈর্ঘ্য শেষ স্টপ অনুযায়ী নির্ধারণ
+    let totalTrackWidth = stopPixelPositions[stopPixelPositions.length - 1] + 60;
+    trackBar.style.minWidth = `${totalTrackWidth}px`;
+
+    trackBar.innerHTML = `
+      <div class="route-line-bg" style="left: 40px; right: 40px;"></div>
+      <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
+    `;
+
+    // ৩. প্রতিটি স্টপ নোডকে নির্ধারিত পিক্সেল পজিশনে বসানো
+    displayStops.forEach((s, idx) => {
+      let node = document.createElement("div");
+      node.className = "route-stop-node";
+      node.style.left = `${stopPixelPositions[idx]}px`;
+
+      let circle = document.createElement("div");
+      circle.className = "route-stop-circle";
+
+      if (idx < activeRelativeIndex) {
+        circle.classList.add("passed");
+      } else if (idx === activeRelativeIndex) {
+        circle.classList.add("active");
+        node.id = "currentActiveTimelineNode";
+      }
+
+      let label = document.createElement("div");
+      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'}`;
+      label.innerText = s.name || s.stopName || "STOP";
+
+      node.appendChild(circle);
+      node.appendChild(label);
+      trackBar.appendChild(node);
+    });
+
+    // ৪. লাইভ বাসের আইকনকে নিখুঁতভাবে স্টপের ওপর বা মধ্যবর্তী স্থানে নিয়ে যাওয়া
+    let indicator = document.getElementById("routeBusIndicator");
+    let count = displayStops.length;
+
+    if (count > 0 && activeRelativeIndex >= 0) {
+      let busPxPos = stopPixelPositions[activeRelativeIndex];
+
+      // বাস যদি দুটি স্টপের মাঝামাঝি পথে চলমান থাকে
+      if (activeRelativeIndex < count - 1 && busLat && busLon) {
+        let curStop = displayStops[activeRelativeIndex];
+        let nextStop = displayStops[activeRelativeIndex + 1];
+
+        let cLat = Number(curStop.latitude || curStop.lat);
+        let cLon = Number(curStop.longitude || curStop.lon);
+        let nLat = Number(nextStop.latitude || nextStop.lat);
+        let nLon = Number(nextStop.longitude || nextStop.lon);
+
+        if (!isNaN(cLat) && !isNaN(cLon) && !isNaN(nLat) && !isNaN(nLon)) {
+          let segDist = getDistanceMeters(cLat, cLon, nLat, nLon);
+          let distToNext = getDistanceMeters(busLat, busLon, nLat, nLon);
+
+          if (segDist > 0) {
+            // সেগমেন্ট পার হওয়ার অনুপাত (০ থেকে ১ পর্যন্ত সীমাবদ্ধ)
+            let progress = (segDist - distToNext) / segDist;
+            progress = Math.min(Math.max(progress, 0), 1);
+
+            let segWidth = stopPixelPositions[activeRelativeIndex + 1] - stopPixelPositions[activeRelativeIndex];
+            busPxPos += progress * segWidth;
+          }
+        }
+      }
+
+      indicator.style.left = `${busPxPos}px`;
+    } else {
+      indicator.style.left = "40px";
+    }
+
+    // ৫. চলমান সক্রিয় স্টপটিকে স্ক্রিনের মাঝখানে রাখার জন্য অটো স্ক্রোল
+    setTimeout(() => {
+      let activeElem = document.getElementById("currentActiveTimelineNode");
+      if (activeElem && timelineContainer) {
+        let containerWidth = timelineContainer.clientWidth;
+        let nodeLeft = activeElem.offsetLeft;
+        let nodeWidth = activeElem.clientWidth;
+
+        let scrollTarget = nodeLeft - (containerWidth / 2) + (nodeWidth / 2);
+        timelineContainer.scrollTo({
+          left: scrollTarget,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   }
-
-  // ৫. বর্তমান সক্রিয় স্টপকে মাঝখানে রাখার জন্য অটো স্ক্রোল
-  setTimeout(() => {
-    let activeElem = document.getElementById("currentActiveTimelineNode");
-    if (activeElem && timelineContainer) {
-      let containerWidth = timelineContainer.clientWidth;
-      let nodeLeft = activeElem.offsetLeft;
-      let nodeWidth = activeElem.clientWidth;
-
-      let scrollTarget = nodeLeft - (containerWidth / 2) + (nodeWidth / 2);
-      timelineContainer.scrollTo({
-        left: scrollTarget,
-        behavior: 'smooth'
-      });
-    }
-  }, 100);
-}
 
   function sortStopsAlongTrip(stops, bus) {
     if (!stops || stops.length === 0) return [];
@@ -1125,16 +1139,30 @@ function timeToMinutes(tStr) {
   });
 
   async function loadDatalistSuggestions() {
-    try {
-      let res = await fetch(`${API_URL}?action=getStopsList`);
-      let data = await res.json();
-      if (data.stops) {
-        masterStopsList = data.stops;
-        fillDatalist("fromList", data.stops.map(s => typeof s === 'string' ? s : (s.name || s.stopName)));
-        fillDatalist("toList", data.stops.map(s => typeof s === 'string' ? s : (s.name || s.stopName)));
-      }
-    } catch (e) {}
-  }
+  try {
+    let res = await fetch(`${API_URL}?action=getStopsList`);
+    let data = await res.json();
+    if (data.stops) {
+      masterStopsList = data.stops;
+
+      // শুধুমাত্র ইউনিক নামগুলো ডেটালিস্টে রাখা
+      let rawNames = data.stops.map(s => typeof s === 'string' ? s : (s.name || s.stopName));
+      let uniqueNames = [];
+      let seen = new Set();
+
+      rawNames.forEach(name => {
+        let clean = cleanStopName(name);
+        if (clean && !seen.has(clean)) {
+          seen.add(clean);
+          uniqueNames.push(name.trim().toUpperCase());
+        }
+      });
+
+      fillDatalist("fromList", uniqueNames);
+      fillDatalist("toList", uniqueNames);
+    }
+  } catch (e) {}
+}
 
   function fillDatalist(elementId, items) {
     let dl = document.getElementById(elementId);
@@ -1146,7 +1174,7 @@ function timeToMinutes(tStr) {
     });
   }
 
-  // সোর্স ও গন্তব্যের মাঝের স্টপগুলো ফিল্টার করে ক্রমানুসারে চেকবক্সে দেখানো
+ // সোর্স ও গন্তব্যের মাঝের স্টপগুলো ফিল্টার করে ক্রমানুসারে চেকবক্সে দেখানো
 function renderStopsCheckboxes() {
   let container = document.getElementById("stopsCheckboxList");
   let srcName = cleanStopName(document.getElementById("src").value);
@@ -1157,13 +1185,11 @@ function renderStopsCheckboxes() {
     return;
   }
 
-  // যদি সোর্স ও গন্তব্য উভয়ই এখনও না লেখা হয়
   if (!srcName || !destName) {
     container.innerHTML = "<i>আগে 'কোথা থেকে ছাড়বে' এবং 'কতদূর যাবে' লিখুন...</i>";
     return;
   }
 
-  // ১. সোর্স ও গন্তব্যের কো-অর্ডিনেট বের করা
   let srcCoords = resolvePlaceCoords(srcName, masterStopsList);
   let destCoords = resolvePlaceCoords(destName, masterStopsList);
 
@@ -1172,12 +1198,10 @@ function renderStopsCheckboxes() {
     return;
   }
 
-  // ২. দুটি বিন্দুর মধ্যবর্তী বাউন্ডিং বক্স (Corridor) ও ভেক্টর প্রজেকশন তৈরি
   let dLat = destCoords.lat - srcCoords.lat;
   let dLon = destCoords.lon - srcCoords.lon;
   let tripLineDistSq = dLat * dLat + dLon * dLon;
 
-  // করিডোরের সামান্য বাইরে থাকা স্টপ নেওয়ার জন্য মার্জিন (বাফার)
   let minLat = Math.min(srcCoords.lat, destCoords.lat) - 0.05;
   let maxLat = Math.max(srcCoords.lat, destCoords.lat) + 0.05;
   let minLon = Math.min(srcCoords.lon, destCoords.lon) - 0.05;
@@ -1191,12 +1215,8 @@ function renderStopsCheckboxes() {
     let sName = s.name || s.stopName;
 
     if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
-      // ভৌগোলিক সীমার মধ্যে আছে কি না পরীক্ষা
       if (sLat >= minLat && sLat <= maxLat && sLon >= minLon && sLon <= maxLon) {
-        // ভেক্টর প্রজেকশন দিয়ে চেক করা যে স্টপটি সোর্স থেকে গন্তব্যের মধ্যবর্তী রেখায় পড়ছে কি না
         let t = ((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * dLon) / tripLineDistSq;
-        
-        // ০ থেকে ১ এর মধ্যে থাকলে তা সোর্স ও গন্তব্যের মাঝেই অবস্থিত
         if (t >= -0.05 && t <= 1.05) {
           filteredStops.push({
             name: sName,
@@ -1214,12 +1234,23 @@ function renderStopsCheckboxes() {
     return;
   }
 
-  // ৩. সুরুল/সিউড়ি থেকে কীর্ণাহার অভিমুখে ক্রমানুসারে সাজানো
+  // ক্রমানুসারে সাজানো
   filteredStops.sort((a, b) => a.progress - b.progress);
 
-  // ৪. চেকবক্স তৈরি করা
-  container.innerHTML = "";
+  // ডুপ্লিকেট নাম ফিল্টার করা (যাতে একই নাম একবারই আসে)
+  let uniqueFilteredStops = [];
+  let seenNames = new Set();
   filteredStops.forEach(s => {
+    let cleanName = cleanStopName(s.name);
+    if (!seenNames.has(cleanName)) {
+      seenNames.add(cleanName);
+      uniqueFilteredStops.push(s);
+    }
+  });
+
+  // চেকবক্স তৈরি করা
+  container.innerHTML = "";
+  uniqueFilteredStops.forEach(s => {
     let cName = cleanStopName(s.name);
     let div = document.createElement("label");
     div.className = "stop-check-item";
