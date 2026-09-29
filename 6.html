@@ -312,11 +312,11 @@
       white-space: nowrap;
       box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
+  
     .stop-marker-label.skipped-label {
-      border: 1px dashed #9e9e9e;
+      border: 1.5px dashed #d32f2f;
       color: #757575;
-      background: rgba(245, 245, 245, 0.9);
-      text-decoration: line-through;
+      background: rgba(255, 245, 245, 0.95);
     }
 
     .modal-overlay {
@@ -882,9 +882,12 @@ function timeToMinutes(tStr) {
           fillOpacity: 0.9
         });
 
-        // যদি বাস না দাঁড়ায় তবে লাল রঙে 'এখানে থামবে না' দেখানো হবে
+       // শুধুমাত্র স্টপের নামের ওপর কাটা দাগ থাকবে, কিন্তু 'এখানে থামবে না' লেখা স্পষ্ট থাকবে
         let tooltipContent = isSkipped
-          ? `<div style="text-align:center;"><b style="color:#c62828; text-decoration:line-through;">${sName}</b><br><span style="color:#d32f2f; font-size:10px; font-weight:bold;">(এখানে থামবে না)</span></div>`
+          ? `<div style="text-align:center; text-decoration:none !important;">
+               <b style="color:#c62828; text-decoration:line-through; font-size:12px;">${sName}</b><br>
+               <span style="color:#d32f2f; font-size:11px; font-weight:bold; text-decoration:none !important; display:inline-block;">(এখানে থামবে না)</span>
+             </div>`
           : `<b>${sName}</b>`;
 
         circleMarker.bindTooltip(tooltipContent, {
