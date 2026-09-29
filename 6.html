@@ -837,7 +837,7 @@ function timeToMinutes(tStr) {
     evaluateStoppagesAndEta(distKm, currentEffectiveSpeed, effectiveBusLat, effectiveBusLon);
   }
   
-  // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (হাইব্রিড ডায়নামিক পিক্সেল স্পেসিং সহ)
+   // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (বাদ পড়া স্টপে লাল লেখা সহ সম্পূর্ণ ফাংশন)
   function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
     stopMarkersLayer.clearLayers();
     if (stopRoutePolyline) {
@@ -849,28 +849,48 @@ function timeToMinutes(tStr) {
 
     let latLngs = [];
 
+    // বাসের অনুমোদিত স্টপ তালিকা নেওয়া
+    let allowedStops = [];
+    if (trackingBus && trackingBus.selectedStops) {
+      if (typeof trackingBus.selectedStops === "string") {
+        allowedStops = trackingBus.selectedStops.split(",").map(s => cleanStopName(s));
+      } else if (Array.isArray(trackingBus.selectedStops)) {
+        allowedStops = trackingBus.selectedStops.map(s => cleanStopName(s));
+      }
+    }
+
     // ১. ম্যাপে স্টপেজের মার্কার রেন্ডার করা
     orderedStops.forEach((s, i) => {
       let sLat = Number(s.latitude || s.lat);
       let sLon = Number(s.longitude || s.lon);
       let sName = s.name || s.stopName || `STOP ${i+1}`;
+      let cName = cleanStopName(sName);
+
+      // এই স্টপে বাস দাঁড়াবে কি না যাচাই
+      let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cName);
 
       if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
         latLngs.push([sLat, sLon]);
 
         let circleMarker = L.circleMarker([sLat, sLon], {
-          radius: 7,
-          fillColor: i <= nearestStopIndex ? "#1565c0" : "#ffffff",
-          color: "#0d47a1",
-          weight: 3,
+          radius: isSkipped ? 6 : 7,
+          fillColor: isSkipped ? "#ffcdd2" : (i <= nearestStopIndex ? "#1565c0" : "#ffffff"),
+          color: isSkipped ? "#d32f2f" : "#0d47a1",
+          weight: isSkipped ? 2 : 3,
+          dashArray: isSkipped ? "3, 3" : null,
           opacity: 1,
           fillOpacity: 0.9
         });
 
-        circleMarker.bindTooltip(`${sName}`, {
+        // যদি বাস না দাঁড়ায় তবে লাল রঙে 'এখানে থামবে না' দেখানো হবে
+        let tooltipContent = isSkipped
+          ? `<div style="text-align:center;"><b style="color:#c62828; text-decoration:line-through;">${sName}</b><br><span style="color:#d32f2f; font-size:10px; font-weight:bold;">(এখানে থামবে না)</span></div>`
+          : `<b>${sName}</b>`;
+
+        circleMarker.bindTooltip(tooltipContent, {
           permanent: true,
           direction: 'top',
-          className: 'stop-marker-label',
+          className: isSkipped ? 'stop-marker-label skipped-label' : 'stop-marker-label',
           offset: [0, -8]
         });
 
@@ -886,10 +906,8 @@ function timeToMinutes(tStr) {
     let displayStops = orderedStops;
     let activeRelativeIndex = nearestStopIndex;
 
-    // ২. হাইব্রিড দূরত্বের ভিত্তিতে প্রতিটি স্টপের জন্য সুনির্দিষ্ট পিক্সেল পজিশন হিসাব করা
-    // MIN_GAP_PX: দুটি স্টপ খুব কাছাকাছি হলেও নাম যাতে না ঠেকে তার সর্বনিম্ন ফাঁকা জায়গা
-    // PX_PER_KM: দূরত্বের তারতম্য বোঝানোর জন্য প্রতি কিলোমিটারে বাড়তি পিক্সেল
-    let stopPixelPositions = [40]; // প্রথম স্টপটি শুরু থেকে ৪০ পিক্সেল দূরে থাকবে
+    // ২. হাইব্রিড দূরত্বের ভিত্তিতে প্রতিটি স্টপের জন্য পিক্সেল পজিশন হিসাব করা
+    let stopPixelPositions = [40]; // প্রথম স্টপ শুরু থেকে ৪০ পিক্সেল দূরে থাকবে
     const MIN_GAP_PX = 120;
     const PX_PER_KM = 35;
 
@@ -905,13 +923,12 @@ function timeToMinutes(tStr) {
       }
       let distKm = distMeters / 1000;
 
-      // সর্বনিম্ন ১২০ পিক্সেল নিশ্চিত করে দূরত্বের সাথে সামঞ্জস্য রাখা
       let gap = MIN_GAP_PX + (distKm * PX_PER_KM);
       let nextPos = stopPixelPositions[i - 1] + gap;
       stopPixelPositions.push(nextPos);
     }
 
-    // ট্র্যাকবারের মোট দৈর্ঘ্য শেষ স্টপ অনুযায়ী নির্ধারণ
+    // ট্র্যাকবারের মোট দৈর্ঘ্য নির্ধারণ
     let totalTrackWidth = stopPixelPositions[stopPixelPositions.length - 1] + 60;
     trackBar.style.minWidth = `${totalTrackWidth}px`;
 
@@ -921,7 +938,7 @@ function timeToMinutes(tStr) {
     `;
 
     // ৩. প্রতিটি স্টপ নোডকে নির্ধারিত পিক্সেল পজিশনে বসানো
-    displayStops.forEach((s, idx) => {
+        displayStops.forEach((s, idx) => {
       let node = document.createElement("div");
       node.className = "route-stop-node";
       node.style.left = `${stopPixelPositions[idx]}px`;
@@ -929,7 +946,12 @@ function timeToMinutes(tStr) {
       let circle = document.createElement("div");
       circle.className = "route-stop-circle";
 
-      if (idx < activeRelativeIndex) {
+      let cName = cleanStopName(s.name || s.stopName);
+      let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cName);
+
+      if (isSkipped) {
+        circle.classList.add("skipped");
+      } else if (idx < activeRelativeIndex) {
         circle.classList.add("passed");
       } else if (idx === activeRelativeIndex) {
         circle.classList.add("active");
@@ -937,8 +959,13 @@ function timeToMinutes(tStr) {
       }
 
       let label = document.createElement("div");
-      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'}`;
-      label.innerText = s.name || s.stopName || "STOP";
+      label.className = `route-stop-name ${idx % 2 === 0 ? 'pos-bottom' : 'pos-top'} ${isSkipped ? 'skipped-name' : ''}`;
+      
+      if (isSkipped) {
+        label.innerHTML = `<span style="color:#c62828; text-decoration:line-through;">${s.name || s.stopName}</span><br><span style="color:#b71c1c; font-size:9px;">থামবে না</span>`;
+      } else {
+        label.innerText = s.name || s.stopName || "STOP";
+      }
 
       node.appendChild(circle);
       node.appendChild(label);
@@ -967,7 +994,6 @@ function timeToMinutes(tStr) {
           let distToNext = getDistanceMeters(busLat, busLon, nLat, nLon);
 
           if (segDist > 0) {
-            // সেগমেন্ট পার হওয়ার অনুপাত (০ থেকে ১ পর্যন্ত সীমাবদ্ধ)
             let progress = (segDist - distToNext) / segDist;
             progress = Math.min(Math.max(progress, 0), 1);
 
@@ -1594,8 +1620,20 @@ function renderStopsCheckboxes() {
     };
   }
 
-  function selectBus(b) {
+    function selectBus(b) {
     trackingBus = b;
+    
+    // Google Sheet-এর কলাম 'Selected_Stops' অথবা 'selectedStops' উভয়কেই সাপোর্ট করার জন্য:
+    let stopsRaw = b.selectedStops || b.Selected_Stops || b["SELECTED STOPS"] || [];
+    
+    if (typeof stopsRaw === "string") {
+      trackingBus.selectedStops = stopsRaw.split(",").map(s => cleanStopName(s));
+    } else if (Array.isArray(stopsRaw)) {
+      trackingBus.selectedStops = stopsRaw.map(s => cleanStopName(s));
+    } else {
+      trackingBus.selectedStops = [];
+    }
+
     document.getElementById("busTrackInput").value = `${b.number} - ${b.name}`;
     document.getElementById("busList").innerHTML = "";
 
