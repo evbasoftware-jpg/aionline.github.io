@@ -1695,7 +1695,7 @@ function selectBus(b) {
 
   // বোতামের লেখা আপডেট (বাস সিলেক্টেড মোড)
   let stopBtn = document.getElementById("addStopBtn");
-  stopBtn.innerText = `📍 এই জায়গাটি বাসের (${b.name} - ${b.number}) স্টপেজ হিসাবে যুক্ত করুন`;
+  stopBtn.innerText = `📍 এই জায়গাটি ${b.name} - ${b.number} বাসের স্টপেজ হিসাবে যুক্ত করুন`;
 
   trackBus(b.number);
 }
