@@ -511,7 +511,7 @@
 <div id="confirmModal" class="modal-overlay hidden">
   <div class="modal-card">
     <h4>⚠️ সতর্কবার্তা</h4>
-    <p>বাস চলার সময় স্টপেজে দাঁড়ালে এই এন্ট্রি করুন।<br><br>আপনি কি বর্তমান অবস্থানকে এই বাসের স্টপেজ হিসেবে যুক্ত করতে চান?</p>
+    <p>বাস চলাকালীন কোনো বাস স্টপে থামলে তবেই এটি যুক্ত করুন।।<br><br>আপনি কি বর্তমান অবস্থানকে এই বাসের স্টপেজ হিসেবে যুক্ত করতে চান?</p>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModals()">Cancel</button>
       <button class="btn" onclick="proceedToNamePrompt()">OK</button>
@@ -1848,7 +1848,7 @@ function openConfirmDialog() {
 
   let confirmText = document.querySelector("#confirmModal p");
   if (trackingBus) {
-    confirmText.innerHTML = `বাস চলার সময় স্টপেজে দাঁড়ালে এই এন্ট্রি করুন।<br><br>আপনি কি বর্তমান অবস্থানকে <b>(${trackingBus.name})</b> বাসের স্টপেজ হিসেবে যুক্ত করতে চান?`;
+    confirmText.innerHTML = `বাস চলাকালীন কোনো বাস স্টপে থামলে তবেই এটি যুক্ত করুন।<br><br>আপনি কি বর্তমান অবস্থানকে <b>(${trackingBus.name})</b> বাসের স্টপেজ হিসেবে যুক্ত করতে চান?`;
   } else {
     confirmText.innerHTML = `আপনি কি আপনার বর্তমান অবস্থানকে একটি <b>নতুন বাস স্টপেজ</b> হিসেবে ম্যাপে যুক্ত করতে চান?`;
   }
