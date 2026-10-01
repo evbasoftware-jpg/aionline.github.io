@@ -1850,7 +1850,7 @@ function openConfirmDialog() {
   if (trackingBus) {
     confirmText.innerHTML = `বাস চলার সময় স্টপেজে দাঁড়ালে এই এন্ট্রি করুন।<br><br>আপনি কি বর্তমান অবস্থানকে <b>(${trackingBus.name})</b> বাসের স্টপেজ হিসেবে যুক্ত করতে চান?`;
   } else {
-    confirmText.innerHTML = `আপনি কি আপনার বর্তমান অবস্থানকে একটি <b>নতুন সাধারণ বাস স্টপেজ</b> হিসেবে ম্যাপে যুক্ত করতে চান?`;
+    confirmText.innerHTML = `আপনি কি আপনার বর্তমান অবস্থানকে একটি <b>নতুন বাস স্টপেজ</b> হিসেবে ম্যাপে যুক্ত করতে চান?`;
   }
 
   document.getElementById("confirmModal").classList.remove("hidden");
