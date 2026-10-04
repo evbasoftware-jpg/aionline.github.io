@@ -378,8 +378,14 @@ fetch("https://cdn.jsdelivr.net/gh/datameet/railways/stations.json")
   .then(data => {
     stationDB = (data.features || []).map(f => ({
       name: f.properties.name || "",
-      code: (f.properties.code || "").toUpperCase()
+      code: (f.properties.code || "").toUpperCase(),
+      lat: f.geometry?.coordinates ? f.geometry.coordinates[1] : null,
+      lon: f.geometry?.coordinates ? f.geometry.coordinates[0] : null
     }));
+    // ডেটাবেস লোড শেষ হওয়ার পর যদি ইতিমধ্যে কোনো রুট স্ক্রিনে থাকে, তবে ম্যাপ রিফ্রেশ হবে
+    if (window.raw && window.drawStationsOnMap) {
+      drawStationsOnMap();
+    }
   })
   .catch(() => {});
 
@@ -652,45 +658,61 @@ function drawTrain(){
   updateMovingTrain();
 }
 
-let savedRoute = []; // গ্লোবাল ভেরিয়েবলে আগের রুট মনে রাখার জন্য
+let savedRoute = []; // গ্লোবাল ভেরিয়েবলে ট্রেনের রুট মনে রাখার জন্য
 
-async function update(){
+async function update() {
   let trainNum = $("trainNo").value.trim();
-  let j = await get({action:"live", trainNo: trainNum}), old = train;
+  if (!trainNum) return;
+
+  // ১. লাইভ ট্র্যাকিং ডেটা কল করা
+  let j = await get({ action: "live", trainNo: trainNum }), old = train;
   
   // API থেকে সরাসরি বা data অবজেক্টের ভেতরে রেসপন্স আসতে পারে
   let payload = j.data ? j.data : j;
 
-  // রুট ডেটা শনাক্ত করা
+  // ২. রুট ডেটা শনাক্ত করা
   let incomingRoute = Array.isArray(payload?.route) && payload.route.length > 0 
                       ? payload.route 
                       : (Array.isArray(j?.route) && j.route.length > 0 ? j.route : null);
 
-  // প্রথম কলেই যদি লাইভ ডেটাতে রুট না আসে
+  // ৩. প্রথম কলে লাইভ ডেটাতে রুট না থাকলে শিডিউল ফেচ করার চেষ্টা করা
   if (!incomingRoute && savedRoute.length === 0) {
     try {
-      // ১. শিডিউল অ্যাকশন চেষ্টা করা
-      let routeData = await get({action: "schedule", trainNo: trainNum});
+      let routeData = await get({ action: "schedule", trainNo: trainNum });
       let routePayload = routeData.data ? routeData.data : routeData;
       if (Array.isArray(routePayload?.route) && routePayload.route.length > 0) {
         incomingRoute = routePayload.route;
       }
-    } catch(e) {
+    } catch (e) {
       console.warn("Schedule route fetch failed:", e.message);
     }
   }
 
-  // রুট সংরক্ষণ ও অবজেক্টে মার্জ
+  // ৪. যদি অনলাইনে আসা রুটে স্টেশনের Lat/Lon না থাকে, লোকাল stationDB থেকে অটো কোঅর্ডিনেট যুক্ত করা
+  if (Array.isArray(incomingRoute) && Array.isArray(stationDB) && stationDB.length > 0) {
+    incomingRoute.forEach(st => {
+      if (!st.lat || !st.lon) {
+        let code = String(st.stationCode || st.code || "").trim().toUpperCase();
+        let match = stationDB.find(db => db.code === code);
+        if (match && match.lat && match.lon) {
+          st.lat = match.lat;
+          st.lon = match.lon;
+        }
+      }
+    });
+  }
+
+  // ৫. রুট ক্যাশে সংরক্ষণ ও নিশ্চিতভাবে পে-লোডে জুড়ে দেওয়া
   if (incomingRoute && incomingRoute.length > 0) {
     savedRoute = incomingRoute;
   }
   
-  // সংরক্ষিত রুট পে-লোড অবজেক্টে জুড়ে দেওয়া
   if (savedRoute.length > 0) {
     payload.route = savedRoute;
     j.route = savedRoute;
   }
 
+  // ৬. ইন্টারফেস ও ম্যাপ আপডেট
   raw = payload;
   train = locate(payload);
   
@@ -698,9 +720,10 @@ async function update(){
   drawStationsOnMap();
   drawTrain();
   
-  if(old && raw.source === "gps") {
+  if (old && raw.source === "gps") {
     msg("📡 অন্য ব্যবহারকারীর GPS থেকে ট্রেনের অবস্থান দেখানো হচ্ছে।", "ok");
   }
+  
   verify();
 }
 
