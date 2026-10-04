@@ -664,20 +664,26 @@ async function update() {
   let trainNum = $("trainNo").value.trim();
   if (!trainNum) return;
 
-  // ১. ব্যাকএন্ড থেকে লাইভ ডেটা কল করা
+  // ১. ব্যাকএন্ড থেকে লাইভ ডেটা কল
   let j = await get({ action: "live", trainNo: trainNum }), old = train;
   let payload = j.data ? j.data : j;
 
-  // ২. ব্যাকএন্ড থেকে রুট এসেছে কি না পরীক্ষা
-  let incomingRoute = Array.isArray(payload?.route) && payload.route.length > 0 
-                      ? payload.route 
-                      : (Array.isArray(j?.route) && j.route.length > 0 ? j.route : null);
+  // ২. সম্ভাব্য সব প্রোপার্টি থেকে রুট চেক করা
+  let incomingRoute = null;
+  if (Array.isArray(payload?.route) && payload.route.length > 0) {
+    incomingRoute = payload.route;
+  } else if (Array.isArray(j?.route) && j.route.length > 0) {
+    incomingRoute = j.route;
+  } else if (Array.isArray(payload?.stations) && payload.stations.length > 0) {
+    incomingRoute = payload.stations;
+  }
 
-  // ৩. ব্যাকএন্ডে রুট না থাকলে সরাসরি ব্রাউজার থেকে পাবলিক সিডিএন থেকে রুট আনা (১০০% নির্ভরযোগ্য)
+  // ৩. রুট না পাওয়া গেলে এবং ডেটাবেসে ট্রেনের ইনফো থাকলে লোকাল stationDB ও টাইম টেবিল রুট ট্রাই করা
   if (!incomingRoute && savedRoute.length === 0) {
     try {
-      let cdnUrl = "https://cdn.jsdelivr.net/gh/datameet/railways@master/trains/" + trainNum + ".json";
-      let res = await fetch(cdnUrl, { cache: "force-cache" });
+      // GitHub master branch থেকে কাঁচা JSON চেষ্টা
+      let cdnUrl = "https://raw.githubusercontent.com/datameet/railways/master/trains/" + trainNum + ".json";
+      let res = await fetch(cdnUrl);
       if (res.ok) {
         let trainGeo = await res.json();
         incomingRoute = (trainGeo.features || []).map((f, i) => ({
@@ -695,28 +701,38 @@ async function update() {
     }
   }
 
-  // ৪. লোকাল stationDB থেকে যদি কোনো স্টেশনের Lat/Lon মিসিং থাকে তা পূরণ করা
+  // ৪. লোকাল stationDB থেকে মিসিং Lat/Lon ফিল-আপ করা
   if (Array.isArray(incomingRoute) && Array.isArray(stationDB) && stationDB.length > 0) {
     incomingRoute.forEach(st => {
-      if (!st.lat || !st.lon) {
-        let code = String(st.stationCode || st.code || "").trim().toUpperCase();
-        let match = stationDB.find(db => db.code === code);
-        if (match && match.lat && match.lon) {
-          st.lat = match.lat;
-          st.lon = match.lon;
-        }
+      let code = String(st.stationCode || st.code || "").trim().toUpperCase();
+      let match = stationDB.find(db => db.code === code);
+      if (match) {
+        if (!st.lat) st.lat = match.lat;
+        if (!st.lon) st.lon = match.lon;
+        if (!st.stationName && match.name) st.stationName = match.name;
       }
     });
   }
 
-  // ৫. সংগৃহীত রুট ক্যাশ করা এবং পে-লোডে নিশ্চিতভাবে ঢুকিয়ে দেওয়া
+  // ৫. ক্যাশ ও পে-লোডে রুট অ্যাসাইন করা
   if (incomingRoute && incomingRoute.length > 0) {
     savedRoute = incomingRoute;
   }
-  
+
   if (savedRoute.length > 0) {
     payload.route = savedRoute;
     j.route = savedRoute;
+  } else {
+    // যদি কোনোভাবেই রুট না আসে, তবে ট্রেনের কারেন্ট ও নেক্সট স্টেশন দিয়ে একটি অস্থায়ী ২-স্টেশনের রুট বানিয়ে দেওয়া
+    let curSt = payload.currentLocation?.stationName || "চলন্ত ট্রেন";
+    let nxtSt = payload.currentLocation?.nextStationName || "পরবর্তী স্টেশন";
+    if (payload.currentLocation?.lat && payload.currentLocation?.lon) {
+      payload.route = [
+        { stationName: curSt, lat: payload.currentLocation.lat, lon: payload.currentLocation.lon, sequence: 1 },
+        { stationName: nxtSt, lat: payload.currentLocation.lat + 0.05, lon: payload.currentLocation.lon + 0.05, sequence: 2 }
+      ];
+      savedRoute = payload.route;
+    }
   }
 
   // ৬. স্ক্রিন ও ম্যাপ আপডেট
