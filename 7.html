@@ -368,26 +368,89 @@ async function between(){let f=stationCode("from"),t=stationCode("to");if(!f||!t
 $("from").onchange=between;$("to").onchange=between;
 
 function locate(d){
- let c=d.currentLocation||{},r=Array.isArray(d.route)?d.route:[],
-     code=String(c.stationCode||c.code||"").toUpperCase(),
-     seq=Number(c.sequence),i=-1;
- if(code)i=r.findIndex(x=>String(x.stationCode||x.code||"").toUpperCase()===code);
- if(i<0&&Number.isFinite(seq))i=r.findIndex(x=>Number(x.sequence)===seq);
- let cp=point(c);
- if(cp)return{...cp,name:c.stationName||r[i]?.stationName||r[i]?.name||"বর্তমান অবস্থান",
-   next:r[i+1]?.stationName||r[i+1]?.name||"",speed:Number(c.speedKmh||c.speed||0),
-   bearing:Number(c.bearingDegrees||0),idx:i};
- let a=i>=0?point(r[i]):null,b=i>=0?point(r[i+1]):null,p=Math.max(0,Math.min(1,Number(c.segmentProgress??0)));
- if(a&&b)return{lat:a.lat+(b.lat-a.lat)*p,lon:a.lon+(b.lon-a.lon)*p,
-   name:r[i]?.stationName||r[i]?.name||r[i]?.stationCode||"",next:r[i+1]?.stationName||r[i+1]?.name||"",
-   speed:Number(c.speedKmh||c.speed||0),bearing:Number(c.bearingDegrees||bear(a.lat,a.lon,b.lat,b.lon)),idx:i};
- let x=point(d.previousHalt),y=point(d.nextHalt);
- if(x&&y)return{lat:x.lat+(y.lat-x.lat)*p,lon:x.lon+(y.lon-x.lon)*p,
-   name:d.previousHalt.stationName||d.previousHalt.name||"",next:d.nextHalt.stationName||d.nextHalt.name||"",
-   speed:Number(c.speedKmh||0),bearing:bear(x.lat,x.lon,y.lat,y.lon),idx:i};
- if(a)return{lat:a.lat,lon:a.lon,name:r[i]?.stationName||r[i]?.name||"",next:r[i+1]?.stationName||"",
-   speed:Number(c.speedKmh||0),bearing:Number(c.bearingDegrees||0),idx:i};
- throw Error("লাইভ লোকেশন পাওয়া যায়নি। API route/coordinates আসেনি।");
+  let c = d.currentLocation || {}, r = Array.isArray(d.route) ? d.route : [];
+  let rawCode = String(c.stationCode || c.code || "").trim().toUpperCase();
+  let rawName = String(c.stationName || c.name || "").trim().toUpperCase();
+  let seq = Number(c.sequence), i = -1;
+
+  // ১. কোড দিয়ে নিখুঁত মেলানো
+  if(rawCode){
+    i = r.findIndex(x => {
+      let sc = String(x.stationCode || x.code || "").trim().toUpperCase();
+      return sc === rawCode;
+    });
+  }
+
+  // ২. কোডে না মিললে নাম দিয়ে মেলানো (যেমন Chatra)
+  if(i < 0 && rawName){
+    i = r.findIndex(x => {
+      let sn = String(x.stationName || x.name || "").trim().toUpperCase();
+      return sn === rawName || sn.includes(rawName) || rawName.includes(sn);
+    });
+  }
+
+  // ৩. সিকোয়েন্স দিয়ে মেলানো
+  if(i < 0 && Number.isFinite(seq)){
+    i = r.findIndex(x => Number(x.sequence) === seq);
+  }
+
+  // ৪. যদি তবুও না মেলে এবং লাইভ lat/lon থাকে, তবে রুটের সবচেয়ে কাছের স্টেশন বের করা
+  let cp = point(c);
+  if(i < 0 && cp && r.length){
+    let minD = Infinity;
+    r.forEach((st, idx) => {
+      let sp = point(st);
+      if(sp){
+        let dVal = dist(cp.lat, cp.lon, sp.lat, sp.lon);
+        if(dVal < minD){ minD = dVal; i = idx; }
+      }
+    });
+  }
+
+  if(i < 0) i = 0; // কোনোভাবেই না মিললে শুরুতে রাখবে, ফারাক্কায় পাঠাবে না
+
+  let stName = c.stationName || r[i]?.stationName || r[i]?.name || r[i]?.stationCode || "বর্তমান অবস্থান";
+  let nextName = r[i+1]?.stationName || r[i+1]?.name || "";
+
+  if(cp){
+    return {
+      ...cp,
+      name: stName,
+      next: nextName,
+      speed: Number(c.speedKmh || c.speed || 0),
+      bearing: Number(c.bearingDegrees || 0),
+      idx: i
+    };
+  }
+
+  let a = point(r[i]), b = point(r[i+1]);
+  let p = Math.max(0, Math.min(1, Number(c.segmentProgress ?? 0)));
+
+  if(a && b){
+    return {
+      lat: a.lat + (b.lat - a.lat) * p,
+      lon: a.lon + (b.lon - a.lon) * p,
+      name: stName,
+      next: nextName,
+      speed: Number(c.speedKmh || c.speed || 0),
+      bearing: Number(c.bearingDegrees || bear(a.lat, a.lon, b.lat, b.lon)),
+      idx: i
+    };
+  }
+
+  if(a){
+    return {
+      lat: a.lat,
+      lon: a.lon,
+      name: stName,
+      next: nextName,
+      speed: Number(c.speedKmh || 0),
+      bearing: Number(c.bearingDegrees || 0),
+      idx: i
+    };
+  }
+
+  throw Error("লাইভ লোকেশন পাওয়া যায়নি। API route/coordinates আসেনি।");
 }
 
  // স্টেশনের সময় ফরম্যাট করার সঠিক হেল্পার
@@ -442,34 +505,52 @@ function drawRoute(){
 function updateMovingTrain(){
   let r = raw?.route || [];
   let trainEl = document.getElementById("movingTrainIcon");
-  if(!trainEl || !r.length || train.idx < 0) return;
+  if(!trainEl || !r.length || !train || train.idx < 0) return;
 
-  const stationWidth = 140;
-  const startOffset = 70; // প্রথম স্টেশনের ডটের সেন্টার (140 / 2)
+  const isMobile = window.innerWidth <= 600;
+  const stationWidth = isMobile ? 115 : 140;
+  const startOffset = stationWidth / 2;
 
+  // ট্রেন যদি জিপিএস দিয়ে চলে, বর্তমান লোকেশনের সবচেয়ে কাছের রুট সেগমেন্ট যাচাই করা
   let idx = train.idx;
-  let progress = 0;
+  if(train.lat && train.lon && r.length > 1){
+    let minD = Infinity, bestIdx = idx;
+    r.forEach((st, k) => {
+      let pt = point(st);
+      if(pt){
+        let d = dist(train.lat, train.lon, pt.lat, pt.lon);
+        if(d < minD){ minD = d; bestIdx = k; }
+      }
+    });
+    // যদি বর্তমান লোকেশন অন্য কোনো স্টেশনের কাছাকাছি থাকে (যেমন চাতরা)
+    idx = bestIdx;
+    train.idx = idx;
+  }
 
-  // ব্যবহারকারীর লাইভ জিপিএস বা ট্রেনের লোকেশন দিয়ে স্টেশনের মধ্যবর্তী প্রোগ্রেস নির্ণয়
+  let progress = 0;
   if (idx < r.length - 1) {
     let pA = point(r[idx]);
     let pB = point(r[idx + 1]);
     if (pA && pB && train.lat && train.lon) {
       let totalDist = dist(pA.lat, pA.lon, pB.lat, pB.lon);
       let coveredDist = dist(pA.lat, pA.lon, train.lat, train.lon);
-      if (totalDist > 0) {
-        progress = Math.min(Math.max(coveredDist / totalDist, 0), 0.98);
+      if (totalDist > 0 && coveredDist < totalDist) {
+        progress = Math.min(Math.max(coveredDist / totalDist, 0), 0.95);
       }
-    } else if (raw?.currentLocation?.segmentProgress) {
-      progress = Number(raw.currentLocation.segmentProgress) || 0;
     }
   }
 
-  // মসৃণভাবে পিক্সেল হিসাব করে ট্রেন চালানো
   let currentPosPx = startOffset + (idx * stationWidth) + (progress * stationWidth);
   trainEl.style.left = `${currentPosPx}px`;
 
-  // ট্রেনের ছবিটিকে স্বয়ংক্রিয়ভাবে স্ক্রিনের সেন্টারে নিয়ে আসা
+  // রুট ডটগুলোতে একটিভ স্ট্যাটাস আপডেট
+  r.forEach((_, k) => {
+    let el = document.getElementById(`st-node-${k}`);
+    if(el){
+      el.className = `station ${k < idx ? 'passed' : (k === idx ? 'active' : '')}`;
+    }
+  });
+
   let scrollContainer = document.querySelector(".route-scroll");
   if (scrollContainer) {
     scrollContainer.scrollTo({
