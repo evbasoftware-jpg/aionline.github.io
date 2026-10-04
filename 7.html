@@ -281,13 +281,14 @@ button,a.btn{border:0;border-radius:8px;padding:12px 16px;font-weight:700;font-s
     <div class="card"><h3>📊 GPS Samples</h3><div class="samples" id="samples">Sample নেই।</div></div>
   </div>
   <div class="map-title" style="display:flex; justify-content:space-between; align-items:center;">
-  <span>📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</span>
-  <div style="display:flex; gap:6px;">
-    <button type="button" onclick="setMapHeight(350)" style="padding:4px 8px; font-size:12px;">ছোট</button>
-    <button type="button" onclick="setMapHeight(600)" style="padding:4px 8px; font-size:12px;">বড়</button>
-    <button type="button" onclick="toggleMapFullscreen()" style="padding:4px 8px; font-size:12px; background:#0b69a3; color:#fff;">⛶ Fullscreen</button>
+    <span>📍 ট্রেন এবং ব্যবহারকারীর লাইভ অবস্থান</span>
+    <div style="display:flex; gap:6px;">
+      <button type="button" onclick="setMapHeight(350)" style="padding:4px 8px; font-size:12px;">ছোট</button>
+      <button type="button" onclick="setMapHeight(600)" style="padding:4px 8px; font-size:12px;">বড়</button>
+      <button type="button" onclick="toggleMapFullscreen()" style="padding:4px 8px; font-size:12px; background:#0b69a3; color:#fff;">⛶ Fullscreen</button>
+      <button type="button" onclick="recenterMap()" style="padding:4px 8px; font-size:12px; background:#1b5e20; color:#fff;">🎯 Center</button>
+    </div>
   </div>
-</div>
 <div id="map"></div>
 
 </div>
@@ -773,7 +774,12 @@ function verify(){
   if(line) line.remove();
   line = L.polyline([[train.lat,train.lon],[u.lat,u.lon]],{weight:4,dashArray:"8,8"}).addTo(map);
   showMapDistance(d);
-  map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});
+
+  // ব্যবহারকারী যাতে ম্যাপ ফ্রিলি ড্রাগ করে দেখতে পারেন, তাই প্রতি মুহূর্তে fitBounds হবে না
+  if (!window.initialMapFitted) {
+    map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});
+    window.initialMapFitted = true;
+  }
 
     // verify() ফাংশনের ভেতরে if(recognizedInside) ব্লকের শেষ অংশ:
     if(recognizedInside){
@@ -834,7 +840,7 @@ function start(){
  let n=$("trainNo").value.trim();
  if(!/^\d{5}$/.test(n))return;
  const token=++startToken;
- stop(false);running=true;inside=false;samples=[];
+ stop(false);window.initialMapFitted = false;running=true;inside=false;samples=[];
  $("result").style.display="none";
  $("trainInfo").innerHTML="⏳ ট্রেনের live তথ্য খোঁজা হচ্ছে...";
  $("userInfo").innerHTML="📍 আপনার Location-এর অপেক্ষায়...";
@@ -894,7 +900,15 @@ new ResizeObserver(() => {
   }
 }).observe(document.getElementById("map"));
 
-  
+function recenterMap() {
+  if (train && samples.length) {
+    let u = samples.at(-1);
+    map.fitBounds([[train.lat, train.lon], [u.lat, u.lon]], {padding: [40, 40], maxZoom: 15});
+  } else if (train) {
+    map.setView([train.lat, train.lon], 13);
+  }
+}
+
 </script>
 <a href='http://www.freevisitorcounters.com'>freevisitorcounters</a> <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=346fb794ef1f6334e88749d3ddd1a33f690b71fe'></script>
 <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1641366/t/1"></script>
