@@ -390,12 +390,16 @@ function locate(d){
  throw Error("লাইভ লোকেশন পাওয়া যায়নি। API route/coordinates আসেনি।");
 }
 
-  // স্টেশনের সময় ফরম্যাট করার হেল্পার
+ // স্টেশনের সময় ফরম্যাট করার সঠিক হেল্পার
 function getStationTime(s) {
   let t = s.arrivalTime || s.arrival || s.scheduledArrival || s.eta || s.departure || "";
   if (!t) return "--:--";
-  // যদি শুধুমাত্র সময় (যেমন 22:58) থাকে তবে তা দেখাবে, অন্যথায় ফরম্যাট করবে
-  return t.length > 5 ? t.slice(0, 5) : t;
+  
+  // যদি "2026-10-04 22:58:00" বা "2026-10-04T22:58:00" ফরম্যাটে থাকে
+  let match = String(t).match(/(\d{1,2}:\d{2})/);
+  if (match) return match[1];
+
+  return String(t).slice(0, 5);
 }
 
 function drawRoute(){
