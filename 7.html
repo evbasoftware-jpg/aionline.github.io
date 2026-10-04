@@ -590,7 +590,25 @@ function drawStationsOnMap(){
 }
 function trainIcon(){return L.divIcon({html:"<div style='font-size:30px;line-height:30px'>🚆</div>",className:"",iconSize:[34,34],iconAnchor:[17,17]})}
 function userIcon(){return L.divIcon({html:"<div class='user-pin'><span>●</span></div>",className:"",iconSize:[34,34],iconAnchor:[10,30]})}
-function drawTrain(){if(trainMarker)trainMarker.remove();trainMarker=L.marker([train.lat,train.lon],{icon:trainIcon()}).addTo(map).bindPopup("<b>🚆 Train</b><br>"+esc(train.name));$("trainInfo").innerHTML=`<b>Train:</b> ${esc(raw.trainName||$("trainNo").value)}<br><b>Current:</b> ${esc(train.name)}<br><b>Next:</b> ${esc(train.next)}<br><b>Source:</b> ${raw.source==="gps"?"📱 অন্য/ভেতরের GPS":"🔑 API Key"}<br><b>Speed:</b> ${train.speed.toFixed(1)} km/h`; updateMovingTrain();}
+function drawTrain(){
+  if(trainMarker) trainMarker.remove();
+  trainMarker = L.marker([train.lat, train.lon], {icon: trainIcon()}).addTo(map)
+    .bindPopup("<b>🚆 Train</b><br>" + esc(train.name));
+
+  let m = movement();
+  // আপনি ট্রেনের ভেতরে থাকলে ব্যবহারকারীর GPS-কে ট্রেনের ডেটা হিসেবে অগ্রাধিকার দেওয়া হবে
+  let currentStationName = inside ? train.name : (train.name || raw?.currentLocation?.stationName || "অজ্ঞাত");
+  let currentSpeed = inside ? (m.speed > 0 ? m.speed.toFixed(1) : train.speed.toFixed(1)) : train.speed.toFixed(1);
+  let sourceText = inside ? "📱 আপনার লাইভ GPS" : (raw.source === "gps" ? "📱 অন্য যাত্রীর GPS" : "🔑 API Key");
+
+  $("trainInfo").innerHTML = `<b>Train:</b> ${esc(raw.trainName || $("trainNo").value)}<br>` +
+                             `<b>Current:</b> ${esc(currentStationName)}<br>` +
+                             `<b>Next:</b> ${esc(train.next)}<br>` +
+                             `<b>Source:</b> ${sourceText}<br>` +
+                             `<b>Speed:</b> ${currentSpeed} km/h`;
+  updateMovingTrain();
+}
+
 async function update(){let j=await get({action:"live",trainNo:$("trainNo").value.trim()}),old=train;raw=j;train=locate(j);drawRoute();drawStationsOnMap();drawTrain();if(old&&raw.source==="gps")msg("📡 অন্য ব্যবহারকারীর GPS থেকে ট্রেনের অবস্থান দেখানো হচ্ছে।","ok");verify()}
 function startGPS(){
  if(!window.isSecureContext){
@@ -694,24 +712,35 @@ function verify(){
   showMapDistance(d);
   map.fitBounds([[train.lat,train.lon],[u.lat,u.lon]],{padding:[40,40],maxZoom:15});
 
-  // ব্যবহারকারী ট্রেনে শনাক্ত হলে
+    // verify() ফাংশনের ভেতরে if(recognizedInside) ব্লকের শেষ অংশ:
   if(recognizedInside){
     if(!inside){
       inside = true;
       if(stopTimer){ clearTimeout(stopTimer); stopTimer = null; }
       msg("📱 GPS যাচাই হয়েছে। গতি ও দিক অনুযায়ী আপনি ট্রেনের ভেতরে আছেন।", "ok");
     }
+    
     // ট্রেনের মার্কারটি ব্যবহারকারীর জিপিএস অবস্থানে চলে আসবে
     if(trainMarker) trainMarker.setLatLng([u.lat, u.lon]);
     
-    // ট্রেন অবজেক্টের স্থানাঙ্কও আপডেট করে দেওয়া হলো যাতে পরবর্তী দূরত্ব ০ দেখায়
     train.lat = u.lat;
     train.lon = u.lon;
+
+    // ট্রেনের বর্তমান স্টেশন হিসেবে ব্যবহারকারীর সবচেয়ে কাছের স্টেশনটির নাম সেট করা
+    let r = raw?.route || [];
+    if(r.length && train.idx >= 0 && train.idx < r.length){
+      train.name = r[train.idx]?.stationName || r[train.idx]?.name || train.name;
+      train.next = r[train.idx + 1]?.stationName || r[train.idx + 1]?.name || "";
+    }
 
     publish(u);
     $("scoreText").textContent = "GPS verified; ট্রেনের অভিমুখ ও গতি মিলে গেছে।";
     res("📍 <b>ট্রেনের লোকেশন আপনার লাইভ GPS থেকে সেট করা হয়েছে।</b>", "ok");
-  } else {
+    
+    // Train Live Data কার্ডে API Key সরিয়ে লাইভ GPS দেখানোর জন্য:
+    drawTrain();
+  }
+ else {
     $("scoreText").textContent = "ট্রেনের গতি বা অভিমুখের সাথে মিল পাওয়া যায়নি।";
     res(`📏 <b>ট্রেন থেকে অফসেট:</b> পাশে ${(crossTrack * 1000).toFixed(1)}m, দৈর্ঘ্যে ${(alongTrack * 1000).toFixed(1)}m`, "info");
   }
