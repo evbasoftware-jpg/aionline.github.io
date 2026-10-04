@@ -664,31 +664,38 @@ async function update() {
   let trainNum = $("trainNo").value.trim();
   if (!trainNum) return;
 
-  // ১. লাইভ ট্র্যাকিং ডেটা কল করা
+  // ১. ব্যাকএন্ড থেকে লাইভ ডেটা কল করা
   let j = await get({ action: "live", trainNo: trainNum }), old = train;
-  
-  // API থেকে সরাসরি বা data অবজেক্টের ভেতরে রেসপন্স আসতে পারে
   let payload = j.data ? j.data : j;
 
-  // ২. রুট ডেটা শনাক্ত করা
+  // ২. ব্যাকএন্ড থেকে রুট এসেছে কি না পরীক্ষা
   let incomingRoute = Array.isArray(payload?.route) && payload.route.length > 0 
                       ? payload.route 
                       : (Array.isArray(j?.route) && j.route.length > 0 ? j.route : null);
 
-  // ৩. প্রথম কলে লাইভ ডেটাতে রুট না থাকলে শিডিউল ফেচ করার চেষ্টা করা
+  // ৩. ব্যাকএন্ডে রুট না থাকলে সরাসরি ব্রাউজার থেকে পাবলিক সিডিএন থেকে রুট আনা (১০০% নির্ভরযোগ্য)
   if (!incomingRoute && savedRoute.length === 0) {
     try {
-      let routeData = await get({ action: "schedule", trainNo: trainNum });
-      let routePayload = routeData.data ? routeData.data : routeData;
-      if (Array.isArray(routePayload?.route) && routePayload.route.length > 0) {
-        incomingRoute = routePayload.route;
+      let cdnUrl = "https://cdn.jsdelivr.net/gh/datameet/railways@master/trains/" + trainNum + ".json";
+      let res = await fetch(cdnUrl, { cache: "force-cache" });
+      if (res.ok) {
+        let trainGeo = await res.json();
+        incomingRoute = (trainGeo.features || []).map((f, i) => ({
+          stationCode: (f.properties?.code || "").toUpperCase(),
+          stationName: f.properties?.name || f.properties?.code,
+          lat: f.geometry?.coordinates ? f.geometry.coordinates[1] : null,
+          lon: f.geometry?.coordinates ? f.geometry.coordinates[0] : null,
+          sequence: i + 1,
+          arrival: "--:--",
+          departure: "--:--"
+        }));
       }
-    } catch (e) {
-      console.warn("Schedule route fetch failed:", e.message);
+    } catch(err) {
+      console.warn("Direct CDN route fetch failed:", err);
     }
   }
 
-  // ৪. যদি অনলাইনে আসা রুটে স্টেশনের Lat/Lon না থাকে, লোকাল stationDB থেকে অটো কোঅর্ডিনেট যুক্ত করা
+  // ৪. লোকাল stationDB থেকে যদি কোনো স্টেশনের Lat/Lon মিসিং থাকে তা পূরণ করা
   if (Array.isArray(incomingRoute) && Array.isArray(stationDB) && stationDB.length > 0) {
     incomingRoute.forEach(st => {
       if (!st.lat || !st.lon) {
@@ -702,7 +709,7 @@ async function update() {
     });
   }
 
-  // ৫. রুট ক্যাশে সংরক্ষণ ও নিশ্চিতভাবে পে-লোডে জুড়ে দেওয়া
+  // ৫. সংগৃহীত রুট ক্যাশ করা এবং পে-লোডে নিশ্চিতভাবে ঢুকিয়ে দেওয়া
   if (incomingRoute && incomingRoute.length > 0) {
     savedRoute = incomingRoute;
   }
@@ -712,7 +719,7 @@ async function update() {
     j.route = savedRoute;
   }
 
-  // ৬. ইন্টারফেস ও ম্যাপ আপডেট
+  // ৬. স্ক্রিন ও ম্যাপ আপডেট
   raw = payload;
   train = locate(payload);
   
