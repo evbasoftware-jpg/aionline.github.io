@@ -974,8 +974,8 @@ function verify(){
   let crossTrack = Math.abs(d * Math.sin(relAngle));
   let alongTrack = Math.abs(d * Math.cos(relAngle));
 
-  // স্টেশনে ট্রেনের দৈর্ঘ্য ও প্ল্যাটফর্ম/আউটারের বিস্তার বিবেচনায় ১.২ কিমি পর্যন্ত বাউন্ডারি রাখা
-  let isWithinBounds = (d <= 1.2); 
+  // স্টেশনে ট্রেনের দৈর্ঘ্য ও প্ল্যাটফর্ম/আউটারের বিস্তার বিবেচনায় 200 মি. পর্যন্ত বাউন্ডারি রাখা
+  let isWithinBounds = (d <= 0.2); 
 
   // গতিশীল থাকলে অথবা স্টেশনে কাছাকাছি থাকলে ভেরিফাই হবে
   let recognizedInside = isMovingWithTrain || isWithinBounds;
@@ -1006,16 +1006,10 @@ function verify(){
       msg("📱 GPS যাচাই হয়েছে। গতি ও দিক অনুযায়ী আপনি ট্রেনের ভেতরে আছেন।", "ok");
     }
     
-    // ট্রেনের মার্কারটি ব্যবহারকারীর জিপিএস অবস্থানে চলে আসবে
-    if(trainMarker) trainMarker.setLatLng([u.lat, u.lon]);
-    
-    // ম্যাপ থেকে নীল ড্যাশ লাইন এবং দূরত্বের বক্সটি মুছে ফেলার জন্য:
+     // ম্যাপ থেকে নীল ড্যাশ লাইন এবং দূরত্বের বক্সটি মুছে ফেলার জন্য:
     if(line) { line.remove(); line = null; }
     if(distanceMarker) { distanceMarker.remove(); distanceMarker = null; }
     
-    train.lat = u.lat;
-    train.lon = u.lon;
-
     // ট্রেনের বর্তমান স্টেশন হিসেবে ব্যবহারকারীর সবচেয়ে কাছের স্টেশনটির নাম সেট করা
     let r = raw?.route || [];
     if(r.length && train.idx >= 0 && train.idx < r.length){
