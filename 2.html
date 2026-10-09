@@ -363,6 +363,34 @@
       transition: transform 0.2s ease, background 0.2s ease;
     }
 
+  /* ম্যাপের উপর ফোকাস করার বোতাম */
+.btn-map-focus {
+  position: absolute;
+  top: 21px;
+  right: 12px;
+  z-index: 1000;
+  background: #ffffff;
+  color: #1565c0;
+  border: 2px solid #1565c0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.btn-map-focus:hover {
+  background: #e3f2fd;
+  transform: scale(1.03);
+}
+.btn-map-focus:active {
+  transform: scale(0.97);
+}
+
     .swap-btn:hover { background: #e3f2fd; }
     .swap-btn:active { transform: translateY(-50%) scale(0.92); }
     .logo-box{position: static;}
@@ -503,8 +531,13 @@
     <div class="card"><b>GPS সংকেত:</b> <span id="infoConfidence">--</span></div>
   </div>
 
-
+  <div style="position: relative;">
   <div id="map"></div>
+  <button id="focusViewBtn" class="btn-map-focus" onclick="focusBothUserAndVehicle()" title="ব্যবহারকারী ও যানের অবস্থান দেখুন">
+    🎯 অবস্থান দেখান
+  </button>
+</div>
+
   <button id="mapAddStopBtn" class="btn btn-map-mode" onclick="toggleMapAddMode()">📍 ম্যাপে ক্লিক করে সরাসরি নতুন স্টপ যোগ করুন (অফলাইন মোড)</button>
 
 </div>
@@ -758,7 +791,6 @@ function timeToMinutes(tStr) {
 
       checkPassengerRideAndSync();
       updateDistanceAndTracking();
-      keepMarkersInView();
     }, err => {
       if (!hasCenteredUser) {
         map.setView([23.82, 87.75], 11);
@@ -769,22 +801,23 @@ function timeToMinutes(tStr) {
     map.setView([23.82, 87.75], 11);
   }
 
-  function keepMarkersInView() {
-    if (busPos && userPos) {
-      let d = getDistanceMeters(userPos.lat, userPos.lon, busPos.lat, busPos.lon);
-      if (d > 100) {
-        let bounds = L.latLngBounds([[userPos.lat, userPos.lon], [busPos.lat, busPos.lon]]);
-        map.fitBounds(bounds.pad(0.25), { animate: true });
-      } else {
-        map.panTo([busPos.lat, busPos.lon], { animate: true });
-      }
-    } else if (busPos) {
-      map.panTo([busPos.lat, busPos.lon], { animate: true });
-    } else if (userPos && trackingBus) {
-      map.panTo([userPos.lat, userPos.lon], { animate: true });
-    }
+  // এই বোতামে ক্লিক করলে ম্যাপ ব্যবহারকারী এবং যানের অবস্থান স্ক্রিনে কেন্দ্রীভূত করবে
+function focusBothUserAndVehicle() {
+  if (userPos && busPos) {
+    let bounds = L.latLngBounds([
+      [userPos.lat, userPos.lon],
+      [busPos.lat, busPos.lon]
+    ]);
+    map.fitBounds(bounds.pad(0.3), { animate: true });
+  } else if (busPos) {
+    map.setView([busPos.lat, busPos.lon], 15, { animate: true });
+  } else if (userPos) {
+    map.setView([userPos.lat, userPos.lon], 15, { animate: true });
+  } else {
+    showAppAlert("ব্যবহারকারী বা যানের কোনো লাইভ অবস্থান পাওয়া যায়নি।");
   }
-
+}
+  
   function checkPassengerRideAndSync() {
     if (!userPos || !trackingBus) return;
 
@@ -1709,7 +1742,6 @@ function selectBus(b) {
       if (userPos) {
         checkPassengerRideAndSync();
         updateDistanceAndTracking();
-        keepMarkersInView();
       }
       return;
     }
@@ -1727,7 +1759,6 @@ function selectBus(b) {
 
     checkPassengerRideAndSync();
     updateDistanceAndTracking();
-    keepMarkersInView();
   }
 
   document.getElementById("toggleBusFormBtn").onclick = () => toggleBusForm(true);
