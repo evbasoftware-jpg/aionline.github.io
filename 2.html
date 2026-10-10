@@ -1205,76 +1205,6 @@ function focusBothUserAndVehicle() {
     }, 100);
   }
 
-  function sortStopsAlongTrip(stops, bus) {
-    if (!stops || stops.length === 0) return [];
-
-    let valid = stops.filter(s => {
-      let lat = Number(s.latitude || s.lat);
-      let lon = Number(s.longitude || s.lon);
-      return !isNaN(lat) && !isNaN(lon) && lat !== 0;
-    });
-
-    let uniqueStops = [];
-    let seenNames = new Set();
-    valid.forEach(s => {
-      let name = cleanStopName(s.name || s.stopName);
-      if (!seenNames.has(name)) {
-        seenNames.add(name);
-        uniqueStops.push(s);
-      }
-    });
-    valid = uniqueStops;
-
-    if (valid.length <= 1) return valid;
-
-    let srcName = (bus && bus.source) ? bus.source : document.getElementById("searchFrom").value.trim();
-    let destName = (bus && bus.dest) ? bus.dest : document.getElementById("searchTo").value.trim();
-
-    let srcCoords = resolvePlaceCoords(srcName, valid);
-    let destCoords = resolvePlaceCoords(destName, valid);
-
-    if (!srcCoords || !destCoords) {
-      let maxDist = -1;
-      let p1 = valid[0];
-      let p2 = valid[valid.length - 1];
-
-      for (let i = 0; i < valid.length; i++) {
-        for (let j = i + 1; j < valid.length; j++) {
-          let d = getDistanceMeters(
-            Number(valid[i].latitude || valid[i].lat),
-            Number(valid[i].longitude || valid[i].lon),
-            Number(valid[j].latitude || valid[j].lat),
-            Number(valid[j].longitude || valid[j].lon)
-          );
-          if (d > maxDist) {
-            maxDist = d;
-            p1 = valid[i];
-            p2 = valid[j];
-          }
-        }
-      }
-      if (!srcCoords) srcCoords = { lat: Number(p1.latitude || p1.lat), lon: Number(p1.longitude || p1.lon) };
-      if (!destCoords) destCoords = { lat: Number(p2.latitude || p2.lat), lon: Number(p2.longitude || p2.lon) };
-    }
-
-    let dLat = destCoords.lat - srcCoords.lat;
-    let dLon = destCoords.lon - srcCoords.lon;
-
-    valid.sort((a, b) => {
-      let aLat = Number(a.latitude || a.lat);
-      let aLon = Number(a.longitude || a.lon);
-      let bLat = Number(b.latitude || b.lat);
-      let bLon = Number(b.longitude || b.lon);
-
-      let projA = (aLat - srcCoords.lat) * dLat + (aLon - srcCoords.lon) * dLon;
-      let projB = (bLat - srcCoords.lat) * dLat + (bLon - srcCoords.lon) * dLon;
-
-      return projA - projB;
-    });
-
-    return valid;
-  }
-
      // ETA হিসাব করার জন্য সহায়ক ফাংশন (evaluateStoppagesAndEta এর ঠিক উপরে রাখুন)
   function calculateETAString(distKm, speed) {
     let effectiveSpeed = Number(speed) > 5 ? Number(speed) : 28;
@@ -1295,187 +1225,7 @@ function focusBothUserAndVehicle() {
       return `${meters} M`; // ১ কিমির কম হলে শুধু মিটার (যেমন: 450 M)
     }
     return `${distKm.toFixed(1)} KM (${meters} M)`; // ১ কিমি বা তার বেশি হলে (যেমন: 2.5 KM (2500 M))
-  }
-
-    function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
-    if (!trackingBus) return;
-
-    // ১. Selected_Stops থেকে সমস্ত স্টপের তালিকা নেওয়া
-    let rawSelected = trackingBus.selectedStops || trackingBus.Selected_Stops || trackingBus["SELECTED STOPS"] || [];
-    let allowedStops = [];
-    if (typeof rawSelected === "string") {
-      allowedStops = rawSelected.split(",").map(s => cleanStopName(s)).filter(Boolean);
-    } else if (Array.isArray(rawSelected)) {
-      allowedStops = rawSelected.map(s => cleanStopName(s)).filter(Boolean);
-    }
-
-    let srcName = cleanStopName(trackingBus.source || document.getElementById("searchFrom").value.trim());
-    let destName = cleanStopName(trackingBus.dest || document.getElementById("searchTo").value.trim());
-
-    if (srcName && !allowedStops.includes(srcName)) allowedStops.unshift(srcName);
-    if (destName && !allowedStops.includes(destName)) allowedStops.push(destName);
-
-    let fullStops = [];
-    let seenStopNames = new Set();
-
-    // বাসের পূর্বের সেভ করা স্টপ থাকলে যোগ করা
-    if (currentBusStopsList && currentBusStopsList.length > 0) {
-      currentBusStopsList.forEach(s => {
-        let cn = cleanStopName(s.name || s.stopName);
-        if (cn && !seenStopNames.has(cn)) {
-          seenStopNames.add(cn);
-          fullStops.push(s);
-        }
-      });
-    }
-
-    // ২. ★ Selected_Stops-এ থাকা প্রতিটি স্টপকে অবশ্যই masterStopsList থেকে খুঁজে fullStops-এ ঢোকানো
-    if (masterStopsList && masterStopsList.length > 0) {
-      allowedStops.forEach(reqName => {
-        if (!seenStopNames.has(reqName)) {
-          // নাম সম্পূর্ণ মেলা অথবা আংশিক মেলা (উভয় ক্ষেত্রেই ধরা হবে)
-          let matched = masterStopsList.find(ms => {
-            let mName = cleanStopName(ms.name || ms.stopName);
-            return mName === reqName || mName.includes(reqName) || reqName.includes(mName);
-          });
-          if (matched) {
-            seenStopNames.add(reqName);
-            fullStops.push(matched);
-          }
-        }
-      });
-    }
-
-    // সোর্স ও গন্তব্যের কো-অর্ডিনেট নির্ধারণ
-    let allAvailable = [...fullStops, ...(masterStopsList || [])];
-    let srcCoords = resolvePlaceCoords(srcName, allAvailable) || (fullStops[0] ? { lat: Number(fullStops[0].latitude || fullStops[0].lat), lon: Number(fullStops[0].longitude || fullStops[0].lon) } : null);
-    let destCoords = resolvePlaceCoords(destName, allAvailable) || (fullStops[fullStops.length - 1] ? { lat: Number(fullStops[fullStops.length - 1].latitude || fullStops[fullStops.length - 1].lat), lon: Number(fullStops[fullStops.length - 1].longitude || fullStops[fullStops.length - 1].lon) } : null);
-
-    // লম্ব দূরত্বের হেল্পার (করিডোর ফিল্টার)
-    function getDistanceToRouteLineKm(pt, start, end) {
-      let dTotal = getDistanceMeters(start.lat, start.lon, end.lat, end.lon);
-      if (dTotal === 0) return getDistanceMeters(pt.lat, pt.lon, start.lat, start.lon) / 1000;
-      let dStart = getDistanceMeters(start.lat, start.lon, pt.lat, pt.lon);
-      let dEnd = getDistanceMeters(end.lat, end.lon, pt.lat, pt.lon);
-      let s = (dTotal + dStart + dEnd) / 2;
-      let area = Math.sqrt(Math.max(0, s * (s - dTotal) * (s - dStart) * (s - dEnd)));
-      return ((2 * area) / dTotal) / 1000;
-    }
-
-    // ৩. ★ মাঝের যে মাস্টার স্টপগুলো Selected_Stops-এ নেই কিন্তু এই রুটের রাস্তায় পড়ে ("এখানে থামবে না" হিসেবে দেখানো)
-    if (masterStopsList && masterStopsList.length > 0 && srcCoords && destCoords) {
-      let dLat = destCoords.lat - srcCoords.lat;
-      let dLon = destCoords.lon - srcCoords.lon;
-      let tripDistSq = (dLat * dLat) + (dLon * dLon);
-
-      masterStopsList.forEach(ms => {
-        let cleanName = cleanStopName(ms.name || ms.stopName);
-        let sLat = Number(ms.latitude || ms.lat);
-        let sLon = Number(ms.longitude || ms.lon);
-
-        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0 && !seenStopNames.has(cleanName)) {
-          let t = ((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * dLon) / tripDistSq;
-          
-          // সোর্স থেকে গন্তব্যের রাস্তা বরাবর (সর্বোচ্চ ৪ কিমি করিডোরে)
-          if (t >= -0.05 && t <= 1.05) {
-            let crossDist = getDistanceToRouteLineKm({ lat: sLat, lon: sLon }, srcCoords, destCoords);
-            if (crossDist <= 4.0) {
-              seenStopNames.add(cleanName);
-              fullStops.push(ms); // এটি renderStopsOnMapAndTimeline-এ স্বয়ংক্রিয়ভাবে "এখানে থামবে না" হবে
-            }
-          }
-        }
-      });
-    }
-
-    if (fullStops.length === 0) return;
-
-    // ৪. স্টপগুলোকে বোলপুর থেকে লাভপুর অভিমুখী ক্রমানুসারে সাজানো
-    let validStops = sortStopsAlongTrip(fullStops, trackingBus || {});
-    if (validStops.length === 0) return;
-
-    let stopsWithDist = validStops.map((s, idx) => {
-      let sLat = Number(s.latitude || s.lat);
-      let sLon = Number(s.longitude || s.lon);
-      let d = getDistanceMeters(refLat, refLon, sLat, sLon);
-      return { stop: s, distance: d, index: idx };
-    });
-
-    stopsWithDist.sort((a, b) => a.distance - b.distance);
-    let nearest = stopsWithDist[0];
-
-    // বর্তমান স্টপেজের নাম
-    let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
-    document.getElementById("infoCurStop").innerText = curStopName;
-
-    // টাইমলাইন ও ম্যাপে সমস্ত স্টপ রেন্ডার করা
-    renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
-
-    // পরবর্তী বৈধ স্টপেজ (যেটিতে বাস আসলে দাঁড়াবে)
-    let nextValidStop = null;
-    for (let j = nearest.index + 1; j < validStops.length; j++) {
-      let candidate = validStops[j];
-      let candName = cleanStopName(candidate.name || candidate.stopName);
-      let isAllowed = allowedStops.length === 0 || allowedStops.some(a => a.includes(candName) || candName.includes(a));
-      if (isAllowed) {
-        nextValidStop = candidate;
-        break;
-      }
-    }
-
-    if (nextValidStop) {
-      let nextStopName = nextValidStop.name || nextValidStop.stopName || "--";
-      let nLat = Number(nextValidStop.latitude || nextValidStop.lat);
-      let nLon = Number(nextValidStop.longitude || nextValidStop.lon);
-      let distNextKm = (getDistanceMeters(refLat, refLon, nLat, nLon) / 1000);
-      let distNextFormatted = formatDistanceWithMeters(distNextKm);
-      let nextEta = calculateETAString(distNextKm, speed);
-      
-      document.getElementById("infoNextStop").innerText = `${nextStopName} | ${distNextFormatted} | ETA: ${nextEta}`;
-    } else {
-      document.getElementById("infoNextStop").innerText = `গন্তব্যের কাছাকাছি`;
-    }
-
-    // গন্তব্যের দূরত্ব ও ETA
-    let targetToName = document.getElementById("searchTo").value.trim() || trackingBus.dest;
-    let destStopElem = document.getElementById("infoDestStop");
-
-    if (destStopElem && targetToName) {
-      let cleanTargetTo = cleanStopName(targetToName);
-      let targetDestIndex = validStops.findIndex(s => {
-        let sName = cleanStopName(s.name || s.stopName);
-        return sName === cleanTargetTo || sName.includes(cleanTargetTo) || cleanTargetTo.includes(sName);
-      });
-
-      let totalDistanceMeters = 0;
-      if (targetDestIndex > nearest.index) {
-        let prevLat = refLat;
-        let prevLon = refLon;
-        for (let k = nearest.index + 1; k <= targetDestIndex; k++) {
-          let stopLat = Number(validStops[k].latitude || validStops[k].lat);
-          let stopLon = Number(validStops[k].longitude || validStops[k].lon);
-          if (!isNaN(stopLat) && !isNaN(stopLon) && stopLat !== 0) {
-            totalDistanceMeters += getDistanceMeters(prevLat, prevLon, stopLat, stopLon);
-            prevLat = stopLat;
-            prevLon = stopLon;
-          }
-        }
-      } else {
-        let destCoords = resolvePlaceCoords(targetToName, validStops);
-        if (destCoords) {
-          totalDistanceMeters = getDistanceMeters(refLat, refLon, destCoords.lat, destCoords.lon);
-        }
-      }
-
-      let distDestKm = (totalDistanceMeters / 1000) * 1.08; 
-      let distDestFormatted = formatDistanceWithMeters(distDestKm);
-      let destEta = calculateETAString(distDestKm, speed);
-      
-      destStopElem.innerText = `${targetToName.toUpperCase()} | ${distDestFormatted} | ETA: ${destEta}`;
-    } else if (destStopElem) {
-      destStopElem.innerText = "--";
-    }
-  }
+  }     
 
   window.addEventListener("DOMContentLoaded", async () => {
     loadDatalistSuggestions();
@@ -1531,26 +1281,6 @@ function focusBothUserAndVehicle() {
 
   document.getElementById("searchFrom").addEventListener("input", handleAutoSearch);
   document.getElementById("searchTo").addEventListener("input", handleAutoSearch);
-
-  function resolvePlaceCoords(placeName, stopsList) {
-    let target = cleanStopName(placeName);
-    if (!target) return null;
-
-    if (stopsList && stopsList.length > 0) {
-      let found = stopsList.find(s => {
-        let n = cleanStopName(s.name || s.stopName);
-        return n === target || n.includes(target) || target.includes(n);
-      });
-      if (found) {
-        let lat = Number(found.latitude || found.lat);
-        let lon = Number(found.longitude || found.lon);
-        if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
-          return { lat: lat, lon: lon };
-        }
-      }
-    }
-    return null;
-  }
 
   async function autoSearchBuses() {
     let from = document.getElementById("searchFrom").value.trim();
@@ -2245,6 +1975,290 @@ async function confirmSmartAddStop(stopObj) {
     container.innerHTML = "<i>স্টপ তালিকা লোড করা যায়নি</i>";
   }
 }
+
+    // ১. স্থান অনুযায়ী নিখুঁত কো-অর্ডিনেট বের করার ফাংশন (Exact Match সবার আগে)
+  function resolvePlaceCoords(placeName, stopsList) {
+    let target = cleanStopName(placeName);
+    if (!target || !stopsList || stopsList.length === 0) return null;
+
+    // প্রথমে হুবহু নাম (Exact Match) খুঁজবে
+    let exactFound = stopsList.find(s => {
+      let n = cleanStopName(s.name || s.stopName);
+      return n === target;
+    });
+
+    if (exactFound) {
+      let lat = Number(exactFound.latitude || exactFound.lat);
+      let lon = Number(exactFound.longitude || exactFound.lon);
+      if (!isNaN(lat) && !isNaN(lon) && lat !== 0) return { lat, lon };
+    }
+
+    // হুবহু না পেলে আংশিক নাম খুঁজবে
+    let partialFound = stopsList.find(s => {
+      let n = cleanStopName(s.name || s.stopName);
+      return n.includes(target) || target.includes(n);
+    });
+
+    if (partialFound) {
+      let lat = Number(partialFound.latitude || partialFound.lat);
+      let lon = Number(partialFound.longitude || partialFound.lon);
+      if (!isNaN(lat) && !isNaN(lon) && lat !== 0) return { lat, lon };
+    }
+
+    return null;
+  }
+
+    // 1. Generic Path Following Sorting (Sob route-er jonno prodan krito algorithm)
+  function sortStopsAlongTrip(stops, bus) {
+    if (!stops || stops.length === 0) return [];
+
+    let valid = stops.filter(s => {
+      let lat = Number(s.latitude || s.lat);
+      let lon = Number(s.longitude || s.lon);
+      return !isNaN(lat) && !isNaN(lon) && lat !== 0;
+    });
+
+    let uniqueStops = [];
+    let seenNames = new Set();
+    valid.forEach(s => {
+      let name = cleanStopName(s.name || s.stopName);
+      if (!seenNames.has(name)) {
+        seenNames.add(name);
+        uniqueStops.push(s);
+      }
+    });
+    valid = uniqueStops;
+
+    if (valid.length <= 1) return valid;
+
+    let srcName = cleanStopName(document.getElementById("searchFrom").value.trim() || (bus && bus.source));
+    let destName = cleanStopName(document.getElementById("searchTo").value.trim() || (bus && bus.dest));
+
+    let allAvailable = [...valid, ...(masterStopsList || [])];
+    let srcCoords = resolvePlaceCoords(srcName, allAvailable) || { lat: Number(valid[0].latitude || valid[0].lat), lon: Number(valid[0].longitude || valid[0].lon) };
+    let destCoords = resolvePlaceCoords(destName, allAvailable);
+
+    // Continuous greedy path traversal: Source theke shuru kore sequential kachher stop sajano
+    let sorted = [];
+    let remaining = [...valid];
+    let currentPoint = { lat: srcCoords.lat, lon: srcCoords.lon };
+
+    // Jodi source stop list-e thake, age seta add kora
+    let srcIdx = remaining.findIndex(s => cleanStopName(s.name || s.stopName) === srcName);
+    if (srcIdx !== -1) {
+      sorted.push(remaining.splice(srcIdx, 1)[0]);
+      currentPoint = { lat: Number(sorted[0].latitude || sorted[0].lat), lon: Number(sorted[0].longitude || sorted[0].lon) };
+    }
+
+    while (remaining.length > 0) {
+      let nearestIdx = 0;
+      let minScore = Infinity;
+
+      for (let i = 0; i < remaining.length; i++) {
+        let sLat = Number(remaining[i].latitude || remaining[i].lat);
+        let sLon = Number(remaining[i].longitude || remaining[i].lon);
+        let distFromCurrent = getDistanceMeters(currentPoint.lat, currentPoint.lon, sLat, sLon);
+        
+        let score = distFromCurrent;
+        // Jodi destination coords thake, tobe destination-er dike aganor preference pabe
+        if (destCoords) {
+          let distToDest = getDistanceMeters(sLat, sLon, destCoords.lat, destCoords.lon);
+          score += (distToDest * 0.15);
+        }
+
+        if (score < minScore) {
+          minScore = score;
+          nearestIdx = i;
+        }
+      }
+
+      let nextStop = remaining.splice(nearestIdx, 1)[0];
+      sorted.push(nextStop);
+      currentPoint = { lat: Number(nextStop.latitude || nextStop.lat), lon: Number(nextStop.longitude || nextStop.lon) };
+    }
+
+    return sorted;
+  }
+
+  // 2. Generic Stop Evaluation o Filtering
+  function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
+    if (!trackingBus) return;
+
+    let srcName = cleanStopName(document.getElementById("searchFrom").value.trim() || trackingBus.source);
+    let destName = cleanStopName(document.getElementById("searchTo").value.trim() || trackingBus.dest);
+
+    // Bus-er fixed selected stops list
+    let rawSelected = trackingBus.selectedStops || trackingBus.Selected_Stops || trackingBus["SELECTED STOPS"] || [];
+    let allowedStops = [];
+    if (typeof rawSelected === "string") {
+      allowedStops = rawSelected.split(",").map(s => cleanStopName(s)).filter(Boolean);
+    } else if (Array.isArray(rawSelected)) {
+      allowedStops = rawSelected.map(s => cleanStopName(s)).filter(Boolean);
+    }
+
+    let stopCandidates = [];
+    if (currentBusStopsList) stopCandidates.push(...currentBusStopsList);
+    if (masterStopsList) stopCandidates.push(...masterStopsList);
+
+    let srcCoords = resolvePlaceCoords(srcName, stopCandidates);
+    let destCoords = resolvePlaceCoords(destName, stopCandidates);
+
+    function getDistanceToRouteLineKm(pt, start, end) {
+      let dTotal = getDistanceMeters(start.lat, start.lon, end.lat, end.lon);
+      if (dTotal === 0) return getDistanceMeters(pt.lat, pt.lon, start.lat, start.lon) / 1000;
+      let dStart = getDistanceMeters(start.lat, start.lon, pt.lat, pt.lon);
+      let dEnd = getDistanceMeters(end.lat, end.lon, pt.lat, pt.lon);
+      let s = (dTotal + dStart + dEnd) / 2;
+      let area = Math.sqrt(Math.max(0, s * (s - dTotal) * (s - dStart) * (s - dEnd)));
+      return ((2 * area) / dTotal) / 1000;
+    }
+
+    let fullStops = [];
+    let seenStopNames = new Set();
+
+    // 1. Bus-er allowedStops list-e ja ache, sob generic bhabe age add hobe
+    stopCandidates.forEach(ms => {
+      let cleanName = cleanStopName(ms.name || ms.stopName);
+      if (!cleanName || seenStopNames.has(cleanName)) return;
+
+      let isAllowed = allowedStops.length > 0 && allowedStops.some(a => a === cleanName || cleanName.includes(a) || a.includes(cleanName));
+      if (isAllowed) {
+        seenStopNames.add(cleanName);
+        fullStops.push(ms);
+      }
+    });
+
+    // 2. Extra master stops (ja waypoints hishabe majhe pore) corridor-e add kora
+    if (srcCoords && destCoords) {
+      let dLat = destCoords.lat - srcCoords.lat;
+      let cosLat = Math.cos(srcCoords.lat * Math.PI / 180);
+      let dLon = (destCoords.lon - srcCoords.lon) * cosLat;
+      let tripDistSq = (dLat * dLat) + (dLon * dLon);
+
+      stopCandidates.forEach(ms => {
+        let cleanName = cleanStopName(ms.name || ms.stopName);
+        let sLat = Number(ms.latitude || ms.lat);
+        let sLon = Number(ms.longitude || ms.lon);
+
+        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0 && !seenStopNames.has(cleanName)) {
+          let t = ((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * cosLat * dLon) / tripDistSq;
+          // Shudhu source o destination-er majher master stops add hobe
+          if (t >= -0.05 && t <= 1.0) {
+            let crossDist = getDistanceToRouteLineKm({ lat: sLat, lon: sLon }, srcCoords, destCoords);
+            if (crossDist <= 4.0) {
+              seenStopNames.add(cleanName);
+              fullStops.push(ms);
+            }
+          }
+        }
+      });
+    }
+
+    if (fullStops.length === 0) return;
+
+    // Stops path onujayi sort kora
+    let validStops = sortStopsAlongTrip(fullStops, { source: srcName, dest: destName });
+    if (validStops.length === 0) return;
+
+    // Destination stop paowar por tar porer shob stop dynamic bhabe kete fela (je kono route-er jonno generic)
+    if (destName) {
+      let dIdx = -1;
+      for (let i = 0; i < validStops.length; i++) {
+        let n = cleanStopName(validStops[i].name || validStops[i].stopName);
+        if (n === destName) {
+          dIdx = i;
+          break;
+        }
+      }
+      if (dIdx === -1) {
+        dIdx = validStops.findIndex(s => cleanStopName(s.name || s.stopName).includes(destName));
+      }
+      if (dIdx !== -1) {
+        validStops = validStops.slice(0, dIdx + 1);
+      }
+    }
+
+    // Source-er ager stop thakle bad dewa
+    if (srcName) {
+      let sIdx = validStops.findIndex(s => cleanStopName(s.name || s.stopName) === srcName);
+      if (sIdx !== -1 && sIdx > 0) {
+        validStops = validStops.slice(sIdx);
+      }
+    }
+
+    // Nearest stop ber kora
+    let stopsWithDist = validStops.map((s, idx) => {
+      let sLat = Number(s.latitude || s.lat);
+      let sLon = Number(s.longitude || s.lon);
+      let d = getDistanceMeters(refLat, refLon, sLat, sLon);
+      return { stop: s, distance: d, index: idx };
+    });
+
+    stopsWithDist.sort((a, b) => a.distance - b.distance);
+    let nearest = stopsWithDist[0] || { stop: validStops[0], index: 0 };
+
+    let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
+    document.getElementById("infoCurStop").innerText = curStopName;
+
+    // Map o Timeline render kora
+    renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
+
+    // Next stop nirnoy
+    let nextValidStop = null;
+    for (let j = nearest.index + 1; j < validStops.length; j++) {
+      let candidate = validStops[j];
+      let candName = cleanStopName(candidate.name || candidate.stopName);
+      let isAllowed = allowedStops.length === 0 || allowedStops.some(a => a.includes(candName) || candName.includes(a));
+      if (isAllowed) {
+        nextValidStop = candidate;
+        break;
+      }
+    }
+
+    if (nextValidStop) {
+      let nextStopName = nextValidStop.name || nextValidStop.stopName || "--";
+      let nLat = Number(nextValidStop.latitude || nextValidStop.lat);
+      let nLon = Number(nextValidStop.longitude || nextValidStop.lon);
+      let distNextKm = (getDistanceMeters(refLat, refLon, nLat, nLon) / 1000);
+      let distNextFormatted = formatDistanceWithMeters(distNextKm);
+      let nextEta = calculateETAString(distNextKm, speed);
+      
+      document.getElementById("infoNextStop").innerText = `${nextStopName} | ${distNextFormatted} | ETA: ${nextEta}`;
+    } else {
+      document.getElementById("infoNextStop").innerText = `গন্তব্যের কাছাকাছি`;
+    }
+
+    // Destination distance o ETA
+    let destStopElem = document.getElementById("infoDestStop");
+    if (destStopElem && destName) {
+      let targetDestIndex = validStops.length - 1;
+      let totalDistanceMeters = 0;
+
+      if (targetDestIndex > nearest.index) {
+        let prevLat = refLat;
+        let prevLon = refLon;
+        for (let k = nearest.index + 1; k <= targetDestIndex; k++) {
+          let stopLat = Number(validStops[k].latitude || validStops[k].lat);
+          let stopLon = Number(validStops[k].longitude || validStops[k].lon);
+          if (!isNaN(stopLat) && !isNaN(stopLon) && stopLat !== 0) {
+            totalDistanceMeters += getDistanceMeters(prevLat, prevLon, stopLat, stopLon);
+            prevLat = stopLat;
+            prevLon = stopLon;
+          }
+        }
+      } else if (destCoords) {
+        totalDistanceMeters = getDistanceMeters(refLat, refLon, destCoords.lat, destCoords.lon);
+      }
+
+      let distDestKm = (totalDistanceMeters / 1000) * 1.08; 
+      let distDestFormatted = formatDistanceWithMeters(distDestKm);
+      let destEta = calculateETAString(distDestKm, speed);
+      
+      destStopElem.innerText = `${destName.toUpperCase()} | ${distDestFormatted} | ETA: ${destEta}`;
+    } else if (destStopElem) {
+      destStopElem.innerText = "--";
+    }
+  }
 
 </script>
 </body>
