@@ -2080,14 +2080,14 @@ async function confirmSmartAddStop(stopObj) {
     return sorted;
   }
 
-  // 2. Generic Stop Evaluation o Filtering
+   // 2. Generic Stop Evaluation o Filtering (Strict Route Matching)
   function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
     if (!trackingBus) return;
 
     let srcName = cleanStopName(document.getElementById("searchFrom").value.trim() || trackingBus.source);
     let destName = cleanStopName(document.getElementById("searchTo").value.trim() || trackingBus.dest);
 
-    // Bus-er fixed selected stops list
+    // Bus-er nirdharito selected stops list
     let rawSelected = trackingBus.selectedStops || trackingBus.Selected_Stops || trackingBus["SELECTED STOPS"] || [];
     let allowedStops = [];
     if (typeof rawSelected === "string") {
@@ -2096,6 +2096,9 @@ async function confirmSmartAddStop(stopObj) {
       allowedStops = rawSelected.map(s => cleanStopName(s)).filter(Boolean);
     }
 
+    if (srcName && !allowedStops.includes(srcName)) allowedStops.unshift(srcName);
+    if (destName && !allowedStops.includes(destName)) allowedStops.push(destName);
+
     let stopCandidates = [];
     if (currentBusStopsList) stopCandidates.push(...currentBusStopsList);
     if (masterStopsList) stopCandidates.push(...masterStopsList);
@@ -2103,56 +2106,31 @@ async function confirmSmartAddStop(stopObj) {
     let srcCoords = resolvePlaceCoords(srcName, stopCandidates);
     let destCoords = resolvePlaceCoords(destName, stopCandidates);
 
-    function getDistanceToRouteLineKm(pt, start, end) {
-      let dTotal = getDistanceMeters(start.lat, start.lon, end.lat, end.lon);
-      if (dTotal === 0) return getDistanceMeters(pt.lat, pt.lon, start.lat, start.lon) / 1000;
-      let dStart = getDistanceMeters(start.lat, start.lon, pt.lat, pt.lon);
-      let dEnd = getDistanceMeters(end.lat, end.lon, pt.lat, pt.lon);
-      let s = (dTotal + dStart + dEnd) / 2;
-      let area = Math.sqrt(Math.max(0, s * (s - dTotal) * (s - dStart) * (s - dEnd)));
-      return ((2 * area) / dTotal) / 1000;
-    }
-
     let fullStops = [];
     let seenStopNames = new Set();
 
-    // 1. Bus-er allowedStops list-e ja ache, sob generic bhabe age add hobe
-    stopCandidates.forEach(ms => {
-      let cleanName = cleanStopName(ms.name || ms.stopName);
-      if (!cleanName || seenStopNames.has(cleanName)) return;
+    // ★ SHUDHU allowedStops-e thaka stop guloi neya hobe (Baire theke GORURHAT, GOPALPUR ashbe na)
+    allowedStops.forEach(reqName => {
+      let matched = stopCandidates.find(ms => {
+        let clean = cleanStopName(ms.name || ms.stopName);
+        return clean === reqName;
+      });
 
-      let isAllowed = allowedStops.length > 0 && allowedStops.some(a => a === cleanName || cleanName.includes(a) || a.includes(cleanName));
-      if (isAllowed) {
-        seenStopNames.add(cleanName);
-        fullStops.push(ms);
+      if (!matched) {
+        matched = stopCandidates.find(ms => {
+          let clean = cleanStopName(ms.name || ms.stopName);
+          return clean.includes(reqName) || reqName.includes(clean);
+        });
+      }
+
+      if (matched) {
+        let cleanMatchedName = cleanStopName(matched.name || matched.stopName);
+        if (!seenStopNames.has(cleanMatchedName)) {
+          seenStopNames.add(cleanMatchedName);
+          fullStops.push(matched);
+        }
       }
     });
-
-    // 2. Extra master stops (ja waypoints hishabe majhe pore) corridor-e add kora
-    if (srcCoords && destCoords) {
-      let dLat = destCoords.lat - srcCoords.lat;
-      let cosLat = Math.cos(srcCoords.lat * Math.PI / 180);
-      let dLon = (destCoords.lon - srcCoords.lon) * cosLat;
-      let tripDistSq = (dLat * dLat) + (dLon * dLon);
-
-      stopCandidates.forEach(ms => {
-        let cleanName = cleanStopName(ms.name || ms.stopName);
-        let sLat = Number(ms.latitude || ms.lat);
-        let sLon = Number(ms.longitude || ms.lon);
-
-        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0 && !seenStopNames.has(cleanName)) {
-          let t = ((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * cosLat * dLon) / tripDistSq;
-          // Shudhu source o destination-er majher master stops add hobe
-          if (t >= -0.05 && t <= 1.0) {
-            let crossDist = getDistanceToRouteLineKm({ lat: sLat, lon: sLon }, srcCoords, destCoords);
-            if (crossDist <= 4.0) {
-              seenStopNames.add(cleanName);
-              fullStops.push(ms);
-            }
-          }
-        }
-      });
-    }
 
     if (fullStops.length === 0) return;
 
@@ -2160,29 +2138,24 @@ async function confirmSmartAddStop(stopObj) {
     let validStops = sortStopsAlongTrip(fullStops, { source: srcName, dest: destName });
     if (validStops.length === 0) return;
 
-    // Destination stop paowar por tar porer shob stop dynamic bhabe kete fela (je kono route-er jonno generic)
-    if (destName) {
-      let dIdx = -1;
-      for (let i = 0; i < validStops.length; i++) {
-        let n = cleanStopName(validStops[i].name || validStops[i].stopName);
-        if (n === destName) {
-          dIdx = i;
-          break;
-        }
-      }
-      if (dIdx === -1) {
-        dIdx = validStops.findIndex(s => cleanStopName(s.name || s.stopName).includes(destName));
-      }
-      if (dIdx !== -1) {
-        validStops = validStops.slice(0, dIdx + 1);
+    // Source o Destination onujayi array trim kora
+    if (srcName) {
+      let sIdx = validStops.findIndex(s => {
+        let n = cleanStopName(s.name || s.stopName);
+        return n === srcName || (n.startsWith(srcName) && !n.includes("STATION"));
+      });
+      if (sIdx !== -1 && sIdx > 0) {
+        validStops = validStops.slice(sIdx);
       }
     }
 
-    // Source-er ager stop thakle bad dewa
-    if (srcName) {
-      let sIdx = validStops.findIndex(s => cleanStopName(s.name || s.stopName) === srcName);
-      if (sIdx !== -1 && sIdx > 0) {
-        validStops = validStops.slice(sIdx);
+    if (destName) {
+      let dIdx = validStops.findIndex(s => {
+        let n = cleanStopName(s.name || s.stopName);
+        return n === destName || (n.startsWith(destName) && !n.includes("STATION"));
+      });
+      if (dIdx !== -1) {
+        validStops = validStops.slice(0, dIdx + 1);
       }
     }
 
@@ -2259,6 +2232,7 @@ async function confirmSmartAddStop(stopObj) {
       destStopElem.innerText = "--";
     }
   }
+
 
 </script>
 </body>
