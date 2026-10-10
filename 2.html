@@ -1297,34 +1297,61 @@ function focusBothUserAndVehicle() {
     return `${distKm.toFixed(1)} KM (${meters} M)`; // ১ কিমি বা তার বেশি হলে (যেমন: 2.5 KM (2500 M))
   }
 
-      function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
+    function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
     if (!trackingBus) return;
 
-    // ১. এই বাসের নিজস্ব অনুমোদিত (টিক দেওয়া) স্টপ তালিকা
+    // ১. Selected_Stops থেকে সমস্ত স্টপের তালিকা নেওয়া
+    let rawSelected = trackingBus.selectedStops || trackingBus.Selected_Stops || trackingBus["SELECTED STOPS"] || [];
     let allowedStops = [];
-    if (trackingBus.selectedStops) {
-      if (typeof trackingBus.selectedStops === "string") {
-        allowedStops = trackingBus.selectedStops.split(",").map(s => cleanStopName(s));
-      } else if (Array.isArray(trackingBus.selectedStops)) {
-        allowedStops = trackingBus.selectedStops.map(s => cleanStopName(s));
-      }
+    if (typeof rawSelected === "string") {
+      allowedStops = rawSelected.split(",").map(s => cleanStopName(s)).filter(Boolean);
+    } else if (Array.isArray(rawSelected)) {
+      allowedStops = rawSelected.map(s => cleanStopName(s)).filter(Boolean);
     }
 
-    let srcName = trackingBus.source || document.getElementById("searchFrom").value.trim();
-    let destName = trackingBus.dest || document.getElementById("searchTo").value.trim();
+    let srcName = cleanStopName(trackingBus.source || document.getElementById("searchFrom").value.trim());
+    let destName = cleanStopName(trackingBus.dest || document.getElementById("searchTo").value.trim());
 
-    // ২. শুধুমাত্র বর্তমান বাসের নিজস্ব স্টপ দিয়ে তালিকা শুরু করা
+    if (srcName && !allowedStops.includes(srcName)) allowedStops.unshift(srcName);
+    if (destName && !allowedStops.includes(destName)) allowedStops.push(destName);
+
     let fullStops = [];
+    let seenStopNames = new Set();
+
+    // বাসের পূর্বের সেভ করা স্টপ থাকলে যোগ করা
     if (currentBusStopsList && currentBusStopsList.length > 0) {
-      fullStops.push(...currentBusStopsList);
+      currentBusStopsList.forEach(s => {
+        let cn = cleanStopName(s.name || s.stopName);
+        if (cn && !seenStopNames.has(cn)) {
+          seenStopNames.add(cn);
+          fullStops.push(s);
+        }
+      });
     }
 
-    // মাস্টারলিস্ট থেকে সোর্স ও গন্তব্যের অবস্থান শনাক্ত করা
-    let allAvailable = [...fullStops, ...(masterStopsList || [])];
-    let srcCoords = resolvePlaceCoords(srcName, allAvailable);
-    let destCoords = resolvePlaceCoords(destName, allAvailable);
+    // ২. ★ Selected_Stops-এ থাকা প্রতিটি স্টপকে অবশ্যই masterStopsList থেকে খুঁজে fullStops-এ ঢোকানো
+    if (masterStopsList && masterStopsList.length > 0) {
+      allowedStops.forEach(reqName => {
+        if (!seenStopNames.has(reqName)) {
+          // নাম সম্পূর্ণ মেলা অথবা আংশিক মেলা (উভয় ক্ষেত্রেই ধরা হবে)
+          let matched = masterStopsList.find(ms => {
+            let mName = cleanStopName(ms.name || ms.stopName);
+            return mName === reqName || mName.includes(reqName) || reqName.includes(mName);
+          });
+          if (matched) {
+            seenStopNames.add(reqName);
+            fullStops.push(matched);
+          }
+        }
+      });
+    }
 
-    // লম্ব দূরত্বের হেল্পার
+    // সোর্স ও গন্তব্যের কো-অর্ডিনেট নির্ধারণ
+    let allAvailable = [...fullStops, ...(masterStopsList || [])];
+    let srcCoords = resolvePlaceCoords(srcName, allAvailable) || (fullStops[0] ? { lat: Number(fullStops[0].latitude || fullStops[0].lat), lon: Number(fullStops[0].longitude || fullStops[0].lon) } : null);
+    let destCoords = resolvePlaceCoords(destName, allAvailable) || (fullStops[fullStops.length - 1] ? { lat: Number(fullStops[fullStops.length - 1].latitude || fullStops[fullStops.length - 1].lat), lon: Number(fullStops[fullStops.length - 1].longitude || fullStops[fullStops.length - 1].lon) } : null);
+
+    // লম্ব দূরত্বের হেল্পার (করিডোর ফিল্টার)
     function getDistanceToRouteLineKm(pt, start, end) {
       let dTotal = getDistanceMeters(start.lat, start.lon, end.lat, end.lon);
       if (dTotal === 0) return getDistanceMeters(pt.lat, pt.lon, start.lat, start.lon) / 1000;
@@ -1335,7 +1362,7 @@ function focusBothUserAndVehicle() {
       return ((2 * area) / dTotal) / 1000;
     }
 
-        // ৩. মাস্টার স্টপ যুক্ত করা — শুধুমাত্র করিডোরের ভেতর (২.৫ কিমি) এবং যা ওই রুটের অনুমোদিত বা সংলগ্ন
+    // ৩. ★ মাঝের যে মাস্টার স্টপগুলো Selected_Stops-এ নেই কিন্তু এই রুটের রাস্তায় পড়ে ("এখানে থামবে না" হিসেবে দেখানো)
     if (masterStopsList && masterStopsList.length > 0 && srcCoords && destCoords) {
       let dLat = destCoords.lat - srcCoords.lat;
       let dLon = destCoords.lon - srcCoords.lon;
@@ -1346,23 +1373,15 @@ function focusBothUserAndVehicle() {
         let sLat = Number(ms.latitude || ms.lat);
         let sLon = Number(ms.longitude || ms.lon);
 
-        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
+        if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0 && !seenStopNames.has(cleanName)) {
           let t = ((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * dLon) / tripDistSq;
           
-          // সোর্স থেকে গন্তব্যের সরলরেখার মধ্যবর্তী অংশ
+          // সোর্স থেকে গন্তব্যের রাস্তা বরাবর (সর্বোচ্চ ৪ কিমি করিডোরে)
           if (t >= -0.05 && t <= 1.05) {
             let crossDist = getDistanceToRouteLineKm({ lat: sLat, lon: sLon }, srcCoords, destCoords);
-            
-            // সর্বোচ্চ ২.০ কিমি করিডোর সীমা
-            if (crossDist <= 2.0) {
-              // নিশ্চিত করা হচ্ছে স্টপটি যেন ইতিমধ্যে বাসের তালিকায় না থাকে
-              let exists = fullStops.some(s => cleanStopName(s.name || s.stopName) === cleanName);
-              if (!exists) {
-                // অতিরিক্ত নিরাপত্তা: স্টপটি বাসের অনুমোদিত তালিকায় আছে কি না
-                if (allowedStops.length === 0 || allowedStops.includes(cleanName)) {
-                  fullStops.push(ms);
-                }
-              }
+            if (crossDist <= 4.0) {
+              seenStopNames.add(cleanName);
+              fullStops.push(ms); // এটি renderStopsOnMapAndTimeline-এ স্বয়ংক্রিয়ভাবে "এখানে থামবে না" হবে
             }
           }
         }
@@ -1371,7 +1390,7 @@ function focusBothUserAndVehicle() {
 
     if (fullStops.length === 0) return;
 
-    // ৪. স্টপগুলোকে রুট বরাবর ক্রমানুসারে সাজানো
+    // ৪. স্টপগুলোকে বোলপুর থেকে লাভপুর অভিমুখী ক্রমানুসারে সাজানো
     let validStops = sortStopsAlongTrip(fullStops, trackingBus || {});
     if (validStops.length === 0) return;
 
@@ -1389,15 +1408,16 @@ function focusBothUserAndVehicle() {
     let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
     document.getElementById("infoCurStop").innerText = curStopName;
 
-    // টাইমলাইন ও ম্যাপ রেন্ডার করা
+    // টাইমলাইন ও ম্যাপে সমস্ত স্টপ রেন্ডার করা
     renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
 
-    // পরবর্তী স্টপেজ (যেখানে বাস থামবে)
+    // পরবর্তী বৈধ স্টপেজ (যেটিতে বাস আসলে দাঁড়াবে)
     let nextValidStop = null;
     for (let j = nearest.index + 1; j < validStops.length; j++) {
       let candidate = validStops[j];
       let candName = cleanStopName(candidate.name || candidate.stopName);
-      if (allowedStops.length === 0 || allowedStops.includes(candName)) {
+      let isAllowed = allowedStops.length === 0 || allowedStops.some(a => a.includes(candName) || candName.includes(a));
+      if (isAllowed) {
         nextValidStop = candidate;
         break;
       }
