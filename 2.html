@@ -737,8 +737,6 @@ observer.observe(document.body, { childList: true, subtree: true });
   let stopRoutePolyline = null;
 
   let userPos = null, busPos = null, trackingBus = null, trackingInterval = null;
-  let lastActiveStopIndex = null; // সক্রিয় স্টপেজ ট্র্যাক করার জন্য
-  let isTimelineUserInteracting = false; // ব্যবহারকারী নিজে স্ক্রোল করছে কিনা
   let debounceTimer = null;
   let hasCenteredUser = false;
   let currentBusStopsList = [];
@@ -1016,7 +1014,7 @@ function focusBothUserAndVehicle() {
     checkNearbyMasterStops(effectiveBusLat, effectiveBusLon);
   }
   
-  // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন
+   // টাইমলাইন ও ম্যাপে স্টপ প্রদর্শন (বাদ পড়া স্টপে লাল লেখা সহ সম্পূর্ণ ফাংশন)
   function renderStopsOnMapAndTimeline(orderedStops, nearestStopIndex, busLat, busLon) {
     stopMarkersLayer.clearLayers();
     if (stopRoutePolyline) {
@@ -1045,6 +1043,7 @@ function focusBothUserAndVehicle() {
       let sName = s.name || s.stopName || `STOP ${i+1}`;
       let cName = cleanStopName(sName);
 
+      // এই স্টপে বাস দাঁড়াবে কি না যাচাই
       let isSkipped = allowedStops.length > 0 && !allowedStops.includes(cName);
 
       if (!isNaN(sLat) && !isNaN(sLon) && sLat !== 0) {
@@ -1060,6 +1059,7 @@ function focusBothUserAndVehicle() {
           fillOpacity: 0.9
         });
 
+       // শুধুমাত্র স্টপের নামের ওপর কাটা দাগ থাকবে, কিন্তু 'এখানে থামবে না' লেখা স্পষ্ট থাকবে
         let tooltipContent = isSkipped
           ? `<div style="text-align:center; text-decoration:none !important;">
                <b style="color:#c62828; text-decoration:line-through; font-size:12px;">${sName}</b><br>
@@ -1086,18 +1086,9 @@ function focusBothUserAndVehicle() {
     let displayStops = orderedStops;
     let activeRelativeIndex = nearestStopIndex;
 
-    // ব্যবহারকারী নিজে হাত দিয়ে সরাচ্ছে কি না তা শনাক্ত করার লিসেনার
-    if (!timelineContainer.dataset.listenerAttached) {
-      timelineContainer.addEventListener('pointerdown', () => { isTimelineUserInteracting = true; });
-      window.addEventListener('pointerup', () => { 
-        setTimeout(() => { isTimelineUserInteracting = false; }, 800); 
-      });
-      timelineContainer.dataset.listenerAttached = "true";
-    }
-
     // ২. হাইব্রিড দূরত্বের ভিত্তিতে প্রতিটি স্টপের জন্য পিক্সেল পজিশন হিসাব করা
-    let stopPixelPositions = [40];
-    const MIN_GAP_PX = 130;
+    let stopPixelPositions = [40]; // প্রথম স্টপ শুরু থেকে ৪০ পিক্সেল দূরে থাকবে
+    const MIN_GAP_PX = 120;
     const PX_PER_KM = 35;
 
     for (let i = 1; i < displayStops.length; i++) {
@@ -1117,19 +1108,17 @@ function focusBothUserAndVehicle() {
       stopPixelPositions.push(nextPos);
     }
 
+    // ট্র্যাকবারের মোট দৈর্ঘ্য নির্ধারণ
     let totalTrackWidth = stopPixelPositions[stopPixelPositions.length - 1] + 60;
     trackBar.style.minWidth = `${totalTrackWidth}px`;
-
-    // বর্তমান স্ক্রোল পজিশন সংরক্ষণ করে রাখা
-    let previousScrollLeft = timelineContainer.scrollLeft;
 
     trackBar.innerHTML = `
       <div class="route-line-bg" style="left: 40px; right: 40px;"></div>
       <div class="route-live-bus-indicator" id="routeBusIndicator">${doubleBusSvg}</div>
     `;
 
-    // ৩. প্রতিটি স্টপ নোড স্থাপন
-    displayStops.forEach((s, idx) => {
+    // ৩. প্রতিটি স্টপ নোডকে নির্ধারিত পিক্সেল পজিশনে বসানো
+        displayStops.forEach((s, idx) => {
       let node = document.createElement("div");
       node.className = "route-stop-node";
       node.style.left = `${stopPixelPositions[idx]}px`;
@@ -1163,13 +1152,14 @@ function focusBothUserAndVehicle() {
       trackBar.appendChild(node);
     });
 
-    // ৪. লাইভ বাস আইকনের পজিশনিং
+    // ৪. লাইভ বাসের আইকনকে নিখুঁতভাবে স্টপের ওপর বা মধ্যবর্তী স্থানে নিয়ে যাওয়া
     let indicator = document.getElementById("routeBusIndicator");
     let count = displayStops.length;
 
     if (count > 0 && activeRelativeIndex >= 0) {
       let busPxPos = stopPixelPositions[activeRelativeIndex];
 
+      // বাস যদি দুটি স্টপের মাঝামাঝি পথে চলমান থাকে
       if (activeRelativeIndex < count - 1 && busLat && busLon) {
         let curStop = displayStops[activeRelativeIndex];
         let nextStop = displayStops[activeRelativeIndex + 1];
@@ -1186,38 +1176,33 @@ function focusBothUserAndVehicle() {
           if (segDist > 0) {
             let progress = (segDist - distToNext) / segDist;
             progress = Math.min(Math.max(progress, 0), 1);
+
             let segWidth = stopPixelPositions[activeRelativeIndex + 1] - stopPixelPositions[activeRelativeIndex];
             busPxPos += progress * segWidth;
           }
         }
       }
+
       indicator.style.left = `${busPxPos}px`;
     } else {
       indicator.style.left = "40px";
     }
 
-    // ৫. অটো-স্ক্রোল লজিক: বাস নতুন স্টপেজে গেলেই কেবল রি-সেন্টার হবে
-    if (lastActiveStopIndex !== activeRelativeIndex) {
-      lastActiveStopIndex = activeRelativeIndex;
-      setTimeout(() => {
-        let activeElem = document.getElementById("currentActiveTimelineNode");
-        if (activeElem && timelineContainer) {
-          let containerWidth = timelineContainer.clientWidth;
-          let nodeLeft = activeElem.offsetLeft;
-          let nodeWidth = activeElem.clientWidth;
-          let scrollTarget = nodeLeft - (containerWidth / 2) + (nodeWidth / 2);
-          timelineContainer.scrollTo({
-            left: scrollTarget,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
-    } else {
-      // ইউজার টেনে রাখলে জোর করে রিসেন্টার না করে স্ক্রোল আগের জায়গায় স্থির রাখা
-      if (!isTimelineUserInteracting) {
-        timelineContainer.scrollLeft = previousScrollLeft;
+    // ৫. চলমান সক্রিয় স্টপটিকে স্ক্রিনের মাঝখানে রাখার জন্য অটো স্ক্রোল
+    setTimeout(() => {
+      let activeElem = document.getElementById("currentActiveTimelineNode");
+      if (activeElem && timelineContainer) {
+        let containerWidth = timelineContainer.clientWidth;
+        let nodeLeft = activeElem.offsetLeft;
+        let nodeWidth = activeElem.clientWidth;
+
+        let scrollTarget = nodeLeft - (containerWidth / 2) + (nodeWidth / 2);
+        timelineContainer.scrollTo({
+          left: scrollTarget,
+          behavior: 'smooth'
+        });
       }
-    }
+    }, 100);
   }
 
      // ETA হিসাব করার জন্য সহায়ক ফাংশন (evaluateStoppagesAndEta এর ঠিক উপরে রাখুন)
@@ -1542,7 +1527,6 @@ function focusBothUserAndVehicle() {
 
     // ১. বাস সিলেক্ট করার সময় বোতামের নাম পরিবর্তন (selectBus ফাংশনের ভেতরে)
 function selectBus(b) {
-  lastActiveStopIndex = null; // নতুন বাস সিলেক্ট হলে রিসেন্টার যেন ঠিকঠাক হয়
   promptDismissedStops.clear();
   activeApproachingStop = null;
   trackingBus = b;
@@ -2024,7 +2008,7 @@ async function confirmSmartAddStop(stopObj) {
     return null;
   }
 
-   // Lat Long এবং রুট ডিরেকশন অনুযায়ী স্টপ ক্রমানুসারে সাজানোর ফাংশন
+    // 1. Generic Path Following Sorting (Sob route-er jonno prodan krito algorithm)
   function sortStopsAlongTrip(stops, bus) {
     if (!stops || stops.length === 0) return [];
 
@@ -2052,34 +2036,48 @@ async function confirmSmartAddStop(stopObj) {
 
     let allAvailable = [...valid, ...(masterStopsList || [])];
     let srcCoords = resolvePlaceCoords(srcName, allAvailable) || { lat: Number(valid[0].latitude || valid[0].lat), lon: Number(valid[0].longitude || valid[0].lon) };
-    let destCoords = resolvePlaceCoords(destName, allAvailable) || { lat: Number(valid[valid.length - 1].latitude || valid[valid.length - 1].lat), lon: Number(valid[valid.length - 1].longitude || valid[valid.length - 1].lon) };
+    let destCoords = resolvePlaceCoords(destName, allAvailable);
 
-    let dLat = destCoords.lat - srcCoords.lat;
-    let dLon = destCoords.lon - srcCoords.lon;
-    let tripDistSq = (dLat * dLat) + (dLon * dLon);
+    // Continuous greedy path traversal: Source theke shuru kore sequential kachher stop sajano
+    let sorted = [];
+    let remaining = [...valid];
+    let currentPoint = { lat: srcCoords.lat, lon: srcCoords.lon };
 
-    // ১. সোর্স থেকে ডেস্টিনেশন বরাবর প্রজেকশন ও দূরত্বের ভিত্তিতে স্কোর বের করা
-    valid.forEach(s => {
-      let sLat = Number(s.latitude || s.lat);
-      let sLon = Number(s.longitude || s.lon);
-      let name = cleanStopName(s.name || s.stopName);
+    // Jodi source stop list-e thake, age seta add kora
+    let srcIdx = remaining.findIndex(s => cleanStopName(s.name || s.stopName) === srcName);
+    if (srcIdx !== -1) {
+      sorted.push(remaining.splice(srcIdx, 1)[0]);
+      currentPoint = { lat: Number(sorted[0].latitude || sorted[0].lat), lon: Number(sorted[0].longitude || sorted[0].lon) };
+    }
 
-      if (name === srcName) {
-        s._progress = -999999; // সোর্স সবসময় সবার শুরুতে
-      } else if (name === destName) {
-        s._progress = 999999;  // গন্তব্য সবসময় সবার শেষে
-      } else if (tripDistSq > 0) {
-        let proj = (((sLat - srcCoords.lat) * dLat + (sLon - srcCoords.lon) * dLon) / tripDistSq);
-        let distFromSrc = getDistanceMeters(srcCoords.lat, srcCoords.lon, sLat, sLon);
-        // প্রজেকশন ও বাস্তব দূরত্বের সমন্বয়
-        s._progress = (proj * 100000) + distFromSrc;
-      } else {
-        s._progress = getDistanceMeters(srcCoords.lat, srcCoords.lon, sLat, sLon);
+    while (remaining.length > 0) {
+      let nearestIdx = 0;
+      let minScore = Infinity;
+
+      for (let i = 0; i < remaining.length; i++) {
+        let sLat = Number(remaining[i].latitude || remaining[i].lat);
+        let sLon = Number(remaining[i].longitude || remaining[i].lon);
+        let distFromCurrent = getDistanceMeters(currentPoint.lat, currentPoint.lon, sLat, sLon);
+        
+        let score = distFromCurrent;
+        // Jodi destination coords thake, tobe destination-er dike aganor preference pabe
+        if (destCoords) {
+          let distToDest = getDistanceMeters(sLat, sLon, destCoords.lat, destCoords.lon);
+          score += (distToDest * 0.15);
+        }
+
+        if (score < minScore) {
+          minScore = score;
+          nearestIdx = i;
+        }
       }
-    });
 
-    valid.sort((a, b) => a._progress - b._progress);
-    return valid;
+      let nextStop = remaining.splice(nearestIdx, 1)[0];
+      sorted.push(nextStop);
+      currentPoint = { lat: Number(nextStop.latitude || nextStop.lat), lon: Number(nextStop.longitude || nextStop.lon) };
+    }
+
+    return sorted;
   }
 
    // 2. Generic Stop Evaluation o Filtering (Strict Route Matching)
