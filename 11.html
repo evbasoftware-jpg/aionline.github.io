@@ -2191,8 +2191,23 @@ async function confirmSmartAddStop(stopObj) {
 
     let nearest = { stop: validStops[currentStopIndex], index: currentStopIndex };
       
-    let curStopName = nearest.stop.name || nearest.stop.stopName || "--";
-    document.getElementById("infoCurStop").innerText = curStopName;
+    let baseStopName = nearest.stop.name || nearest.stop.stopName || "--";
+    let curStopDisplay = baseStopName;
+
+    // বর্তমান স্টপ থেকে বাস কত মিটার দূরে এগিয়ে গেছে তা বের করা
+    let curStopLat = Number(nearest.stop.latitude || nearest.stop.lat);
+    let curStopLon = Number(nearest.stop.longitude || nearest.stop.lon);
+
+    if (!isNaN(curStopLat) && !isNaN(curStopLon) && curStopLat !== 0) {
+      let distPastMeters = Math.round(getDistanceMeters(refLat, refLon, curStopLat, curStopLon));
+      
+      // বাস স্টপ থেকে ৫০ মিটারের বেশি দূর পেরিয়ে গেলে এবং পরবর্তী স্টপেজ এখনও না আসলে
+      if (distPastMeters > 50 && currentStopIndex < validStops.length - 1) {
+        curStopDisplay = `${baseStopName} ${distPastMeters} মিটার পেরিয়ে গেছে`;
+      }
+    }
+
+    document.getElementById("infoCurStop").innerText = curStopDisplay;
 
     // Map o Timeline render kora
     renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
