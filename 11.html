@@ -2203,7 +2203,7 @@ async function confirmSmartAddStop(stopObj) {
       
       // বাস স্টপ থেকে ৫০ মিটারের বেশি দূর পেরিয়ে গেলে এবং পরবর্তী স্টপেজ এখনও না আসলে
       if (distPastMeters > 50 && currentStopIndex < validStops.length - 1) {
-        curStopDisplay = `${baseStopName} ${distPastMeters} মিটার পেরিয়ে গেছে`;
+        curStopDisplay = `${baseStopName} ( ${distPastMeters} মিটার পেরিয়ে গেছে )`;
       }
     }
 
