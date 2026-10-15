@@ -2080,14 +2080,14 @@ async function confirmSmartAddStop(stopObj) {
     return sorted;
   }
 
-   // 2. Generic Stop Evaluation o Filtering (Strict Route Matching)
+  // 2. Generic Stop Evaluation o Filtering (Strict Route Matching)
   function evaluateStoppagesAndEta(distKmBusUser, speed, refLat, refLon) {
     if (!trackingBus) return;
 
     let srcName = cleanStopName(document.getElementById("searchFrom").value.trim() || trackingBus.source);
     let destName = cleanStopName(document.getElementById("searchTo").value.trim() || trackingBus.dest);
 
-    // Bus-er nirdharito selected stops list
+    // বাসটির অনুমোদিত selected stops তালিকা প্রস্তুত করা
     let rawSelected = trackingBus.selectedStops || trackingBus.Selected_Stops || trackingBus["SELECTED STOPS"] || [];
     let allowedStops = [];
     if (typeof rawSelected === "string") {
@@ -2109,7 +2109,7 @@ async function confirmSmartAddStop(stopObj) {
     let fullStops = [];
     let seenStopNames = new Set();
 
-    // ★ SHUDHU allowedStops-e thaka stop guloi neya hobe (Baire theke GORURHAT, GOPALPUR ashbe na)
+    // শুধুমাত্র অনুমোদিত স্টপগুলোকে রুটে যোগ করা
     allowedStops.forEach(reqName => {
       let matched = stopCandidates.find(ms => {
         let clean = cleanStopName(ms.name || ms.stopName);
@@ -2134,11 +2134,11 @@ async function confirmSmartAddStop(stopObj) {
 
     if (fullStops.length === 0) return;
 
-    // Stops path onujayi sort kora
+    // স্টপগুলো রুটের ক্রমানুসারে সাজানো
     let validStops = sortStopsAlongTrip(fullStops, { source: srcName, dest: destName });
     if (validStops.length === 0) return;
 
-    // Source o Destination onujayi array trim kora
+    // Source ও Destination অনুযায়ী তালিকা ট্রিম করা
     if (srcName) {
       let sIdx = validStops.findIndex(s => {
         let n = cleanStopName(s.name || s.stopName);
@@ -2159,49 +2159,51 @@ async function confirmSmartAddStop(stopObj) {
       }
     }
 
-     // বাসের অবস্থান অনুযায়ী বর্তমান স্টপ নির্ধারণ (৫০/৭০ মিটারের মধ্যে না পৌঁছালে আগের স্টপেই থাকবে)
-    let currentStopIndex = 0;
+    // ১. সমস্ত বৈধ স্টপের মধ্য থেকে বাসের সবচেয়ে কাছাকাছি স্টপ বের করা
+    let nearestIndex = 0;
+    let minDistance = Infinity;
 
     for (let i = 0; i < validStops.length; i++) {
       let sLat = Number(validStops[i].latitude || validStops[i].lat);
       let sLon = Number(validStops[i].longitude || validStops[i].lon);
-      let d = getDistanceMeters(refLat, refLon, sLat, sLon);
+      let dist = getDistanceMeters(refLat, refLon, sLat, sLon);
 
-      // পরবর্তী স্টপেজের ৫০ মিটারের মধ্যে পৌঁছালে তবেই সেটি বর্তমান স্টপেজ হবে
-      if (d <= 50) {
-        currentStopIndex = i;
-        break;
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestIndex = i;
       }
+    }
+
+    // ২. বর্তমান ও পরবর্তী স্টপের আপেক্ষিক অবস্থান যাচাই
+    let currentStopIndex = nearestIndex;
+
+    if (nearestIndex < validStops.length - 1) {
+      let curStopLat = Number(validStops[nearestIndex].latitude || validStops[nearestIndex].lat);
+      let curStopLon = Number(validStops[nearestIndex].longitude || validStops[nearestIndex].lon);
       
-      // অন্যথায় বাস যে স্টপগুলো অতিক্রম করে এগিয়ে গেছে, তার সর্বশেষটি বর্তমান থাকবে
-      if (i < validStops.length - 1) {
-        let nextLat = Number(validStops[i+1].latitude || validStops[i+1].lat);
-        let nextLon = Number(validStops[i+1].longitude || validStops[i+1].lon);
-        let distToNext = getDistanceMeters(refLat, refLon, nextLat, nextLon);
-        
-        // পরবর্তী স্টপ এখনও ৫০ মিটারের বেশি দূরে থাকলে বর্তমান স্টপ i-তেই থাকবে
-        if (distToNext > 50) {
-          currentStopIndex = i;
-        } else {
-          currentStopIndex = i + 1;
-          break;
-        }
+      let nextStopLat = Number(validStops[nearestIndex + 1].latitude || validStops[nearestIndex + 1].lat);
+      let nextStopLon = Number(validStops[nearestIndex + 1].longitude || validStops[nearestIndex + 1].lon);
+
+      let distCurToNext = getDistanceMeters(curStopLat, curStopLon, nextStopLat, nextStopLon);
+      let distBusToNext = getDistanceMeters(refLat, refLon, nextStopLat, nextStopLon);
+
+      // বাস যদি পরবর্তী স্টপের ৫০ মিটারের মধ্যে চলে আসে
+      if (distBusToNext <= 50) {
+        currentStopIndex = nearestIndex + 1;
+      } else if (distBusToNext < distCurToNext) {
+        currentStopIndex = nearestIndex;
       }
     }
 
     let nearest = { stop: validStops[currentStopIndex], index: currentStopIndex };
-      
     let baseStopName = nearest.stop.name || nearest.stop.stopName || "--";
     let curStopDisplay = baseStopName;
 
-    // বর্তমান স্টপ থেকে বাস কত মিটার দূরে এগিয়ে গেছে তা বের করা
     let curStopLat = Number(nearest.stop.latitude || nearest.stop.lat);
     let curStopLon = Number(nearest.stop.longitude || nearest.stop.lon);
 
     if (!isNaN(curStopLat) && !isNaN(curStopLon) && curStopLat !== 0) {
       let distPastMeters = Math.round(getDistanceMeters(refLat, refLon, curStopLat, curStopLon));
-      
-      // বাস স্টপ থেকে ৫০ মিটারের বেশি দূর পেরিয়ে গেলে এবং পরবর্তী স্টপেজ এখনও না আসলে
       if (distPastMeters > 50 && currentStopIndex < validStops.length - 1) {
         curStopDisplay = `${baseStopName} ( ${distPastMeters} মিটার পেরিয়ে গেছে )`;
       }
@@ -2209,20 +2211,11 @@ async function confirmSmartAddStop(stopObj) {
 
     document.getElementById("infoCurStop").innerText = curStopDisplay;
 
-    // Map o Timeline render kora
+    // ম্যাপ এবং টাইমলাইন রেন্ডার
     renderStopsOnMapAndTimeline(validStops, nearest.index, refLat, refLon);
 
-    // Next stop nirnoy
-    let nextValidStop = null;
-    for (let j = nearest.index + 1; j < validStops.length; j++) {
-      let candidate = validStops[j];
-      let candName = cleanStopName(candidate.name || candidate.stopName);
-      let isAllowed = allowedStops.length === 0 || allowedStops.some(a => a.includes(candName) || candName.includes(a));
-      if (isAllowed) {
-        nextValidStop = candidate;
-        break;
-      }
-    }
+    // ৩. পরবর্তী স্টপ নির্ধারণ (currentStopIndex-এর ঠিক পরের স্টপ)
+    let nextValidStop = (currentStopIndex < validStops.length - 1) ? validStops[currentStopIndex + 1] : null;
 
     if (nextValidStop) {
       let nextStopName = nextValidStop.name || nextValidStop.stopName || "--";
@@ -2234,10 +2227,10 @@ async function confirmSmartAddStop(stopObj) {
       
       document.getElementById("infoNextStop").innerText = `${nextStopName} | ${distNextFormatted} | ETA: ${nextEta}`;
     } else {
-      document.getElementById("infoNextStop").innerText = `গন্তব্যের কাছাকাছি`;
+      document.getElementById("infoNextStop").innerText = `গন্তব্যে পৌঁছে গেছে`;
     }
 
-    // Destination distance o ETA
+    // গন্তব্যের দূরত্ব ও ETA হিসাব
     let destStopElem = document.getElementById("infoDestStop");
     if (destStopElem && destName) {
       let targetDestIndex = validStops.length - 1;
@@ -2268,7 +2261,6 @@ async function confirmSmartAddStop(stopObj) {
       destStopElem.innerText = "--";
     }
   }
-
 
 </script>
 </body>
