@@ -1,105 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Online Shops Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>অনলাইন শপ ও প্রোডাক্ট পোর্টাল</title>
+
+<!-- Leaflet CSS for Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f5f5f5;
-margin:0;
-padding:15px;
+:root {
+  --primary: #1976d2;
+  --primary-hover: #1565c0;
+  --success: #2e7d32;
+  --whatsapp: #25D366;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --text: #333333;
 }
 
-.container{
-max-width:1000px;
-margin:auto;
+* {
+  box-sizing: border-box;
 }
 
-.card{
-background:#fff;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 12px;
 }
 
-h2{
-text-align:center;
+.container {
+  max-width: 1100px;
+  margin: auto;
 }
 
-label{
-    display:block;
-    margin-top:10px;
-    margin-bottom:4px;
-    font-weight:bold;
-    color:#333;
+/* Header & Google Translate */
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
-input{
-    width:100%;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:5px;
-    box-sizing:border-box;
+.header-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin: 5px 0;
 }
 
-button{
-width:100%;
-padding:12px;
-border:none;
-background:#1976d2;
-color:#fff;
-border-radius:5px;
-cursor:pointer;
+/* Cards & Controls */
+.card {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.product{
-background:#fff;
-padding:15px;
-margin-bottom:10px;
-border-radius:10px;
-box-shadow:0 1px 5px rgba(0,0,0,.1);
+label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-  input, select{
-    width:100%;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:5px;
-    box-sizing:border-box;
-    margin-bottom:10px;
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  outline: none;
 }
 
-textarea{
-width:100%;
-padding:10px;
-border:1px solid #ccc;
-border-radius:5px;
-box-sizing:border-box;
-margin-bottom:10px;
-min-height:80px;
-}
-    
-.callBtn{
-background:green;
-color:#fff;
-padding:8px 12px;
-text-decoration:none;
-border-radius:5px;
-display:inline-block;
-margin-right:5px;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
 }
 
-.waBtn{
-background:#25D366;
-color:#fff;
-padding:8px 12px;
-text-decoration:none;
-border-radius:5px;
-display:inline-block;
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+button, .action-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+button:hover, .action-btn:hover {
+  background: var(--primary-hover);
+}
+
+.toggle-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  background: #0d47a1;
+  margin-bottom: 10px;
+}
+
+.loc-btn {
+  background: #e0e0e0;
+  color: #333;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.loc-btn:hover {
+  background: #d5d5d5;
+}
+
+/* Map Style */
+#map {
+  width: 100%;
+  height: 380px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  z-index: 1;
+}
+
+/* Disclaimer Box */
+.disclaimer-card {
+  background: #fff8e1;
+  border-left: 5px solid #ffa000;
+  padding: 14px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.disclaimer-original {
+  font-size: 0.85rem;
+  color: #c62828;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.disclaimer-easy {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #b71c1c;
+  line-height: 1.4;
+}
+
+/* Product List */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-top: 3px solid var(--primary);
+}
+
+.product h3 {
+  margin: 0 0 10px 0;
+  color: #1a237e;
+  font-size: 1.15rem;
+}
+
+.product p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.distance-badge {
+  display: inline-block;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.callBtn {
+  background: var(--success);
+  color: #fff;
+  padding: 6px 10px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.waBtn {
+  background: var(--whatsapp);
+  color: #fff;
+  padding: 6px 10px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.mapBtn {
+  background: #ff5722;
+  color: #fff;
+  padding: 6px 10px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.editBtn {
+  background: #546e7a;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -108,493 +259,420 @@ display:inline-block;
 
 <div class="container">
 
-<div class="card">
-    
-<h2 onclick="toggleForm()" style="cursor:pointer;">
-<span id="icon">▶</span>
-Shop & Product Registration Online
-</h2>
-    
-<div id="formSection" style="display:none;">
-    
-<label for="shopName">Shop Name</label>
-<input id="shopName" placeholder="Enter Shop Name">
+  <!-- ১) গুগল ট্রান্সলেটর হেডার -->
+  <div class="header-bar">
+    <div class="header-title">🛍️ অনলাইন শপ ও প্রোডাক্ট ডিরেক্টরি</div>
+    <div id="google_translate_element"></div>
+  </div>
 
-<label for="ownerName">Shop Owner Name</label>
-<input id="ownerName" placeholder="Enter Shop Owner Name">
+  <!-- ৯) বাংলায় ডিসক্লেইমার ও সহজ সতর্কতা বার্তা -->
+  <div class="disclaimer-card">
+    <div class="disclaimer-original">
+      <strong>অফিসিয়াল বার্তা:</strong> "aionline.in.net এখানে তালিকাভুক্ত কোনো দোকান বা পণ্য যাচাই করে না। কোনো পণ্য কেনার আগে ব্যবহারকারীদের নিজ দায়িত্বে সমস্ত তথ্য যাচাই করার পরামর্শ দেওয়া হচ্ছে। লেনদেন সংক্রান্ত কোনো ক্ষতি, বিবাদ বা সমস্যার জন্য aionline.in.net দায়ী থাকবে না।"
+    </div>
+    <div class="disclaimer-easy">
+      ⚠️ <strong>সহজ কথায় সতর্কতা:</strong> কোনো পণ্য বা সেবা নেওয়ার আগে বা টাকা পাঠানোর আগে দয়া করে দোকানদার ও পণ্যের গুণমান সরাসরি নিজে যাচাই করে নিন।
+    </div>
+  </div>
 
-<label for="category">Business Category</label>
+  <!-- ২) দোকান ও প্রোডাক্ট যুক্ত করার বাটন ও ফর্ম -->
+  <button class="toggle-btn" onclick="toggleForm()">
+    <span>➕ নতুন দোকান / প্রোডাক্ট রেজিস্টার করুন</span>
+    <span id="formArrow">▼</span>
+  </button>
 
-<select id="category">
+  <div class="card" id="formSection" style="display:none;">
+    <h3 style="margin-top:0;">দোকান ও পণ্য রেজিস্ট্রেশন ফর্ম</h3>
 
-<option value="">Select Business Category</option>
+    <label for="shopName">দোকানের নাম (Shop Name) *</label>
+    <input id="shopName" placeholder="যেমন: মা তারা স্টোর">
 
-<option>Groceries</option>
-<option>Fruits & Vegetables</option>
-<option>Dairy Products</option>
-<option>Bakery & Cakes</option>
-<option>Food & Beverages</option>
+    <label for="ownerName">মালিকের নাম (Owner Name)</label>
+    <input id="ownerName" placeholder="মালিকের নাম লিখুন">
 
-<option>Fashion & Clothing</option>
-<option>Men's Fashion</option>
-<option>Women's Fashion</option>
-<option>Kids Fashion</option>
-<option>Footwear</option>
+    <label for="category">ব্যবসার বিভাগ (Category)</label>
+    <select id="category">
+      <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+      <option>Groceries (মুদিখানা)</option>
+      <option>Fruits & Vegetables (শাকসবজি ও ফল)</option>
+      <option>Dairy & Bakery (দুধ ও বেকারি)</option>
+      <option>Fashion & Clothing (পোশাক ও ফ্যাশন)</option>
+      <option>Medicine & Pharmacy (ঔষধ ও ফার্মেসি)</option>
+      <option>Mobile & Electronics (মোবাইল ও ইলেকট্রনিক্স)</option>
+      <option>Hardware & Construction (হার্ডওয়্যার)</option>
+      <option>Books & Stationery (বই ও খাতা)</option>
+      <option>Tuition & Coaching (টিউশন ও কোচিং)</option>
+      <option>Tax Consultant & Software (ট্যাক্স ও সফটওয়্যার)</option>
+      <option>Other (অন্যান্য)</option>
+    </select>
 
-<option>Beauty & Cosmetics</option>
-<option>Beauty Parlour</option>
-<option>Health & Personal Care</option>
+    <label for="productName">পণ্যের নাম (Product Name) *</label>
+    <input id="productName" placeholder="যেমন: বাসমতী চাল / স্মার্টফোন">
 
-<option>Mobile & Accessories</option>
-<option>Computer & Laptop</option>
-<option>Electronics</option>
-<option>Home Appliances</option>
+    <label for="price">মূল্য (Price - ₹)</label>
+    <input type="number" id="price" placeholder="যেমন: 550">
 
-<option>Furniture</option>
-<option>Home Decor</option>
-<option>Kitchen & Dining</option>
+    <label for="weight">পরিমাণ / ওজন (Weight / Quantity)</label>
+    <input id="weight" placeholder="যেমন: 1 kg / 1 piece">
 
-<option>Books & Stationery</option>
-<option>Private Tuition</option>
-<option>Coaching Centre</option>
-<option>Sports & Fitness</option>
-<option>Toys & Games</option>
+    <label for="expiryDate">মেয়াদ উত্তীর্ণের তারিখ (Expiry Date)</label>
+    <input type="date" id="expiryDate">
 
-<option>Jewelry & Watches</option>
-<option>Gift Items</option>
+    <label for="mobile">মোবাইল নম্বর (Mobile Number) *</label>
+    <input type="tel" id="mobile" placeholder="১০ সংখ্যার মোবাইল নম্বর">
 
-<option>Pet Supplies</option>
-<option>Agriculture Products</option>
+    <label for="whatsapp">হোয়াটসঅ্যাপ নম্বর (WhatsApp Number)</label>
+    <input type="tel" id="whatsapp" placeholder="WhatsApp নম্বর দিন">
 
-<option>Medicine & Pharmacy</option>
-<option>Homoeopathic</option>
-<option>Ayurvedic Products</option>
+    <label for="address">ঠিকানা (Address)</label>
+    <input id="address" placeholder="গ্রাম/শহর, পিনকোড সহ লিখুন">
 
-<option>Automobile Parts</option>
-<option>Hardware & Tools</option>
+    <label for="location">দোকানের লোকেশন (Latitude, Longitude) *</label>
+    <button type="button" class="loc-btn" onclick="getCurrentLocation()">📍 আমার বর্তমান লোকেশন অটো-সেট করুন</button>
+    <input id="location" placeholder="যেমন: 22.7245, 88.5632">
 
-<option>Construction Materials</option>
+    <label for="description">পণ্য বা দোকানের বিবরণ (Description)</label>
+    <textarea id="description" placeholder="পণ্য সম্পর্কে বিস্তারিত লিখুন..."></textarea>
 
-<option>Handicrafts</option>
-<option>Local Products</option>
+    <label for="email">ইমেইল ঠিকানা (Email Address)</label>
+    <input type="email" id="email" placeholder="ইমেইল দিন">
 
-<option>Tax Software</option>
-<option>Tax Consultant</option>
-<option>Income Tax Return</option>
-<option>Other Software</option>
-    
-<option>Other</option>
+    <input type="hidden" id="productId">
 
-</select>
-  
-<label for="productName">Product Name</label>
-<input id="productName" placeholder="Enter Product Name">
+    <button id="saveBtn" onclick="registerShop()">রেজিস্টার সম্পন্ন করুন</button>
+    <p id="msg" style="font-weight:bold; margin-top:10px;"></p>
+  </div>
 
-<label for="price">Product Price</label>
-<input id="price" placeholder="Enter Product Price">
+  <!-- ৩) সার্চ বক্স -->
+  <div class="card">
+    <label for="searchBox">🔍 প্রোডাক্ট বা দোকান খুঁজুন:</label>
+    <input id="searchBox" placeholder="পণ্যের নাম, দোকান বা ক্যাটাগরি লিখুন..." oninput="filterAndRender()">
+  </div>
 
-<label for="weight">Product Weight</label>
-<input id="weight" placeholder="Enter Product Weight">
+  <!-- ৪), ৫), ৬) রিয়েলটাইম লিফলেট ম্যাপ -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong id="mapTitle">🗺️ প্রোডাক্ট অনুযায়ী নিকটস্থ দোকানের ম্যাপ</strong>
+      <button class="loc-btn" style="margin:0;" onclick="getUserLocation()">🎯 আমার দূরত্ব মাপুন</button>
+    </div>
+    <div id="map"></div>
+  </div>
 
-<label for="expiryDate">Expiry Date of the Product</label>
-<input type="date" id="expiryDate">
-
-<label for="mobile">Mobile Number</label>
-<input id="mobile" placeholder="Enter Mobile Number">
-
-<label for="whatsapp">WhatsApp Number</label>
-<input id="whatsapp" placeholder="Enter WhatsApp Number">
-
-<label for="address">Address</label>
-<input id="address" placeholder="Enter Address">
-
-<label for="description">Brief Description of your Product</label>
-<textarea id="description" placeholder="Product Description"></textarea>
-
-<label for="location">Latitude & Longitude of your Business</label>
-<input id="location" placeholder="22.7245,88.5632">
-
-<label for="email">Email Address</label>
-<input type="email" id="email" placeholder="Enter Email Address">
-<!--
-<label for="productImage">Product Image</label>
-<input type="file" id="productImage" accept="image/*">  
-   -->
-<img id="preview"
-style="max-width:100%;display:none;margin-top:10px;">
-    
-<input type="hidden" id="productId">
-
-<button id="saveBtn" onclick="registerShop()">
-Register Product
-</button>
-
-<p id="msg"></p>
-</div>
-</div>
-
-<div class="card">
-
-<input
-id="searchBox"
-placeholder="Search Product..."
-onkeyup="searchProducts()">
+  <!-- দোকান ও প্রোডাক্টের তালিকা -->
+  <div id="productList" class="product-grid"></div>
 
 </div>
-<h3 style="color:red; text-align:justify; line-height:1.6; margin:10px 0;">
-aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions.
-</h3>
-    
-<div id="productList"></div>
 
-</div>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Google Translate JS -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'bn',
+    includedLanguages: 'bn,en,hi,ur,ta,te,mr,gu,kn,ml,pa',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+  }, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxzMI2U0OCFUrZQu80gOfsagTiLtmMpMxT4Jaav1r15AK8moZeeEB1vCj3Nxo6ZrWi7/exec";
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbxzMI2U0OCFUrZQu80gOfsagTiLtmMpMxT4Jaav1r15AK8moZeeEB1vCj3Nxo6ZrWi7/exec";
+let allProducts = [];
+let userLat = null;
+let userLng = null;
+let map;
+let markersLayer = L.layerGroup();
 
-async function registerShop(){
+// Initialize Map
+function initMap() {
+  // ডিফল্ট কেন্দ্র: পশ্চিমবঙ্গ (22.9868, 87.855)
+  map = L.map('map').setView([22.9868, 87.855], 8);
 
-    let imageData = "";
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
 
-    /*
-const file =
-document.getElementById("productImage").files[0];
+  markersLayer.addTo(map);
+}
 
-if(file){
+// ফর্ম ওপেন/বন্ধ করার ফাংশন
+function toggleForm() {
+  const form = document.getElementById("formSection");
+  const arrow = document.getElementById("formArrow");
+  if (form.style.display === "none") {
+    form.style.display = "block";
+    arrow.innerText = "▲";
+  } else {
+    form.style.display = "none";
+    arrow.innerText = "▼";
+  }
+}
 
-  imageData = await new Promise((resolve)=>{
+// ফর্মের জন্য সরাসরি জিপিএস কোঅর্ডিনেট নেওয়া
+function getCurrentLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        document.getElementById("location").value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+      },
+      () => alert("আপনার বর্তমান লোকেশন পাওয়া যায়নি। পারমিশন নিশ্চিত করুন।")
+    );
+  } else {
+    alert("আপনার ব্রাউজারে লোকেশন সাপোর্ট করে না।");
+  }
+}
 
-    const reader = new FileReader();
+// ব্যবহারকারীর দূরত্ব নির্ণয়ের জন্য লোকেশন পাওয়া
+function getUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
 
-    reader.onload = function(e){
+        // ম্যাপে ব্যবহারকারীর লোকেশন মার্কার
+        L.circleMarker([userLat, userLng], {
+          radius: 8,
+          color: '#0d47a1',
+          fillColor: '#2196f3',
+          fillOpacity: 1
+        }).addTo(map).bindPopup("📍 আপনি এখানে আছেন").openPopup();
 
-      resolve(
-        e.target.result.split(",")[1]
-      );
+        filterAndRender();
+      },
+      () => alert("দূরত্ব মাপার জন্য লোকেশন পারমিশন প্রয়োজন।")
+    );
+  }
+}
 
-    };
+// দুটি কোঅর্ডিনেটের মধ্যবর্তী দূরত্ব (কিলোমিটারে) বের করার সূত্র (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return (R * c).toFixed(1);
+}
 
-    reader.readAsDataURL(file);
+// প্রোডাক্ট লোড করা
+async function loadProducts() {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getProducts" })
+    });
+    allProducts = await res.json();
+    filterAndRender();
+  } catch (err) {
+    console.error("ডাটা লোড হতে সমস্যা হয়েছে:", err);
+  }
+}
 
+// ফিল্টার, সার্চ ও ম্যাপ রেন্ডার করা
+function filterAndRender() {
+  const keyword = document.getElementById("searchBox").value.trim().toLowerCase();
+  markersLayer.clearLayers();
+
+  let filtered = allProducts.filter(item => {
+    if (!keyword) return true;
+    return (
+      (item.productName && item.productName.toLowerCase().includes(keyword)) ||
+      (item.shopName && item.shopName.toLowerCase().includes(keyword)) ||
+      (item.category && item.category.toLowerCase().includes(keyword)) ||
+      (item.address && item.address.toLowerCase().includes(keyword))
+    );
   });
 
-} */
-    
-const data = {
+  // দূরত্ব হিসাব করা এবং নিকটবর্তী অনুযায়ী সাজানো
+  if (userLat && userLng) {
+    filtered.forEach(item => {
+      if (item.location && item.location.includes(",")) {
+        const [lat, lng] = item.location.split(",").map(n => parseFloat(n.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+          item.distance = calculateDistance(userLat, userLng, lat, lng);
+        }
+      }
+    });
 
-id:
-document.getElementById("productId").value,
+    filtered.sort((a, b) => {
+      if (a.distance && b.distance) return a.distance - b.distance;
+      return a.distance ? -1 : 1;
+    });
+  }
 
-shopName:
-document.getElementById("shopName").value,
+  // ম্যাপ ও লিস্ট আপডেট
+  let bounds = [];
+  let html = "";
 
-ownerName:
-document.getElementById("ownerName").value,
+  filtered.forEach(item => {
+    let lat = null, lng = null;
+    if (item.location && item.location.includes(",")) {
+      const parts = item.location.split(",").map(n => parseFloat(n.trim()));
+      lat = parts[0];
+      lng = parts[1];
+    }
 
-category:
-document.getElementById("category").value,
+    // ৭) ম্যাপ মার্কার ও পপ-আপ যুক্ত করা
+    if (!isNaN(lat) && !isNaN(lng) && lat && lng) {
+      bounds.push([lat, lng]);
 
-productName:
-document.getElementById("productName").value,
+      const popupContent = `
+        <div style="font-size:13px; min-width:180px;">
+          <h4 style="margin:0 0 5px 0; color:#1565c0;">🏪 ${item.shopName || 'দোকান'}</h4>
+          <p style="margin:2px 0;"><strong>পণ্য:</strong> ${item.productName}</p>
+          <p style="margin:2px 0;"><strong>মূল্য:</strong> ₹${item.price || '-'}</p>
+          <p style="margin:2px 0;"><strong>ফোন:</strong> <a href="tel:${item.mobile}">${item.mobile}</a></p>
+          ${item.distance ? `<p style="margin:2px 0; color:green;"><strong>দূরত্ব:</strong> ${item.distance} কিমি</p>` : ''}
+          <div style="margin-top:8px;">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" style="color:#ff5722; font-weight:bold; text-decoration:none;">🚀 নেভিগেশন চালু করুন</a>
+          </div>
+        </div>
+      `;
 
-price:
-document.getElementById("price").value,
+      const marker = L.marker([lat, lng]).bindPopup(popupContent);
+      markersLayer.addLayer(marker);
+    }
 
-weight:
-document.getElementById("weight").value,
+    // কার্ড HTML
+    html += `
+      <div class="product">
+        <div>
+          <h3>${item.productName}</h3>
+          ${item.distance ? `<span class="distance-badge">📍 আপনার থেকে ${item.distance} কিমি দূরে</span>` : ''}
+          <p><strong>দোকান:</strong> ${item.shopName}</p>
+          <p><strong>ক্যাটাগরি:</strong> ${item.category || '-'}</p>
+          <p><strong>মূল্য:</strong> ₹${item.price || 'উল্লেখ নেই'}</p>
+          <p><strong>ওজন/পরিমাণ:</strong> ${item.weight || '-'}</p>
+          <p><strong>ঠিকানা:</strong> ${item.address || '-'}</p>
+          ${item.description ? `<p style="color:#555;"><strong>বিবরণ:</strong> ${item.description}</p>` : ''}
+        </div>
+        
+        <div class="btn-group">
+          ${item.mobile ? `<a class="callBtn" href="tel:${item.mobile}">📞 Call</a>` : ''}
+          ${item.whatsapp ? `<a class="waBtn" target="_blank" href="https://wa.me/${item.whatsapp}?text=${encodeURIComponent('নমস্কার, আমি aionline.in.net থেকে আপনার ' + item.productName + ' পণ্যটি দেখেছি।')}">💬 WhatsApp</a>` : ''}
+          ${item.location ? `<a class="mapBtn" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}">📍 ম্যাপে দেখুন</a>` : ''}
+          <button class="editBtn" onclick="loadProduct('${item.id}')">✏️ Edit</button>
+        </div>
+      </div>
+    `;
+  });
 
-expiryDate:
-document.getElementById("expiryDate").value,
+  document.getElementById("productList").innerHTML = html || "<p style='text-align:center;grid-column:1/-1;'>কোনো পণ্য বা দোকান পাওয়া যায়নি।</p>";
 
-mobile:
-document.getElementById("mobile").value,
+  // ম্যাপকে মার্কারের সাথে মানানসইভাবে জুম করা
+  if (bounds.length > 0) {
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  }
+}
 
-whatsapp:
-document.getElementById("whatsapp").value,
+// দোকান / প্রোডাক্ট সংরক্ষণ বা আপডেট
+async function registerShop() {
+  const shopName = document.getElementById("shopName").value.trim();
+  const productName = document.getElementById("productName").value.trim();
+  const mobile = document.getElementById("mobile").value.trim();
+  const location = document.getElementById("location").value.trim();
 
-address:
-document.getElementById("address").value,
+  if (!shopName || !productName || !mobile || !location) {
+    alert("দয়া করে দোকানের নাম, পণ্যের নাম, মোবাইল নম্বর এবং লোকেশন পূরণ করুন।");
+    return;
+  }
 
-description:
-document.getElementById("description").value,
+  const data = {
+    id: document.getElementById("productId").value,
+    shopName: shopName,
+    ownerName: document.getElementById("ownerName").value,
+    category: document.getElementById("category").value,
+    productName: productName,
+    price: document.getElementById("price").value,
+    weight: document.getElementById("weight").value,
+    expiryDate: document.getElementById("expiryDate").value,
+    mobile: mobile,
+    whatsapp: document.getElementById("whatsapp").value,
+    address: document.getElementById("address").value,
+    description: document.getElementById("description").value,
+    location: location,
+    email: document.getElementById("email").value,
+    imageData: ""
+  };
 
-location:
-document.getElementById("location").value,
+  const action = data.id ? "updateProduct" : "registerShop";
 
-email:
-document.getElementById("email").value,
+  document.getElementById("saveBtn").innerText = "সংরক্ষণ করা হচ্ছে...";
+  document.getElementById("saveBtn").disabled = true;
 
-imageData:imageData,
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: action, data: data })
+    });
+    const result = await res.json();
+    document.getElementById("msg").innerText = result.message || "সফলভাবে সংরক্ষিত হয়েছে!";
 
+    if (result.success) {
+      // ফর্ম খালি করা
+      document.getElementById("productId").value = "";
+      document.getElementById("shopName").value = "";
+      document.getElementById("ownerName").value = "";
+      document.getElementById("productName").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("weight").value = "";
+      document.getElementById("expiryDate").value = "";
+      document.getElementById("mobile").value = "";
+      document.getElementById("whatsapp").value = "";
+      document.getElementById("address").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("location").value = "";
+      document.getElementById("email").value = "";
+
+      toggleForm();
+      loadProducts();
+    }
+  } catch (e) {
+    document.getElementById("msg").innerText = "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।";
+  } finally {
+    document.getElementById("saveBtn").innerText = "রেজিস্টার সম্পন্ন করুন";
+    document.getElementById("saveBtn").disabled = false;
+  }
+}
+
+// এডিটের জন্য ফর্ম পূরণ
+async function loadProduct(id) {
+  const p = allProducts.find(item => item.id == id);
+  if (!p) return;
+
+  document.getElementById("productId").value = p.id;
+  document.getElementById("shopName").value = p.shopName || "";
+  document.getElementById("ownerName").value = p.ownerName || "";
+  document.getElementById("category").value = p.category || "";
+  document.getElementById("productName").value = p.productName || "";
+  document.getElementById("price").value = p.price || "";
+  document.getElementById("weight").value = p.weight || "";
+  document.getElementById("expiryDate").value = p.expiryDate ? new Date(p.expiryDate).toISOString().split("T")[0] : "";
+  document.getElementById("mobile").value = p.mobile || "";
+  document.getElementById("whatsapp").value = p.whatsapp || "";
+  document.getElementById("address").value = p.address || "";
+  document.getElementById("description").value = p.description || "";
+  document.getElementById("location").value = p.location || "";
+  document.getElementById("email").value = p.email || "";
+
+  document.getElementById("formSection").style.display = "block";
+  document.getElementById("formArrow").innerText = "▲";
+  document.getElementById("saveBtn").innerText = "তথ্য আপডেট করুন";
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// পৃষ্ঠা চালু হলে রান করবে
+window.onload = function() {
+  initMap();
+  loadProducts();
 };
-
-let action;
-
-if(document.getElementById("productId").value){
-
-    action = "updateProduct";
-
-}else{
-
-    action = "registerShop";
-
-}
-    
-const res = await fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action: action,
-data: data
-})
-});
-
-const result = await res.json();
-
-document.getElementById("msg").innerHTML =
-result.message;
-
-    
-if(result.success){
-
-document.getElementById("productId").value = "";
-document.getElementById("shopName").value = "";
-document.getElementById("ownerName").value = "";
-document.getElementById("category").value = "";
-document.getElementById("productName").value = "";
-document.getElementById("price").value = "";
-document.getElementById("weight").value = "";
-document.getElementById("expiryDate").value = "";
-document.getElementById("mobile").value = "";
-document.getElementById("whatsapp").value = "";
-document.getElementById("address").value = "";
-document.getElementById("description").value = "";
-document.getElementById("location").value = "";
-document.getElementById("email").value = "";
-/*document.getElementById("productImage").value = ""; */
-    
-if(document.getElementById("preview")){
-  document.getElementById("preview").style.display = "none";
-  document.getElementById("preview").src = "";
-}
-    
-document.getElementById("preview").src = "";
-    
-    loadProducts();
-
-}
-    
-}
-
-async function loadProducts(){
-
-const res = await fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"getProducts"
-})
-});
-
-const data = await res.json();
-
-showProducts(data);
-
-}
-
-async function searchProducts(){
-
-const keyword =
-document.getElementById("searchBox").value;
-
-const res = await fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"searchProducts",
-keyword:keyword
-})
-});
-
-const data = await res.json();
-
-showProducts(data);
-
-}
-
-function showProducts(data){
-
-let html="";
-
-data.forEach(item=>{
-
-html += `
-<div class="product">
-    
-${item.imageUrl ? `
-<img
-src="${item.imageUrl}"
-style="
-width:100%;
-max-height:250px;
-object-fit:cover;
-border-radius:10px;
-margin-bottom:10px;">
-` : ""}
-    
-<h3>${item.productName}</h3>
-
-<p><b>Shop:</b> ${item.shopName}</p>
-
-<p><b>Category:</b> ${item.category}</p>
-
-<p><b>Price:</b> ₹${item.price}</p>
-
-<p><b>Weight:</b> ${item.weight}</p>
-
-<p><b>Expiry:</b> ${
-new Date(item.expiryDate).toLocaleDateString('en-GB')
-}</p>
-
-<p><b>Address:</b> ${item.address}</p>
-    
-<p><b>Description:</b> ${item.description || ""}</p>   
-    
-<a
-class="callBtn"
-target="_blank"
-href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}">
-📍 Map
-</a>
-    
-<a class="callBtn" href="tel:${item.mobile}">Call</a>
-
-<a
-class="waBtn"
-target="_blank"
-href="https://wa.me/${item.whatsapp}?text=Hello, I found your product on aionline.in.net, I am interested in ${encodeURIComponent(item.productName)}}">
-WhatsApp
-</a>
-
-<a
-class="callBtn"
-href="mailto:${item.email}">
-📧 Email
-</a>
-
-<button onclick="loadProduct('${item.id}')">
-✏️ Edit
-</button>
-    
-</div>
-`;
-
-});
-
-document.getElementById("productList").innerHTML =
-html;
-
-}
-
-loadProducts();
-
-async function loadProduct(id){
-
-const res = await fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"getProductById",
-id:id
-})
-});
-
-const result = await res.json();
-
-if(!result.success) return;
-
-const p = result.product;
-
-document.getElementById("productId").value = p.id;
-document.getElementById("shopName").value = p.shopName;
-document.getElementById("ownerName").value = p.ownerName;
-document.getElementById("category").value = p.category;
-document.getElementById("productName").value = p.productName;
-document.getElementById("price").value = p.price;
-document.getElementById("weight").value = p.weight;
-    
-document.getElementById("expiryDate").value =
-p.expiryDate
-? new Date(p.expiryDate).toISOString().split("T")[0]
-: "";
-    
-document.getElementById("mobile").value = p.mobile;
-document.getElementById("whatsapp").value = p.whatsapp;
-document.getElementById("address").value = p.address;
-document.getElementById("description").value = p.description;
-document.getElementById("location").value = p.location;
-document.getElementById("email").value = p.email;
-
-window.scrollTo(0,0);
-
-document.getElementById("formSection").style.display = "block";
-document.getElementById("icon").innerHTML = "▼";
-    
-document.getElementById("saveBtn").innerText =
-"Update Product";
-
-if(p.imageUrl){
-document.getElementById("preview").src =
-p.imageUrl;
-document.getElementById("preview").style.display =
-"block";
-}
-    
-}
-    
-/*
-document.getElementById("productImage")
-.addEventListener("change",function(){
-
-const file = this.files[0];
-
-if(file){
-
-const reader = new FileReader();
-
-reader.onload = function(e){
-
-document.getElementById("preview").src = e.target.result;
-document.getElementById("preview").style.display = "block";
-
-};
-
-reader.readAsDataURL(file);
-
-}
-
-}); */
-    
-function toggleForm(){
-
-const form =
-document.getElementById("formSection");
-
-const icon =
-document.getElementById("icon");
-
-if(form.style.display === "none"){
-
-form.style.display = "block";
-icon.innerHTML = "▼";
-
-}else{
-
-form.style.display = "none";
-icon.innerHTML = "▶";
-
-}
-
-}
-    
 </script>
 
 </body>
