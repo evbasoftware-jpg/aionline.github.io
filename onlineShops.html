@@ -316,7 +316,7 @@ body { top: 0px !important; }
     <div class="header-title">🏪 দোকান ও প্রোডাক্ট ডিরেক্টরি</div>
     <div>
       <select id="languageSelect" class="custom-lang-select" onchange="changeLanguage(this.value)">
-        <option value="">🌐 ভাষা নির্বাচন (100+)</option>
+        <option value="">🌐 ভাষা নির্বাচন (Select Language)</option>
         <option value="bn">বাংলা (Bengali)</option>
         <option value="en">English</option>
         <option value="hi">हिन्दी (Hindi)</option>
@@ -346,7 +346,7 @@ body { top: 0px !important; }
 
   <!-- দোকান যুক্ত করার বোতাম -->
   <button class="toggle-btn" onclick="openShopForm()">
-    <span>➕ নতুন দোকান যুক্ত করুন</span>
+    <span>+ নতুন দোকান যুক্ত করুন</span>
     <span id="formArrow">▼</span>
   </button>
 
@@ -466,7 +466,7 @@ let tempSelectedMarker = null;
 // ১) ক্যাটাগরি ভিত্তিক আইকন এবং রং কনফিগারেশন
 function getCategoryStyle(category) {
   const cat = (category || "").toLowerCase();
-  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#2e7d32", icon: "🛒" };
+  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#9de9eb", icon: "🛒" };
   if (cat.includes("fruit") || cat.includes("vegetable") || cat.includes("সবজি")) return { bg: "#43a047", icon: "🥦" };
   if (cat.includes("dairy") || cat.includes("sweet") || cat.includes("bakery") || cat.includes("মিষ্টি")) return { bg: "#fb8c00", icon: "🧁" };
   if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("পোশাক") || cat.includes("footwear")) return { bg: "#8e24aa", icon: "👕" };
