@@ -307,10 +307,10 @@ button:hover {
   gap: 4px;
 }
 
-.btn-call { background: var(--success); }
+.btn-call { background: red; }
 .btn-wa { background: var(--whatsapp); }
 .btn-share { background: var(--share); }
-.btn-edit { background: var(--edit); }
+.btn-edit { background: blue; }
 
 .distance-label-marker {
   background: #0d47a1;
@@ -612,7 +612,7 @@ function getCategoryStyle(category) {
   if (cat.includes("electronics") || cat.includes("home appliances") || cat.includes("electrical")) return { bg: "#1565c0", icon: "🔌" };
 
   // ২. খাদ্য ও নিত্যপ্রয়োজনীয়
-  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#2e7d32", icon: "🛒" };
+  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#1359f0", icon: "🛒" };
   if (cat.includes("fruit") || cat.includes("vegetable") || cat.includes("শাকসবজি") || cat.includes("ফল")) return { bg: "#43a047", icon: "🥦" };
   if (cat.includes("dairy") || cat.includes("দুধ")) return { bg: "#00acc1", icon: "🥛" };
   if (cat.includes("sweet") || cat.includes("confectionery") || cat.includes("মিষ্টি")) return { bg: "#f57c00", icon: "🍬" };
