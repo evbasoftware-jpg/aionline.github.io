@@ -43,19 +43,33 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   background: #fff;
-  padding: 10px 15px;
+  padding: 10px 14px;
   border-radius: 8px;
   margin-bottom: 12px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.06);
 }
 
 .header-title {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: bold;
   color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Card */
+/* কাস্টম ড্রপ-ডাউন স্টাইল */
+.custom-lang-select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  max-width: 140px;
+}
+
 .card {
   background: var(--card);
   padding: 15px;
@@ -119,17 +133,12 @@ button:hover {
   background: #eceff1;
   color: #37474f;
   font-size: 0.85rem;
-  padding: 8px 12px;
-  margin-bottom: 8px;
+  padding: 6px 12px;
+  margin-bottom: 0;
   border: 1px solid #cfd8dc;
   border-radius: 4px;
   cursor: pointer;
-  display: inline-block;
   font-weight: 600;
-}
-
-.loc-btn:hover {
-  background: #cfd8dc;
 }
 
 .note-box {
@@ -146,8 +155,8 @@ button:hover {
 .click-hint {
   background: #e1f5fe;
   border-left: 4px solid #0288d1;
-  padding: 6px 10px;
-  font-size: 0.85rem;
+  padding: 8px 10px;
+  font-size: 0.88rem;
   color: #01579b;
   margin-bottom: 8px;
   border-radius: 4px;
@@ -156,7 +165,7 @@ button:hover {
 /* Map Style */
 #map {
   width: 100%;
-  height: 520px;
+  height: 500px;
   border-radius: 8px;
   border: 1px solid #ddd;
   cursor: crosshair;
@@ -218,6 +227,11 @@ button:hover {
   color: #555;
   line-height: 1.5;
 }
+
+/* Hide default Google Translate bar elements */
+.goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+body { top: 0px !important; }
+#goog-gt-tt { display: none !important; }
 </style>
 </head>
 
@@ -225,19 +239,42 @@ button:hover {
 
 <div class="container">
 
-  <!-- গুগল ট্রান্সলেটের সকল ভাষা -->
+  <!-- ৩) গুগল ট্রান্সলেটের ড্রপ-ডাউন -->
   <div class="header-bar">
     <div class="header-title">🏪 দোকান ও প্রোডাক্ট ডিরেক্টরি</div>
-    <div id="google_translate_element"></div>
+    <div>
+      <select id="languageSelect" class="custom-lang-select" onchange="changeLanguage(this.value)">
+        <option value="">🌐 ভাষা নির্বাচন করুন</option>
+        <option value="bn">বাংলা (Bengali)</option>
+        <option value="en">English</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="as">অসমীয়া (Assamese)</option>
+        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+        <option value="mr">मराठी (Marathi)</option>
+        <option value="gu">ગુજરાતી (Gujarati)</option>
+        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+        <option value="ml">മലയാളം (Malayalam)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="ar">العربية (Arabic)</option>
+        <option value="fr">Français (French)</option>
+        <option value="es">Español (Spanish)</option>
+        <option value="de">Deutsch (German)</option>
+      </select>
+    </div>
+    <!-- Hidden element for Google Translate script initialization -->
+    <div id="google_translate_element" style="display:none;"></div>
   </div>
 
   <!-- দোকান যুক্ত করার বোতাম -->
-  <button class="toggle-btn" onclick="toggleForm()">
+  <button class="toggle-btn" onclick="openShopForm()">
     <span>➕ নতুন দোকান যুক্ত করুন</span>
     <span id="formArrow">▼</span>
   </button>
 
-  <!-- শুধুমাত্র নির্ধারিত তথ্যযুক্ত ফর্ম -->
+  <!-- রেজিস্ট্রেশন ফর্ম -->
   <div class="card" id="formSection" style="display:none;">
     <h3 style="margin-top:0; color:#0d47a1;">দোকান রেজিস্ট্রেশন ফর্ম</h3>
 
@@ -280,13 +317,12 @@ button:hover {
     <label for="description">কি ধরনের পণ্য পাওয়া যায় তার বিবরণ (Description)</label>
     <textarea id="description" placeholder="দোকানে কী কী সামগ্রী বা সার্ভিস পাওয়া যায় বিস্তারিত লিখুন..."></textarea>
 
-    <!-- দোকানের লোকেশন ও নোট -->
+    <!-- ২) লোকেশন ফিল্ড (জিপিএস বা ম্যাপ ক্লিক থেকে স্বয়ংক্রিয় আসবে) -->
     <label for="location">দোকানের লোকেশন (Latitude, Longitude) *</label>
     <div class="note-box">
-      📌 <strong>নোট:</strong> দোকানে বসে এটি যুক্ত করুন, তাহলে দোকানের লোকেশন সঠিকভাবে যুক্ত হবে। অথবা নিচের ম্যাপে আপনার দোকানের স্থানে সরাসরি ক্লিক করুন।
+      📌 <strong>নোট:</strong> মোবাইলের GPS অন থাকলে আপনার বর্তমান দোকানের অবস্থান স্বয়ংক্রিয়ভাবে নিচে বসে যাবে। অন্যথায় নিচের ম্যাপে আপনার দোকানের অবস্থানে ক্লিক করুন।
     </div>
-    <button type="button" class="loc-btn" onclick="fetchShopGps()">📍 দোকানে বসে বর্তমান লোকেশন অটো-সেট করুন</button>
-    <input id="location" placeholder="যেমন: 22.7245, 88.5632">
+    <input id="location" readonly style="background:#eef2f5;" placeholder="GPS অন করুন অথবা নিচের ম্যাপে ক্লিক করুন">
 
     <button id="saveBtn" style="width:100%; margin-top:10px;" onclick="saveShop()">দোকানের তথ্য জমা দিন</button>
     <p id="msg" style="font-weight:bold; margin-top:10px;"></p>
@@ -302,18 +338,17 @@ button:hover {
   <div class="card" style="padding: 10px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
       <span style="font-weight:bold; font-size:0.95rem;">🗺️ ম্যাপে দোকানসমূহের অবস্থান</span>
-      <button class="loc-btn" style="margin:0; padding:6px 10px;" onclick="getUserLiveLocation()">🎯 আমার দূরত্ব মাপুন</button>
+      <button class="loc-btn" onclick="getUserLiveLocation()">🎯 আমার দূরত্ব মাপুন</button>
     </div>
     
-    <!-- ম্যাপে ক্লিক করার সহজ নোটিশ -->
     <div class="click-hint">
-      👉 <strong>টিপস:</strong> নতুন দোকান যোগ করতে ম্যাপের সঠিক অবস্থানে সরাসরি <b>ক্লিক করুন</b>।
+      👉 <strong>টিপস:</strong> নতুন দোকান যুক্ত করতে নিচের ম্যাপে সঠিক অবস্থানের ওপর <b>ক্লিক করুন</b>। Lat-Long স্বয়ংক্রিয়ভাবে বসে যাবে।
     </div>
 
     <div id="map"></div>
   </div>
 
-  <!-- অফিসিয়াল বার্তা একদম নিচে -->
+  <!-- অফিসিয়াল বার্তা -->
   <div class="footer-disclaimer">
     <strong style="color:#c62828;">সতর্কবার্তা ও ঘোষণা:</strong><br>
     "aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions."
@@ -327,13 +362,23 @@ button:hover {
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- গুগল ট্রান্সলেট -->
+<!-- গুগল ট্রান্সলেট স্ক্রিপ্ট -->
 <script type="text/javascript">
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
     pageLanguage: 'bn',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    autoDisplay: false
   }, 'google_translate_element');
+}
+
+// ৩) ড্রপ-ডাউন থেকে ভাষা পরিবর্তন করার ফাংশন
+function changeLanguage(langCode) {
+  if (!langCode) return;
+  const select = document.querySelector('.goog-te-combo');
+  if (select) {
+    select.value = langCode;
+    select.dispatchEvent(new Event('change'));
+  }
 }
 </script>
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -347,9 +392,8 @@ let userLng = null;
 let map;
 let markersLayer = L.layerGroup();
 let userMarker = null;
-let tempSelectedMarker = null; // ম্যাপে ক্লিক করে লোকেশন চিহ্নিত করার মার্কার
+let tempSelectedMarker = null;
 
-// দোকানের আইকন
 const shopIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/869/869636.png',
   iconSize: [34, 34],
@@ -367,25 +411,25 @@ function initMap() {
 
   markersLayer.addTo(map);
 
-  // 👉 ম্যাপে ক্লিক করে নতুন দোকানের লোকেশন নির্বাচন করার ইভেন্ট
+  // ১) ম্যাপে ক্লিক করলে সঠিক Lat Long অটোমেটিক ইনপুটে আসা
   map.on('click', function(e) {
     const lat = e.latlng.lat.toFixed(6);
     const lng = e.latlng.lng.toFixed(6);
 
-    // ইনপুট ফিল্ডে ভ্যালু সেট করা
-    document.getElementById("location").value = `${lat}, ${lng}`;
+    // ইনপুট ফিল্ডে সরাসরি বসানো
+    const locInput = document.getElementById("location");
+    locInput.value = `${lat}, ${lng}`;
 
-    // আগের অস্থায়ী পিন থাকলে সরানো
+    // আগের পিন মুছে নতুন মার্কার যোগ
     if (tempSelectedMarker) {
       map.removeLayer(tempSelectedMarker);
     }
 
-    // নতুন সিলেক্টেড পিন ড্রপ করা
     tempSelectedMarker = L.marker([lat, lng]).addTo(map)
-      .bindPopup("<b>📍 নির্বাচিত দোকানের অবস্থান</b><br>নিচের ফর্মে বাকি তথ্য পূরণ করুন।")
+      .bindPopup(`<b>📍 নির্বাচিত লোকেশন</b><br>${lat}, ${lng}`)
       .openPopup();
 
-    // ফর্ম স্বয়ংক্রিয়ভাবে ওপেন ও স্ক্রল করা
+    // ফর্ম খুলে দেওয়া ও স্ক্রল করা
     const form = document.getElementById("formSection");
     const arrow = document.getElementById("formArrow");
     form.style.display = "block";
@@ -395,39 +439,39 @@ function initMap() {
   });
 }
 
-// ফর্ম টগল
-function toggleForm() {
+// ২) নতুন দোকান যুক্ত করার সময় জিপিএস যাচাই ও অটো-লোকেশন
+function openShopForm() {
   const form = document.getElementById("formSection");
   const arrow = document.getElementById("formArrow");
+
   if (form.style.display === "none") {
     form.style.display = "block";
     arrow.innerText = "▲";
+
+    // জিপিএস অন থাকলে স্বয়ংক্রিয়ভাবে লোকেশন নেওয়া
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          document.getElementById("location").value = `${lat}, ${lng}`;
+
+          if (tempSelectedMarker) map.removeLayer(tempSelectedMarker);
+          tempSelectedMarker = L.marker([lat, lng]).addTo(map)
+            .bindPopup("<b>📍 আপনার বর্তমান জিপিএস লোকেশন সনাক্ত হয়েছে</b>").openPopup();
+          map.setView([lat, lng], 15);
+        },
+        (err) => {
+          // GPS অন না থাকলে সতর্কবার্তা
+          document.getElementById("location").value = "";
+          alert("সতর্কতা: আপনার মোবাইলের GPS অন নেই! দোকানের অবস্থান যুক্ত করতে অনুগ্রহ করে ফোনের GPS চালু করুন অথবা নিচের ম্যাপে সঠিক স্থানে ক্লিক করুন।");
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
   } else {
     form.style.display = "none";
     arrow.innerText = "▼";
-  }
-}
-
-// জিপিএস অটো নেওয়া
-function fetchShopGps() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude.toFixed(6);
-        const lng = pos.coords.longitude.toFixed(6);
-        document.getElementById("location").value = `${lat}, ${lng}`;
-
-        if (tempSelectedMarker) map.removeLayer(tempSelectedMarker);
-        tempSelectedMarker = L.marker([lat, lng]).addTo(map)
-          .bindPopup("<b>📍 বর্তমান অবস্থান নির্বাচিত হয়েছে</b>").openPopup();
-        map.setView([lat, lng], 15);
-
-        alert("দোকানের সঠিক লোকেশন যুক্ত হয়েছে!");
-      },
-      () => alert("লোকেশন পাওয়া যায়নি। অনুগ্রহ করে মোবাইলের জিপিএস/লোকেশন অন করুন।")
-    );
-  } else {
-    alert("আপনার ব্রাউজারে লোকেশন সুবিধা নেই।");
   }
 }
 
@@ -450,12 +494,12 @@ function getUserLiveLocation() {
 
         filterShopsOnMap();
       },
-      () => alert("দূরত্ব মাপার জন্য লোকেশন পারমিশন দিন।")
+      () => alert("দূরত্ব মাপার জন্য ফোনের লোকেশন/GPS পারমিশন চালু করুন।")
     );
   }
 }
 
-// দূরত্ব হিসাব (Haversine Formula)
+// দূরত্ব হিসাব
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -467,7 +511,7 @@ function getDistanceInKm(lat1, lon1, lat2, lon2) {
   return (R * c).toFixed(1);
 }
 
-// দোকান ডাটা ফেচ
+// শিট থেকে ডাটা লোড
 async function loadShops() {
   try {
     const res = await fetch(API_URL, {
@@ -481,7 +525,7 @@ async function loadShops() {
   }
 }
 
-// সার্চ ও ম্যাপ মার্কার
+// ফিল্টার ও মার্কার রেন্ডার
 function filterShopsOnMap() {
   const keyword = document.getElementById("searchBox").value.trim().toLowerCase();
   markersLayer.clearLayers();
@@ -541,14 +585,20 @@ function filterShopsOnMap() {
   }
 }
 
-// তথ্য সাবমিট
+// দোকান সাবমিট ও জিপিএস ভ্যালিডেশন
 async function saveShop() {
   const shopName = document.getElementById("shopName").value.trim();
   const mobile = document.getElementById("mobile").value.trim();
   const location = document.getElementById("location").value.trim();
 
-  if (!shopName || !mobile || !location) {
-    alert("দয়া করে দোকানের নাম, মোবাইল নম্বর এবং দোকানের লোকেশন পূরণ করুন।");
+  // জিপিএস অন না থাকলে বা লোকেশন খালি থাকলে সেভ হতে দেবে না
+  if (!location) {
+    alert("দোকানের লোকেশন (Latitude, Longitude) পাওয়া যায়নি! অনুগ্রহ করে আপনার মোবাইলের GPS অন করুন অথবা ম্যাপে আপনার দোকানের স্থানে ক্লিক করুন।");
+    return;
+  }
+
+  if (!shopName || !mobile) {
+    alert("দয়া করে দোকানের নাম এবং মোবাইল নম্বর পূরণ করুন।");
     return;
   }
 
@@ -597,11 +647,12 @@ async function saveShop() {
         tempSelectedMarker = null;
       }
 
-      toggleForm();
+      document.getElementById("formSection").style.display = "none";
+      document.getElementById("formArrow").innerText = "▼";
       loadShops();
     }
   } catch (err) {
-    document.getElementById("msg").innerText = "সার্ভারে ত্রুটি হয়েছে। আবার চেষ্টা করুন।";
+    document.getElementById("msg").innerText = "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।";
   } finally {
     saveBtn.innerText = "দোকানের তথ্য জমা দিন";
     saveBtn.disabled = false;
