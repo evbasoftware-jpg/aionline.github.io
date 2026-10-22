@@ -14,6 +14,8 @@
   --primary-hover: #1565c0;
   --success: #2e7d32;
   --whatsapp: #25D366;
+  --share: #ff9800;
+  --edit: #546e7a;
   --bg: #f4f6f9;
   --card: #ffffff;
 }
@@ -149,9 +151,30 @@ button:hover {
   border-radius: 4px;
 }
 
-#searchBox {
-  font-size: 1rem;
-  border: 2px solid #1976d2;
+/* কুইক ক্যাটাগরি চিপস */
+.category-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 0 10px 0;
+  white-space: nowrap;
+}
+
+.chip {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #bbdefb;
+  transition: 0.2s;
+}
+
+.chip:hover, .chip.active {
+  background: #1976d2;
+  color: #fff;
 }
 
 /* Map Style */
@@ -162,7 +185,6 @@ button:hover {
   border: 1px solid #ddd;
 }
 
-/* ১) ক্যাটাগরি অনুযায়ী রঙিন আধুনিক মার্কার স্টাইল */
 .custom-category-pin {
   display: flex;
   align-items: center;
@@ -188,7 +210,7 @@ button:hover {
   padding: 0;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-  max-width: 290px !important;
+  max-width: 300px !important;
 }
 
 .leaflet-popup-content {
@@ -199,7 +221,7 @@ button:hover {
 
 .popup-container {
   padding: 12px 14px;
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -237,8 +259,11 @@ button:hover {
   font-weight: bold;
 }
 
-.close-popup-btn:hover {
-  background: #ffcdd2;
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 8px 0;
 }
 
 .popup-dist-badge {
@@ -247,32 +272,46 @@ button:hover {
   background: #c8e6c9;
   padding: 3px 8px;
   border-radius: 4px;
-  display: inline-block;
-  margin: 4px 0 8px 0;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+}
+
+.delivery-badge {
+  background: #e8eaf6;
+  color: #283593;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.8rem;
 }
 
 .popup-btns {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
   margin-top: 10px;
 }
 
-.popup-btns a {
+.popup-btns a, .popup-btns button {
   text-decoration: none;
-  padding: 7px 12px;
+  padding: 7px 8px;
   border-radius: 5px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #fff;
   text-align: center;
-  flex: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .btn-call { background: var(--success); }
 .btn-wa { background: var(--whatsapp); }
+.btn-share { background: var(--share); }
+.btn-edit { background: var(--edit); }
 
-/* দূরত্ব লেবেল */
 .distance-label-marker {
   background: #0d47a1;
   color: #ffffff;
@@ -346,13 +385,14 @@ body { top: 0px !important; }
 
   <!-- দোকান যুক্ত করার বোতাম -->
   <button class="toggle-btn" onclick="openShopForm()">
-    <span>+ নতুন দোকান যুক্ত করুন</span>
+    <span id="formToggleLabel">+ নতুন দোকান যুক্ত করুন</span>
     <span id="formArrow">▼</span>
   </button>
 
-  <!-- রেজিস্ট্রেশন ফর্ম -->
+  <!-- রেজিস্ট্রেশন ও আপডেট ফর্ম -->
   <div class="card" id="formSection" style="display:none;">
-    <h3 style="margin-top:0; color:#0d47a1;">দোকান রেজিস্ট্রেশন ফর্ম</h3>
+    <h3 id="formHeading" style="margin-top:0; color:#0d47a1;">দোকান রেজিস্ট্রেশন ফর্ম</h3>
+    <input type="hidden" id="editShopId">
 
     <label for="shopName">দোকানের নাম (Shop Name) *</label>
     <input id="shopName" placeholder="যেমন: মা তারা ভাণ্ডার">
@@ -361,22 +401,99 @@ body { top: 0px !important; }
     <input id="ownerName" placeholder="দোকানদারের নাম লিখুন">
 
     <label for="category">ব্যবসার বিভাগ (Category)</label>
-    <select id="category">
-      <option value="">ক্যাটাগরি নির্বাচন করুন</option>
-      <option value="Groceries">Groceries (মুদিখানা)</option>
-      <option value="Fruits">Fruits & Vegetables (শাকসবজি ও ফল)</option>
-      <option value="Dairy">Dairy Products (দুধ ও মিষ্টি)</option>
-      <option value="Bakery">Bakery & Sweets (মিষ্টি ও বেকারি)</option>
-      <option value="Fashion">Fashion & Clothing (পোশাক ও বস্ত্র)</option>
-      <option value="Footwear">Footwear (জুতো)</option>
-      <option value="Beauty">Beauty & Cosmetics (প্রসাধন সামগ্রী)</option>
-      <option value="Medicine">Medicine & Pharmacy (ঔষধ ও ফার্মেসি)</option>
-      <option value="Electronics">Computer & Electronics (কম্পিউটার ও ইলেকট্রনিক্স)</option>
-      <option value="Mobile">Mobile & Accessories (মোবাইল ও এক্সেসরিজ)</option>
-      <option value="Hardware">Hardware & Paints (হার্ডওয়্যার ও রঙ)</option>
-      <option value="Stationery">Books & Stationery (বই ও স্টেশনারি)</option>
-      <option value="Other">Other Services (অন্যান্য)</option>
-    </select>
+  <select id="category">
+  <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+
+  <!-- খাদ্য ও নিত্যপ্রয়োজনীয় -->
+  <option value="Groceries">Groceries (মুদিখানা)</option>
+  <option value="Fruits & Vegetables">Fruits & Vegetables (শাকসবজি ও ফল)</option>
+  <option value="Dairy Products">Dairy Products (দুধ ও দুগ্ধজাত সামগ্রী)</option>
+  <option value="Bakery & Cakes">Bakery & Cakes (বেকারি ও কেক)</option>
+  <option value="Sweets & Confectionery">Sweets & Confectionery (মিষ্টি ও মিষ্টিজাত দ্রব্য)</option>
+  <option value="Food & Beverages">Food & Beverages (খাবার ও পানীয়)</option>
+  <option value="Restaurant & Cafe">Restaurant & Cafe (হোটেল, রেস্তোরাঁ ও ক্যাফে)</option>
+  <option value="Meat, Fish & Egg">Meat, Fish & Egg (মাছ, মাংস ও ডিম)</option>
+
+  <!-- পোশাক, সাজসজ্জা ও ফ্যাশন -->
+  <option value="Fashion & Clothing">Fashion & Clothing (পোশাক ও বস্ত্র)</option>
+  <option value="Men's Fashion">Men's Fashion (পুরুষদের পোশাক)</option>
+  <option value="Women's Fashion">Women's Fashion (মহিলাদের পোশাক)</option>
+  <option value="Kids Fashion">Kids Fashion (বাচ্চাদের পোশাক)</option>
+  <option value="Tailoring & Boutique">Tailoring & Boutique (দর্জি ও বুটিক)</option>
+  <option value="Footwear">Footwear (জুতো ও চটি)</option>
+  <option value="Jewelry & Watches">Jewelry & Watches (গয়না ও ঘড়ি)</option>
+  <option value="Bags & Luggage">Bags & Luggage (ব্যাগ ও ট্রাভেল লাগেজ)</option>
+
+  <!-- রূপচর্চা ও স্বাস্থ্যসেবা -->
+  <option value="Beauty & Cosmetics">Beauty & Cosmetics (প্রসাধন সামগ্রী)</option>
+  <option value="Saloon">Saloon (সেলুন)</option>
+  <option value="Beauty Parlour">Beauty Parlour(বিউটি পার্লার)</option>
+  <option value="Health & Personal Care">Health & Personal Care (স্বাস্থ্য ও ব্যক্তিগত যত্ন)</option>
+  <option value="Medicine & Pharmacy">Medicine & Pharmacy (ঔষধ ও ফার্মেসি / অ্যালোপ্যাথিক)</option>
+  <option value="Homoeopathic">Homoeopathic (হোমিওপ্যাথিক ঔষধ ও ক্লিনিক)</option>
+  <option value="Ayurvedic Products">Ayurvedic Products (আয়ুর্বেদিক ও ভেষজ পণ্য)</option>
+  <option value="Opticals & Eye Care">Opticals & Eye Care (চশমা ও অপটিক্যালস)</option>
+
+  <!-- গ্যাজেট ও ইলেকট্রনিক্স -->
+  <option value="Mobile & Accessories">Mobile & Accessories (মোবাইল ও এক্সেসরিজ)</option>
+  <option value="Computer & Laptop">Computer & Laptop (কম্পিউটার ও ল্যাপটপ)</option>
+  <option value="Electronics">Electronics (টিভি, সাউন্ড সিস্টেম ও গ্যাজেট)</option>
+  <option value="Home Appliances">Home Appliances (ফ্রিজ, ওয়াশিং মেশিন ও হোম অ্যাপ্লায়েন্স)</option>
+  <option value="CCTV & Security">CCTV & Security (সিসিটিভি ও সিকিউরিটি সিস্টেম)</option>
+
+  <!-- ঘরবাড়ি ও নির্মাণসামগ্রী -->
+  <option value="Furniture">Furniture (কাঠ ও স্টিলের আসবাবপত্র)</option>
+  <option value="Home Decor">Home Decor (গৃহসজ্জা সামগ্রী)</option>
+  <option value="Kitchen & Dining">Kitchen & Dining (বাসনপত্র ও রান্নাঘরের সামগ্রী)</option>
+  <option value="Hardware & Tools">Hardware & Tools (হার্ডওয়্যার ও যন্ত্রপাতি)</option>
+  <option value="Hardware & Paints">Hardware & Paints (রং ও পেইন্টস)</option>
+  <option value="Construction Materials">Construction Materials (সিমেন্ট, রড ও নির্মাণ সামগ্রী)</option>
+  <option value="Sanitary & Plumbing">Sanitary & Plumbing (প্লাম্বিং ও বাথরুম ফিটিংস)</option>
+  <option value="Electrical Goods">Electrical Goods (বৈদ্যুতিক তার, সুইচ ও লাইট)</option>
+
+  <!-- শিক্ষা ও বিনোদন -->
+  <option value="Books & Stationery">Books & Stationery (বই, খাতা ও স্টেশনারি)</option>
+  <option value="Private Tuition">Private Tuition (প্রাইভেট টিউশন)</option>
+  <option value="Coaching Centre">Coaching Centre (কোচিং সেন্টার)</option>
+  <option value="Sports & Fitness">Sports & Fitness (খেলাধুলা ও শরীরচর্চা)</option>
+  <option value="Toys & Games">Toys & Games (খেলনা ও গেমস)</option>
+  <option value="Musical Instruments">Musical Instruments (বাদ্যযন্ত্র)</option>
+
+  <!-- উপহার, কুটিরশিল্প ও কৃষি -->
+  <option value="Gift Items">Gift Items (উপহার সামগ্রী)</option>
+  <option value="Handicrafts">Handicrafts (হস্তশিল্প ও কুটিরশিল্প)</option>
+  <option value="Local Products">Local Products (স্থানীয় ও দেশি পণ্য)</option>
+  <option value="Agriculture Products">Agriculture Products (বীজ, সার ও কীটনাশক)</option>
+  <option value="Nursery & Plants">Nursery & Plants (গাছপালা ও নার্সারি)</option>
+  <option value="Pet Supplies & Feed">Pet Supplies & Feed (পোষা প্রাণীর খাবার ও সামগ্রী)</option>
+
+  <!-- যানবাহন ও যন্ত্রাংশ -->
+  <option value="Automobile Parts">Automobile Parts (বাইক ও গাড়ির পার্টস)</option>
+  <option value="Auto Garage & Repair">Auto Garage & Repair (গাড়ি/বাইক সার্ভিসিং ও গ্যারেজ)</option>
+  <option value="Bicycle Store">Bicycle Store (সাইকেল ও সাইকেল পার্টস)</option>
+
+  <!-- পেশাদার ও অনলাইন সেবা -->
+  <option value="Cyber Cafe & Online Services">Cyber Cafe & Online Services (সাইবার ক্যাফে ও জেরক্স)</option>
+  <option value="Photography & Studio">Photography & Studio (ফটোগ্রাফি ও স্টুডিও)</option>
+  <option value="Tax Software">Tax Software (ট্যাক্স সফটওয়্যার)</option>
+  <option value="Tax Consultant">Tax Consultant (ট্যাক্স কনসালট্যান্ট)</option>
+  <option value="Income Tax Return">Income Tax Return (ইনকাম ট্যাক্স রিটার্ন ফাইল)</option>
+  <option value="Other Software">Other Software (অন্যান্য সফটওয়্যার ও ওয়েব সার্ভিস)</option>
+  <option value="Printing & Flex">Printing & Flex (প্রিন্টিং, ফ্লেক্স ও ব্যানার)</option>
+  <option value="Courier & Parcel">Courier & Parcel (কুরিয়ার ও পার্সেল সার্ভিস)</option>
+
+  <!-- অন্যান্য -->
+  <option value="Other">Other Services (অন্যান্য)</option>
+</select>
+
+
+    <label for="timing">দোকান খোলা/বন্ধের সময় (Opening Hours)</label>
+    <input id="timing" placeholder="যেমন: সকাল ৮:০০ - রাত ৯:০০">
+
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:8px;">
+      <input type="checkbox" id="homeDelivery" style="width:auto; margin:0;">
+      <span>হোম ডেলিভারি দেওয়া হয় (Home Delivery Available)</span>
+    </label>
 
     <label for="mobile">মোবাইল নম্বর (Mobile Number) *</label>
     <input type="tel" id="mobile" placeholder="১০ সংখ্যার মোবাইল নম্বর">
@@ -392,7 +509,7 @@ body { top: 0px !important; }
 
     <label for="location">দোকানের লোকেশন (Latitude, Longitude) *</label>
     <div class="note-box">
-      📌 <strong>নোট:</strong> GPS অন থাকলে নিচে স্বয়ংক্রিয়ভাবে Lat-Long বসে যাবে। অথবা আপনি ম্যাপের ওপর ক্লিক করেও সঠিক স্থান নির্বাচন করতে পারেন।
+      📌 <strong>নোট:</strong> GPS অন থাকলে নিচে স্বয়ংক্রিয়ভাবে Lat-Long বসে যাবে। অথবা আপনি ম্যাপের ওপর ক্লিক করেও সঠিক স্থান নির্বাচন করতে পারেন[span_5](start_span)[span_5](end_span)।
     </div>
     <input id="location" readonly style="background:#eef2f5;" placeholder="অটোমেটিক লোকেশন নেওয়া হচ্ছে...">
 
@@ -400,10 +517,26 @@ body { top: 0px !important; }
     <p id="msg" style="font-weight:bold; margin-top:10px;"></p>
   </div>
 
-  <!-- সার্চ বক্স -->
+  <!-- সার্চ বক্স ও কুইক ক্যাটাগরি চিপস -->
   <div class="card" style="margin-bottom:10px;">
     <label for="searchBox" style="margin-top:0;">🔍 পণ্য বা দোকান সার্চ করুন:</label>
     <input id="searchBox" placeholder="দোকান বা পণ্যের নাম লিখে খুঁজুন..." oninput="filterShopsOnMap()">
+    
+  <!-- ১) দ্রুত ক্যাটাগরি ফিল্টার চিপস -->
+  <div class="category-chips">
+  <div class="chip" onclick="quickCategory('')">সব দোকান</div>
+  <div class="chip" onclick="quickCategory('Groceries')">🛒 মুদিখানা</div>
+  <div class="chip" onclick="quickCategory('Medicine')">💊 ঔষধ</div>
+  <div class="chip" onclick="quickCategory('Saloon')">✂️ সেলুন/পার্লার</div>
+  <div class="chip" onclick="quickCategory('Restaurant')">🍽️ রেস্তোরাঁ</div>
+  <div class="chip" onclick="quickCategory('Meat')">🍗 মাছ/মাংস</div>
+  <div class="chip" onclick="quickCategory('Mobile')">📱 মোবাইল</div>
+  <div class="chip" onclick="quickCategory('Computer')">💻 কম্পিউটার</div>
+  <div class="chip" onclick="quickCategory('Fashion')">👕 পোশাক</div>
+  <div class="chip" onclick="quickCategory('Hardware')">🔧 হার্ডওয়্যার</div>
+  <div class="chip" onclick="quickCategory('Agriculture')">🌱 কৃষি/নার্সারি</div>
+  </div>
+    
     <div id="searchResultText" style="font-size:0.88rem; color:#1565c0; font-weight:600;"></div>
   </div>
 
@@ -420,9 +553,9 @@ body { top: 0px !important; }
   <!-- অফিসিয়াল বার্তা -->
   <div class="footer-disclaimer">
     <strong style="color:#c62828;">সতর্কবার্তা ও ঘোষণা:</strong><br>
-    "aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions."
+    "aionline.in.net does not verify the shops or products listed here. Users are advised to independently verify all information before making any purchase. aionline.in.net is not responsible for any loss, damage, or disputes arising from transactions.[span_6](start_span)"[span_6](end_span)
     <div style="margin-top:6px; color:#333;">
-      <em>(বাংলায়: aionline.in.net এখানে তালিকাভুক্ত কোনো দোকান বা পণ্য সরাসরি যাচাই করে না। কেনাকাটা বা লেনদেনের আগে ব্যবহারকারীদের নিজ দায়িত্বে সমস্ত তথ্য যাচাই করে নেওয়ার অনুরোধ করা হচ্ছে। কোনো প্রকার আর্থিক বা অন্যান্য ক্ষতির জন্য পোর্টাল কর্তৃপক্ষ দায়ী থাকবে না।)</em>
+      <em>(বাংলায়: aionline.in.net এখানে তালিকাভুক্ত কোনো দোকান বা পণ্য সরাসরি যাচাই করে না। কেনাকাটা বা লেনদেনের আগে ব্যবহারকারীদের নিজ দায়িত্বে সমস্ত তথ্য যাচাই করে নেওয়ার অনুরোধ করা হচ্ছে। কোনো প্রকার আর্থিক বা অন্যান্য ক্ষতির জন্য পোর্টাল কর্তৃপক্ষ দায়ী থাকবে না।)</em>[span_7](start_span)[span_7](end_span)
     </div>
   </div>
 
@@ -433,6 +566,8 @@ body { top: 0px !important; }
 
 <!-- গুগল ট্রান্সলেট -->
 <script type="text/javascript">
+let currentLang = 'bn';
+
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
     pageLanguage: 'bn',
@@ -440,8 +575,10 @@ function googleTranslateElementInit() {
   }, 'google_translate_element');
 }
 
+// ৩) ভাষা পরিবর্তন এবং কারেন্ট ল্যাঙ্গুয়েজ ট্র্যাকিং
 function changeLanguage(langCode) {
   if (!langCode) return;
+  currentLang = langCode;
   const select = document.querySelector('.goog-te-combo');
   if (select) {
     select.value = langCode;
@@ -463,22 +600,49 @@ let linesLayer = L.layerGroup();
 let userMarker = null;
 let tempSelectedMarker = null;
 
-// ১) ক্যাটাগরি ভিত্তিক আইকন এবং রং কনফিগারেশন
+// ক্যাটাগরি ভিত্তিক আইকন এবং রং
 function getCategoryStyle(category) {
   const cat = (category || "").toLowerCase();
-  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#9de9eb", icon: "🛒" };
+
+  // খাদ্য ও নিত্যপ্রয়োজনীয়
+  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#290ceb", icon: "🛒" };
   if (cat.includes("fruit") || cat.includes("vegetable") || cat.includes("সবজি")) return { bg: "#43a047", icon: "🥦" };
-  if (cat.includes("dairy") || cat.includes("sweet") || cat.includes("bakery") || cat.includes("মিষ্টি")) return { bg: "#fb8c00", icon: "🧁" };
-  if (cat.includes("fashion") || cat.includes("cloth") || cat.includes("পোশাক") || cat.includes("footwear")) return { bg: "#8e24aa", icon: "👕" };
-  if (cat.includes("med") || cat.includes("pharmacy") || cat.includes("ঔষধ")) return { bg: "#e53935", icon: "💊" };
-  if (cat.includes("computer") || cat.includes("electron") || cat.includes("laptop")) return { bg: "#0288d1", icon: "💻" };
+  if (cat.includes("dairy") || cat.includes("দুধ")) return { bg: "#00acc1", icon: "🥛" };
+  if (cat.includes("bakery") || cat.includes("cake") || cat.includes("sweet") || cat.includes("মিষ্টি")) return { bg: "#fb8c00", icon: "🧁" };
+  if (cat.includes("restaurant") || cat.includes("cafe") || cat.includes("food") || cat.includes("খাবার")) return { bg: "#d84315", icon: "🍽️" };
+  if (cat.includes("meat") || cat.includes("fish") || cat.includes("egg") || cat.includes("মাছ") || cat.includes("মাংস")) return { bg: "#c2185b", icon: "🍗" };
+
+  // পোশাক ও ফ্যাশন
+  if (cat.includes("fashion") || cat.includes("clothing") || cat.includes("men") || cat.includes("women") || cat.includes("kids") || cat.includes("পোশাক") || cat.includes("tailor")) return { bg: "#8e24aa", icon: "👕" };
+  if (cat.includes("footwear") || cat.includes("জুতো")) return { bg: "#5d4037", icon: "👞" };
+  if (cat.includes("jewelry") || cat.includes("watch") || cat.includes("গয়না")) return { bg: "#fbc02d", icon: "💍" };
+  if (cat.includes("bag") || cat.includes("luggage") || cat.includes("ব্যাগ")) return { bg: "#6d4c41", icon: "🧳" };
+
+  // রূপচর্চা ও স্বাস্থ্যসেবা
+  if (cat.includes("saloon") || cat.includes("সেলুন") || cat.includes("parlour") || cat.includes("পার্লার")) return { bg: "#ad1457", icon: "✂️" };
+  if (cat.includes("beauty") || cat.includes("cosmetic") || cat.includes("প্রসাধন")) return { bg: "#e91e63", icon: "💄" };
+  if (cat.includes("med") || cat.includes("pharmacy") || cat.includes("homoeopathic") || cat.includes("ayurvedic") || cat.includes("ঔষধ")) return { bg: "#e53935", icon: "💊" };
+  if (cat.includes("optical") || cat.includes("eye") || cat.includes("চশমা")) return { bg: "#00838f", icon: "👓" };
+
+  // ইলেকট্রনিক্স ও প্রযুক্তি
+  if (cat.includes("computer") || cat.includes("laptop") || cat.includes("software") || cat.includes("ট্যাক্স")) return { bg: "#0288d1", icon: "💻" };
   if (cat.includes("mobile") || cat.includes("মোবাইল")) return { bg: "#00897b", icon: "📱" };
-  if (cat.includes("hardware") || cat.includes("paint") || cat.includes("হার্ডওয়্যার")) return { bg: "#6d4c41", icon: "🔧" };
-  if (cat.includes("book") || cat.includes("stationery") || cat.includes("বই")) return { bg: "#3949ab", icon: "📚" };
-  return { bg: "#546e7a", icon: "🏪" }; // Default
+  if (cat.includes("electronics") || cat.includes("appliance") || cat.includes("cctv")) return { bg: "#1565c0", icon: "🔌" };
+
+  // ঘরবাড়ি, নির্মাণ ও হার্ডওয়্যার
+  if (cat.includes("furniture") || cat.includes("decor") || cat.includes("kitchen")) return { bg: "#795548", icon: "🛋️" };
+  if (cat.includes("hardware") || cat.includes("tool") || cat.includes("paint") || cat.includes("plumbing") || cat.includes("construction")) return { bg: "#455a64", icon: "🔧" };
+
+  // শিক্ষা, কুটিরশিল্প, কৃষি ও অন্যান্য
+  if (cat.includes("book") || cat.includes("stationery") || cat.includes("tuition") || cat.includes("coaching") || cat.includes("বই")) return { bg: "#3949ab", icon: "📚" };
+  if (cat.includes("agriculture") || cat.includes("nursery") || cat.includes("plant") || cat.includes("গাছ")) return { bg: "#2e7d32", icon: "🌱" };
+  if (cat.includes("auto") || cat.includes("bicycle") || cat.includes("garage") || cat.includes("গাড়ি")) return { bg: "#37474f", icon: "🛵" };
+  if (cat.includes("pet") || cat.includes("প্রাণী")) return { bg: "#ff7043", icon: "🐾" };
+  if (cat.includes("gift") || cat.includes("handicraft")) return { bg: "#ab47bc", icon: "🎁" };
+
+  return { bg: "#546e7a", icon: "🏪" }; // অন্যান্য সব ক্যাটাগরির জন্য ডিফল্ট
 }
 
-// ব্যবহারকারীর আইকন
 const userIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
   iconSize: [32, 32],
@@ -516,14 +680,23 @@ function initMap() {
   });
 }
 
-function openShopForm() {
+// ফর্ম ওপেন করা
+function openShopForm(isEdit = false) {
   const form = document.getElementById("formSection");
   const arrow = document.getElementById("formArrow");
 
-  if (form.style.display === "none") {
-    form.style.display = "block";
-    arrow.innerText = "▲";
+  if (!isEdit && form.style.display === "block") {
+    form.style.display = "none";
+    arrow.innerText = "▼";
+    resetForm();
+    return;
+  }
 
+  form.style.display = "block";
+  arrow.innerText = "▲";
+
+  if (!isEdit) {
+    resetForm();
     if (navigator.geolocation) {
       document.getElementById("location").value = "লোকেশন খোঁজা হচ্ছে...";
       navigator.geolocation.getCurrentPosition(
@@ -544,17 +717,80 @@ function openShopForm() {
         { enableHighAccuracy: true, timeout: 7000 }
       );
     }
-  } else {
-    form.style.display = "none";
-    arrow.innerText = "▼";
-    if (tempSelectedMarker) {
-      map.removeLayer(tempSelectedMarker);
-      tempSelectedMarker = null;
-    }
   }
 }
 
-// ব্যবহারকারীর অবস্থান
+function resetForm() {
+  document.getElementById("editShopId").value = "";
+  document.getElementById("shopName").value = "";
+  document.getElementById("ownerName").value = "";
+  document.getElementById("category").value = "";
+  document.getElementById("timing").value = "";
+  document.getElementById("homeDelivery").checked = false;
+  document.getElementById("mobile").value = "";
+  document.getElementById("whatsapp").value = "";
+  document.getElementById("address").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("formHeading").innerText = "দোকান রেজিস্ট্রেশন ফর্ম";
+  document.getElementById("saveBtn").innerText = "দোকানের তথ্য জমা দিন";
+  document.getElementById("msg").innerText = "";
+  if (tempSelectedMarker) {
+    map.removeLayer(tempSelectedMarker);
+    tempSelectedMarker = null;
+  }
+}
+
+// ২) দোকানের তথ্য এডিট করার ফাংশন
+function editShop(shopId) {
+  const shop = allShops.find(s => (s.id == shopId || s.shopName == shopId));
+  if (!shop) return;
+
+  openShopForm(true);
+
+  document.getElementById("editShopId").value = shop.id || shop.shopName;
+  document.getElementById("shopName").value = shop.shopName || "";
+  document.getElementById("ownerName").value = shop.ownerName || "";
+  document.getElementById("category").value = shop.category || "";
+  document.getElementById("mobile").value = shop.mobile || "";
+  document.getElementById("whatsapp").value = shop.whatsapp || "";
+  document.getElementById("address").value = shop.address || "";
+  document.getElementById("description").value = shop.description || "";
+  document.getElementById("location").value = shop.location || "";
+  
+  if (shop.timing) document.getElementById("timing").value = shop.timing;
+  if (shop.homeDelivery) document.getElementById("homeDelivery").checked = (shop.homeDelivery === true || shop.homeDelivery === "true");
+
+  document.getElementById("formHeading").innerText = "✏️ দোকানের তথ্য আপডেট করুন";
+  document.getElementById("saveBtn").innerText = "তথ্য আপডেট সম্পন্ন করুন";
+
+  document.getElementById("formSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+// ৩) ভাষা অনুযায়ী ডাইনামিক হোয়াটসঅ্যাপ বার্তা তৈরি
+function getWhatsAppMsg(shopName) {
+  if (currentLang === 'en') {
+    return encodeURIComponent(`Hello, I found your shop (${shopName}) on https://aionline.in.net. I would like to know more about your products.`);
+  } else if (currentLang === 'hi') {
+    return encodeURIComponent(`नमस्ते, मुझे https://aionline.in.net पर आपकी दुकान (${shopName}) की जानकारी मिली। मैं आपके उत्पादों के बारे में जानना चाहता हूँ।`);
+  } else {
+    // Default Bangla
+    return encodeURIComponent(`নমস্কার, আমি https://aionline.in.net থেকে আপনার দোকান (${shopName})-এর তথ্য পেয়েছি। আমি আপনার পণ্য সম্পর্কে জানতে চাই।`);
+  }
+}
+
+// শেয়ার ফাংশন
+function shareShop(shopName, location) {
+  const shareText = `🏪 ${shopName} - দোকানের লোকেশন ও তথ্য দেখুন https://aionline.in.net এ! মানচিত্র লিংক: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+}
+
+// কুইক ক্যাটাগরি ফিল্টার
+function quickCategory(cat) {
+  document.getElementById("searchBox").value = cat;
+  filterShopsOnMap();
+}
+
 function getUserLiveLocation(showAlert = false) {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -579,7 +815,6 @@ function getUserLiveLocation(showAlert = false) {
   }
 }
 
-// দূরত্ব হিসাব
 function formatDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -597,7 +832,6 @@ function formatDistance(lat1, lon1, lat2, lon2) {
   }
 }
 
-// ডেটা লোড
 async function loadShops() {
   try {
     const res = await fetch(API_URL, {
@@ -611,7 +845,6 @@ async function loadShops() {
   }
 }
 
-// ২ ও ৩) সার্চ অনুযায়ী ফিল্টার এবং দূরত্ব প্রদর্শন (সার্চ ছাড়া দূরত্ব দেখাবে না)
 function filterShopsOnMap() {
   const keyword = (document.getElementById("searchBox").value || "").trim().toLowerCase();
   markersLayer.clearLayers();
@@ -657,7 +890,6 @@ function filterShopsOnMap() {
         if (userLat && userLng) {
           distFormatted = formatDistance(userLat, userLng, lat, lng);
 
-          // ২ ও ৩) শুধুমাত্র যদি কোনো কিওয়ার্ড সার্চ করা হয়, তখনই দাগ এবং দূরত্বের ব্যাজ দেখাবে
           if (keyword !== "") {
             const line = L.polyline([[userLat, userLng], [lat, lng]], {
               color: '#1976d2',
@@ -682,7 +914,6 @@ function filterShopsOnMap() {
           }
         }
 
-        // ১) ক্যাটাগরিভিত্তিক রঙিন মার্কার আইকন
         const style = getCategoryStyle(shop.category);
         const customIcon = L.divIcon({
           className: 'custom-category-pin-wrapper',
@@ -692,27 +923,38 @@ function filterShopsOnMap() {
           popupAnchor: [0, -18]
         });
 
-        // ৪) পপ-আপ থেকে "রাস্তা দেখুন" বোতাম বাদ দেওয়া হয়েছে
+        const waMsg = getWhatsAppMsg(shop.shopName);
+        const shopIdentifier = shop.id ? `'${shop.id}'` : `'${shop.shopName}'`;
+
         const popupContent = `
           <div class="popup-container">
             <div class="popup-header">
               <h4 class="popup-title">🏪 ${shop.shopName || 'দোকান'}</h4>
               <button class="close-popup-btn" onclick="map.closePopup();" title="বন্ধ করুন">✖</button>
             </div>
-            ${distFormatted ? `<div class="popup-dist-badge">📍 দূরত্ব: ${distFormatted}</div>` : ''}
+            
+            <div class="badge-row">
+              ${distFormatted ? `<span class="popup-dist-badge">📍 ${distFormatted}</span>` : ''}
+              ${shop.homeDelivery ? `<span class="delivery-badge">🛵 হোম ডেলিভারি</span>` : ''}
+            </div>
+
+            ${shop.timing ? `<p style="margin:2px 0;"><strong>⏰ সময়:</strong> ${shop.timing}</p>` : ''}
             ${shop.ownerName ? `<p style="margin:2px 0;"><strong>দোকানদার:</strong> ${shop.ownerName}</p>` : ''}
             <p style="margin:2px 0;"><strong>বিভাগ:</strong> ${shop.category || 'অন্যান্য'}</p>
             ${shop.description ? `<p style="margin:2px 0; color:#555;"><strong>পণ্য বিবরণ:</strong> ${shop.description}</p>` : ''}
             ${shop.address ? `<p style="margin:2px 0;"><strong>ঠিকানা:</strong> ${shop.address}</p>` : ''}
+            
             <div class="popup-btns">
               ${shop.mobile ? `<a class="btn-call" href="tel:${shop.mobile}">📞 কল করুন</a>` : ''}
-              ${shop.whatsapp ? `<a class="btn-wa" target="_blank" href="https://wa.me/${shop.whatsapp}?text=${encodeURIComponent('নমস্কার, আমি https://aionline.in.net থেকে আপনার দোকানের তথ্য পেয়েছে। আমি' + shop.shopName + '-এর পণ্য সম্পর্কে জানতে চাই।')}">💬 WhatsApp</a>` : ''}
+              ${shop.whatsapp ? `<a class="btn-wa" target="_blank" href="https://wa.me/${shop.whatsapp}?text=${waMsg}">💬 WhatsApp</a>` : ''}
+              <button class="btn-share" onclick="shareShop('${shop.shopName}', '${shop.location}')">📤 শেয়ার</button>
+              <button class="btn-edit" onclick="editShop(${shopIdentifier})">✏️ এডিট</button>
             </div>
           </div>
         `;
 
         const marker = L.marker([lat, lng], { icon: customIcon }).bindPopup(popupContent, {
-          maxWidth: 290,
+          maxWidth: 300,
           autoPan: true,
           autoPanPadding: [20, 20]
         });
@@ -726,11 +968,12 @@ function filterShopsOnMap() {
   }
 }
 
-// দোকান সেভ
+// দোকান সেভ ও আপডেট করা
 async function saveShop() {
   const shopName = document.getElementById("shopName").value.trim();
   const mobile = document.getElementById("mobile").value.trim();
   const location = document.getElementById("location").value.trim();
+  const editId = document.getElementById("editShopId").value;
 
   if (!location || location === "লোকেশন খোঁজা হচ্ছে...") {
     alert("দোকানের লোকেশন পাওয়া যায়নি! GPS চালু করুন বা ম্যাপে ক্লিক করে অবস্থান নির্বাচন করুন।");
@@ -743,10 +986,12 @@ async function saveShop() {
   }
 
   const data = {
-    id: "",
+    id: editId || "",
     shopName: shopName,
     ownerName: document.getElementById("ownerName").value.trim(),
     category: document.getElementById("category").value,
+    timing: document.getElementById("timing").value.trim(),
+    homeDelivery: document.getElementById("homeDelivery").checked,
     mobile: mobile,
     whatsapp: document.getElementById("whatsapp").value.trim(),
     address: document.getElementById("address").value.trim(),
@@ -760,39 +1005,27 @@ async function saveShop() {
     imageData: ""
   };
 
+  const action = editId ? "updateProduct" : "registerShop";
   const saveBtn = document.getElementById("saveBtn");
-  saveBtn.innerText = "সংরক্ষণ করা হচ্ছে...";
+  saveBtn.innerText = editId ? "আপডেট করা হচ্ছে..." : "সংরক্ষণ করা হচ্ছে...";
   saveBtn.disabled = true;
 
   try {
     const res = await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({ action: "registerShop", data: data })
+      body: JSON.stringify({ action: action, data: data })
     });
     const result = await res.json();
-    document.getElementById("msg").innerText = result.message || "দোকান সফলভাবে যুক্ত হয়েছে!";
+    document.getElementById("msg").innerText = result.message || "দোকানের তথ্য সফলভাবে সংরক্ষিত হয়েছে!";
 
     if (result.success) {
-      document.getElementById("shopName").value = "";
-      document.getElementById("ownerName").value = "";
-      document.getElementById("category").value = "";
-      document.getElementById("mobile").value = "";
-      document.getElementById("whatsapp").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("description").value = "";
-      document.getElementById("location").value = "";
-
-      if (tempSelectedMarker) {
-        map.removeLayer(tempSelectedMarker);
-        tempSelectedMarker = null;
-      }
-
+      resetForm();
       document.getElementById("formSection").style.display = "none";
       document.getElementById("formArrow").innerText = "▼";
       loadShops();
     }
   } catch (err) {
-    document.getElementById("msg").innerText = "সার্ভারে ত্রুটি হয়েছে। আবার চেষ্টা করুন।";
+    document.getElementById("msg").innerText = "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।";
   } finally {
     saveBtn.innerText = "দোকানের তথ্য জমা দিন";
     saveBtn.disabled = false;
@@ -807,4 +1040,4 @@ window.onload = function() {
 </script>
 
 </body>
-</html> 
+</html>
