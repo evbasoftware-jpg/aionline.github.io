@@ -58,16 +58,17 @@ body {
   gap: 5px;
 }
 
-/* কাস্টম ড্রপ-ডাউন স্টাইল */
+/* গুগলের সকল ভাষার স্ক্রলেবল ড্রপডাউন */
 .custom-lang-select {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border: 1px solid #1976d2;
   border-radius: 6px;
   font-size: 0.9rem;
   background: #fff;
   outline: none;
   cursor: pointer;
-  max-width: 140px;
+  max-width: 170px;
+  font-weight: 500;
 }
 
 .card {
@@ -134,7 +135,6 @@ button:hover {
   color: #37474f;
   font-size: 0.85rem;
   padding: 6px 12px;
-  margin-bottom: 0;
   border: 1px solid #cfd8dc;
   border-radius: 4px;
   cursor: pointer;
@@ -162,13 +162,18 @@ button:hover {
   border-radius: 4px;
 }
 
+/* Search Box */
+#searchBox {
+  font-size: 1rem;
+  border: 2px solid #1976d2;
+}
+
 /* Map Style */
 #map {
   width: 100%;
-  height: 500px;
+  height: 520px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  cursor: crosshair;
 }
 
 /* Popup Style */
@@ -181,19 +186,20 @@ button:hover {
 .popup-title {
   margin: 0 0 6px 0;
   color: #0d47a1;
-  font-size: 1.1rem;
-  border-bottom: 1px solid #e0e0e0;
+  font-size: 1.15rem;
+  border-bottom: 2px solid #e0e0e0;
   padding-bottom: 4px;
 }
 
 .popup-dist {
-  color: #2e7d32;
+  color: #1b5e20;
   font-weight: bold;
-  background: #e8f5e9;
-  padding: 2px 6px;
+  background: #c8e6c9;
+  padding: 3px 8px;
   border-radius: 4px;
   display: inline-block;
-  margin: 4px 0;
+  margin: 5px 0;
+  font-size: 0.9rem;
 }
 
 .popup-btns {
@@ -205,9 +211,9 @@ button:hover {
 
 .popup-btns a {
   text-decoration: none;
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-radius: 4px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
 }
@@ -228,7 +234,6 @@ button:hover {
   line-height: 1.5;
 }
 
-/* Hide default Google Translate bar elements */
 .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
 body { top: 0px !important; }
 #goog-gt-tt { display: none !important; }
@@ -239,17 +244,17 @@ body { top: 0px !important; }
 
 <div class="container">
 
-  <!-- ৩) গুগল ট্রান্সলেটের ড্রপ-ডাউন -->
+  <!-- ২) গুগলের সকল ভাষা সম্বলিত ড্রপ-ডাউন -->
   <div class="header-bar">
     <div class="header-title">🏪 দোকান ও প্রোডাক্ট ডিরেক্টরি</div>
     <div>
       <select id="languageSelect" class="custom-lang-select" onchange="changeLanguage(this.value)">
-        <option value="">🌐 ভাষা নির্বাচন করুন</option>
+        <option value="">🌐 Select Language</option>
         <option value="bn">বাংলা (Bengali)</option>
         <option value="en">English</option>
         <option value="hi">हिन्दी (Hindi)</option>
-        <option value="ur">اردو (Urdu)</option>
         <option value="as">অসমীয়া (Assamese)</option>
+        <option value="ur">اردو (Urdu)</option>
         <option value="or">ଓଡ଼ିଆ (Odia)</option>
         <option value="ta">தமிழ் (Tamil)</option>
         <option value="te">తెలుగు (Telugu)</option>
@@ -258,13 +263,104 @@ body { top: 0px !important; }
         <option value="kn">ಕನ್ನಡ (Kannada)</option>
         <option value="ml">മലയാളം (Malayalam)</option>
         <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="bho">भोजपुरी (Bhojpuri)</option>
+        <option value="ne">नेपाली (Nepali)</option>
         <option value="ar">العربية (Arabic)</option>
         <option value="fr">Français (French)</option>
         <option value="es">Español (Spanish)</option>
         <option value="de">Deutsch (German)</option>
+        <option value="ru">Русский (Russian)</option>
+        <option value="zh-CN">中文 (Simplified)</option>
+        <option value="zh-TW">中文 (Traditional)</option>
+        <option value="ja">日本語 (Japanese)</option>
+        <option value="ko">한국어 (Korean)</option>
+        <option value="af">Afrikaans</option>
+        <option value="sq">Albanian</option>
+        <option value="am">Amharic</option>
+        <option value="hy">Armenian</option>
+        <option value="az">Azerbaijani</option>
+        <option value="eu">Basque</option>
+        <option value="be">Belarusian</option>
+        <option value="bs">Bosnian</option>
+        <option value="bg">Bulgarian</option>
+        <option value="ca">Catalan</option>
+        <option value="ceb">Cebuano</option>
+        <option value="co">Corsican</option>
+        <option value="hr">Croatian</option>
+        <option value="cs">Czech</option>
+        <option value="da">Danish</option>
+        <option value="nl">Dutch</option>
+        <option value="eo">Esperanto</option>
+        <option value="et">Estonian</option>
+        <option value="fi">Finnish</option>
+        <option value="gl">Galician</option>
+        <option value="ka">Georgian</option>
+        <option value="el">Greek</option>
+        <option value="ht">Haitian Creole</option>
+        <option value="ha">Hausa</option>
+        <option value="haw">Hawaiian</option>
+        <option value="he">Hebrew</option>
+        <option value="hmn">Hmong</option>
+        <option value="hu">Hungarian</option>
+        <option value="is">Icelandic</option>
+        <option value="ig">Igbo</option>
+        <option value="id">Indonesian</option>
+        <option value="ga">Irish</option>
+        <option value="it">Italian</option>
+        <option value="jw">Javanese</option>
+        <option value="kk">Kazakh</option>
+        <option value="km">Khmer</option>
+        <option value="rw">Kinyarwanda</option>
+        <option value="ku">Kurdish</option>
+        <option value="ky">Kyrgyz</option>
+        <option value="lo">Lao</option>
+        <option value="la">Latin</option>
+        <option value="lv">Latvian</option>
+        <option value="lt">Lithuanian</option>
+        <option value="lb">Luxembourgish</option>
+        <option value="mk">Macedonian</option>
+        <option value="mg">Malagasy</option>
+        <option value="ms">Malay</option>
+        <option value="mt">Maltese</option>
+        <option value="mi">Maori</option>
+        <option value="mn">Mongolian</option>
+        <option value="my">Myanmar (Burmese)</option>
+        <option value="no">Norwegian</option>
+        <option value="ny">Nyanja (Chichewa)</option>
+        <option value="ps">Pashto</option>
+        <option value="fa">Persian</option>
+        <option value="pl">Polish</option>
+        <option value="pt">Portuguese</option>
+        <option value="ro">Romanian</option>
+        <option value="sm">Samoan</option>
+        <option value="gd">Scots Gaelic</option>
+        <option value="sr">Serbian</option>
+        <option value="st">Sesotho</option>
+        <option value="sn">Shona</option>
+        <option value="sd">Sindhi</option>
+        <option value="si">Sinhala</option>
+        <option value="sk">Slovak</option>
+        <option value="sl">Slovenian</option>
+        <option value="so">Somali</option>
+        <option value="su">Sundanese</option>
+        <option value="sw">Swahili</option>
+        <option value="sv">Swedish</option>
+        <option value="tg">Tajik</option>
+        <option value="tt">Tatar</option>
+        <option value="th">Thai</option>
+        <option value="tr">Turkish</option>
+        <option value="tk">Turkmen</option>
+        <option value="uk">Ukrainian</option>
+        <option value="ug">Uyghur</option>
+        <option value="uz">Uzbek</option>
+        <option value="vi">Vietnamese</option>
+        <option value="cy">Welsh</option>
+        <option value="xh">Xhosa</option>
+        <option value="yi">Yiddish</option>
+        <option value="yo">Yoruba</option>
+        <option value="zu">Zulu</option>
       </select>
     </div>
-    <!-- Hidden element for Google Translate script initialization -->
     <div id="google_translate_element" style="display:none;"></div>
   </div>
 
@@ -317,7 +413,7 @@ body { top: 0px !important; }
     <label for="description">কি ধরনের পণ্য পাওয়া যায় তার বিবরণ (Description)</label>
     <textarea id="description" placeholder="দোকানে কী কী সামগ্রী বা সার্ভিস পাওয়া যায় বিস্তারিত লিখুন..."></textarea>
 
-    <!-- ২) লোকেশন ফিল্ড (জিপিএস বা ম্যাপ ক্লিক থেকে স্বয়ংক্রিয় আসবে) -->
+    <!-- লোকেশন ফিল্ড -->
     <label for="location">দোকানের লোকেশন (Latitude, Longitude) *</label>
     <div class="note-box">
       📌 <strong>নোট:</strong> মোবাইলের GPS অন থাকলে আপনার বর্তমান দোকানের অবস্থান স্বয়ংক্রিয়ভাবে নিচে বসে যাবে। অন্যথায় নিচের ম্যাপে আপনার দোকানের অবস্থানে ক্লিক করুন।
@@ -328,21 +424,22 @@ body { top: 0px !important; }
     <p id="msg" style="font-weight:bold; margin-top:10px;"></p>
   </div>
 
-  <!-- সার্চ বক্স -->
+  <!-- ১) পণ্য বা দোকান সার্চ বক্স -->
   <div class="card" style="margin-bottom:10px;">
     <label for="searchBox" style="margin-top:0;">🔍 পণ্য বা দোকান সার্চ করুন:</label>
-    <input id="searchBox" placeholder="পণ্যের নাম, বিভাগ বা দোকানের নাম লিখুন..." oninput="filterShopsOnMap()">
+    <input id="searchBox" placeholder="দোকান বা পণ্যের নাম লিখে খুঁজুন..." oninput="filterShopsOnMap()">
+    <div id="searchResultText" style="font-size:0.88rem; color:#1565c0; font-weight:600;"></div>
   </div>
 
   <!-- ম্যাপ বক্স -->
   <div class="card" style="padding: 10px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
       <span style="font-weight:bold; font-size:0.95rem;">🗺️ ম্যাপে দোকানসমূহের অবস্থান</span>
-      <button class="loc-btn" onclick="getUserLiveLocation()">🎯 আমার দূরত্ব মাপুন</button>
+      <button class="loc-btn" onclick="getUserLiveLocation(true)">🎯 আমার লোকেশন আপডেট করুন</button>
     </div>
     
     <div class="click-hint">
-      👉 <strong>টিপস:</strong> নতুন দোকান যুক্ত করতে নিচের ম্যাপে সঠিক অবস্থানের ওপর <b>ক্লিক করুন</b>। Lat-Long স্বয়ংক্রিয়ভাবে বসে যাবে।
+      👉 <strong>টিপস:</strong> নতুন দোকান যুক্ত করতে নিচের ম্যাপে সঠিক অবস্থানের ওপর <b>ক্লিক করুন</b>। Lat-Long সরাসরি ইনপুটে যুক্ত হবে।
     </div>
 
     <div id="map"></div>
@@ -371,7 +468,6 @@ function googleTranslateElementInit() {
   }, 'google_translate_element');
 }
 
-// ৩) ড্রপ-ডাউন থেকে ভাষা পরিবর্তন করার ফাংশন
 function changeLanguage(langCode) {
   if (!langCode) return;
   const select = document.querySelector('.goog-te-combo');
@@ -411,16 +507,13 @@ function initMap() {
 
   markersLayer.addTo(map);
 
-  // ১) ম্যাপে ক্লিক করলে সঠিক Lat Long অটোমেটিক ইনপুটে আসা
+  // ম্যাপে ক্লিক করে লোকেশন নেওয়া
   map.on('click', function(e) {
     const lat = e.latlng.lat.toFixed(6);
     const lng = e.latlng.lng.toFixed(6);
 
-    // ইনপুট ফিল্ডে সরাসরি বসানো
-    const locInput = document.getElementById("location");
-    locInput.value = `${lat}, ${lng}`;
+    document.getElementById("location").value = `${lat}, ${lng}`;
 
-    // আগের পিন মুছে নতুন মার্কার যোগ
     if (tempSelectedMarker) {
       map.removeLayer(tempSelectedMarker);
     }
@@ -429,7 +522,6 @@ function initMap() {
       .bindPopup(`<b>📍 নির্বাচিত লোকেশন</b><br>${lat}, ${lng}`)
       .openPopup();
 
-    // ফর্ম খুলে দেওয়া ও স্ক্রল করা
     const form = document.getElementById("formSection");
     const arrow = document.getElementById("formArrow");
     form.style.display = "block";
@@ -439,7 +531,7 @@ function initMap() {
   });
 }
 
-// ২) নতুন দোকান যুক্ত করার সময় জিপিএস যাচাই ও অটো-লোকেশন
+// ফর্ম ওপেন এবং জিপিএস নেওয়া
 function openShopForm() {
   const form = document.getElementById("formSection");
   const arrow = document.getElementById("formArrow");
@@ -448,7 +540,6 @@ function openShopForm() {
     form.style.display = "block";
     arrow.innerText = "▲";
 
-    // জিপিএস অন থাকলে স্বয়ংক্রিয়ভাবে লোকেশন নেওয়া
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -462,7 +553,6 @@ function openShopForm() {
           map.setView([lat, lng], 15);
         },
         (err) => {
-          // GPS অন না থাকলে সতর্কবার্তা
           document.getElementById("location").value = "";
           alert("সতর্কতা: আপনার মোবাইলের GPS অন নেই! দোকানের অবস্থান যুক্ত করতে অনুগ্রহ করে ফোনের GPS চালু করুন অথবা নিচের ম্যাপে সঠিক স্থানে ক্লিক করুন।");
         },
@@ -475,8 +565,8 @@ function openShopForm() {
   }
 }
 
-// ব্যবহারকারীর দূরত্ব নির্ণয়
-function getUserLiveLocation() {
+// ব্যবহারকারীর দূরত্ব নির্ণয়ের জন্য জিপিএস নেওয়া
+function getUserLiveLocation(showAlert = false) {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -490,16 +580,20 @@ function getUserLiveLocation() {
           color: '#0d47a1',
           fillColor: '#1976d2',
           fillOpacity: 1
-        }).addTo(map).bindPopup("<b>📍 আপনি এখানে আছেন</b>").openPopup();
+        }).addTo(map).bindPopup("<b>📍 আপনি এখানে আছেন</b>");
 
         filterShopsOnMap();
+        if (showAlert) alert("আপনার লাইভ লোকেশন আপডেট হয়েছে!");
       },
-      () => alert("দূরত্ব মাপার জন্য ফোনের লোকেশন/GPS পারমিশন চালু করুন।")
+      () => {
+        if (showAlert) alert("দূরত্ব মাপার জন্য ফোনের লোকেশন/GPS পারমিশন চালু করুন।");
+      },
+      { enableHighAccuracy: true }
     );
   }
 }
 
-// দূরত্ব হিসাব
+// দূরত্ব হিসাব (Haversine Formula)
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -511,7 +605,7 @@ function getDistanceInKm(lat1, lon1, lat2, lon2) {
   return (R * c).toFixed(1);
 }
 
-// শিট থেকে ডাটা লোড
+// শিট থেকে ডেটা লোড
 async function loadShops() {
   try {
     const res = await fetch(API_URL, {
@@ -525,23 +619,34 @@ async function loadShops() {
   }
 }
 
-// ফিল্টার ও মার্কার রেন্ডার
+// ১) সার্চ ও ম্যাপে দূরত্বসহ লোকেশন প্রদর্শন
 function filterShopsOnMap() {
-  const keyword = document.getElementById("searchBox").value.trim().toLowerCase();
+  const keyword = (document.getElementById("searchBox").value || "").trim().toLowerCase();
   markersLayer.clearLayers();
 
   let filtered = allShops.filter(shop => {
     if (!keyword) return true;
-    return (
-      (shop.shopName && shop.shopName.toLowerCase().includes(keyword)) ||
-      (shop.category && shop.category.toLowerCase().includes(keyword)) ||
-      (shop.description && shop.description.toLowerCase().includes(keyword)) ||
-      (shop.productName && shop.productName.toLowerCase().includes(keyword)) ||
-      (shop.address && shop.address.toLowerCase().includes(keyword))
-    );
+    const sName = (shop.shopName || "").toLowerCase();
+    const sCat  = (shop.category || "").toLowerCase();
+    const sDesc = (shop.description || "").toLowerCase();
+    const sProd = (shop.productName || "").toLowerCase();
+    const sAddr = (shop.address || "").toLowerCase();
+    const sOwn  = (shop.ownerName || "").toLowerCase();
+
+    return sName.includes(keyword) || sCat.includes(keyword) || 
+           sDesc.includes(keyword) || sProd.includes(keyword) || 
+           sAddr.includes(keyword) || sOwn.includes(keyword);
   });
 
+  const resText = document.getElementById("searchResultText");
+  if (keyword) {
+    resText.innerText = `খোঁজা হয়েছে: "${keyword}" — ${filtered.length} টি দোকান পাওয়া গেছে`;
+  } else {
+    resText.innerText = "";
+  }
+
   let bounds = [];
+  let firstMarker = null;
 
   filtered.forEach(shop => {
     if (shop.location && shop.location.includes(",")) {
@@ -552,16 +657,17 @@ function filterShopsOnMap() {
       if (!isNaN(lat) && !isNaN(lng)) {
         bounds.push([lat, lng]);
 
-        let distText = "";
+        // আপনার অবস্থান থেকে দূরত্ব হিসাব
+        let distHtml = "";
         if (userLat && userLng) {
-          const dist = parseFloat(getDistanceInKm(userLat, userLng, lat, lng));
-          distText = `<div class="popup-dist">📍 দূরত্ব: ${dist} কিমি দূরে</div>`;
+          const dist = getDistanceInKm(userLat, userLng, lat, lng);
+          distHtml = `<div class="popup-dist">📍 আপনার থেকে ${dist} কিমি দূরে</div>`;
         }
 
         const popup = `
           <div>
             <h4 class="popup-title">🏪 ${shop.shopName || 'দোকান'}</h4>
-            ${distText}
+            ${distHtml}
             ${shop.ownerName ? `<p style="margin:2px 0;"><strong>দোকানদার:</strong> ${shop.ownerName}</p>` : ''}
             <p style="margin:2px 0;"><strong>বিভাগ:</strong> ${shop.category || 'অন্যান্য'}</p>
             ${shop.description ? `<p style="margin:2px 0; color:#555;"><strong>পণ্য বিবরণ:</strong> ${shop.description}</p>` : ''}
@@ -576,22 +682,34 @@ function filterShopsOnMap() {
 
         const marker = L.marker([lat, lng], { icon: shopIcon }).bindPopup(popup);
         markersLayer.addLayer(marker);
+
+        if (!firstMarker) {
+          firstMarker = marker;
+        }
       }
     }
   });
 
+  // সার্চ করার পর ম্যাপকে সেই দোকানে নিয়ে যাওয়া ও পপআপ ওপেন করা
   if (bounds.length > 0) {
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    if (keyword && bounds.length === 1 && firstMarker) {
+      map.setView(bounds[0], 15);
+      firstMarker.openPopup();
+    } else {
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      if (keyword && firstMarker) {
+        firstMarker.openPopup();
+      }
+    }
   }
 }
 
-// দোকান সাবমিট ও জিপিএস ভ্যালিডেশন
+// দোকান সাবমিট করা
 async function saveShop() {
   const shopName = document.getElementById("shopName").value.trim();
   const mobile = document.getElementById("mobile").value.trim();
   const location = document.getElementById("location").value.trim();
 
-  // জিপিএস অন না থাকলে বা লোকেশন খালি থাকলে সেভ হতে দেবে না
   if (!location) {
     alert("দোকানের লোকেশন (Latitude, Longitude) পাওয়া যায়নি! অনুগ্রহ করে আপনার মোবাইলের GPS অন করুন অথবা ম্যাপে আপনার দোকানের স্থানে ক্লিক করুন।");
     return;
@@ -661,9 +779,10 @@ async function saveShop() {
 
 window.onload = function() {
   initMap();
+  getUserLiveLocation(false); // পৃষ্ঠা লোড হতেই ব্যবহারকারীর অবস্থান নির্ণয়
   loadShops();
 };
 </script>
 
 </body>
-</html>
+</html>                                                    
