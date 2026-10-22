@@ -604,43 +604,71 @@ let tempSelectedMarker = null;
 function getCategoryStyle(category) {
   const cat = (category || "").toLowerCase();
 
-  // খাদ্য ও নিত্যপ্রয়োজনীয়
-  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#290ceb", icon: "🛒" };
-  if (cat.includes("fruit") || cat.includes("vegetable") || cat.includes("সবজি")) return { bg: "#43a047", icon: "🥦" };
-  if (cat.includes("dairy") || cat.includes("দুধ")) return { bg: "#00acc1", icon: "🥛" };
-  if (cat.includes("bakery") || cat.includes("cake") || cat.includes("sweet") || cat.includes("মিষ্টি")) return { bg: "#fb8c00", icon: "🧁" };
-  if (cat.includes("restaurant") || cat.includes("cafe") || cat.includes("food") || cat.includes("খাবার")) return { bg: "#d84315", icon: "🍽️" };
-  if (cat.includes("meat") || cat.includes("fish") || cat.includes("egg") || cat.includes("মাছ") || cat.includes("মাংস")) return { bg: "#c2185b", icon: "🍗" };
-
-  // পোশাক ও ফ্যাশন
-  if (cat.includes("fashion") || cat.includes("clothing") || cat.includes("men") || cat.includes("women") || cat.includes("kids") || cat.includes("পোশাক") || cat.includes("tailor")) return { bg: "#8e24aa", icon: "👕" };
-  if (cat.includes("footwear") || cat.includes("জুতো")) return { bg: "#5d4037", icon: "👞" };
-  if (cat.includes("jewelry") || cat.includes("watch") || cat.includes("গয়না")) return { bg: "#fbc02d", icon: "💍" };
-  if (cat.includes("bag") || cat.includes("luggage") || cat.includes("ব্যাগ")) return { bg: "#6d4c41", icon: "🧳" };
-
-  // রূপচর্চা ও স্বাস্থ্যসেবা
-  if (cat.includes("saloon") || cat.includes("সেলুন") || cat.includes("parlour") || cat.includes("পার্লার")) return { bg: "#ad1457", icon: "✂️" };
-  if (cat.includes("beauty") || cat.includes("cosmetic") || cat.includes("প্রসাধন")) return { bg: "#e91e63", icon: "💄" };
-  if (cat.includes("med") || cat.includes("pharmacy") || cat.includes("homoeopathic") || cat.includes("ayurvedic") || cat.includes("ঔষধ")) return { bg: "#e53935", icon: "💊" };
-  if (cat.includes("optical") || cat.includes("eye") || cat.includes("চশমা")) return { bg: "#00838f", icon: "👓" };
-
-  // ইলেকট্রনিক্স ও প্রযুক্তি
-  if (cat.includes("computer") || cat.includes("laptop") || cat.includes("software") || cat.includes("ট্যাক্স")) return { bg: "#0288d1", icon: "💻" };
+  // ১. সাইবার ক্যাফে, প্রযুক্তি ও ইলেকট্রনিক্স (রেস্তোরাঁর আগে রাখা হয়েছে যাতে 'cafe' ওভারল্যাপ না করে)
+  if (cat.includes("cyber") || cat.includes("online services") || cat.includes("জেরক্স")) return { bg: "#0097a7", icon: "🖥️" };
+  if (cat.includes("computer") || cat.includes("laptop") || cat.includes("software") || cat.includes("tax") || cat.includes("ট্যাক্স")) return { bg: "#0288d1", icon: "💻" };
   if (cat.includes("mobile") || cat.includes("মোবাইল")) return { bg: "#00897b", icon: "📱" };
-  if (cat.includes("electronics") || cat.includes("appliance") || cat.includes("cctv")) return { bg: "#1565c0", icon: "🔌" };
+  if (cat.includes("cctv") || cat.includes("security")) return { bg: "#37474f", icon: "📹" };
+  if (cat.includes("electronics") || cat.includes("home appliances") || cat.includes("electrical")) return { bg: "#1565c0", icon: "🔌" };
 
-  // ঘরবাড়ি, নির্মাণ ও হার্ডওয়্যার
-  if (cat.includes("furniture") || cat.includes("decor") || cat.includes("kitchen")) return { bg: "#795548", icon: "🛋️" };
-  if (cat.includes("hardware") || cat.includes("tool") || cat.includes("paint") || cat.includes("plumbing") || cat.includes("construction")) return { bg: "#455a64", icon: "🔧" };
+  // ২. খাদ্য ও নিত্যপ্রয়োজনীয়
+  if (cat.includes("grocer") || cat.includes("মুদি")) return { bg: "#2e7d32", icon: "🛒" };
+  if (cat.includes("fruit") || cat.includes("vegetable") || cat.includes("শাকসবজি") || cat.includes("ফল")) return { bg: "#43a047", icon: "🥦" };
+  if (cat.includes("dairy") || cat.includes("দুধ")) return { bg: "#00acc1", icon: "🥛" };
+  if (cat.includes("sweet") || cat.includes("confectionery") || cat.includes("মিষ্টি")) return { bg: "#f57c00", icon: "🍬" };
+  if (cat.includes("bakery") || cat.includes("cake") || cat.includes("বেকারি")) return { bg: "#fb8c00", icon: "🧁" };
+  if (cat.includes("restaurant") || cat.includes("cafe") || cat.includes("food") || cat.includes("beverage") || cat.includes("খাবার") || cat.includes("পানীয়")) return { bg: "#d84315", icon: "🍽️" };
+  if (cat.includes("meat") || cat.includes("fish") || cat.includes("egg") || cat.includes("মাছ") || cat.includes("মাংস") || cat.includes("ডিম")) return { bg: "#c2185b", icon: "🍗" };
 
-  // শিক্ষা, কুটিরশিল্প, কৃষি ও অন্যান্য
-  if (cat.includes("book") || cat.includes("stationery") || cat.includes("tuition") || cat.includes("coaching") || cat.includes("বই")) return { bg: "#3949ab", icon: "📚" };
-  if (cat.includes("agriculture") || cat.includes("nursery") || cat.includes("plant") || cat.includes("গাছ")) return { bg: "#2e7d32", icon: "🌱" };
-  if (cat.includes("auto") || cat.includes("bicycle") || cat.includes("garage") || cat.includes("গাড়ি")) return { bg: "#37474f", icon: "🛵" };
-  if (cat.includes("pet") || cat.includes("প্রাণী")) return { bg: "#ff7043", icon: "🐾" };
-  if (cat.includes("gift") || cat.includes("handicraft")) return { bg: "#ab47bc", icon: "🎁" };
+  // ৩. পোশাক, সাজসজ্জা ও ফ্যাশন
+  if (cat.includes("tailor") || cat.includes("boutique") || cat.includes("দর্জি") || cat.includes("বুটিক")) return { bg: "#7b1fa2", icon: "🪡" };
+  if (cat.includes("men's fashion") || cat.includes("women's fashion") || cat.includes("kids fashion") || cat.includes("fashion") || cat.includes("clothing") || cat.includes("পোশাক") || cat.includes("বস্ত্র")) return { bg: "#8e24aa", icon: "👕" };
+  if (cat.includes("footwear") || cat.includes("জুতো") || cat.includes("চটি")) return { bg: "#5d4037", icon: "👞" };
+  if (cat.includes("jewelry") || cat.includes("watch") || cat.includes("গয়না") || cat.includes("ঘড়ি")) return { bg: "#fbc02d", icon: "💍" };
+  if (cat.includes("bag") || cat.includes("luggage") || cat.includes("ব্যাগ") || cat.includes("লাগেজ")) return { bg: "#6d4c41", icon: "🧳" };
 
-  return { bg: "#546e7a", icon: "🏪" }; // অন্যান্য সব ক্যাটাগরির জন্য ডিফল্ট
+  // ৪. রূপচর্চা ও স্বাস্থ্যসেবা
+  if (cat.includes("saloon") || cat.includes("সেলুন")) return { bg: "#ad1457", icon: "✂️" };
+  if (cat.includes("parlour") || cat.includes("পার্লার")) return { bg: "#c2185b", icon: "💇‍♀️" };
+  if (cat.includes("beauty") || cat.includes("cosmetic") || cat.includes("প্রসাধন")) return { bg: "#e91e63", icon: "💄" };
+  if (cat.includes("optical") || cat.includes("eye") || cat.includes("চশমা")) return { bg: "#00838f", icon: "👓" };
+  if (cat.includes("homoeopathic") || cat.includes("হোমিওপ্যাথিক")) return { bg: "#00796b", icon: "🌿" };
+  if (cat.includes("ayurvedic") || cat.includes("আয়ুর্বেদিক") || cat.includes("ভেষজ")) return { bg: "#558b2f", icon: "🪴" };
+  if (cat.includes("medicine") || cat.includes("pharmacy") || cat.includes("health") || cat.includes("ঔষধ")) return { bg: "#e53935", icon: "💊" };
+
+  // ৫. ঘরবাড়ি, নির্মাণ ও হার্ডওয়্যার
+  if (cat.includes("furniture") || cat.includes("আসবাবপত্র")) return { bg: "#795548", icon: "🛋️" };
+  if (cat.includes("home decor") || cat.includes("গৃহসজ্জা")) return { bg: "#8d6e63", icon: "🏺" };
+  if (cat.includes("kitchen") || cat.includes("dining") || cat.includes("বাসনপত্র")) return { bg: "#ef6c00", icon: "🍳" };
+  if (cat.includes("sanitary") || cat.includes("plumbing") || cat.includes("প্লাম্বিং")) return { bg: "#0277bd", icon: "🚿" };
+  if (cat.includes("construction") || cat.includes("সিমেন্ট") || cat.includes("রড")) return { bg: "#455a64", icon: "🏗️" };
+  if (cat.includes("paint") || cat.includes("রং")) return { bg: "#ab47bc", icon: "🎨" };
+  if (cat.includes("hardware") || cat.includes("tool") || cat.includes("যন্ত্রপাতি")) return { bg: "#607d8b", icon: "🔧" };
+
+  // ৬. শিক্ষা ও বিনোদন
+  if (cat.includes("book") || cat.includes("stationery") || cat.includes("বই") || cat.includes("খাতা")) return { bg: "#3949ab", icon: "📚" };
+  if (cat.includes("tuition") || cat.includes("coaching") || cat.includes("টিউশন") || cat.includes("কোচিং")) return { bg: "#283593", icon: "🎓" };
+  if (cat.includes("sports") || cat.includes("fitness") || cat.includes("খেলাধুলা") || cat.includes("শরীরচর্চা")) return { bg: "#2e7d32", icon: "⚽" };
+  if (cat.includes("toy") || cat.includes("game") || cat.includes("খেলনা")) return { bg: "#f06292", icon: "🧸" };
+  if (cat.includes("musical") || cat.includes("বাদ্যযন্ত্র")) return { bg: "#6a1b9a", icon: "🎸" };
+
+  // ৭. কৃষি, নার্সারি ও পোষা প্রাণী
+  if (cat.includes("nursery") || cat.includes("plant") || cat.includes("গাছপালা") || cat.includes("নার্সারি")) return { bg: "#388e3c", icon: "🌱" };
+  if (cat.includes("agriculture") || cat.includes("বীজ") || cat.includes("সার") || cat.includes("কীটনাশক")) return { bg: "#558b2f", icon: "🌾" };
+  if (cat.includes("pet") || cat.includes("feed") || cat.includes("পোষা প্রাণী")) return { bg: "#ff7043", icon: "🐾" };
+
+  // ৮. যানবাহন ও সার্ভিসিং
+  if (cat.includes("bicycle") || cat.includes("সাইকেল")) return { bg: "#00838f", icon: "🚲" };
+  if (cat.includes("automobile") || cat.includes("garage") || cat.includes("repair") || cat.includes("গাড়ি") || cat.includes("বাইক")) return { bg: "#424242", icon: "🛵" };
+
+  // ৯. পেশাদার সেবা, স্টুডিও ও কুরিয়ার
+  if (cat.includes("photography") || cat.includes("studio") || cat.includes("ফটোগ্রাফি") || cat.includes("স্টুডিও")) return { bg: "#e91e63", icon: "📷" };
+  if (cat.includes("printing") || cat.includes("flex") || cat.includes("প্রিন্টিং") || cat.includes("ব্যানার")) return { bg: "#ff8f00", icon: "🖨️" };
+  if (cat.includes("courier") || cat.includes("parcel") || cat.includes("কুরিয়ার") || cat.includes("পার্সেল")) return { bg: "#d32f2f", icon: "📦" };
+  if (cat.includes("gift") || cat.includes("handicraft") || cat.includes("উপহার") || cat.includes("হস্তশিল্প") || cat.includes("local products")) return { bg: "#ba68c8", icon: "🎁" };
+
+  // ১০. ডিফল্ট
+  return { bg: "#546e7a", icon: "🏪" };
 }
 
 const userIcon = L.icon({
