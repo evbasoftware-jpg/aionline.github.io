@@ -706,7 +706,7 @@ function filterShopsOnMap() {
             ${shop.address ? `<p style="margin:2px 0;"><strong>ঠিকানা:</strong> ${shop.address}</p>` : ''}
             <div class="popup-btns">
               ${shop.mobile ? `<a class="btn-call" href="tel:${shop.mobile}">📞 কল করুন</a>` : ''}
-              ${shop.whatsapp ? `<a class="btn-wa" target="_blank" href="https://wa.me/${shop.whatsapp}?text=${encodeURIComponent('নমস্কার, আমি ' + shop.shopName + '-এর পণ্য সম্পর্কে জানতে চাই।')}">💬 WhatsApp</a>` : ''}
+              ${shop.whatsapp ? `<a class="btn-wa" target="_blank" href="https://wa.me/${shop.whatsapp}?text=${encodeURIComponent('নমস্কার, আমি https://aionline.in.net থেকে আপনার দোকানের তথ্য পেয়েছে। আমি' + shop.shopName + '-এর পণ্য সম্পর্কে জানতে চাই।')}">💬 WhatsApp</a>` : ''}
             </div>
           </div>
         `;
