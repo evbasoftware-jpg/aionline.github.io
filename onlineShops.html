@@ -464,6 +464,7 @@ body { top: 0px !important; }
   <option value="Kitchen & Dining">Kitchen & Dining (বাসনপত্র ও রান্নাঘরের সামগ্রী)</option>
 
   <!-- L -->
+  <option value="Laundry & Dry Clean">Laundry & Dry Clean (লন্ড্রি ও ড্রাই ক্লিনিং)</option>
   <option value="Local Products">Local Products (স্থানীয় ও দেশি পণ্য)</option>
 
   <!-- M -->
@@ -647,6 +648,7 @@ function getCategoryStyle(category) {
   if (cat.includes("footwear") || cat.includes("জুতো") || cat.includes("চটি")) return { bg: "#5d4037", icon: "👞" };
   if (cat.includes("jewelry") || cat.includes("watch") || cat.includes("গয়না") || cat.includes("ঘড়ি")) return { bg: "#fbc02d", icon: "💍" };
   if (cat.includes("bag") || cat.includes("luggage") || cat.includes("ব্যাগ") || cat.includes("লাগেজ")) return { bg: "#6d4c41", icon: "🧳" };
+  if (cat.includes("laundry") || cat.includes("dry clean") || cat.includes("লন্ড্রি")) return { bg: "#0288d1", icon: "🧺" };
 
   // ৪. রূপচর্চা ও স্বাস্থ্যসেবা
   if (cat.includes("saloon") || cat.includes("সেলুন")) return { bg: "#ad1457", icon: "✂️" };
@@ -808,7 +810,7 @@ function editShop(shopId) {
   document.getElementById("location").value = shop.location || "";
   
   if (shop.timing) document.getElementById("timing").value = shop.timing;
-  if (shop.homeDelivery) document.getElementById("homeDelivery").checked = (shop.homeDelivery === true || shop.homeDelivery === "true");
+  document.getElementById("homeDelivery").checked = (shop.homeDelivery === true || shop.homeDelivery === "true" || shop.homeDelivery === "TRUE");
 
   document.getElementById("formHeading").innerText = "✏️ দোকানের তথ্য আপডেট করুন";
   document.getElementById("saveBtn").innerText = "তথ্য আপডেট সম্পন্ন করুন";
