@@ -401,91 +401,112 @@ body { top: 0px !important; }
     <input id="ownerName" placeholder="দোকানদারের নাম লিখুন">
 
     <label for="category">ব্যবসার বিভাগ (Category)</label>
-  <select id="category">
+<select id="category">
   <option value="">ক্যাটাগরি নির্বাচন করুন</option>
 
-  <!-- খাদ্য ও নিত্যপ্রয়োজনীয় -->
-  <option value="Groceries">Groceries (মুদিখানা)</option>
-  <option value="Fruits & Vegetables">Fruits & Vegetables (শাকসবজি ও ফল)</option>
-  <option value="Dairy Products">Dairy Products (দুধ ও দুগ্ধজাত সামগ্রী)</option>
-  <option value="Bakery & Cakes">Bakery & Cakes (বেকারি ও কেক)</option>
-  <option value="Sweets & Confectionery">Sweets & Confectionery (মিষ্টি ও মিষ্টিজাত দ্রব্য)</option>
-  <option value="Food & Beverages">Food & Beverages (খাবার ও পানীয়)</option>
-  <option value="Restaurant & Cafe">Restaurant & Cafe (হোটেল, রেস্তোরাঁ ও ক্যাফে)</option>
-  <option value="Meat, Fish & Egg">Meat, Fish & Egg (মাছ, মাংস ও ডিম)</option>
-
-  <!-- পোশাক, সাজসজ্জা ও ফ্যাশন -->
-  <option value="Fashion & Clothing">Fashion & Clothing (পোশাক ও বস্ত্র)</option>
-  <option value="Men's Fashion">Men's Fashion (পুরুষদের পোশাক)</option>
-  <option value="Women's Fashion">Women's Fashion (মহিলাদের পোশাক)</option>
-  <option value="Kids Fashion">Kids Fashion (বাচ্চাদের পোশাক)</option>
-  <option value="Tailoring & Boutique">Tailoring & Boutique (দর্জি ও বুটিক)</option>
-  <option value="Footwear">Footwear (জুতো ও চটি)</option>
-  <option value="Jewelry & Watches">Jewelry & Watches (গয়না ও ঘড়ি)</option>
-  <option value="Bags & Luggage">Bags & Luggage (ব্যাগ ও ট্রাভেল লাগেজ)</option>
-
-  <!-- রূপচর্চা ও স্বাস্থ্যসেবা -->
-  <option value="Beauty & Cosmetics">Beauty & Cosmetics (প্রসাধন সামগ্রী)</option>
-  <option value="Saloon">Saloon (সেলুন)</option>
-  <option value="Beauty Parlour">Beauty Parlour(বিউটি পার্লার)</option>
-  <option value="Health & Personal Care">Health & Personal Care (স্বাস্থ্য ও ব্যক্তিগত যত্ন)</option>
-  <option value="Medicine & Pharmacy">Medicine & Pharmacy (ঔষধ ও ফার্মেসি / অ্যালোপ্যাথিক)</option>
-  <option value="Homoeopathic">Homoeopathic (হোমিওপ্যাথিক ঔষধ ও ক্লিনিক)</option>
+  <!-- A -->
+  <option value="Agriculture Products">Agriculture Products (বীজ, সার ও কীটনাশক)</option>
+  <option value="Auto Garage & Repair">Auto Garage & Repair (গাড়ি/বাইক সার্ভিসিং ও গ্যারেজ)</option>
+  <option value="Automobile Parts">Automobile Parts (বাইক ও গাড়ির পার্টস)</option>
   <option value="Ayurvedic Products">Ayurvedic Products (আয়ুর্বেদিক ও ভেষজ পণ্য)</option>
-  <option value="Opticals & Eye Care">Opticals & Eye Care (চশমা ও অপটিক্যালস)</option>
 
-  <!-- গ্যাজেট ও ইলেকট্রনিক্স -->
-  <option value="Mobile & Accessories">Mobile & Accessories (মোবাইল ও এক্সেসরিজ)</option>
-  <option value="Computer & Laptop">Computer & Laptop (কম্পিউটার ও ল্যাপটপ)</option>
-  <option value="Electronics">Electronics (টিভি, সাউন্ড সিস্টেম ও গ্যাজেট)</option>
-  <option value="Home Appliances">Home Appliances (ফ্রিজ, ওয়াশিং মেশিন ও হোম অ্যাপ্লায়েন্স)</option>
-  <option value="CCTV & Security">CCTV & Security (সিসিটিভি ও সিকিউরিটি সিস্টেম)</option>
-
-  <!-- ঘরবাড়ি ও নির্মাণসামগ্রী -->
-  <option value="Furniture">Furniture (কাঠ ও স্টিলের আসবাবপত্র)</option>
-  <option value="Home Decor">Home Decor (গৃহসজ্জা সামগ্রী)</option>
-  <option value="Kitchen & Dining">Kitchen & Dining (বাসনপত্র ও রান্নাঘরের সামগ্রী)</option>
-  <option value="Hardware & Tools">Hardware & Tools (হার্ডওয়্যার ও যন্ত্রপাতি)</option>
-  <option value="Hardware & Paints">Hardware & Paints (রং ও পেইন্টস)</option>
-  <option value="Construction Materials">Construction Materials (সিমেন্ট, রড ও নির্মাণ সামগ্রী)</option>
-  <option value="Sanitary & Plumbing">Sanitary & Plumbing (প্লাম্বিং ও বাথরুম ফিটিংস)</option>
-  <option value="Electrical Goods">Electrical Goods (বৈদ্যুতিক তার, সুইচ ও লাইট)</option>
-
-  <!-- শিক্ষা ও বিনোদন -->
+  <!-- B -->
+  <option value="Bags & Luggage">Bags & Luggage (ব্যাগ ও ট্রাভেল লাগেজ)</option>
+  <option value="Bakery & Cakes">Bakery & Cakes (বেকারি ও কেক)</option>
+  <option value="Beauty & Cosmetics">Beauty & Cosmetics (প্রসাধন সামগ্রী)</option>
+  <option value="Beauty Parlour">Beauty Parlour (বিউটি পার্লার)</option>
+  <option value="Bicycle Store">Bicycle Store (সাইকেল ও সাইকেল পার্টস)</option>
   <option value="Books & Stationery">Books & Stationery (বই, খাতা ও স্টেশনারি)</option>
-  <option value="Private Tuition">Private Tuition (প্রাইভেট টিউশন)</option>
+
+  <!-- C -->
+  <option value="CCTV & Security">CCTV & Security (সিসিটিভি ও সিকিউরিটি সিস্টেম)</option>
   <option value="Coaching Centre">Coaching Centre (কোচিং সেন্টার)</option>
-  <option value="Sports & Fitness">Sports & Fitness (খেলাধুলা ও শরীরচর্চা)</option>
-  <option value="Toys & Games">Toys & Games (খেলনা ও গেমস)</option>
+  <option value="Computer & Laptop">Computer & Laptop (কম্পিউটার ও ল্যাপটপ)</option>
+  <option value="Construction Materials">Construction Materials (সিমেন্ট, রড ও নির্মাণ সামগ্রী)</option>
+  <option value="Courier & Parcel">Courier & Parcel (কুরিয়ার ও পার্সেল সার্ভিস)</option>
+  <option value="Cyber Cafe & Online Services">Cyber Cafe & Online Services (সাইবার ক্যাফে ও জেরক্স)</option>
+
+  <!-- D -->
+  <option value="Dairy Products">Dairy Products (দুধ ও দুগ্ধজাত সামগ্রী)</option>
+
+  <!-- E -->
+  <option value="Electrical Goods">Electrical Goods (বৈদ্যুতিক তার, সুইচ ও লাইট)</option>
+  <option value="Electronics">Electronics (টিভি, সাউন্ড সিস্টেম ও গ্যাজেট)</option>
+
+  <!-- F -->
+  <option value="Fashion & Clothing">Fashion & Clothing (পোশাক ও বস্ত্র)</option>
+  <option value="Food & Beverages">Food & Beverages (খাবার ও পানীয়)</option>
+  <option value="Footwear">Footwear (জুতো ও চটি)</option>
+  <option value="Fruits & Vegetables">Fruits & Vegetables (শাকসবজি ও ফল)</option>
+  <option value="Furniture">Furniture (কাঠ ও স্টিলের আসবাবপত্র)</option>
+
+  <!-- G -->
+  <option value="Gift Items">Gift Items (উপহার সামগ্রী)</option>
+  <option value="Groceries">Groceries (মুদিখানা)</option>
+
+  <!-- H -->
+  <option value="Handicrafts">Handicrafts (হস্তশিল্প ও কুটিরশিল্প)</option>
+  <option value="Hardware & Paints">Hardware & Paints (রং ও পেইন্টস)</option>
+  <option value="Hardware & Tools">Hardware & Tools (হার্ডওয়্যার ও যন্ত্রপাতি)</option>
+  <option value="Health & Personal Care">Health & Personal Care (স্বাস্থ্য ও ব্যক্তিগত যত্ন)</option>
+  <option value="Home Appliances">Home Appliances (ফ্রিজ, ওয়াশিং মেশিন ও হোম অ্যাপ্লায়েন্স)</option>
+  <option value="Home Decor">Home Decor (গৃহসজ্জা সামগ্রী)</option>
+  <option value="Homoeopathic">Homoeopathic (হোমিওপ্যাথিক ঔষধ ও ক্লিনিক)</option>
+
+  <!-- I -->
+  <option value="Income Tax Return">Income Tax Return (ইনকাম ট্যাক্স রিটার্ন ফাইল)</option>
+
+  <!-- J -->
+  <option value="Jewelry & Watches">Jewelry & Watches (গয়না ও ঘড়ি)</option>
+
+  <!-- K -->
+  <option value="Kids Fashion">Kids Fashion (বাচ্চাদের পোশাক)</option>
+  <option value="Kitchen & Dining">Kitchen & Dining (বাসনপত্র ও রান্নাঘরের সামগ্রী)</option>
+
+  <!-- L -->
+  <option value="Local Products">Local Products (স্থানীয় ও দেশি পণ্য)</option>
+
+  <!-- M -->
+  <option value="Meat, Fish & Egg">Meat, Fish & Egg (মাছ, মাংস ও ডিম)</option>
+  <option value="Medicine & Pharmacy">Medicine & Pharmacy (ঔষধ ও ফার্মেসি / অ্যালোপ্যাথিক)</option>
+  <option value="Men's Fashion">Men's Fashion (পুরুষদের পোশাক)</option>
+  <option value="Mobile & Accessories">Mobile & Accessories (মোবাইল ও এক্সেসরিজ)</option>
   <option value="Musical Instruments">Musical Instruments (বাদ্যযন্ত্র)</option>
 
-  <!-- উপহার, কুটিরশিল্প ও কৃষি -->
-  <option value="Gift Items">Gift Items (উপহার সামগ্রী)</option>
-  <option value="Handicrafts">Handicrafts (হস্তশিল্প ও কুটিরশিল্প)</option>
-  <option value="Local Products">Local Products (স্থানীয় ও দেশি পণ্য)</option>
-  <option value="Agriculture Products">Agriculture Products (বীজ, সার ও কীটনাশক)</option>
+  <!-- N -->
   <option value="Nursery & Plants">Nursery & Plants (গাছপালা ও নার্সারি)</option>
-  <option value="Pet Supplies & Feed">Pet Supplies & Feed (পোষা প্রাণীর খাবার ও সামগ্রী)</option>
 
-  <!-- যানবাহন ও যন্ত্রাংশ -->
-  <option value="Automobile Parts">Automobile Parts (বাইক ও গাড়ির পার্টস)</option>
-  <option value="Auto Garage & Repair">Auto Garage & Repair (গাড়ি/বাইক সার্ভিসিং ও গ্যারেজ)</option>
-  <option value="Bicycle Store">Bicycle Store (সাইকেল ও সাইকেল পার্টস)</option>
-
-  <!-- পেশাদার ও অনলাইন সেবা -->
-  <option value="Cyber Cafe & Online Services">Cyber Cafe & Online Services (সাইবার ক্যাফে ও জেরক্স)</option>
-  <option value="Photography & Studio">Photography & Studio (ফটোগ্রাফি ও স্টুডিও)</option>
-  <option value="Tax Software">Tax Software (ট্যাক্স সফটওয়্যার)</option>
-  <option value="Tax Consultant">Tax Consultant (ট্যাক্স কনসালট্যান্ট)</option>
-  <option value="Income Tax Return">Income Tax Return (ইনকাম ট্যাক্স রিটার্ন ফাইল)</option>
+  <!-- O -->
+  <option value="Opticals & Eye Care">Opticals & Eye Care (চশমা ও অপটিক্যালস)</option>
   <option value="Other Software">Other Software (অন্যান্য সফটওয়্যার ও ওয়েব সার্ভিস)</option>
+
+  <!-- P -->
+  <option value="Pet Supplies & Feed">Pet Supplies & Feed (পোষা প্রাণীর খাবার ও সামগ্রী)</option>
+  <option value="Photography & Studio">Photography & Studio (ফটোগ্রাফি ও স্টুডিও)</option>
   <option value="Printing & Flex">Printing & Flex (প্রিন্টিং, ফ্লেক্স ও ব্যানার)</option>
-  <option value="Courier & Parcel">Courier & Parcel (কুরিয়ার ও পার্সেল সার্ভিস)</option>
+  <option value="Private Tuition">Private Tuition (প্রাইভেট টিউশন)</option>
+
+  <!-- R -->
+  <option value="Restaurant & Cafe">Restaurant & Cafe (হোটেল, রেস্তোরাঁ ও ক্যাফে)</option>
+
+  <!-- S -->
+  <option value="Saloon">Saloon (সেলুন)</option>
+  <option value="Sanitary & Plumbing">Sanitary & Plumbing (প্লাম্বিং ও বাথরুম ফিটিংস)</option>
+  <option value="Sports & Fitness">Sports & Fitness (খেলাধুলা ও শরীরচর্চা)</option>
+  <option value="Sweets & Confectionery">Sweets & Confectionery (মিষ্টি ও মিষ্টিজাত দ্রব্য)</option>
+
+  <!-- T -->
+  <option value="Tailoring & Boutique">Tailoring & Boutique (দর্জি ও বুটিক)</option>
+  <option value="Tax Consultant">Tax Consultant (ট্যাক্স কনসালট্যান্ট)</option>
+  <option value="Tax Software">Tax Software (ট্যাক্স সফটওয়্যার)</option>
+  <option value="Toys & Games">Toys & Games (খেলনা ও গেমস)</option>
+
+  <!-- W -->
+  <option value="Women's Fashion">Women's Fashion (মহিলাদের পোশাক)</option>
 
   <!-- অন্যান্য -->
   <option value="Other">Other Services (অন্যান্য)</option>
 </select>
-
 
     <label for="timing">দোকান খোলা/বন্ধের সময় (Opening Hours)</label>
     <input id="timing" placeholder="যেমন: সকাল ৮:০০ - রাত ৯:০০">
