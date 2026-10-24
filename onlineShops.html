@@ -67,7 +67,7 @@ body {
   background: #fff;
   outline: none;
   cursor: pointer;
-  max-width: 175px;
+  max-width: 275px;
   font-weight: 500;
 }
 
@@ -574,11 +574,17 @@ body { top: 0px !important; }
   <!-- ম্যাপ বক্স -->
   <div class="card" style="padding: 10px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
-      <span style="font-weight:bold; font-size:0.95rem;">🗺️ ম্যাপে দোকানসমূহের অবস্থান</span>
+
       <button class="loc-btn" onclick="getUserLiveLocation(true)">🎯 আমার লোকেশন আপডেট করুন</button>
     </div>
 
     <div id="map"></div>
+         
+<div style="background: #f5f2ae; border: 1px solid #1e4de8; color: blue; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 0.95rem; width: 100%;">
+  📢 <strong>ভোকাল ফর লোকাল (Vocal for Local):</strong> বর্তমানে মোট <strong id="dynamicShopCount">০</strong> টি প্রতিষ্ঠান যুক্ত আছে। 
+  <br><strong>এখনই আপনার প্রতিষ্ঠানটি যুক্ত করুন!</strong>
+</div>
+    
   </div>
 
   <!-- অফিসিয়াল বার্তা -->
@@ -899,6 +905,13 @@ async function loadShops() {
       body: JSON.stringify({ action: "getProducts" })
     });
     allShops = await res.json();
+
+    // স্বয়ংক্রিয়ভাবে মোট সংখ্যাটি এখানে বসবে:
+    const countElem = document.getElementById("dynamicShopCount");
+    if (countElem) {
+      countElem.innerText = allShops.length;
+    }
+
     filterShopsOnMap();
   } catch (err) {
     console.error("ডাটা লোড হতে সমস্যা হয়েছে:", err);
