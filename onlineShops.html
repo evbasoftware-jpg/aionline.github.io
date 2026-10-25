@@ -406,7 +406,7 @@ body { top: 0px !important; }
     <label for="shopName">দোকানের নাম (Shop Name) *</label>
     <input id="shopName" placeholder="যেমন: মা তারা ভাণ্ডার">
 
-    <label for="ownerName">দোকানদারের নাম (Owner Name)</label>
+    <label for="ownerName">দোকানদারের নাম (Owner Name) *</label>
     <input id="ownerName" placeholder="দোকানদারের নাম লিখুন">
 
     <label for="category">ব্যবসার বিভাগ (Category)</label>
@@ -1053,8 +1053,8 @@ async function saveShop() {
     return;
   }
 
-  if (!shopName || !mobile) {
-    alert("দয়া করে দোকানের নাম এবং মোবাইল নম্বর পূরণ করুন।");
+  if (!shopName || !ownerName || !mobile) {
+    alert("দয়া করে দোকানের নাম, দোকানদারের নাম এবং মোবাইল নম্বর পূরণ করুন।");
     return;
   }
 
