@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>🌐 ভাষা অনুবাদ ও ভয়েস ট্রান্সলেটর</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 650px;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: fit-content;
+    }
+
+    .header {
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid #e2e8f0;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ভাষা নির্বাচন বার */
+    .lang-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .lang-select-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lang-select-box label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    select {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1.5px solid #0284c7;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .swap-btn {
+      width: 40px;
+      height: 40px;
+      margin-top: 16px;
+      border-radius: 50%;
+      border: 1.5px solid #0284c7;
+      background: #e0f2fe;
+      color: #0284c7;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .swap-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* লেখার জায়গা ও আউটপুট বক্স */
+    .text-card {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s;
+    }
+
+    .text-card:focus-within {
+      border-color: #0284c7;
+    }
+
+    .output-card {
+      background: #f0f9ff;
+      border-color: #7dd3fc;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .clear-btn {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 115px;
+      border: none;
+      outline: none;
+      resize: vertical;
+      font-size: 16px;
+      line-height: 1.5;
+      background: transparent;
+      color: #0f172a;
+    }
+
+    .output-text {
+      min-height: 115px;
+      font-size: 16.5px;
+      line-height: 1.55;
+      color: #0369a1;
+      font-weight: 600;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .placeholder-text {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    /* অ্যাকশন বাটনসমূহ (ভয়েস, কপি, শেয়ার) */
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 95px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #1e293b;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .action-btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-voice {
+      background: #ecfdf5;
+      border-color: #6ee7b7;
+      color: #047857;
+    }
+
+    .btn-voice.speaking {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #ffffff;
+      animation: pulse 1.2s infinite;
+    }
+
+    .btn-copy {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #1d4ed8;
+    }
+
+    .btn-share {
+      background: #fefce8;
+      border-color: #fde047;
+      color: #a16207;
+    }
+
+    .translate-main-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      transition: transform 0.15s;
+    }
+
+    .translate-main-btn:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.75; }
+      100% { opacity: 1; }
+    }
+
+    /* টোস্ট নোটিফিকেশন */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 9999;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <h2>🌐 অনুবাদ ও ভয়েস ট্রান্সলেটর</h2>
+  </div>
+
+  <!-- ভাষা নির্বাচন -->
+  <div class="lang-controls">
+    <div class="lang-select-box">
+      <label>কোন ভাষা থেকে (Source):</label>
+      <select id="sourceLang">
+        <option value="auto" selected>✨ স্বয়ংক্রিয় শনাক্ত (Auto)</option>
+      </select>
+    </div>
+
+    <button type="button" class="swap-btn" onclick="swapLanguages()" title="ভাষা অদলবদল করুন">⇄</button>
+
+    <div class="lang-select-box">
+      <label>কোন ভাষায় অনুবাদ হবে (Target):</label>
+      <select id="targetLang"></select>
+    </div>
+  </div>
+
+  <!-- মূল লেখার জায়গা (Input) -->
+  <div class="text-card">
+    <div class="card-top">
+      <span>✍️ আপনার লেখা লিখুন বা পেস্ট করুন:</span>
+      <button type="button" class="clear-btn" onclick="clearAllText()">✕ মুছুন</button>
+    </div>
+    <textarea id="inputText" placeholder="এখানে যেকোনো ভাষায় কিছু লিখুন..." oninput="scheduleAutoTranslate()"></textarea>
+    
+    <div class="action-bar">
+      <button type="button" class="action-btn btn-voice" id="btnSpeakInput" onclick="speakText('input')">
+        🔊 ভয়েসে শুনুন
+      </button>
+      <button type="button" class="action-btn btn-copy" onclick="copyText('input')">
+        📋 কপি
+      </button>
+      <button type="button" class="action-btn btn-share" onclick="shareText('input')">
+        📤 শেয়ার
+      </button>
+    </div>
+  </div>
+
+  <!-- অনুবাদ বাটন -->
+  <button type="button" class="translate-main-btn" id="translateBtn" onclick="performTranslation()">
+    🔄 অনুবাদ করুন (Translate)
+  </button>
+
+  <!-- অনুবাদকৃত ফলাফল (Output) -->
+  <div class="text-card output-card">
+    <div class="card-top">
+      <span>✅ অনুবাদকৃত লেখা:</span>
+      <span id="statusIndicator" style="font-size: 11px; color: #0284c7;"></span>
+    </div>
+    <div id="outputText" class="output-text placeholder-text">অনুবাদ এখানে দেখা যাবে...</div>
+
+    <div class="action-bar">
+      <button type="button" class="action-btn btn-voice" id="btnSpeakOutput" onclick="speakText('output')">
+        🔊 ভয়েসে শুনুন
+      </button>
+      <button type="button" class="action-btn btn-copy" onclick="copyText('output')">
+        📋 কপি
+      </button>
+      <button type="button" class="action-btn btn-share" onclick="shareText('output')">
+        📤 শেয়ার
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ভয়েস অডিও প্লেয়ার -->
+<audio id="ttsAudioPlayer" style="display:none;"></audio>
+
+<!-- টোস্ট বার্তা -->
+<div id="toastMsg" class="toast"></div>
+
+<script>
+  const LANGUAGES = [
+    { code: "bn", name: "বাংলা (Bengali)" },
+    { code: "en", name: "English (ইংরেজি)" },
+    { code: "hi", name: "हिन्दी (Hindi)" },
+    { code: "ar", name: "العربية (Arabic)" },
+    { code: "as", name: "অসমীয়া (Assamese)" },
+    { code: "ur", name: "اردو (Urdu)" },
+    { code: "ta", name: "தமிழ் (Tamil)" },
+    { code: "te", name: "తెలుగు (Telugu)" },
+    { code: "mr", name: "मराठी (Marathi)" },
+    { code: "gu", name: "ગુજરાતી (Gujarati)" },
+    { code: "kn", name: "ಕನ್ನಡ (Kannada)" },
+    { code: "ml", name: "മലയാളം (Malayalam)" },
+    { code: "pa", name: "ਪੰਜਾਬੀ (Punjabi)" },
+    { code: "or", name: "ଓଡ଼ିଆ (Odia)" },
+    { code: "ne", name: "नेपाली (Nepali)" },
+    { code: "es", name: "Español (Spanish)" },
+    { code: "fr", name: "Français (French)" },
+    { code: "de", name: "Deutsch (German)" },
+    { code: "ru", name: "Русский (Russian)" },
+    { code: "zh-CN", name: "中文 (Chinese)" },
+    { code: "ja", name: "日本語 (Japanese)" },
+    { code: "ko", name: "한국어 (Korean)" },
+    { code: "pt", name: "Português (Portuguese)" },
+    { code: "it", name: "Italiano (Italian)" },
+    { code: "tr", name: "Türkçe (Turkish)" },
+    { code: "id", name: "Bahasa Indonesia" },
+    { code: "ms", name: "Bahasa Melayu" },
+    { code: "th", name: "ไทย (Thai)" },
+    { code: "vi", name: "Tiếng Việt (Vietnamese)" },
+    { code: "fa", name: "فارسی (Persian)" }
+  ];
+
+  let translatedResult = "";
+  let detectedSourceLang = "bn";
+  let typingTimer = null;
+  let activeVoiceBtnId = null;
+
+  // ড্রপডাউনে ভাষা লোড করা
+  function initLanguages() {
+    const srcSelect = document.getElementById("sourceLang");
+    const tgtSelect = document.getElementById("targetLang");
+
+    LANGUAGES.forEach(lang => {
+      const opt1 = document.createElement("option");
+      opt1.value = lang.code;
+      opt1.textContent = lang.name;
+      srcSelect.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = lang.code;
+      opt2.textContent = lang.name;
+      if (lang.code === "en") opt2.selected = true; // ডিফল্ট টার্গেট ভাষা English
+      tgtSelect.appendChild(opt2);
+    });
+  }
+
+  initLanguages();
+
+  // ভাষা অদলবদল
+  function swapLanguages() {
+    const srcSelect = document.getElementById("sourceLang");
+    const tgtSelect = document.getElementById("targetLang");
+    const inputEl = document.getElementById("inputText");
+
+    if (srcSelect.value === "auto") {
+      srcSelect.value = tgtSelect.value;
+      tgtSelect.value = detectedSourceLang || "bn";
+    } else {
+      const temp = srcSelect.value;
+      srcSelect.value = tgtSelect.value;
+      tgtSelect.value = temp;
+    }
+
+    if (translatedResult.trim()) {
+      inputEl.value = translatedResult;
+      performTranslation();
+    }
+  }
+
+  // টাইপ করার পর স্বয়ংক্রিয় অনুবাদ
+  function scheduleAutoTranslate() {
+    clearTimeout(typingTimer);
+    const text = document.getElementById("inputText").value.trim();
+    if (!text) {
+      resetOutput();
+      return;
+    }
+    typingTimer = setTimeout(performTranslation, 700);
+  }
+
+  function resetOutput() {
+    translatedResult = "";
+    const outEl = document.getElementById("outputText");
+    outEl.textContent = "অনুবাদ এখানে দেখা যাবে...";
+    outEl.classList.add("placeholder-text");
+    document.getElementById("statusIndicator").textContent = "";
+  }
+
+  function clearAllText() {
+    stopSpeaking();
+    document.getElementById("inputText").value = "";
+    resetOutput();
+    document.getElementById("inputText").focus();
+  }
+
+  // অনুবাদ ফাংশন
+  async function performTranslation() {
+    const rawText = document.getElementById("inputText").value.trim();
+    if (!rawText) {
+      resetOutput();
+      return;
+    }
+
+    const sl = document.getElementById("sourceLang").value;
+    const tl = document.getElementById("targetLang").value;
+    const statusEl = document.getElementById("statusIndicator");
+    const outEl = document.getElementById("outputText");
+
+    statusEl.textContent = "⏳ অনুবাদ হচ্ছে...";
+
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(rawText)}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network error");
+
+      const data = await response.json();
+      if (data && Array.isArray(data[0])) {
+        translatedResult = data[0].map(item => item[0] || "").join("");
+        if (data[2]) detectedSourceLang = data[2];
+
+        outEl.textContent = translatedResult;
+        outEl.classList.remove("placeholder-text");
+        statusEl.textContent = "✓ সম্পন্ন";
+      }
+    } catch (err) {
+      // ব্যাকআপ অনুবাদ API
+      try {
+        const srcCode = sl === "auto" ? "bn" : sl;
+        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(rawText.slice(0, 480))}&langpair=${encodeURIComponent(srcCode + "|" + tl)}`;
+        const mmRes = await fetch(mmUrl);
+        const mmData = await mmRes.json();
+        if (mmData && mmData.responseData && mmData.responseData.translatedText) {
+          translatedResult = mmData.responseData.translatedText;
+          outEl.textContent = translatedResult;
+          outEl.classList.remove("placeholder-text");
+          statusEl.textContent = "✓ সম্পন্ন";
+          return;
+        }
+      } catch (_) {}
+
+      statusEl.textContent = "❌ অনুবাদ ব্যর্থ হয়েছে";
+      showToast("ইন্টারনেট সংযোগ পরীক্ষা করুন");
+    }
+  }
+
+  // লেখা কপি করা
+  async function copyText(type) {
+    const text = type === "input"
+      ? document.getElementById("inputText").value.trim()
+      : translatedResult.trim();
+
+    if (!text) {
+      showToast("কপি করার মতো কোনো লেখা নেই!");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("✅ লেখা কপি করা হয়েছে!");
+    } catch (_) {
+      const tempArea = document.createElement("textarea");
+      tempArea.value = text;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempArea);
+      showToast("✅ লেখা কপি করা হয়েছে!");
+    }
+  }
+
+  // লেখা শেয়ার করা
+  async function shareText(type) {
+    const text = type === "input"
+      ? document.getElementById("inputText").value.trim()
+      : translatedResult.trim();
+
+    if (!text) {
+      showToast("শেয়ার করার মতো কোনো লেখা নেই!");
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "অনুবাদকৃত বার্তা",
+          text: text
+        });
+      } catch (_) {}
+    } else {
+      // ওয়েব শেয়ার সাপোর্ট না করলে সরাসরি হোয়াটসঅ্যাপে শেয়ার অপশন খুলবে
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, "_blank");
+    }
+  }
+
+  // ভয়েস ম্যাসেজ হিসাবে শোনা (Text-to-Speech)
+  function speakText(type) {
+    const btnId = type === "input" ? "btnSpeakInput" : "btnSpeakOutput";
+    const btnEl = document.getElementById(btnId);
+
+    // আগে থেকে চলতে থাকলে বন্ধ করুন
+    if (activeVoiceBtnId === btnId) {
+      stopSpeaking();
+      return;
+    }
+    stopSpeaking();
+
+    const text = type === "input"
+      ? document.getElementById("inputText").value.trim()
+      : translatedResult.trim();
+
+    if (!text) {
+      showToast("শোনার মতো কোনো লেখা নেই!");
+      return;
+    }
+
+    let lang = type === "input"
+      ? (document.getElementById("sourceLang").value === "auto" ? detectedSourceLang : document.getElementById("sourceLang").value)
+      : document.getElementById("targetLang").value;
+
+    // বাংলা লেখা শনাক্ত হলে ভাষা bn সেট করা
+    if (/[\u0980-\u09FF]/.test(text) && type === "input" && document.getElementById("sourceLang").value === "auto") {
+      lang = "bn";
+    }
+
+    activeVoiceBtnId = btnId;
+    btnEl.classList.add("speaking");
+    btnEl.innerHTML = "⏹️ বন্ধ করুন";
+
+    // অ্যান্ড্রয়েড অ্যাপ ব্রিজ থাকলে নেটিভ ভয়েস ব্যবহার
+    if (window.AndroidBridge && typeof window.AndroidBridge.speakAnnouncement === "function") {
+      window.AndroidBridge.speakAnnouncement(text, lang);
+      setTimeout(stopSpeaking, Math.max(3000, text.length * 90));
+      return;
+    }
+
+    // অনলাইন ও ব্রাউজার ভয়েস প্লেব্যাক
+    const audioPlayer = document.getElementById("ttsAudioPlayer");
+    const shortChunk = text.slice(0, 190);
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(shortChunk)}&tl=${encodeURIComponent(lang)}&client=tw-ob`;
+
+    audioPlayer.src = ttsUrl;
+    audioPlayer.onended = () => stopSpeaking();
+    audioPlayer.onerror = () => fallbackWebSpeech(text, lang);
+
+    audioPlayer.play().catch(() => {
+      fallbackWebSpeech(text, lang);
+    });
+  }
+
+  function fallbackWebSpeech(text, lang) {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang || "bn-IN";
+      utter.rate = 0.95;
+      utter.onend = () => stopSpeaking();
+      utter.onerror = () => stopSpeaking();
+      window.speechSynthesis.speak(utter);
+    } else {
+      stopSpeaking();
+      showToast("ভয়েস প্লেব্যাক সমর্থিত নয়");
+    }
+  }
+
+  function stopSpeaking() {
+    const audioPlayer = document.getElementById("ttsAudioPlayer");
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer.currentTime = 0;
+    }
+    if ("speechSynthesis" in window) {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
+    if (activeVoiceBtnId) {
+      const oldBtn = document.getElementById(activeVoiceBtnId);
+      if (oldBtn) {
+        oldBtn.classList.remove("speaking");
+        oldBtn.innerHTML = "🔊 ভয়েসে শুনুন";
+      }
+      activeVoiceBtnId = null;
+    }
+  }
+
+  // ছোট পপআপ বার্তা
+  function showToast(msg) {
+    const toast = document.getElementById("toastMsg");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2400);
+  }
+</script>
+
+</body>
+</html>
