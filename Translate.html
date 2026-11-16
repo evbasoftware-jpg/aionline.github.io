@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>🌐 ভাষা অনুবাদ ও ভয়েস ট্রান্সলেটর</title>
+  <title>🌐 গুগল ১৩৩+ ভাষা অনুবাদ ও ভয়েস ট্রান্সলেটর</title>
   <style>
     * {
       box-sizing: border-box;
@@ -42,7 +42,7 @@
 
     .header h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 19px;
       color: #0284c7;
       display: flex;
       align-items: center;
@@ -67,6 +67,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
 
     .lang-select-box label {
@@ -75,17 +76,27 @@
       color: #64748b;
     }
 
-    select {
+    .lang-picker-btn {
       width: 100%;
-      padding: 9px 10px;
+      padding: 10px 10px;
       border-radius: 8px;
       border: 1.5px solid #0284c7;
       background: #ffffff;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #0f172a;
-      outline: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .lang-picker-btn span.lbl-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .swap-btn {
@@ -108,6 +119,56 @@
 
     .swap-btn:active {
       transform: scale(0.92);
+    }
+
+    /* ভয়েস (Male / Female) নির্বাচন বার */
+    .voice-gender-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      gap: 10px;
+    }
+
+    .voice-gender-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .gender-toggle-group {
+      display: flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+      gap: 4px;
+    }
+
+    .gender-btn {
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: #475569;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .gender-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);
     }
 
     /* লেখার জায়গা ও আউটপুট বক্স */
@@ -153,7 +214,7 @@
 
     textarea {
       width: 100%;
-      min-height: 115px;
+      min-height: 110px;
       border: none;
       outline: none;
       resize: vertical;
@@ -164,7 +225,7 @@
     }
 
     .output-text {
-      min-height: 115px;
+      min-height: 110px;
       font-size: 16.5px;
       line-height: 1.55;
       color: #0369a1;
@@ -252,13 +313,109 @@
       transform: scale(0.98);
     }
 
+    /* ভাষা নির্বাচনের সার্চ মডাল */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      max-height: 82vh;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .modal-header h4 {
+      margin: 0;
+      color: #0284c7;
+      font-size: 16px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #64748b;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .lang-search-box {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    .lang-search-box:focus {
+      border-color: #0284c7;
+    }
+
+    .lang-list-scroll {
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .lang-item-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      background: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+    }
+
+    .lang-item-btn.active {
+      background: #f0f9ff;
+      border-color: #0284c7;
+      color: #0284c7;
+      font-weight: 700;
+    }
+
     @keyframes pulse {
       0% { opacity: 1; }
       50% { opacity: 0.75; }
       100% { opacity: 1; }
     }
 
-    /* টোস্ট নোটিফিকেশন */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -274,7 +431,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s;
-      z-index: 9999;
+      z-index: 99999;
     }
 
     .toast.show {
@@ -286,23 +443,40 @@
 
 <div class="app-container">
   <div class="header">
-    <h2>🌐 অনুবাদ ও ভয়েস ট্রান্সলেটর</h2>
+    <h2>🌐 অনুবাদ ও ভয়েস ট্রান্সলেটর (১৩৩+ ভাষা)</h2>
   </div>
 
-  <!-- ভাষা নির্বাচন -->
+  <!-- ভাষা নির্বাচন বার -->
   <div class="lang-controls">
     <div class="lang-select-box">
       <label>কোন ভাষা থেকে (Source):</label>
-      <select id="sourceLang">
-        <option value="auto" selected>✨ স্বয়ংক্রিয় শনাক্ত (Auto)</option>
-      </select>
+      <button type="button" class="lang-picker-btn" onclick="openLangModal('source')">
+        <span class="lbl-text" id="sourceLangLabel">✨ স্বয়ংক্রিয় শনাক্ত (Auto)</span>
+        <span style="color:#0284c7;font-size:11px;">▼</span>
+      </button>
     </div>
 
     <button type="button" class="swap-btn" onclick="swapLanguages()" title="ভাষা অদলবদল করুন">⇄</button>
 
     <div class="lang-select-box">
       <label>কোন ভাষায় অনুবাদ হবে (Target):</label>
-      <select id="targetLang"></select>
+      <button type="button" class="lang-picker-btn" onclick="openLangModal('target')">
+        <span class="lbl-text" id="targetLangLabel">English (English)</span>
+        <span style="color:#0284c7;font-size:11px;">▼</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ভয়েস (Male / Female) নির্বাচন অপশন -->
+  <div class="voice-gender-bar">
+    <span class="voice-gender-label">🎙️ ভয়েস কণ্ঠ নির্বাচন:</span>
+    <div class="gender-toggle-group">
+      <button type="button" id="btnGenderFemale" class="gender-btn active" onclick="setVoiceGender('female')">
+        👩 Female
+      </button>
+      <button type="button" id="btnGenderMale" class="gender-btn" onclick="setVoiceGender('male')">
+        👨 Male
+      </button>
     </div>
   </div>
 
@@ -336,7 +510,7 @@
   <div class="text-card output-card">
     <div class="card-top">
       <span>✅ অনুবাদকৃত লেখা:</span>
-      <span id="statusIndicator" style="font-size: 11px; color: #0284c7;"></span>
+      <span id="statusIndicator" style="font-size: 11.5px; color: #0284c7;"></span>
     </div>
     <div id="outputText" class="output-text placeholder-text">অনুবাদ এখানে দেখা যাবে...</div>
 
@@ -354,6 +528,18 @@
   </div>
 </div>
 
+<!-- ভাষা নির্বাচনের সার্চ মডাল -->
+<div id="languageModal" class="modal-overlay hidden" onclick="if(event.target===this) closeLangModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h4 id="modalTitle">🌐 ভাষা নির্বাচন করুন (১৩৩+ ভাষা)</h4>
+      <button type="button" class="modal-close" onclick="closeLangModal()">&times;</button>
+    </div>
+    <input type="text" id="langSearchInput" class="lang-search-box" placeholder="🔍 ভাষা খুঁজুন (যেমন: Bengali, Hindi, Arabic, French)..." oninput="renderLanguageOptions(this.value)">
+    <div id="languageOptionsList" class="lang-list-scroll"></div>
+  </div>
+</div>
+
 <!-- ভয়েস অডিও প্লেয়ার -->
 <audio id="ttsAudioPlayer" style="display:none;"></audio>
 
@@ -361,79 +547,266 @@
 <div id="toastMsg" class="toast"></div>
 
 <script>
-  const LANGUAGES = [
-    { code: "bn", name: "বাংলা (Bengali)" },
-    { code: "en", name: "English (ইংরেজি)" },
-    { code: "hi", name: "हिन्दी (Hindi)" },
-    { code: "ar", name: "العربية (Arabic)" },
-    { code: "as", name: "অসমীয়া (Assamese)" },
-    { code: "ur", name: "اردو (Urdu)" },
-    { code: "ta", name: "தமிழ் (Tamil)" },
-    { code: "te", name: "తెలుగు (Telugu)" },
-    { code: "mr", name: "मराठी (Marathi)" },
-    { code: "gu", name: "ગુજરાતી (Gujarati)" },
-    { code: "kn", name: "ಕನ್ನಡ (Kannada)" },
-    { code: "ml", name: "മലയാളം (Malayalam)" },
-    { code: "pa", name: "ਪੰਜਾਬੀ (Punjabi)" },
-    { code: "or", name: "ଓଡ଼ିଆ (Odia)" },
-    { code: "ne", name: "नेपाली (Nepali)" },
-    { code: "es", name: "Español (Spanish)" },
-    { code: "fr", name: "Français (French)" },
-    { code: "de", name: "Deutsch (German)" },
-    { code: "ru", name: "Русский (Russian)" },
-    { code: "zh-CN", name: "中文 (Chinese)" },
-    { code: "ja", name: "日本語 (Japanese)" },
-    { code: "ko", name: "한국어 (Korean)" },
-    { code: "pt", name: "Português (Portuguese)" },
-    { code: "it", name: "Italiano (Italian)" },
-    { code: "tr", name: "Türkçe (Turkish)" },
-    { code: "id", name: "Bahasa Indonesia" },
-    { code: "ms", name: "Bahasa Melayu" },
-    { code: "th", name: "ไทย (Thai)" },
-    { code: "vi", name: "Tiếng Việt (Vietnamese)" },
-    { code: "fa", name: "فارسی (Persian)" }
+  // গুগল ট্রান্সলেটের সম্পূর্ণ ১৩৩+ ভাষার তালিকা
+  const GOOGLE_LANGUAGES = [
+    // প্রধান ভারতীয় ও আঞ্চলিক ভাষা
+    { code: "bn", name: "বাংলা", eng: "Bengali" },
+    { code: "en", name: "English", eng: "English" },
+    { code: "hi", name: "हिन्दी", eng: "Hindi" },
+    { code: "as", name: "অসমীয়া", eng: "Assamese" },
+    { code: "bho", name: "भोजपुरी", eng: "Bhojpuri" },
+    { code: "doi", name: "डोगरी", eng: "Dogri" },
+    { code: "gu", name: "ગુજરાતી", eng: "Gujarati" },
+    { code: "kn", name: "ಕನ್ನಡ", eng: "Kannada" },
+    { code: "kok", name: "कोंकणी", eng: "Konkani" },
+    { code: "mai", name: "मैथिली", eng: "Maithili" },
+    { code: "ml", name: "മലയാളം", eng: "Malayalam" },
+    { code: "mni-Mtei", name: "মৈতৈলোন্", eng: "Meiteilon (Manipuri)" },
+    { code: "mr", name: "मराठी", eng: "Marathi" },
+    { code: "lus", name: "Mizo ṭawng", eng: "Mizo" },
+    { code: "ne", name: "नेपाली", eng: "Nepali" },
+    { code: "or", name: "ଓଡ଼ିଆ", eng: "Odia" },
+    { code: "pa", name: "ਪੰਜਾਬੀ", eng: "Punjabi" },
+    { code: "sa", name: "संस्कृतम्", eng: "Sanskrit" },
+    { code: "sd", name: "سنڌي", eng: "Sindhi" },
+    { code: "ta", name: "தமிழ்", eng: "Tamil" },
+    { code: "te", name: "తెలుగు", eng: "Telugu" },
+    { code: "ur", name: "اردو", eng: "Urdu" },
+
+    // আন্তর্জাতিক ও অন্যান্য ভাষা
+    { code: "af", name: "Afrikaans", eng: "Afrikaans" },
+    { code: "sq", name: "Shqip", eng: "Albanian" },
+    { code: "am", name: "አማርኛ", eng: "Amharic" },
+    { code: "ar", name: "العربية", eng: "Arabic" },
+    { code: "hy", name: "Հայերեն", eng: "Armenian" },
+    { code: "ay", name: "Aymar aru", eng: "Aymara" },
+    { code: "az", name: "Azərbaycan", eng: "Azerbaijani" },
+    { code: "bm", name: "Bamanankan", eng: "Bambara" },
+    { code: "eu", name: "Euskara", eng: "Basque" },
+    { code: "be", name: "Беларуская", eng: "Belarusian" },
+    { code: "bs", name: "Bosanski", eng: "Bosnian" },
+    { code: "bg", name: "Български", eng: "Bulgarian" },
+    { code: "ca", name: "Català", eng: "Catalan" },
+    { code: "ceb", name: "Cebuano", eng: "Cebuano" },
+    { code: "zh-CN", name: "简体中文", eng: "Chinese (Simplified)" },
+    { code: "zh-TW", name: "繁體中文", eng: "Chinese (Traditional)" },
+    { code: "co", name: "Corsu", eng: "Corsican" },
+    { code: "hr", name: "Hrvatski", eng: "Croatian" },
+    { code: "cs", name: "Čeština", eng: "Czech" },
+    { code: "da", name: "Dansk", eng: "Danish" },
+    { code: "dv", name: "ދިވެހި", eng: "Dhivehi" },
+    { code: "nl", name: "Nederlands", eng: "Dutch" },
+    { code: "eo", name: "Esperanto", eng: "Esperanto" },
+    { code: "et", name: "Eesti", eng: "Estonian" },
+    { code: "ee", name: "Eʋegbe", eng: "Ewe" },
+    { code: "tl", name: "Filipino (Tagalog)", eng: "Filipino" },
+    { code: "fi", name: "Suomi", eng: "Finnish" },
+    { code: "fr", name: "Français", eng: "French" },
+    { code: "fy", name: "Frysk", eng: "Frisian" },
+    { code: "gl", name: "Galego", eng: "Galician" },
+    { code: "ka", name: "ქართული", eng: "Georgian" },
+    { code: "de", name: "Deutsch", eng: "German" },
+    { code: "el", name: "Ελληνικά", eng: "Greek" },
+    { code: "gn", name: "Avañe'ẽ", eng: "Guarani" },
+    { code: "ht", name: "Kreyòl Ayisyen", eng: "Haitian Creole" },
+    { code: "ha", name: "Hausa", eng: "Hausa" },
+    { code: "haw", name: "ʻŌlelo Hawaiʻi", eng: "Hawaiian" },
+    { code: "iw", name: "עברית", eng: "Hebrew" },
+    { code: "hmn", name: "Hmoob", eng: "Hmong" },
+    { code: "hu", name: "Magyar", eng: "Hungarian" },
+    { code: "is", name: "Íslenska", eng: "Icelandic" },
+    { code: "ig", name: "Igbo", eng: "Igbo" },
+    { code: "ilo", name: "Ilokano", eng: "Ilocano" },
+    { code: "id", name: "Bahasa Indonesia", eng: "Indonesian" },
+    { code: "ga", name: "Gaeilge", eng: "Irish" },
+    { code: "it", name: "Italiano", eng: "Italian" },
+    { code: "ja", name: "日本語", eng: "Japanese" },
+    { code: "jw", name: "Basa Jawa", eng: "Javanese" },
+    { code: "kk", name: "Қазақ тілі", eng: "Kazakh" },
+    { code: "km", name: "ភាសាខ្មែរ", eng: "Khmer" },
+    { code: "rw", name: "Ikinyarwanda", eng: "Kinyarwanda" },
+    { code: "ko", name: "한국어", eng: "Korean" },
+    { code: "kri", name: "Krio", eng: "Krio" },
+    { code: "ku", name: "Kurdî", eng: "Kurdish (Kurmanji)" },
+    { code: "ckb", name: "کوردیی ناوەندی", eng: "Kurdish (Sorani)" },
+    { code: "ky", name: "Кыргызча", eng: "Kyrgyz" },
+    { code: "lo", name: "ພາສາລາວ", eng: "Lao" },
+    { code: "la", name: "Latina", eng: "Latin" },
+    { code: "lv", name: "Latviešu", eng: "Latvian" },
+    { code: "ln", name: "Lingála", eng: "Lingala" },
+    { code: "lt", name: "Lietuvių", eng: "Lithuanian" },
+    { code: "lg", name: "Luganda", eng: "Luganda" },
+    { code: "lb", name: "Lëtzebuergesch", eng: "Luxembourgish" },
+    { code: "mk", name: "Македонски", eng: "Macedonian" },
+    { code: "mg", name: "Malagasy", eng: "Malagasy" },
+    { code: "ms", name: "Bahasa Melayu", eng: "Malay" },
+    { code: "mt", name: "Malti", eng: "Maltese" },
+    { code: "mi", name: "Te Reo Māori", eng: "Maori" },
+    { code: "mn", name: "Монгол", eng: "Mongolian" },
+    { code: "my", name: "မြန်မာ", eng: "Burmese" },
+    { code: "ny", name: "Chichewa", eng: "Nyanja (Chichewa)" },
+    { code: "no", name: "Norsk", eng: "Norwegian" },
+    { code: "om", name: "Oromoo", eng: "Oromo" },
+    { code: "ps", name: "پښتو", eng: "Pashto" },
+    { code: "fa", name: "فارسی", eng: "Persian" },
+    { code: "pl", name: "Polski", eng: "Polish" },
+    { code: "pt", name: "Português", eng: "Portuguese" },
+    { code: "qu", name: "Runa Simi", eng: "Quechua" },
+    { code: "ro", name: "Română", eng: "Romanian" },
+    { code: "ru", name: "Русский", eng: "Russian" },
+    { code: "sm", name: "Gagana Samoa", eng: "Samoan" },
+    { code: "gd", name: "Gàidhlig", eng: "Scots Gaelic" },
+    { code: "nso", name: "Sepedi", eng: "Sepedi" },
+    { code: "sr", name: "Српски", eng: "Serbian" },
+    { code: "st", name: "Sesotho", eng: "Sesotho" },
+    { code: "sn", name: "Shona", eng: "Shona" },
+    { code: "si", name: "සිංහල", eng: "Sinhala" },
+    { code: "sk", name: "Slovenčina", eng: "Slovak" },
+    { code: "sl", name: "Slovenščina", eng: "Slovenian" },
+    { code: "so", name: "Soomaali", eng: "Somali" },
+    { code: "es", name: "Español", eng: "Spanish" },
+    { code: "su", name: "Basa Sunda", eng: "Sundanese" },
+    { code: "sw", name: "Kiswahili", eng: "Swahili" },
+    { code: "sv", name: "Svenska", eng: "Swedish" },
+    { code: "tg", name: "Тоҷикӣ", eng: "Tajik" },
+    { code: "tt", name: "Татар теле", eng: "Tatar" },
+    { code: "th", name: "ไทย", eng: "Thai" },
+    { code: "ti", name: "ትግርኛ", eng: "Tigrinya" },
+    { code: "ts", name: "Xitsonga", eng: "Tsonga" },
+    { code: "tr", name: "Türkçe", eng: "Turkish" },
+    { code: "tk", name: "Türkmençe", eng: "Turkmen" },
+    { code: "ak", name: "Twi", eng: "Twi (Akan)" },
+    { code: "uk", name: "Українська", eng: "Ukrainian" },
+    { code: "ug", name: "ئۇيغۇرچە", eng: "Uyghur" },
+    { code: "uz", name: "Oʻzbekcha", eng: "Uzbek" },
+    { code: "vi", name: "Tiếng Việt", eng: "Vietnamese" },
+    { code: "cy", name: "Cymraeg", eng: "Welsh" },
+    { code: "xh", name: "isiXhosa", eng: "Xhosa" },
+    { code: "yi", name: "ייִדיש", eng: "Yiddish" },
+    { code: "yo", name: "Èdè Yorùbá", eng: "Yoruba" },
+    { code: "zu", name: "isiZulu", eng: "Zulu" }
   ];
 
+  let selectedSourceLang = "auto";
+  let selectedTargetLang = "en";
+  let selectedVoiceGender = "female"; // 'female' অথবা 'male'
+  let currentModalMode = "target";
   let translatedResult = "";
   let detectedSourceLang = "bn";
   let typingTimer = null;
   let activeVoiceBtnId = null;
 
-  // ড্রপডাউনে ভাষা লোড করা
-  function initLanguages() {
-    const srcSelect = document.getElementById("sourceLang");
-    const tgtSelect = document.getElementById("targetLang");
-
-    LANGUAGES.forEach(lang => {
-      const opt1 = document.createElement("option");
-      opt1.value = lang.code;
-      opt1.textContent = lang.name;
-      srcSelect.appendChild(opt1);
-
-      const opt2 = document.createElement("option");
-      opt2.value = lang.code;
-      opt2.textContent = lang.name;
-      if (lang.code === "en") opt2.selected = true; // ডিফল্ট টার্গেট ভাষা English
-      tgtSelect.appendChild(opt2);
-    });
+  // ব্রাউজার ভয়েস প্রিলোড করা
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
   }
 
-  initLanguages();
+  // ভয়েস জেন্ডার (Male / Female) সেট করা
+  function setVoiceGender(gender) {
+    selectedVoiceGender = gender;
+    document.getElementById("btnGenderFemale").classList.toggle("active", gender === "female");
+    document.getElementById("btnGenderMale").classList.toggle("active", gender === "male");
+    stopSpeaking();
+    showToast(gender === "female" ? "👩 নারী কণ্ঠ (Female) নির্বাচিত" : "👨 পুরুষ কণ্ঠ (Male) নির্বাচিত");
+  }
 
-  // ভাষা অদলবদল
+  function getLangDisplayName(code) {
+    if (code === "auto") return "✨ স্বয়ংক্রিয় শনাক্ত (Auto)";
+    const item = GOOGLE_LANGUAGES.find(l => l.code === code);
+    return item ? `${item.name} (${item.eng})` : code;
+  }
+
+  function updateLanguageLabels() {
+    document.getElementById("sourceLangLabel").textContent = getLangDisplayName(selectedSourceLang);
+    document.getElementById("targetLangLabel").textContent = getLangDisplayName(selectedTargetLang);
+  }
+
+  function openLangModal(mode) {
+    currentModalMode = mode;
+    document.getElementById("modalTitle").textContent =
+      mode === "source" ? "🌐 কোন ভাষা থেকে (Source)" : "🌐 কোন ভাষায় অনুবাদ হবে (Target)";
+    const searchInput = document.getElementById("langSearchInput");
+    searchInput.value = "";
+    renderLanguageOptions("");
+    document.getElementById("languageModal").classList.remove("hidden");
+    setTimeout(() => searchInput.focus(), 120);
+  }
+
+  function closeLangModal() {
+    document.getElementById("languageModal").classList.add("hidden");
+  }
+
+  function renderLanguageOptions(query) {
+    const container = document.getElementById("languageOptionsList");
+    const q = (query || "").trim().toLowerCase();
+    const activeCode = currentModalMode === "source" ? selectedSourceLang : selectedTargetLang;
+
+    let html = "";
+
+    if (currentModalMode === "source" && (!q || "auto detect স্বয়ংক্রিয়".includes(q))) {
+      const isAuto = activeCode === "auto";
+      html += `
+        <button type="button" class="lang-item-btn ${isAuto ? 'active' : ''}" onclick="pickLanguage('auto')">
+          <span>✨ <b>স্বয়ংক্রিয় শনাক্ত</b> <span style="font-size:12px;color:#64748b;">(Auto Detect)</span></span>
+          ${isAuto ? '<span style="color:#0284c7;font-weight:bold;">✓</span>' : ''}
+        </button>
+      `;
+    }
+
+    const filtered = GOOGLE_LANGUAGES.filter(item => {
+      if (!q) return true;
+      return item.name.toLowerCase().includes(q) ||
+             item.eng.toLowerCase().includes(q) ||
+             item.code.toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0 && !html) {
+      container.innerHTML = `<div style="padding:16px;text-align:center;color:#64748b;">কোনো ভাষা পাওয়া যায়নি</div>`;
+      return;
+    }
+
+    filtered.forEach(item => {
+      const isSelected = item.code === activeCode;
+      html += `
+        <button type="button" class="lang-item-btn ${isSelected ? 'active' : ''}" onclick="pickLanguage('${item.code}')">
+          <span><b>${item.name}</b> <span style="font-size:12px;color:#64748b;">(${item.eng})</span></span>
+          ${isSelected ? '<span style="color:#0284c7;font-weight:bold;">✓</span>' : ''}
+        </button>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function pickLanguage(code) {
+    if (currentModalMode === "source") {
+      selectedSourceLang = code;
+    } else {
+      selectedTargetLang = code;
+    }
+    updateLanguageLabels();
+    closeLangModal();
+    if (document.getElementById("inputText").value.trim()) {
+      performTranslation();
+    }
+  }
+
   function swapLanguages() {
-    const srcSelect = document.getElementById("sourceLang");
-    const tgtSelect = document.getElementById("targetLang");
     const inputEl = document.getElementById("inputText");
 
-    if (srcSelect.value === "auto") {
-      srcSelect.value = tgtSelect.value;
-      tgtSelect.value = detectedSourceLang || "bn";
+    if (selectedSourceLang === "auto") {
+      selectedSourceLang = selectedTargetLang;
+      selectedTargetLang = detectedSourceLang || "bn";
     } else {
-      const temp = srcSelect.value;
-      srcSelect.value = tgtSelect.value;
-      tgtSelect.value = temp;
+      const temp = selectedSourceLang;
+      selectedSourceLang = selectedTargetLang;
+      selectedTargetLang = temp;
     }
+
+    updateLanguageLabels();
 
     if (translatedResult.trim()) {
       inputEl.value = translatedResult;
@@ -441,7 +814,6 @@
     }
   }
 
-  // টাইপ করার পর স্বয়ংক্রিয় অনুবাদ
   function scheduleAutoTranslate() {
     clearTimeout(typingTimer);
     const text = document.getElementById("inputText").value.trim();
@@ -449,7 +821,7 @@
       resetOutput();
       return;
     }
-    typingTimer = setTimeout(performTranslation, 700);
+    typingTimer = setTimeout(performTranslation, 650);
   }
 
   function resetOutput() {
@@ -467,7 +839,6 @@
     document.getElementById("inputText").focus();
   }
 
-  // অনুবাদ ফাংশন
   async function performTranslation() {
     const rawText = document.getElementById("inputText").value.trim();
     if (!rawText) {
@@ -475,8 +846,8 @@
       return;
     }
 
-    const sl = document.getElementById("sourceLang").value;
-    const tl = document.getElementById("targetLang").value;
+    const sl = selectedSourceLang;
+    const tl = selectedTargetLang;
     const statusEl = document.getElementById("statusIndicator");
     const outEl = document.getElementById("outputText");
 
@@ -497,7 +868,6 @@
         statusEl.textContent = "✓ সম্পন্ন";
       }
     } catch (err) {
-      // ব্যাকআপ অনুবাদ API
       try {
         const srcCode = sl === "auto" ? "bn" : sl;
         const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(rawText.slice(0, 480))}&langpair=${encodeURIComponent(srcCode + "|" + tl)}`;
@@ -517,7 +887,6 @@
     }
   }
 
-  // লেখা কপি করা
   async function copyText(type) {
     const text = type === "input"
       ? document.getElementById("inputText").value.trim()
@@ -542,7 +911,6 @@
     }
   }
 
-  // লেখা শেয়ার করা
   async function shareText(type) {
     const text = type === "input"
       ? document.getElementById("inputText").value.trim()
@@ -561,18 +929,40 @@
         });
       } catch (_) {}
     } else {
-      // ওয়েব শেয়ার সাপোর্ট না করলে সরাসরি হোয়াটসঅ্যাপে শেয়ার অপশন খুলবে
       const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       window.open(waUrl, "_blank");
     }
   }
 
-  // ভয়েস ম্যাসেজ হিসাবে শোনা (Text-to-Speech)
+  // ব্রাউজার থেকে কাঙ্ক্ষিত Male অথবা Female ভয়েস খুঁজে বের করা
+  function pickVoiceByGender(langCode, gender) {
+    if (!("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const base = (langCode || "bn").split("-")[0].toLowerCase();
+
+    const matched = voices.filter(v => (v.lang || "").toLowerCase().startsWith(base));
+    if (!matched.length) return null;
+
+    const femaleHints = ["female", "woman", "girl", "tanishaa", "nabanita", "swara", "aditi", "kavya", "lekha", "priya", "kalpana", "heera", "neerja", "zira", "samantha", "victoria", "karen", "aria", "sonia", "wavenet-a", "wavenet-c", "wavenet-e"];
+    const maleHints = ["male", "man", "boy", "ravi", "david", "mark", "daniel", "alex", "hemant", "prabhat", "madhur", "rishi", "tanvir", "pradeep", "bashkar", "wavenet-b", "wavenet-d"];
+
+    const targetHints = gender === "male" ? maleHints : femaleHints;
+    const oppositeHints = gender === "male" ? femaleHints : maleHints;
+
+    for (const v of matched) {
+      const name = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
+      if (targetHints.some(h => name.includes(h)) && !oppositeHints.some(h => name.includes(h))) {
+        return v;
+      }
+    }
+    return matched[0];
+  }
+
+  // ভয়েস ম্যাসেজ হিসাবে শোনা (Male / Female সমর্থিত)
   function speakText(type) {
     const btnId = type === "input" ? "btnSpeakInput" : "btnSpeakOutput";
     const btnEl = document.getElementById(btnId);
 
-    // আগে থেকে চলতে থাকলে বন্ধ করুন
     if (activeVoiceBtnId === btnId) {
       stopSpeaking();
       return;
@@ -589,11 +979,10 @@
     }
 
     let lang = type === "input"
-      ? (document.getElementById("sourceLang").value === "auto" ? detectedSourceLang : document.getElementById("sourceLang").value)
-      : document.getElementById("targetLang").value;
+      ? (selectedSourceLang === "auto" ? detectedSourceLang : selectedSourceLang)
+      : selectedTargetLang;
 
-    // বাংলা লেখা শনাক্ত হলে ভাষা bn সেট করা
-    if (/[\u0980-\u09FF]/.test(text) && type === "input" && document.getElementById("sourceLang").value === "auto") {
+    if (/[\u0980-\u09FF]/.test(text) && type === "input" && selectedSourceLang === "auto") {
       lang = "bn";
     }
 
@@ -601,33 +990,47 @@
     btnEl.classList.add("speaking");
     btnEl.innerHTML = "⏹️ বন্ধ করুন";
 
-    // অ্যান্ড্রয়েড অ্যাপ ব্রিজ থাকলে নেটিভ ভয়েস ব্যবহার
-    if (window.AndroidBridge && typeof window.AndroidBridge.speakAnnouncement === "function") {
-      window.AndroidBridge.speakAnnouncement(text, lang);
-      setTimeout(stopSpeaking, Math.max(3000, text.length * 90));
+    // পুরুষ (Male) ভয়েস নির্বাচিত থাকলে Web Speech API ব্যবহার করে পুরুষ কণ্ঠ ও গম্ভীর পিচ দেওয়া হবে
+    if (selectedVoiceGender === "male") {
+      playWithWebSpeech(text, lang, "male");
       return;
     }
 
-    // অনলাইন ও ব্রাউজার ভয়েস প্লেব্যাক
+    // নারী (Female) ভয়েস নির্বাচিত থাকলে প্রথমে উচ্চমানের Google Female TTS চেষ্টা করবে
     const audioPlayer = document.getElementById("ttsAudioPlayer");
     const shortChunk = text.slice(0, 190);
     const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(shortChunk)}&tl=${encodeURIComponent(lang)}&client=tw-ob`;
 
     audioPlayer.src = ttsUrl;
     audioPlayer.onended = () => stopSpeaking();
-    audioPlayer.onerror = () => fallbackWebSpeech(text, lang);
+    audioPlayer.onerror = () => playWithWebSpeech(text, lang, "female");
 
     audioPlayer.play().catch(() => {
-      fallbackWebSpeech(text, lang);
+      playWithWebSpeech(text, lang, "female");
     });
   }
 
-  function fallbackWebSpeech(text, lang) {
+  function playWithWebSpeech(text, lang, gender) {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = lang || "bn-IN";
-      utter.rate = 0.95;
+
+      const chosenVoice = pickVoiceByGender(lang, gender);
+      if (chosenVoice) {
+        utter.voice = chosenVoice;
+        utter.lang = chosenVoice.lang || utter.lang;
+      }
+
+      // পুরুষ ও নারী কণ্ঠের স্বাভাবিক পার্থক্য নিশ্চিত করতে পিচ সমন্বয়
+      if (gender === "male") {
+        utter.pitch = 0.78;
+        utter.rate = 0.94;
+      } else {
+        utter.pitch = 1.15;
+        utter.rate = 0.95;
+      }
+
       utter.onend = () => stopSpeaking();
       utter.onerror = () => stopSpeaking();
       window.speechSynthesis.speak(utter);
@@ -656,7 +1059,6 @@
     }
   }
 
-  // ছোট পপআপ বার্তা
   function showToast(msg) {
     const toast = document.getElementById("toastMsg");
     toast.textContent = msg;
