@@ -684,10 +684,10 @@
     { code: "zu", name: "isiZulu", eng: "Zulu" }
   ];
 
-  // Microsoft Neural বাস্তব মানুষের পুরুষ কণ্ঠস্বরের (Natural Neural Male Voices) ম্যাপ
+  // Microsoft Neural বাস্তব মানুষের শুদ্ধ পুরুষ কণ্ঠস্বরের (Natural Neural Male Voices) ম্যাপ
   const NEURAL_MALE_VOICES = {
     bn: "bn-IN-BashkarNeural",
-    en: "en-US-GuyNeural",
+    en: "en-IN-PrabhatNeural",
     hi: "hi-IN-MadhurNeural",
     ta: "ta-IN-ValluvarNeural",
     te: "te-IN-MohanNeural",
@@ -753,7 +753,7 @@
   const SPEECH_LOCALE_MAP = {
     bn: "bn-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN",
     gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", or: "or-IN",
-    ur: "ur-PK", as: "as-IN", ne: "ne-NP", si: "si-LK", en: "en-US",
+    ur: "ur-PK", as: "as-IN", ne: "ne-NP", si: "si-LK", en: "en-GB",
     ar: "ar-SA", fr: "fr-FR", es: "es-ES", de: "de-DE", ru: "ru-RU",
     ja: "ja-JP", ko: "ko-KR", pt: "pt-BR", id: "id-ID", ms: "ms-MY",
     th: "th-TH", vi: "vi-VN", tr: "tr-TR", it: "it-IT", nl: "nl-NL",
@@ -808,7 +808,6 @@
   let currentInputUI = { ...uiTranslationCache.bn };
   let currentOutputUI = { ...uiTranslationCache.en };
 
-  // দ্রুত টেক্সট অনুবাদের হেল্পার ফাংশন (UI বাটনের জন্য)
   async function translateSinglePhrase(text, targetLang) {
     if (targetLang === "bn") return text;
     try {
@@ -853,7 +852,6 @@
       }
     } catch (_) {}
 
-    // ফলব্যাক: আলাদাভাবে অনুবাদ
     const obj = {};
     for (const k of keys) {
       obj[k] = await translateSinglePhrase(base[k], code);
@@ -862,7 +860,6 @@
     return obj;
   }
 
-  // ইনপুট ও আউটপুট অংশের বাটন ও লেবেল সিলেক্ট করা ভাষায় আপডেট করা
   async function updateDynamicUILabels() {
     const inLang = selectedSourceLang === "auto" ? "bn" : selectedSourceLang;
     const outLang = selectedTargetLang || "en";
@@ -875,7 +872,6 @@
     currentInputUI = inStrings;
     currentOutputUI = outStrings;
 
-    // ইনপুট অংশের লেবেল ও বাটন আপডেট
     document.getElementById("lblSourceTitle").textContent = inStrings.sourceTitle;
     document.getElementById("lblInputHeader").textContent = "✍️ " + inStrings.inputHeader;
     document.getElementById("inputText").placeholder = inStrings.inputPlaceholder;
@@ -886,7 +882,6 @@
     document.getElementById("btnCopyInput").textContent = "📋 " + inStrings.copyBtn;
     document.getElementById("btnShareInput").textContent = "📤 " + inStrings.shareBtn;
 
-    // আউটপুট অংশ ও অনুবাদ বাটন আপডেট
     document.getElementById("lblTargetTitle").textContent = outStrings.targetTitle;
     document.getElementById("translateBtn").textContent = "🔄 " + outStrings.translateBtn;
     document.getElementById("lblOutputHeader").textContent = "✅ " + outStrings.outputHeader;
@@ -919,7 +914,7 @@
     document.getElementById("btnGenderFemale").classList.toggle("active", gender === "female");
     document.getElementById("btnGenderMale").classList.toggle("active", gender === "male");
     stopSpeaking();
-    showToast(gender === "female" ? "👩 নারী কণ্ঠ (Female) নির্বাচিত" : "👨 পুরুষ কণ্ঠ (Male) নির্বাচিত");
+    showToast(gender === "female" ? "👩 নারী কণ্ঠ (Female) নির্বাচিত" : "👨 শুদ্ধ পুরুষ কণ্ঠ (Male) নির্বাচিত");
   }
 
   function getLangDisplayName(code) {
@@ -1213,17 +1208,21 @@
     playNextChunk(0);
   }
 
-  // ২) মেল ভয়েস: Microsoft Neural বাস্তব মানুষের পুরুষ কণ্ঠ
+  // ২) মেল ভয়েস: Microsoft Neural বাস্তব মানুষের শুদ্ধ পুরুষ কণ্ঠ (কোনো রোবোটিক পিচ বিকৃতি ছাড়া)
   async function fetchNeuralMaleAudioBlob(textChunk, neuralVoiceName) {
     const endpoints = [
       `https://tts.travisvn.com/api/tts?voice=${encodeURIComponent(neuralVoiceName)}&text=${encodeURIComponent(textChunk)}`,
-      `https://edge-tts.vercel.app/api/tts?voice=${encodeURIComponent(neuralVoiceName)}&text=${encodeURIComponent(textChunk)}`
+      `https://edge-tts.vercel.app/api/tts?voice=${encodeURIComponent(neuralVoiceName)}&text=${encodeURIComponent(textChunk)}`,
+      `https://api.streamelements.com/kappa/v2/speech?voice=Brian&text=${encodeURIComponent(textChunk)}`
     ];
 
-    for (const url of endpoints) {
+    // ইংরেজি ছাড়া অন্য ভাষায় StreamElements Brian বাদ দেওয়া হচ্ছে
+    const activeEndpoints = neuralVoiceName.startsWith("en-") ? endpoints : endpoints.slice(0, 2);
+
+    for (const url of activeEndpoints) {
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 6500);
+        const timer = setTimeout(() => controller.abort(), 7000);
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timer);
         if (res.ok) {
@@ -1239,7 +1238,7 @@
 
   async function playMaleVoice(text, lang, token) {
     const base = (lang || "en").split("-")[0].toLowerCase();
-    const neuralVoice = NEURAL_MALE_VOICES[lang] || NEURAL_MALE_VOICES[base] || "en-US-GuyNeural";
+    const neuralVoice = NEURAL_MALE_VOICES[lang] || NEURAL_MALE_VOICES[base] || "en-IN-PrabhatNeural";
     const chunks = splitTextChunks(text, 240);
     const audio = document.getElementById("ttsAudioPlayer");
 
@@ -1253,7 +1252,7 @@
       }
 
       if (!blobUrl) {
-        // অনলাইন সার্ভার ব্যর্থ হলে ডিভাইস Male ভয়েস বা পিচ-অ্যাডজাস্টেড পুরুষ কণ্ঠ চালু হবে
+        // অনলাইন নিউরাল সার্ভার অনুপলব্ধ হলে স্বাভাবিক পিচে (1.0) শুদ্ধ ডিভাইস ভয়েস চালু হবে (কখনোই রোবোটিক হবে না)
         playViaSpeechSynthesis(chunks.slice(i).join(" "), lang, "male", token);
         return;
       }
@@ -1283,7 +1282,7 @@
     }
   }
 
-  // ব্রাউজার ভয়েস নির্বাচন (ব্যাকআপ)
+  // ব্রাউজার ভয়েস নির্বাচন (ব্যাকআপ - শুদ্ধ মানুষের মতো কণ্ঠস্বর)
   function selectBestGenderVoice(langCode, gender) {
     loadSystemVoices();
     const voices = cachedVoices.length ? cachedVoices : (window.speechSynthesis.getVoices() || []);
@@ -1296,7 +1295,7 @@
       "male", "man", "boy", "guy", "ravi", "david", "mark", "daniel", "alex",
       "hemant", "prabhat", "madhur", "rishi", "tanvir", "pradeep", "bashkar",
       "christopher", "eric", "steffan", "ryan", "thomas", "george", "oliver",
-      "andrew", "brian", "william", "liam", "james", "aaron", "arthur", "fred",
+      "andrew", "brian", "william", "liam", "james", "aaron", "arthur",
       "wavenet-b", "wavenet-d", "neural2-b", "neural2-d", "standard-b", "standard-d",
       "x-bnm", "x-bna", "x-bnb", "x-bdb", "x-hid", "x-hie", "x-gbb", "x-gbd",
       "x-tpd", "x-tpf", "x-iom", "x-iol", "x-end", "x-ene"
@@ -1330,6 +1329,11 @@
       if (gender === "male") {
         if (hasMale) score += 1000;
         if (hasFemale) score -= 1000;
+        // Google বা Microsoft এর ন্যাচারাল ভয়েসগুলোকে অগ্রাধিকার দেওয়া হচ্ছে
+        if (sig.includes("google") || sig.includes("microsoft") || sig.includes("natural") || sig.includes("online")) {
+          score += 200;
+        }
+        if (base === "en" && (v.lang || "").toLowerCase().includes("gb")) score += 150;
       } else {
         if (hasFemale) score += 1000;
         if (hasMale) score -= 1000;
@@ -1360,8 +1364,8 @@
     try { window.speechSynthesis.cancel(); } catch (_) {}
 
     const base = (lang || "bn").split("-")[0].toLowerCase();
-    const { voice, isTrueMale } = selectBestGenderVoice(lang, gender);
-    const defaultLocale = SPEECH_LOCALE_MAP[lang] || SPEECH_LOCALE_MAP[base] || (base === "en" ? "en-US" : lang);
+    const { voice } = selectBestGenderVoice(lang, gender);
+    const defaultLocale = SPEECH_LOCALE_MAP[lang] || SPEECH_LOCALE_MAP[base] || (base === "en" ? "en-GB" : lang);
 
     const utter = new SpeechSynthesisUtterance(text);
 
@@ -1372,14 +1376,9 @@
       utter.lang = defaultLocale;
     }
 
-    // ডিভাইসে সত্যিকারের Male ভয়েস না থাকলে পিচ কমিয়ে পুরুষালি কণ্ঠ করা হচ্ছে
-    if (gender === "male") {
-      utter.pitch = isTrueMale ? 1.0 : 0.72;
-      utter.rate = 0.95;
-    } else {
-      utter.pitch = 1.05;
-      utter.rate = 0.98;
-    }
+    // রোবোটিক শব্দ পুরোপুরি বন্ধ করতে পিচ সবসময় স্বাভাবিক (1.0) রাখা হয়েছে
+    utter.pitch = 1.0;
+    utter.rate = 0.96;
 
     utter.onend = () => {
       if (token === speechSessionToken) stopSpeaking();
@@ -1435,7 +1434,7 @@
       playFemaleVoice(text, lang, currentToken);
     }
   }
-
+  
   function stopSpeaking() {
     speechSessionToken++;
     const audioPlayer = document.getElementById("ttsAudioPlayer");
@@ -1475,7 +1474,6 @@
     setTimeout(() => toast.classList.remove("show"), 2400);
   }
 
-  // পেজ লোড হওয়ার সাথে সাথে ডিফল্ট ভাষায় (ইনপুট বাংলা, আউটপুট ইংরেজি) বোতামগুলো সেট করা
   window.addEventListener("DOMContentLoaded", () => {
     updateLanguageLabels();
   });
