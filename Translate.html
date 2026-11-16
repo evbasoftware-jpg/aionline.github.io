@@ -672,7 +672,7 @@
     { code: "ts", name: "Xitsonga", eng: "Tsonga" },
     { code: "tr", name: "Türkçe", eng: "Turkish" },
     { code: "tk", name: "Türkmençe", eng: "Turkmen" },
-     { code: "ak", name: "Twi", eng: "Twi (Akan)" },
+    { code: "ak", name: "Twi", eng: "Twi (Akan)" },
     { code: "uk", name: "Українська", eng: "Ukrainian" },
     { code: "ug", name: "ئۇيغۇرچە", eng: "Uyghur" },
     { code: "uz", name: "Oʻzbekcha", eng: "Uzbek" },
@@ -683,6 +683,46 @@
     { code: "yo", name: "Èdè Yorùbá", eng: "Yoruba" },
     { code: "zu", name: "isiZulu", eng: "Zulu" }
   ];
+
+  // অনলাইন স্বাভাবিক পুরুষ কণ্ঠস্বরের (Male Neural/Polly Voices) ম্যাপ
+  const ONLINE_MALE_VOICES = {
+    en: "Brian",      // স্পষ্ট ব্রিটিশ-আন্তর্জাতিক পুরুষ কণ্ঠ (Matthew / Joey / Russell ও ব্যবহার করা যায়)
+    hi: "Aditi",
+    es: "Miguel",
+    fr: "Mathieu",
+    de: "Hans",
+    it: "Giorgio",
+    pt: "Ricardo",
+    ru: "Maxim",
+    ja: "Takumi",
+    ko: "Seoyeon",
+    ar: "Zeina",
+    tr: "Filiz",
+    pl: "Jacek",
+    nl: "Ruben",
+    sv: "Astrid",
+    da: "Mads",
+    no: "Liv",
+    ro: "Carmen",
+    cy: "Gwyneth",
+    is: "Karl"
+  };
+
+  // কেবল প্রকৃত পুরুষ কণ্ঠ সমর্থিত ভাষাগুলো
+  const TRUE_ONLINE_MALE_VOICE = {
+    en: "Brian",
+    es: "Miguel",
+    fr: "Mathieu",
+    de: "Hans",
+    it: "Giorgio",
+    pt: "Ricardo",
+    ru: "Maxim",
+    ja: "Takumi",
+    pl: "Jacek",
+    nl: "Ruben",
+    da: "Mads",
+    is: "Karl"
+  };
 
   const SPEECH_LOCALE_MAP = {
     bn: "bn-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN",
@@ -968,7 +1008,7 @@
     return chunks.length ? chunks : [clean.slice(0, maxLen)];
   }
 
-  // ১) ফিমেল ভয়েস: অনলাইন Google Female TTS + ব্রাউজার ফিমেল ভয়েস ব্যাকআপ
+  // ১) ফিমেল ভয়েস: অনলাইন Google Female TTS + ব্রাউজার ফিমেল ব্যাকআপ
   function playFemaleVoice(text, lang, token) {
     const audio = document.getElementById("ttsAudioPlayer");
     const chunks = splitTextChunks(text, 170);
@@ -1018,7 +1058,57 @@
     playNextChunk(0);
   }
 
-  // ২) অ্যান্ড্রয়েড ও ডেস্কটপ ব্রাউজারের প্রকৃত পুরুষ (Male) এবং নারী (Female) ভয়েস স্কোরিং ইঞ্জিন
+  // ২) মেল ভয়েস: বাস্তব পুরুষ কণ্ঠস্বর (Online Male TTS Audio প্রথমে, ব্যর্থ হলে ডিভাইস Male Voice)
+  function playMaleVoice(text, lang, token) {
+    const base = (lang || "en").split("-")[0].toLowerCase();
+    const onlineVoiceName = TRUE_ONLINE_MALE_VOICE[base];
+
+    // যদি অনলাইন বাস্তব পুরুষ ভয়েস (যেমন English: Brian, Hindi/Spanish/French/German ইত্যাদি) থাকে:
+    if (onlineVoiceName) {
+      const audio = document.getElementById("ttsAudioPlayer");
+      const chunks = splitTextChunks(text, 220);
+      let chunkIdx = 0;
+
+      function playMaleChunk() {
+        if (token !== speechSessionToken) return;
+        if (chunkIdx >= chunks.length) {
+          stopSpeaking();
+          return;
+        }
+
+        const q = encodeURIComponent(chunks[chunkIdx]);
+        const url = `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(onlineVoiceName)}&text=${q}`;
+
+        audio.onended = () => {
+          if (token !== speechSessionToken) return;
+          chunkIdx++;
+          playMaleChunk();
+        };
+
+        audio.onerror = () => {
+          if (token !== speechSessionToken) return;
+          playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "male", token);
+        };
+
+        audio.src = url;
+        const p = audio.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(() => {
+            if (token !== speechSessionToken) return;
+            playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "male", token);
+          });
+        }
+      }
+
+      playMaleChunk();
+      return;
+    }
+
+    // বাংলা বা যেসব ভাষার অনলাইন Polly Male ভয়েস নেই, সেগুলোর জন্য সিস্টেমের Male ভয়েস
+    playViaSpeechSynthesis(text, lang, "male", token);
+  }
+
+  // ব্রাউজার ভয়েস নির্বাচন (ব্যাকআপ)
   function selectBestGenderVoice(langCode, gender) {
     loadSystemVoices();
     const voices = cachedVoices.length ? cachedVoices : (window.speechSynthesis.getVoices() || []);
@@ -1027,29 +1117,20 @@
     const norm = (langCode || "en").replace("_", "-").toLowerCase();
     const base = norm.split("-")[0];
 
-    // Android Google TTS ও Windows/iOS এর আসল Male ভয়েস কোড ও নাম
     const malePatterns = [
       "male", "man", "boy", "guy", "ravi", "david", "mark", "daniel", "alex",
       "hemant", "prabhat", "madhur", "rishi", "tanvir", "pradeep", "bashkar",
       "christopher", "eric", "steffan", "ryan", "thomas", "george", "oliver",
-      "arthur", "james", "aaron", "fred", "jorge", "diego", "luca", "matteo",
       "wavenet-b", "wavenet-d", "neural2-b", "neural2-d",
-      "x-bnm", "x-bna", "x-bnb", "x-bdb", // Bengali Male (Android)
-      "x-hid", "x-hie",                   // Hindi Male (Android)
-      "x-gbb", "x-gbd",                   // UK English Male (Android)
-      "x-tpd", "x-tpf", "x-iom", "x-iol", // US English Male (Android)
-      "x-end", "x-ene",                   // Indian English Male (Android)
-      "x-tam", "x-tem", "x-mrm", "x-gum", "x-knm", "x-mlm", "x-pam", "x-urm"
+      "x-bnm", "x-bna", "x-bnb", "x-bdb", "x-hid", "x-hie", "x-gbb", "x-gbd",
+      "x-tpd", "x-tpf", "x-iom", "x-iol", "x-end", "x-ene"
     ];
 
     const femalePatterns = [
       "female", "woman", "girl", "tanishaa", "nabanita", "swara", "aditi",
       "kavya", "lekha", "priya", "kalpana", "heera", "neerja", "zira",
       "samantha", "victoria", "karen", "aria", "sonia", "libby", "jenny",
-      "hazel", "susan", "moira", "tessa", "fiona", "veena", "shruti",
-      "wavenet-a", "wavenet-c", "wavenet-e", "wavenet-f", "neural2-a", "neural2-c",
-      "x-bnf", "x-ban", "x-hia", "x-hic", "x-gba", "x-gbc", "x-tpc", "x-sfg",
-      "x-ena", "x-enc", "x-taf", "x-tef", "x-mrf", "x-guf", "x-knf", "x-mlf"
+      "wavenet-a", "wavenet-c", "wavenet-e", "x-bnf", "x-ban", "x-hia", "x-hic", "x-gba", "x-tpc", "x-sfg"
     ];
 
     const langVoices = voices.filter(v => {
@@ -1073,16 +1154,10 @@
       if (gender === "male") {
         if (hasMale) score += 1000;
         if (hasFemale) score -= 1000;
-        // ইংরেজির ক্ষেত্রে UK English (en-GB) পুরুষ কণ্ঠ সবচেয়ে স্পষ্ট ও স্বাভাবিক হয়
-        if (base === "en" && (v.lang || "").toLowerCase().includes("gb")) score += 150;
-        if (base === "en" && (v.lang || "").toLowerCase().includes("in")) score += 100;
       } else {
         if (hasFemale) score += 1000;
         if (hasMale) score -= 1000;
       }
-
-      if (sig.includes("network") || sig.includes("neural") || sig.includes("wavenet")) score += 40;
-      if (!v.localService) score += 20;
 
       if (score > bestScore) {
         bestScore = score;
@@ -1122,9 +1197,8 @@
     }
 
     if (gender === "male") {
-      // প্রকৃত পুরুষ কণ্ঠ পেলে স্বাভাবিক পিচ (0.96), না পেলে পরিমিত গভীর পিচ (0.78) যাতে কণ্ঠ না ভাঙে
-      utter.pitch = isTrueMale ? 0.96 : 0.78;
-      utter.rate = 0.96;
+      utter.pitch = isTrueMale ? 0.96 : 0.72;
+      utter.rate = 0.95;
     } else {
       utter.pitch = isTrueFemale ? 1.04 : 1.22;
       utter.rate = 0.96;
@@ -1177,7 +1251,7 @@
     btnEl.innerHTML = "⏹️ বন্ধ করুন";
 
     if (selectedVoiceGender === "male") {
-      playViaSpeechSynthesis(text, lang, "male", currentToken);
+      playMaleVoice(text, lang, currentToken);
     } else {
       playFemaleVoice(text, lang, currentToken);
     }
