@@ -672,7 +672,7 @@
     { code: "ts", name: "Xitsonga", eng: "Tsonga" },
     { code: "tr", name: "Türkçe", eng: "Turkish" },
     { code: "tk", name: "Türkmençe", eng: "Turkmen" },
-    { code: "ak", name: "Twi", eng: "Twi (Akan)" },
+     { code: "ak", name: "Twi", eng: "Twi (Akan)" },
     { code: "uk", name: "Українська", eng: "Ukrainian" },
     { code: "ug", name: "ئۇيغۇرچە", eng: "Uyghur" },
     { code: "uz", name: "Oʻzbekcha", eng: "Uzbek" },
@@ -684,44 +684,70 @@
     { code: "zu", name: "isiZulu", eng: "Zulu" }
   ];
 
-  // অনলাইন স্বাভাবিক পুরুষ কণ্ঠস্বরের (Male Neural/Polly Voices) ম্যাপ
-  const ONLINE_MALE_VOICES = {
-    en: "Brian",      // স্পষ্ট ব্রিটিশ-আন্তর্জাতিক পুরুষ কণ্ঠ (Matthew / Joey / Russell ও ব্যবহার করা যায়)
-    hi: "Aditi",
-    es: "Miguel",
-    fr: "Mathieu",
-    de: "Hans",
-    it: "Giorgio",
-    pt: "Ricardo",
-    ru: "Maxim",
-    ja: "Takumi",
-    ko: "Seoyeon",
-    ar: "Zeina",
-    tr: "Filiz",
-    pl: "Jacek",
-    nl: "Ruben",
-    sv: "Astrid",
-    da: "Mads",
-    no: "Liv",
-    ro: "Carmen",
-    cy: "Gwyneth",
-    is: "Karl"
-  };
-
-  // কেবল প্রকৃত পুরুষ কণ্ঠ সমর্থিত ভাষাগুলো
-  const TRUE_ONLINE_MALE_VOICE = {
-    en: "Brian",
-    es: "Miguel",
-    fr: "Mathieu",
-    de: "Hans",
-    it: "Giorgio",
-    pt: "Ricardo",
-    ru: "Maxim",
-    ja: "Takumi",
-    pl: "Jacek",
-    nl: "Ruben",
-    da: "Mads",
-    is: "Karl"
+  // Microsoft Neural বাস্তব মানুষের পুরুষ কণ্ঠস্বরের (Natural Neural Male Voices) ম্যাপ
+  const NEURAL_MALE_VOICES = {
+    bn: "bn-IN-BashkarNeural",
+    en: "en-IN-PrabhatNeural",
+    hi: "hi-IN-MadhurNeural",
+    ta: "ta-IN-ValluvarNeural",
+    te: "te-IN-MohanNeural",
+    mr: "mr-IN-ManoharNeural",
+    gu: "gu-IN-NiranjanNeural",
+    kn: "kn-IN-GaganNeural",
+    ml: "ml-IN-MidhunNeural",
+    pa: "pa-IN-OjasNeural",
+    ur: "ur-PK-AsadNeural",
+    ne: "ne-NP-SagarNeural",
+    si: "si-LK-SameeraNeural",
+    ar: "ar-SA-HamedNeural",
+    es: "es-ES-AlvaroNeural",
+    fr: "fr-FR-HenriNeural",
+    de: "de-DE-ConradNeural",
+    it: "it-IT-DiegoNeural",
+    pt: "pt-BR-AntonioNeural",
+    ru: "ru-RU-DmitryNeural",
+    ja: "ja-JP-KeitaNeural",
+    ko: "ko-KR-InJoonNeural",
+    "zh-CN": "zh-CN-YunxiNeural",
+    "zh-TW": "zh-TW-YunJheNeural",
+    tr: "tr-TR-AhmetNeural",
+    id: "id-ID-ArdiNeural",
+    ms: "ms-MY-OsmanNeural",
+    th: "th-TH-NiwatNeural",
+    vi: "vi-VN-NamMinhNeural",
+    nl: "nl-NL-MaartenNeural",
+    pl: "pl-PL-MarekNeural",
+    uk: "uk-UA-OstapNeural",
+    fa: "fa-IR-FaridNeural",
+    iw: "he-IL-AvriNeural",
+    el: "el-GR-NestorasNeural",
+    sv: "sv-SE-MattiasNeural",
+    no: "nb-NO-FinnNeural",
+    da: "da-DK-JeppeNeural",
+    fi: "fi-FI-HarriNeural",
+    cs: "cs-CZ-AntoninNeural",
+    hu: "hu-HU-TamasNeural",
+    ro: "ro-RO-EmilNeural",
+    bg: "bg-BG-BorislavNeural",
+    hr: "hr-HR-SreckoNeural",
+    sr: "sr-RS-NicholasNeural",
+    sk: "sk-SK-LukasNeural",
+    sl: "sl-SI-RokNeural",
+    af: "af-ZA-WillemNeural",
+    sw: "sw-KE-RafikiNeural",
+    tl: "fil-PH-AngeloNeural",
+    my: "my-MM-ThihaNeural",
+    km: "km-KH-PisethNeural",
+    lo: "lo-LA-ChanthavongNeural",
+    ka: "ka-GE-GiorgiNeural",
+    hy: "hy-AM-HaykNeural",
+    az: "az-AZ-BabekNeural",
+    kk: "kk-KZ-DauletNeural",
+    uz: "uz-UZ-SardorNeural",
+    mn: "mn-MN-BataaNeural",
+    am: "am-ET-AmehaNeural",
+    so: "so-SO-MuuseNeural",
+    zu: "zu-ZA-ThembaNeural"
   };
 
   const SPEECH_LOCALE_MAP = {
@@ -745,6 +771,7 @@
   let activeVoiceBtnId = null;
   let speechSessionToken = 0;
   let cachedVoices = [];
+  let activeAudioObjectUrl = null;
 
   function loadSystemVoices() {
     if ("speechSynthesis" in window) {
@@ -867,7 +894,7 @@
       inputEl.value = translatedResult;
       performTranslation();
     }
-  }
+        }
 
   function scheduleAutoTranslate() {
     clearTimeout(typingTimer);
@@ -1008,7 +1035,7 @@
     return chunks.length ? chunks : [clean.slice(0, maxLen)];
   }
 
-  // ১) ফিমেল ভয়েস: অনলাইন Google Female TTS + ব্রাউজার ফিমেল ব্যাকআপ
+  // ১) ফিমেল ভয়েস: স্বাভাবিক অনলাইন Google Female TTS + ব্রাউজার ফিমেল ব্যাকআপ
   function playFemaleVoice(text, lang, token) {
     const audio = document.getElementById("ttsAudioPlayer");
     const chunks = splitTextChunks(text, 170);
@@ -1058,57 +1085,69 @@
     playNextChunk(0);
   }
 
-  // ২) মেল ভয়েস: বাস্তব পুরুষ কণ্ঠস্বর (Online Male TTS Audio প্রথমে, ব্যর্থ হলে ডিভাইস Male Voice)
-  function playMaleVoice(text, lang, token) {
-    const base = (lang || "en").split("-")[0].toLowerCase();
-    const onlineVoiceName = TRUE_ONLINE_MALE_VOICE[base];
+  // ২) মেল ভয়েস: Microsoft Neural বাস্তব মানুষের পুরুষ কণ্ঠ (কোনো রোবোটিক পিচ বিকৃতি ছাড়াই)
+  async function fetchNeuralMaleAudioBlob(textChunk, neuralVoiceName) {
+    const endpoints = [
+      `https://tts.travisvn.com/api/tts?voice=${encodeURIComponent(neuralVoiceName)}&text=${encodeURIComponent(textChunk)}`,
+      `https://edge-tts.vercel.app/api/tts?voice=${encodeURIComponent(neuralVoiceName)}&text=${encodeURIComponent(textChunk)}`
+    ];
 
-    // যদি অনলাইন বাস্তব পুরুষ ভয়েস (যেমন English: Brian, Hindi/Spanish/French/German ইত্যাদি) থাকে:
-    if (onlineVoiceName) {
-      const audio = document.getElementById("ttsAudioPlayer");
-      const chunks = splitTextChunks(text, 220);
-      let chunkIdx = 0;
-
-      function playMaleChunk() {
-        if (token !== speechSessionToken) return;
-        if (chunkIdx >= chunks.length) {
-          stopSpeaking();
-          return;
+    for (const url of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6500);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          const blob = await res.blob();
+          if (blob && blob.size > 400) {
+            return URL.createObjectURL(blob);
+          }
         }
-
-        const q = encodeURIComponent(chunks[chunkIdx]);
-        const url = `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(onlineVoiceName)}&text=${q}`;
-
-        audio.onended = () => {
-          if (token !== speechSessionToken) return;
-          chunkIdx++;
-          playMaleChunk();
-        };
-
-        audio.onerror = () => {
-          if (token !== speechSessionToken) return;
-          playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "male", token);
-        };
-
-        audio.src = url;
-        const p = audio.play();
-        if (p && typeof p.catch === "function") {
-          p.catch(() => {
-            if (token !== speechSessionToken) return;
-            playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "male", token);
-          });
-        }
-      }
-
-      playMaleChunk();
-      return;
+      } catch (_) {}
     }
-
-    // বাংলা বা যেসব ভাষার অনলাইন Polly Male ভয়েস নেই, সেগুলোর জন্য সিস্টেমের Male ভয়েস
-    playViaSpeechSynthesis(text, lang, "male", token);
+    return null;
   }
 
-  // ব্রাউজার ভয়েস নির্বাচন (ব্যাকআপ)
+  async function playMaleVoice(text, lang, token) {
+    const base = (lang || "en").split("-")[0].toLowerCase();
+    const neuralVoice = NEURAL_MALE_VOICES[lang] || NEURAL_MALE_VOICES[base] || "en-US-GuyNeural";
+    const chunks = splitTextChunks(text, 240);
+    const audio = document.getElementById("ttsAudioPlayer");
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (token !== speechSessionToken) return;
+
+      const blobUrl = await fetchNeuralMaleAudioBlob(chunks[i], neuralVoice);
+      if (token !== speechSessionToken) {
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+        return;
+      }
+
+      if (!blobUrl) {
+        // অনলাইন নিউরাল সার্ভার অনুপলব্ধ হলে স্বাভাবিক পিচে ডিভাইস Male ভয়েস চালু হবে (কখনোই রোবোটিক নয়)
+        playViaSpeechSynthesis(chunks.slice(i).join(" "), lang, "male", token);
+        return;
+      }
+
+      await new Promise((resolve) => {
+        if (activeAudioObjectUrl) {
+          try { URL.revokeObjectURL(activeAudioObjectUrl); } catch (_) {}
+        }
+        activeAudioObjectUrl = blobUrl;
+        audio.src = blobUrl;
+        audio.onended = () => resolve(true);
+        audio.onerror = () => resolve(false);
+        audio.play().catch(() => resolve(false));
+      });
+    }
+
+    if (token === speechSessionToken) {
+      stopSpeaking();
+    }
+  }
+
+  // ব্রাউজার ভয়েস নির্বাচন (ব্যাকআপ - একদম স্বাভাবিক ও পরিষ্কার পিচে)
   function selectBestGenderVoice(langCode, gender) {
     loadSystemVoices();
     const voices = cachedVoices.length ? cachedVoices : (window.speechSynthesis.getVoices() || []);
@@ -1154,6 +1193,7 @@
       if (gender === "male") {
         if (hasMale) score += 1000;
         if (hasFemale) score -= 1000;
+        if (base === "en" && (v.lang || "").toLowerCase().includes("gb")) score += 150;
       } else {
         if (hasFemale) score += 1000;
         if (hasMale) score -= 1000;
@@ -1184,7 +1224,7 @@
     try { window.speechSynthesis.cancel(); } catch (_) {}
 
     const base = (lang || "bn").split("-")[0].toLowerCase();
-    const { voice, isTrueMale, isTrueFemale } = selectBestGenderVoice(lang, gender);
+    const { voice } = selectBestGenderVoice(lang, gender);
     const defaultLocale = SPEECH_LOCALE_MAP[lang] || SPEECH_LOCALE_MAP[base] || (base === "en" ? "en-GB" : lang);
 
     const utter = new SpeechSynthesisUtterance(text);
@@ -1196,13 +1236,9 @@
       utter.lang = defaultLocale;
     }
 
-    if (gender === "male") {
-      utter.pitch = isTrueMale ? 0.96 : 0.72;
-      utter.rate = 0.95;
-    } else {
-      utter.pitch = isTrueFemale ? 1.04 : 1.22;
-      utter.rate = 0.96;
-    }
+    // স্বাভাবিক ও স্পষ্ট কণ্ঠের জন্য পিচ 1.0 রাখা হয়েছে যাতে রোবোটিক না শোনায়
+    utter.pitch = 1.0;
+    utter.rate = 0.96;
 
     utter.onend = () => {
       if (token === speechSessionToken) stopSpeaking();
@@ -1268,6 +1304,10 @@
         audioPlayer.removeAttribute("src");
         audioPlayer.load();
       } catch (_) {}
+    }
+    if (activeAudioObjectUrl) {
+      try { URL.revokeObjectURL(activeAudioObjectUrl); } catch (_) {}
+      activeAudioObjectUrl = null;
     }
     if ("speechSynthesis" in window) {
       try { window.speechSynthesis.cancel(); } catch (_) {}
