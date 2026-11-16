@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
   <title>🌐 গুগল ১৩৩+ ভাষা অনুবাদ ও ভয়েস ট্রান্সলেটর</title>
   <style>
     * {
@@ -541,15 +542,13 @@
 </div>
 
 <!-- ভয়েস অডিও প্লেয়ার -->
-<audio id="ttsAudioPlayer" style="display:none;"></audio>
+<audio id="ttsAudioPlayer" referrerpolicy="no-referrer" playsinline style="display:none;"></audio>
 
 <!-- টোস্ট বার্তা -->
 <div id="toastMsg" class="toast"></div>
 
 <script>
-  // গুগল ট্রান্সলেটের সম্পূর্ণ ১৩৩+ ভাষার তালিকা
   const GOOGLE_LANGUAGES = [
-    // প্রধান ভারতীয় ও আঞ্চলিক ভাষা
     { code: "bn", name: "বাংলা", eng: "Bengali" },
     { code: "en", name: "English", eng: "English" },
     { code: "hi", name: "हिन्दी", eng: "Hindi" },
@@ -572,8 +571,6 @@
     { code: "ta", name: "தமிழ்", eng: "Tamil" },
     { code: "te", name: "తెలుగు", eng: "Telugu" },
     { code: "ur", name: "اردو", eng: "Urdu" },
-
-    // আন্তর্জাতিক ও অন্যান্য ভাষা
     { code: "af", name: "Afrikaans", eng: "Afrikaans" },
     { code: "sq", name: "Shqip", eng: "Albanian" },
     { code: "am", name: "አማርኛ", eng: "Amharic" },
@@ -687,24 +684,43 @@
     { code: "zu", name: "isiZulu", eng: "Zulu" }
   ];
 
+  const SPEECH_LOCALE_MAP = {
+    bn: "bn-IN", hi: "hi-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN",
+    gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", or: "or-IN",
+    ur: "ur-PK", as: "as-IN", ne: "ne-NP", si: "si-LK", en: "en-IN",
+    ar: "ar-SA", fr: "fr-FR", es: "es-ES", de: "de-DE", ru: "ru-RU",
+    ja: "ja-JP", ko: "ko-KR", pt: "pt-BR", id: "id-ID", ms: "ms-MY",
+    th: "th-TH", vi: "vi-VN", tr: "tr-TR", it: "it-IT", nl: "nl-NL",
+    pl: "pl-PL", uk: "uk-UA", fa: "fa-IR", iw: "he-IL", el: "el-GR",
+    "zh-CN": "zh-CN", "zh-TW": "zh-TW"
+  };
+
   let selectedSourceLang = "auto";
   let selectedTargetLang = "en";
-  let selectedVoiceGender = "female"; // 'female' অথবা 'male'
+  let selectedVoiceGender = "female";
   let currentModalMode = "target";
   let translatedResult = "";
   let detectedSourceLang = "bn";
   let typingTimer = null;
   let activeVoiceBtnId = null;
+  let speechSessionToken = 0;
+  let cachedVoices = [];
 
-  // ব্রাউজার ভয়েস প্রিলোড করা
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
+  // ব্রাউজার ভয়েস তালিকা লোড ও সংরক্ষণ
+  function loadSystemVoices() {
+    if ("speechSynthesis" in window) {
+      const list = window.speechSynthesis.getVoices();
+      if (list && list.length > 0) {
+        cachedVoices = list;
+      }
+    }
   }
 
-  // ভয়েস জেন্ডার (Male / Female) সেট করা
+  if ("speechSynthesis" in window) {
+    loadSystemVoices();
+    window.speechSynthesis.onvoiceschanged = loadSystemVoices;
+  }
+
   function setVoiceGender(gender) {
     selectedVoiceGender = gender;
     document.getElementById("btnGenderFemale").classList.toggle("active", gender === "female");
@@ -934,31 +950,186 @@
     }
   }
 
-  // ব্রাউজার থেকে কাঙ্ক্ষিত Male অথবা Female ভয়েস খুঁজে বের করা
-  function pickVoiceByGender(langCode, gender) {
-    if (!("speechSynthesis" in window)) return null;
-    const voices = window.speechSynthesis.getVoices() || [];
-    const base = (langCode || "bn").split("-")[0].toLowerCase();
-
-    const matched = voices.filter(v => (v.lang || "").toLowerCase().startsWith(base));
-    if (!matched.length) return null;
-
-    const femaleHints = ["female", "woman", "girl", "tanishaa", "nabanita", "swara", "aditi", "kavya", "lekha", "priya", "kalpana", "heera", "neerja", "zira", "samantha", "victoria", "karen", "aria", "sonia", "wavenet-a", "wavenet-c", "wavenet-e"];
-    const maleHints = ["male", "man", "boy", "ravi", "david", "mark", "daniel", "alex", "hemant", "prabhat", "madhur", "rishi", "tanvir", "pradeep", "bashkar", "wavenet-b", "wavenet-d"];
-
-    const targetHints = gender === "male" ? maleHints : femaleHints;
-    const oppositeHints = gender === "male" ? femaleHints : maleHints;
-
-    for (const v of matched) {
-      const name = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
-      if (targetHints.some(h => name.includes(h)) && !oppositeHints.some(h => name.includes(h))) {
-        return v;
+  // লেখাকে ছোট ছোট বাক্যে ভাগ করা
+  function splitTextChunks(text, maxLen = 170) {
+    const clean = (text || "").trim();
+    if (!clean) return [];
+    if (clean.length <= maxLen) return [clean];
+    const parts = clean.split(/(?<=[।.!?])\s+/);
+    const chunks = [];
+    let cur = "";
+    for (const p of parts) {
+      if ((cur + " " + p).trim().length <= maxLen) {
+        cur = (cur + " " + p).trim();
+      } else {
+        if (cur) chunks.push(cur);
+        cur = p.slice(0, maxLen);
       }
     }
-    return matched[0];
+    if (cur) chunks.push(cur);
+    return chunks.length ? chunks : [clean.slice(0, maxLen)];
+        }
+
+  // ১) ফিমেল ভয়েস: নির্ভরযোগ্য অনলাইন Google TTS (একাধিক মিরর) + ব্রাউজার ফিমেল ভয়েস ব্যাকআপ
+  function playFemaleVoice(text, lang, token) {
+    const audio = document.getElementById("ttsAudioPlayer");
+    const chunks = splitTextChunks(text, 170);
+    const tl = lang === "en" ? "en-IN" : lang;
+
+    let chunkIdx = 0;
+
+    function playNextChunk(mirrorIdx) {
+      if (token !== speechSessionToken) return;
+      if (chunkIdx >= chunks.length) {
+        stopSpeaking();
+        return;
+      }
+
+      const q = encodeURIComponent(chunks[chunkIdx]);
+      const l = encodeURIComponent(tl);
+      const mirrors = [
+        `https://translate.google.com/translate_tts?ie=UTF-8&q=${q}&tl=${l}&client=tw-ob`,
+        `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${q}&tl=${l}&client=gtx`
+      ];
+
+      if (mirrorIdx >= mirrors.length) {
+        // অনলাইন অডিও ব্যর্থ হলে ব্রাউজারের নিজস্ব ফিমেল ভয়েস চালু হবে
+        playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "female", token);
+        return;
+      }
+
+      audio.onended = () => {
+        if (token !== speechSessionToken) return;
+        chunkIdx++;
+        playNextChunk(0);
+      };
+
+      audio.onerror = () => {
+        if (token !== speechSessionToken) return;
+        playNextChunk(mirrorIdx + 1);
+      };
+
+      audio.src = mirrors[mirrorIdx];
+      const p = audio.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          if (token !== speechSessionToken) return;
+          playViaSpeechSynthesis(chunks.slice(chunkIdx).join(" "), lang, "female", token);
+        });
+      }
+    }
+
+    playNextChunk(0);
   }
 
-  // ভয়েস ম্যাসেজ হিসাবে শোনা (Male / Female সমর্থিত)
+  // ২) মেল ভয়েস: কঠোরভাবে Male ভয়েস বাছাই ও গম্ভীর পুরুষালি পিচ প্রয়োগ
+  function selectStrictVoice(langCode, gender) {
+    loadSystemVoices();
+    const voices = cachedVoices.length ? cachedVoices : (window.speechSynthesis.getVoices() || []);
+    if (!voices.length) return { voice: null, isTrueMatch: false };
+
+    const norm = (langCode || "en").replace("_", "-").toLowerCase();
+    const base = norm.split("-")[0];
+
+    const femaleKeywords = [
+      "female", "woman", "girl", "tanishaa", "nabanita", "swara", "aditi",
+      "kavya", "lekha", "priya", "kalpana", "heera", "neerja", "zira",
+      "samantha", "victoria", "karen", "aria", "sonia", "libby", "jenny",
+      "wavenet-a", "wavenet-c", "wavenet-e", "neural2-a", "neural2-c", "x-bnf", "x-hia", "x-ena"
+    ];
+
+    const maleKeywords = [
+      "male", "man", "boy", "ravi", "david", "mark", "daniel", "alex",
+      "hemant", "prabhat", "madhur", "rishi", "tanvir", "pradeep", "bashkar",
+      "guy", "christopher", "eric", "steffan", "ryan", "thomas", "george",
+      "wavenet-b", "wavenet-d", "neural2-b", "neural2-d", "x-bnm", "x-bna", "x-bnb", "x-hid", "x-end"
+    ];
+
+    const langVoices = voices.filter(v => (v.lang || "").replace("_", "-").toLowerCase().startsWith(base));
+
+    if (gender === "male") {
+      // ধাপ ১: একই ভাষায় স্পষ্ট Male ভয়েস খুঁজুন
+      const trueMaleInLang = langVoices.find(v => {
+        const n = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
+        return maleKeywords.some(k => n.includes(k)) && !femaleKeywords.some(f => n.includes(f));
+      });
+      if (trueMaleInLang) return { voice: trueMaleInLang, isTrueMatch: true };
+
+      // ধাপ ২: ফিমেল নয় এমন ভয়েস খুঁজুন (যেমন Google UK English Male বা Neutral)
+      const nonFemaleInLang = langVoices.find(v => {
+        const n = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
+        return !femaleKeywords.some(f => n.includes(f));
+      });
+      if (nonFemaleInLang) return { voice: nonFemaleInLang, isTrueMatch: false };
+
+      // ধাপ ৩: ইংরেজি ও অন্যান্য ভাষার জন্য ভারতীয় বা আন্তর্জাতিক Male ভয়েস ব্যবহার করুন
+      if (base === "en") {
+        const anyEnglishMale = voices.find(v => {
+          const vl = (v.lang || "").toLowerCase();
+          const n = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
+          return vl.startsWith("en") && maleKeywords.some(k => n.includes(k)) && !femaleKeywords.some(f => n.includes(f));
+        });
+        if (anyEnglishMale) return { voice: anyEnglishMale, isTrueMatch: true };
+      }
+
+      return { voice: langVoices[0] || null, isTrueMatch: false };
+    } else {
+      // ফিমেল ভয়েস নির্বাচন
+      const trueFemaleInLang = langVoices.find(v => {
+        const n = ((v.name || "") + " " + (v.voiceURI || "")).toLowerCase();
+        return femaleKeywords.some(k => n.includes(k)) && !maleKeywords.some(m => n.includes(m));
+      });
+      if (trueFemaleInLang) return { voice: trueFemaleInLang, isTrueMatch: true };
+      return { voice: langVoices[0] || null, isTrueMatch: false };
+    }
+  }
+
+  function playViaSpeechSynthesis(text, lang, gender, token) {
+    if (!("speechSynthesis" in window)) {
+      stopSpeaking();
+      showToast("এই ব্রাউজারে ভয়েস সমর্থিত নয়");
+      return;
+    }
+
+    try { window.speechSynthesis.cancel(); } catch (_) {}
+
+    const base = (lang || "bn").split("-")[0].toLowerCase();
+    const targetLocale = SPEECH_LOCALE_MAP[lang] || SPEECH_LOCALE_MAP[base] || lang || "en-IN";
+    const { voice, isTrueMatch } = selectStrictVoice(lang, gender);
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = targetLocale;
+
+    if (voice) {
+      utter.voice = voice;
+      utter.lang = voice.lang || targetLocale;
+    }
+
+    if (gender === "male") {
+      // আসল পুরুষ কণ্ঠ পেলে স্বাভাবিক গম্ভীর পিচ, আর না পেলে গভীর পুরুষালি পিচ (0.62) যাতে ফিমেল না শোনায়
+      utter.pitch = isTrueMatch ? 0.85 : 0.62;
+      utter.rate = 0.94;
+    } else {
+      utter.pitch = isTrueMatch ? 1.08 : 1.25;
+      utter.rate = 0.96;
+    }
+
+    utter.onend = () => {
+      if (token === speechSessionToken) stopSpeaking();
+    };
+    utter.onerror = () => {
+      if (token === speechSessionToken) stopSpeaking();
+    };
+
+    // কিছু মোবাইল ব্রাউজারে cancel() এর ঠিক পরপর speak() দিলে আটকে যায়, তাই সামান্য বিরতি
+    setTimeout(() => {
+      if (token === speechSessionToken) {
+        window.speechSynthesis.speak(utter);
+      }
+    }, 60);
+  }
+
+  // মূল ভয়েস প্লে ফাংশন
   function speakText(type) {
     const btnId = type === "input" ? "btnSpeakInput" : "btnSpeakOutput";
     const btnEl = document.getElementById(btnId);
@@ -986,65 +1157,29 @@
       lang = "bn";
     }
 
+    const currentToken = ++speechSessionToken;
     activeVoiceBtnId = btnId;
     btnEl.classList.add("speaking");
     btnEl.innerHTML = "⏹️ বন্ধ করুন";
 
-    // পুরুষ (Male) ভয়েস নির্বাচিত থাকলে Web Speech API ব্যবহার করে পুরুষ কণ্ঠ ও গম্ভীর পিচ দেওয়া হবে
     if (selectedVoiceGender === "male") {
-      playWithWebSpeech(text, lang, "male");
-      return;
-    }
-
-    // নারী (Female) ভয়েস নির্বাচিত থাকলে প্রথমে উচ্চমানের Google Female TTS চেষ্টা করবে
-    const audioPlayer = document.getElementById("ttsAudioPlayer");
-    const shortChunk = text.slice(0, 190);
-    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(shortChunk)}&tl=${encodeURIComponent(lang)}&client=tw-ob`;
-
-    audioPlayer.src = ttsUrl;
-    audioPlayer.onended = () => stopSpeaking();
-    audioPlayer.onerror = () => playWithWebSpeech(text, lang, "female");
-
-    audioPlayer.play().catch(() => {
-      playWithWebSpeech(text, lang, "female");
-    });
-  }
-
-  function playWithWebSpeech(text, lang, gender) {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = lang || "bn-IN";
-
-      const chosenVoice = pickVoiceByGender(lang, gender);
-      if (chosenVoice) {
-        utter.voice = chosenVoice;
-        utter.lang = chosenVoice.lang || utter.lang;
-      }
-
-      // পুরুষ ও নারী কণ্ঠের স্বাভাবিক পার্থক্য নিশ্চিত করতে পিচ সমন্বয়
-      if (gender === "male") {
-        utter.pitch = 0.78;
-        utter.rate = 0.94;
-      } else {
-        utter.pitch = 1.15;
-        utter.rate = 0.95;
-      }
-
-      utter.onend = () => stopSpeaking();
-      utter.onerror = () => stopSpeaking();
-      window.speechSynthesis.speak(utter);
+      playViaSpeechSynthesis(text, lang, "male", currentToken);
     } else {
-      stopSpeaking();
-      showToast("ভয়েস প্লেব্যাক সমর্থিত নয়");
+      playFemaleVoice(text, lang, currentToken);
     }
   }
 
   function stopSpeaking() {
+    speechSessionToken++;
     const audioPlayer = document.getElementById("ttsAudioPlayer");
     if (audioPlayer) {
-      audioPlayer.pause();
-      audioPlayer.currentTime = 0;
+      try {
+        audioPlayer.pause();
+        audioPlayer.onended = null;
+        audioPlayer.onerror = null;
+        audioPlayer.removeAttribute("src");
+        audioPlayer.load();
+      } catch (_) {}
     }
     if ("speechSynthesis" in window) {
       try { window.speechSynthesis.cancel(); } catch (_) {}
