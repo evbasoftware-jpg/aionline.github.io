@@ -450,7 +450,7 @@
   <!-- ভাষা নির্বাচন বার -->
   <div class="lang-controls">
     <div class="lang-select-box">
-      <label>কোন ভাষা থেকে (Source):</label>
+      <label id="lblSourceTitle">কোন ভাষা থেকে (Source):</label>
       <button type="button" class="lang-picker-btn" onclick="openLangModal('source')">
         <span class="lbl-text" id="sourceLangLabel">✨ স্বয়ংক্রিয় শনাক্ত (Auto)</span>
         <span style="color:#0284c7;font-size:11px;">▼</span>
@@ -460,7 +460,7 @@
     <button type="button" class="swap-btn" onclick="swapLanguages()" title="ভাষা অদলবদল করুন">⇄</button>
 
     <div class="lang-select-box">
-      <label>কোন ভাষায় অনুবাদ হবে (Target):</label>
+      <label id="lblTargetTitle">কোন ভাষায় অনুবাদ হবে (Target):</label>
       <button type="button" class="lang-picker-btn" onclick="openLangModal('target')">
         <span class="lbl-text" id="targetLangLabel">English (English)</span>
         <span style="color:#0284c7;font-size:11px;">▼</span>
@@ -484,8 +484,8 @@
   <!-- মূল লেখার জায়গা (Input) -->
   <div class="text-card">
     <div class="card-top">
-      <span>✍️ আপনার লেখা লিখুন বা পেস্ট করুন:</span>
-      <button type="button" class="clear-btn" onclick="clearAllText()">✕ মুছুন</button>
+      <span id="lblInputHeader">✍️ আপনার লেখা লিখুন বা পেস্ট করুন:</span>
+      <button type="button" class="clear-btn" id="btnClearInput" onclick="clearAllText()">✕ মুছুন</button>
     </div>
     <textarea id="inputText" placeholder="এখানে যেকোনো ভাষায় কিছু লিখুন..." oninput="scheduleAutoTranslate()"></textarea>
     
@@ -493,10 +493,10 @@
       <button type="button" class="action-btn btn-voice" id="btnSpeakInput" onclick="speakText('input')">
         🔊 ভয়েসে শুনুন
       </button>
-      <button type="button" class="action-btn btn-copy" onclick="copyText('input')">
+      <button type="button" class="action-btn btn-copy" id="btnCopyInput" onclick="copyText('input')">
         📋 কপি
       </button>
-      <button type="button" class="action-btn btn-share" onclick="shareText('input')">
+      <button type="button" class="action-btn btn-share" id="btnShareInput" onclick="shareText('input')">
         📤 শেয়ার
       </button>
     </div>
@@ -510,7 +510,7 @@
   <!-- অনুবাদকৃত ফলাফল (Output) -->
   <div class="text-card output-card">
     <div class="card-top">
-      <span>✅ অনুবাদকৃত লেখা:</span>
+      <span id="lblOutputHeader">✅ অনুবাদকৃত লেখা:</span>
       <span id="statusIndicator" style="font-size: 11.5px; color: #0284c7;"></span>
     </div>
     <div id="outputText" class="output-text placeholder-text">অনুবাদ এখানে দেখা যাবে...</div>
@@ -519,10 +519,10 @@
       <button type="button" class="action-btn btn-voice" id="btnSpeakOutput" onclick="speakText('output')">
         🔊 ভয়েসে শুনুন
       </button>
-      <button type="button" class="action-btn btn-copy" onclick="copyText('output')">
+      <button type="button" class="action-btn btn-copy" id="btnCopyOutput" onclick="copyText('output')">
         📋 কপি
       </button>
-      <button type="button" class="action-btn btn-share" onclick="shareText('output')">
+      <button type="button" class="action-btn btn-share" id="btnShareOutput" onclick="shareText('output')">
         📤 শেয়ার
       </button>
     </div>
@@ -669,10 +669,10 @@
     { code: "tt", name: "Татар теле", eng: "Tatar" },
     { code: "th", name: "ไทย", eng: "Thai" },
     { code: "ti", name: "ትግርኛ", eng: "Tigrinya" },
-    { code: "ts", name: "Xitsonga", eng: "Tsonga" },
+     { code: "ts", name: "Xitsonga", eng: "Tsonga" },
     { code: "tr", name: "Türkçe", eng: "Turkish" },
     { code: "tk", name: "Türkmençe", eng: "Turkmen" },
-     { code: "ak", name: "Twi", eng: "Twi (Akan)" },
+    { code: "ak", name: "Twi", eng: "Twi (Akan)" },
     { code: "uk", name: "Українська", eng: "Ukrainian" },
     { code: "ug", name: "ئۇيغۇرچە", eng: "Uyghur" },
     { code: "uz", name: "Oʻzbekcha", eng: "Uzbek" },
@@ -772,6 +772,129 @@
   let speechSessionToken = 0;
   let cachedVoices = [];
   let activeAudioObjectUrl = null;
+  let translationSessionToken = 0;
+
+  // UI অনুবাদ ক্যাশ ও বর্তমান লেবেল
+  const uiTranslationCache = {
+    bn: {
+      sourceTitle: "কোন ভাষা থেকে:",
+      targetTitle: "কোন ভাষায় অনুবাদ হবে:",
+      inputHeader: "আপনার লেখা লিখুন বা পেস্ট করুন:",
+      inputPlaceholder: "এখানে যেকোনো ভাষায় কিছু লিখুন...",
+      clearBtn: "মুছুন",
+      listenBtn: "ভয়েসে শুনুন",
+      stopBtn: "বন্ধ করুন",
+      copyBtn: "কপি",
+      shareBtn: "শেয়ার",
+      translateBtn: "অনুবাদ করুন",
+      outputHeader: "অনুবাদকৃত লেখা:",
+      outputPlaceholder: "অনুবাদ এখানে দেখা যাবে..."
+    },
+    en: {
+      sourceTitle: "Translate from:",
+      targetTitle: "Translate to:",
+      inputHeader: "Enter or paste your text:",
+      inputPlaceholder: "Type something in any language here...",
+      clearBtn: "Clear",
+      listenBtn: "Listen",
+      stopBtn: "Stop",
+      copyBtn: "Copy",
+      shareBtn: "Share",
+      translateBtn: "Translate",
+      outputHeader: "Translated text:",
+      outputPlaceholder: "Translation will appear here..."
+    }
+  };
+
+  let currentInputUI = { ...uiTranslationCache.bn };
+  let currentOutputUI = { ...uiTranslationCache.en };
+
+  async function translateSinglePhrase(text, targetLang) {
+    if (targetLang === "bn") return text;
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=bn&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(text)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data[0])) {
+          return data[0].map(item => item[0] || "").join("");
+        }
+      }
+    } catch (_) {}
+    return text;
+  }
+
+  async function getUIStringsForLang(langCode) {
+    const code = (!langCode || langCode === "auto") ? "bn" : langCode;
+    if (uiTranslationCache[code]) return uiTranslationCache[code];
+
+    const base = uiTranslationCache.bn;
+    const keys = Object.keys(base);
+    const values = Object.values(base);
+
+    try {
+      const joined = values.join("\n");
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=bn&tl=${encodeURIComponent(code)}&dt=t&q=${encodeURIComponent(joined)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data[0])) {
+          const fullTranslated = data[0].map(item => item[0] || "").join("");
+          const lines = fullTranslated.split("\n");
+          if (lines.length === keys.length) {
+            const obj = {};
+            keys.forEach((k, i) => {
+              obj[k] = lines[i].trim() || base[k];
+            });
+            uiTranslationCache[code] = obj;
+            return obj;
+          }
+        }
+      }
+    } catch (_) {}
+
+    const obj = {};
+    for (const k of keys) {
+      obj[k] = await translateSinglePhrase(base[k], code);
+    }
+    uiTranslationCache[code] = obj;
+    return obj;
+  }
+
+  async function updateDynamicUILabels() {
+    const inLang = selectedSourceLang === "auto" ? "bn" : selectedSourceLang;
+    const outLang = selectedTargetLang || "en";
+
+    const [inStrings, outStrings] = await Promise.all([
+      getUIStringsForLang(inLang),
+      getUIStringsForLang(outLang)
+    ]);
+
+    currentInputUI = inStrings;
+    currentOutputUI = outStrings;
+
+    document.getElementById("lblSourceTitle").textContent = inStrings.sourceTitle;
+    document.getElementById("lblInputHeader").textContent = "✍️ " + inStrings.inputHeader;
+    document.getElementById("inputText").placeholder = inStrings.inputPlaceholder;
+    document.getElementById("btnClearInput").textContent = "✕ " + inStrings.clearBtn;
+    if (activeVoiceBtnId !== "btnSpeakInput") {
+      document.getElementById("btnSpeakInput").textContent = "🔊 " + inStrings.listenBtn;
+    }
+    document.getElementById("btnCopyInput").textContent = "📋 " + inStrings.copyBtn;
+    document.getElementById("btnShareInput").textContent = "📤 " + inStrings.shareBtn;
+
+    document.getElementById("lblTargetTitle").textContent = outStrings.targetTitle;
+    document.getElementById("translateBtn").textContent = "🔄 " + outStrings.translateBtn;
+    document.getElementById("lblOutputHeader").textContent = "✅ " + outStrings.outputHeader;
+    if (!translatedResult.trim()) {
+      document.getElementById("outputText").textContent = outStrings.outputPlaceholder;
+    }
+    if (activeVoiceBtnId !== "btnSpeakOutput") {
+      document.getElementById("btnSpeakOutput").textContent = "🔊 " + outStrings.listenBtn;
+    }
+    document.getElementById("btnCopyOutput").textContent = "📋 " + outStrings.copyBtn;
+    document.getElementById("btnShareOutput").textContent = "📤 " + outStrings.shareBtn;
+  }
 
   function loadSystemVoices() {
     if ("speechSynthesis" in window) {
@@ -804,6 +927,7 @@
   function updateLanguageLabels() {
     document.getElementById("sourceLangLabel").textContent = getLangDisplayName(selectedSourceLang);
     document.getElementById("targetLangLabel").textContent = getLangDisplayName(selectedTargetLang);
+    updateDynamicUILabels();
   }
 
   function openLangModal(mode) {
@@ -894,7 +1018,7 @@
       inputEl.value = translatedResult;
       performTranslation();
     }
-        }
+  }
 
   function scheduleAutoTranslate() {
     clearTimeout(typingTimer);
@@ -907,9 +1031,10 @@
   }
 
   function resetOutput() {
+    translationSessionToken++;
     translatedResult = "";
     const outEl = document.getElementById("outputText");
-    outEl.textContent = "অনুবাদ এখানে দেখা যাবে...";
+    outEl.textContent = currentOutputUI.outputPlaceholder || "অনুবাদ এখানে দেখা যাবে...";
     outEl.classList.add("placeholder-text");
     document.getElementById("statusIndicator").textContent = "";
   }
@@ -921,51 +1046,140 @@
     document.getElementById("inputText").focus();
   }
 
+  // বড় প্যারাগ্রাফকে লাইন ও বাক্য অনুযায়ী ছোট ছোট অংশে ভাগ করার ফাংশন (যাতে কোনো বাক্য বাদ না পড়ে)
+  function splitTextForTranslation(text, maxChars = 420) {
+    const lines = text.split("\n");
+    const chunks = [];
+    let currentChunk = "";
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // যদি একটি লাইন নিজেই maxChars-এর চেয়ে বড় হয়, তবে সেটিকে বাক্যে ভাগ করা হবে
+      if (line.length > maxChars) {
+        if (currentChunk) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+        }
+        const sentences = line.match(/[^।.!?]+[।.!?]*\s*/g) || [line];
+        let sentenceBuffer = "";
+        for (const s of sentences) {
+          if ((sentenceBuffer + s).length <= maxChars) {
+            sentenceBuffer += s;
+          } else {
+            if (sentenceBuffer) chunks.push(sentenceBuffer);
+            if (s.length > maxChars) {
+              for (let k = 0; k < s.length; k += maxChars) {
+                chunks.push(s.slice(k, k + maxChars));
+              }
+              sentenceBuffer = "";
+            } else {
+              sentenceBuffer = s;
+            }
+          }
+        }
+        if (sentenceBuffer) {
+          currentChunk = sentenceBuffer;
+        }
+      } else {
+        const candidate = currentChunk ? (currentChunk + "\n" + line) : line;
+        if (candidate.length <= maxChars) {
+          currentChunk = candidate;
+        } else {
+          chunks.push(currentChunk);
+          currentChunk = line;
+        }
+      }
+    }
+
+    if (currentChunk !== "") {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
+
+  // প্রতিটি আলাদা অংশ অনুবাদ করার ফাংশন
+  async function translateChunkRequest(chunkText, sl, tl) {
+    if (!chunkText.trim()) return { text: chunkText, detected: null };
+
+    // ১) Google Translate API চেষ্টা
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(chunkText)}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && Array.isArray(data[0])) {
+          const translated = data[0].map(item => item[0] || "").join("");
+          return { text: translated, detected: data[2] || null };
+        }
+      }
+    } catch (_) {}
+
+    // ২) MyMemory API ফলব্যাক
+    try {
+      const srcCode = sl === "auto" ? "bn" : sl;
+      const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunkText.slice(0, 480))}&langpair=${encodeURIComponent(srcCode + "|" + tl)}`;
+      const mmRes = await fetch(mmUrl);
+      const mmData = await mmRes.json();
+      if (mmData && mmData.responseData && mmData.responseData.translatedText) {
+        return { text: mmData.responseData.translatedText, detected: null };
+      }
+    } catch (_) {}
+
+    throw new Error("Translation failed for chunk");
+  }
+
+  // সম্পূর্ণ প্যারাগ্রাফ ও সব বাক্য শতভাগ অনুবাদ করার মূল ফাংশন
   async function performTranslation() {
-    const rawText = document.getElementById("inputText").value.trim();
-    if (!rawText) {
+    const rawText = document.getElementById("inputText").value;
+    if (!rawText.trim()) {
       resetOutput();
       return;
     }
 
+    const currentSession = ++translationSessionToken;
     const sl = selectedSourceLang;
     const tl = selectedTargetLang;
     const statusEl = document.getElementById("statusIndicator");
     const outEl = document.getElementById("outputText");
 
-    statusEl.textContent = "⏳ অনুবাদ হচ্ছে...";
+    const chunks = splitTextForTranslation(rawText, 420);
+    const translatedParts = [];
+
+    statusEl.textContent = `⏳ অনুবাদ হচ্ছে (0/${chunks.length})...`;
 
     try {
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(rawText)}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network error");
+      for (let i = 0; i < chunks.length; i++) {
+        if (currentSession !== translationSessionToken) return;
 
-      const data = await response.json();
-      if (data && Array.isArray(data[0])) {
-        translatedResult = data[0].map(item => item[0] || "").join("");
-        if (data[2]) detectedSourceLang = data[2];
+        if (chunks.length > 1) {
+          statusEl.textContent = `⏳ অনুবাদ হচ্ছে (${i + 1}/${chunks.length})...`;
+        }
 
+        const res = await translateChunkRequest(chunks[i], sl, tl);
+        if (currentSession !== translationSessionToken) return;
+
+        if (i === 0 && res.detected) {
+          detectedSourceLang = res.detected;
+        }
+
+        translatedParts.push(res.text);
+
+        // প্রতিটি অংশ অনুবাদ হওয়ার সাথে সাথে স্ক্রিনে আপডেট দেখাবে
+        translatedResult = translatedParts.join("\n");
         outEl.textContent = translatedResult;
         outEl.classList.remove("placeholder-text");
+      }
+
+      if (currentSession === translationSessionToken) {
         statusEl.textContent = "✓ সম্পন্ন";
       }
     } catch (err) {
-      try {
-        const srcCode = sl === "auto" ? "bn" : sl;
-        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(rawText.slice(0, 480))}&langpair=${encodeURIComponent(srcCode + "|" + tl)}`;
-        const mmRes = await fetch(mmUrl);
-        const mmData = await mmRes.json();
-        if (mmData && mmData.responseData && mmData.responseData.translatedText) {
-          translatedResult = mmData.responseData.translatedText;
-          outEl.textContent = translatedResult;
-          outEl.classList.remove("placeholder-text");
-          statusEl.textContent = "✓ সম্পন্ন";
-          return;
-        }
-      } catch (_) {}
-
-      statusEl.textContent = "❌ অনুবাদ ব্যর্থ হয়েছে";
-      showToast("ইন্টারনেট সংযোগ পরীক্ষা করুন");
+      if (currentSession === translationSessionToken) {
+        statusEl.textContent = "❌ অনুবাদ ব্যর্থ হয়েছে";
+        showToast("ইন্টারনেট সংযোগ পরীক্ষা করুন");
+      }
     }
   }
 
@@ -1006,7 +1220,7 @@
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "অনুবাদকৃত বার্তা",
+          title: "Translated Text",
           text: text
         });
       } catch (_) {}
@@ -1111,7 +1325,7 @@
 
   async function playMaleVoice(text, lang, token) {
     const base = (lang || "en").split("-")[0].toLowerCase();
-    const neuralVoice = NEURAL_MALE_VOICES[lang] || NEURAL_MALE_VOICES[base] || "en-US-GuyNeural";
+    const neuralVoice = NEURAL_MALE_VOICES[lang] || NEURAL_MALE_VOICES[base] || "en-IN-PrabhatNeural";
     const chunks = splitTextChunks(text, 240);
     const audio = document.getElementById("ttsAudioPlayer");
 
@@ -1125,12 +1339,11 @@
       }
 
       if (!blobUrl) {
-        // অনলাইন নিউরাল সার্ভার অনুপলব্ধ হলে স্বাভাবিক পিচে ডিভাইস Male ভয়েস চালু হবে (কখনোই রোবোটিক নয়)
         playViaSpeechSynthesis(chunks.slice(i).join(" "), lang, "male", token);
         return;
       }
 
-      await new Promise((resolve) => {
+      const played = await new Promise((resolve) => {
         if (activeAudioObjectUrl) {
           try { URL.revokeObjectURL(activeAudioObjectUrl); } catch (_) {}
         }
@@ -1138,8 +1351,16 @@
         audio.src = blobUrl;
         audio.onended = () => resolve(true);
         audio.onerror = () => resolve(false);
-        audio.play().catch(() => resolve(false));
+        const p = audio.play();
+        if (p && typeof p.catch === "function") {
+          p.catch(() => resolve(false));
+        }
       });
+
+      if (!played) {
+        playViaSpeechSynthesis(chunks.slice(i).join(" "), lang, "male", token);
+        return;
+      }
     }
 
     if (token === speechSessionToken) {
@@ -1236,7 +1457,6 @@
       utter.lang = defaultLocale;
     }
 
-    // স্বাভাবিক ও স্পষ্ট কণ্ঠের জন্য পিচ 1.0 রাখা হয়েছে যাতে রোবোটিক না শোনায়
     utter.pitch = 1.0;
     utter.rate = 0.96;
 
@@ -1284,7 +1504,9 @@
     const currentToken = ++speechSessionToken;
     activeVoiceBtnId = btnId;
     btnEl.classList.add("speaking");
-    btnEl.innerHTML = "⏹️ বন্ধ করুন";
+
+    const stopLabel = type === "input" ? currentInputUI.stopBtn : currentOutputUI.stopBtn;
+    btnEl.innerHTML = "⏹️ " + (stopLabel || "বন্ধ করুন");
 
     if (selectedVoiceGender === "male") {
       playMaleVoice(text, lang, currentToken);
@@ -1316,7 +1538,10 @@
       const oldBtn = document.getElementById(activeVoiceBtnId);
       if (oldBtn) {
         oldBtn.classList.remove("speaking");
-        oldBtn.innerHTML = "🔊 ভয়েসে শুনুন";
+        const listenLabel = activeVoiceBtnId === "btnSpeakInput"
+          ? currentInputUI.listenBtn
+          : currentOutputUI.listenBtn;
+        oldBtn.innerHTML = "🔊 " + (listenLabel || "ভয়েসে শুনুন");
       }
       activeVoiceBtnId = null;
     }
@@ -1328,6 +1553,10 @@
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2400);
   }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    updateLanguageLabels();
+  });
 </script>
 
 </body>
