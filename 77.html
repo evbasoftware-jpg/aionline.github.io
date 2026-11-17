@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>খেলার মাঠ পরিমাপক (Field Marker)</title>
+    <title>খেলার মাঠ পরিমাপক (AR + Compass + Field Map)</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -26,34 +26,35 @@
         /* টপ বার */
         .top-bar {
             background: #0f172a;
-            padding: 9px 10px;
+            padding: 8px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
+            gap: 6px;
         }
-        .mode-tabs { display: flex; gap: 4px; background: #1e293b; padding: 3px; border-radius: 8px; }
+        .mode-tabs { display: flex; gap: 3px; background: #1e293b; padding: 3px; border-radius: 8px; overflow-x: auto; }
         .tab-btn {
-            border: none; background: transparent; color: #cbd5e1; padding: 6px 10px;
-            font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer;
+            border: none; background: transparent; color: #cbd5e1; padding: 6px 8px;
+            font-size: 11.5px; font-weight: 700; border-radius: 6px; cursor: pointer; white-space: nowrap;
         }
         .tab-btn.active { background: var(--primary); color: #fff; }
 
         .gps-badge {
-            font-size: 11px; padding: 4px 9px; border-radius: 12px;
-            background: #334155; color: #fde047; font-weight: 700;
+            font-size: 11px; padding: 4px 8px; border-radius: 12px;
+            background: #334155; color: #fde047; font-weight: 700; white-space: nowrap;
         }
         .gps-badge.good { background: var(--primary-dark); color: #93c5fd; border: 1px solid #3b82f6; }
 
         /* আকৃতি নির্বাচন বার */
         .shape-bar {
-            display: flex; gap: 6px; padding: 8px 10px; background: #1e293b;
+            display: flex; gap: 6px; padding: 7px 10px; background: #1e293b;
             overflow-x: auto;
         }
         .shape-btn {
-            padding: 6px 13px; border-radius: 16px; border: 1px solid #475569;
+            padding: 6px 12px; border-radius: 16px; border: 1px solid #475569;
             background: #0f172a; color: #f8fafc; font-size: 12px; font-weight: 700;
             white-space: nowrap; cursor: pointer;
         }
@@ -63,8 +64,8 @@
         .viewport {
             position: relative;
             width: 100%;
-            height: 54vh;
-            min-height: 340px;
+            height: 58vh;
+            min-height: 370px;
             background: #090d16;
             overflow: hidden;
         }
@@ -76,54 +77,87 @@
             touch-action: none;
         }
 
-        /* স্ক্রিনের ওপর ভাসমান লাইভ দূরত্ব ব্যাজ (সব মোডে দেখাবে) */
+        /* ওপরের ভাসমান লাইভ দূরত্ব ও কোণ ব্যাজ */
         .live-dist-banner {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.90);
+            background: rgba(15, 23, 42, 0.92);
             border: 1.5px solid #38bdf8;
             color: #ffffff;
             padding: 6px 14px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             z-index: 40;
             white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
             display: none;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .live-dist-banner span.val {
-            color: #fde047;
-            font-size: 15px;
-        }
+        .live-dist-banner span.val { color: #fde047; font-size: 14.5px; }
+        .live-dist-banner span.ang { color: #4ade80; font-size: 13.5px; }
 
-        /* স্ক্রিনের মাঝখানের লাল ডট */
-        .center-red-dot {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 54px; height: 54px; border-radius: 50%;
+        /* নিচের দিকে থাকা ১ম/পরবর্তী পয়েন্ট দেওয়ার লাল ডট */
+        .bottom-red-dot {
+            position: absolute;
+            bottom: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
             border: 3px solid var(--accent);
-            background: rgba(220, 38, 38, 0.25);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 25; cursor: pointer;
-            box-shadow: 0 0 16px rgba(0,0,0,0.7);
+            background: rgba(220, 38, 38, 0.30);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 25;
+            cursor: pointer;
+            box-shadow: 0 0 18px rgba(0,0,0,0.8);
             transition: transform 0.1s;
         }
-        .center-red-dot:active { transform: translate(-50%, -50%) scale(0.88); }
-        .center-red-dot .inner-dot {
-            width: 22px; height: 22px; background: #ef4444;
+        .bottom-red-dot:active { transform: translateX(-50%) scale(0.88); }
+        .bottom-red-dot .inner-dot {
+            width: 24px; height: 24px; background: #ef4444;
             border: 2.5px solid #ffffff; border-radius: 50%;
         }
         .tap-hint-pill {
-            position: absolute; top: calc(50% + 33px); left: 50%; transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.85); color: #fde047; font-size: 11px; font-weight: 700;
-            padding: 4px 11px; border-radius: 12px; pointer-events: none; z-index: 24; white-space: nowrap;
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.88);
+            color: #fde047;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 24;
+            white-space: nowrap;
         }
 
-        /* কন্ট্রোল বাটন */
+        /* বৃত্ত মিলিয়ে দেখার জুম কন্ট্রোল (বৃত্ত আঁকার পর দেখাবে) */
+        .circle-zoom-bar {
+            position: absolute;
+            top: 48px;
+            left: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 35;
+        }
+        .z-btn {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: rgba(15, 23, 42, 0.9); color: #fff;
+            border: 1.5px solid #38bdf8; font-size: 18px; font-weight: 800;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ডানদিকের কন্ট্রোল বাটন */
         .floating-actions {
             position: absolute; bottom: 10px; right: 10px;
             display: flex; gap: 6px; z-index: 30; flex-wrap: wrap; justify-content: flex-end;
@@ -142,7 +176,7 @@
             background: #ffffff;
             color: #0f172a;
             border-top: 3px solid var(--primary);
-            padding: 14px 14px 50px 14px;
+            padding: 14px 14px 55px 14px;
         }
         .sheet-header {
             display: flex;
@@ -150,21 +184,12 @@
             align-items: center;
             margin-bottom: 12px;
         }
-        .sheet-title {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--primary-dark);
-        }
+        .sheet-title { font-size: 17px; font-weight: 800; color: var(--primary-dark); }
         .point-badge {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            background: var(--primary-light);
-            padding: 4px 10px;
-            border-radius: 12px;
+            font-size: 12px; font-weight: 700; color: var(--primary-dark);
+            background: var(--primary-light); padding: 4px 10px; border-radius: 12px;
         }
 
-        /* ২ কলামের পরিমাপ কার্ড */
         .cards-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -177,21 +202,9 @@
             border-radius: 10px;
             padding: 10px 12px;
         }
-        .measure-card .label {
-            font-size: 12px;
-            color: #475569;
-            font-weight: 600;
-            display: block;
-        }
-        .measure-card .value {
-            font-size: 16px;
-            font-weight: 800;
-            color: #0f172a;
-            margin-top: 3px;
-            display: block;
-        }
+        .measure-card .label { font-size: 12px; color: #475569; font-weight: 600; display: block; }
+        .measure-card .value { font-size: 15.5px; font-weight: 800; color: #0f172a; margin-top: 3px; display: block; }
 
-        /* নিচে মাপার নিয়মাবলী বক্স */
         .guide-footer {
             font-size: 13.5px;
             line-height: 1.6;
@@ -201,11 +214,7 @@
             border-radius: 10px;
             border-left: 4px solid var(--primary);
         }
-        .guide-footer h4 {
-            font-size: 14px;
-            color: var(--primary-dark);
-            margin-bottom: 4px;
-        }
+        .guide-footer h4 { font-size: 14px; color: var(--primary-dark); margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -213,9 +222,10 @@
 <!-- উপরের মোড বার -->
 <div class="top-bar">
     <div class="mode-tabs">
-        <button class="tab-btn active" id="tabCamera" onclick="switchMode('camera')">📷 ক্যামেরা AR</button>
-        <button class="tab-btn" id="tabPhoto" onclick="switchMode('photo')">🖼️ মাঠের ছবি</button>
-        <button class="tab-btn" id="tabMap" onclick="switchMode('map')">🗺️ GPS ম্যাপ</button>
+        <button class="tab-btn active" id="tabCamera" onclick="switchMode('camera')">📷 ক্যামেরা</button>
+        <button class="tab-btn" id="tabFieldGrid" onclick="switchMode('fieldGrid')">🟩 ফাঁকা মাঠ ম্যাপ</button>
+        <button class="tab-btn" id="tabPhoto" onclick="switchMode('photo')">🖼️ ছবি</button>
+        <button class="tab-btn" id="tabMap" onclick="switchMode('map')">🗺️ স্যাটেলাইট</button>
     </div>
     <div class="gps-badge" id="gpsBadge">📡 GPS খুঁজছে...</div>
 </div>
@@ -229,24 +239,31 @@
     <button class="shape-btn" data-shape="polygon" onclick="setShape('polygon')">৫) অন্যান্য</button>
 </div>
 
-<!-- মূল ক্যামেরা / ছবি / ম্যাপ ভিউ -->
+<!-- মূল ভিউপোর্ট -->
 <div class="viewport">
     <video id="cameraFeed" autoplay playsinline muted></video>
     <img id="photoCanvasImg" alt="মাঠের ছবি" />
     <div id="leafletMap"></div>
     <canvas id="overlayCanvas"></canvas>
 
-    <!-- স্ক্রিনের ওপরে লাইভ দূরত্ব ব্যাজ (সব মোডে হাঁটার সময় দূরত্ব দেখাবে) -->
+    <!-- ওপরের ভাসমান লাইভ দূরত্ব ও কোণ ব্যাজ -->
     <div class="live-dist-banner" id="liveDistBanner">
-        <span id="liveBannerLabel">📍 ১ম পয়েন্ট থেকে দূরত্ব:</span>
+        <span id="liveBannerLabel">📍 দূরত্ব:</span>
         <span class="val" id="liveBannerVal">0.0 সেমি.</span>
+        <span class="ang" id="liveBannerAngle" style="display:none;">| কোণ: 90°</span>
     </div>
 
-    <!-- স্ক্রিনের মাঝখানের লাল ডট -->
-    <div class="center-red-dot" id="centerRedDot" onclick="tapRedDot()">
+    <!-- বৃত্ত ও ফাঁকা মাঠ ম্যাপ ছোট-বড় করার বাটন -->
+    <div class="circle-zoom-bar" id="zoomControls">
+        <button class="z-btn" onclick="adjustScale(1.25)" title="বড় করুন">➕</button>
+        <button class="z-btn" onclick="adjustScale(0.8)" title="ছোট করুন">➖</button>
+    </div>
+
+    <!-- নিচের দিকে থাকা লাল ডট -->
+    <div class="bottom-red-dot" id="bottomRedDot" onclick="tapRedDot()">
         <div class="inner-dot"></div>
     </div>
-    <div class="tap-hint-pill" id="tapHintPill">১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন</div>
+    <div class="tap-hint-pill" id="tapHintPill">নিচে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন</div>
 
     <!-- ডানদিকের কন্ট্রোল বাটন -->
     <div class="floating-actions">
@@ -271,18 +288,23 @@
 
     <div class="guide-footer" id="methodGuideText">
         <h4>📏 সোজা দাগ মাপার নিয়ম:</h4>
-        মাঠের শুরুতে দাঁড়িয়ে স্ক্রিনের মাঝখানের <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট হবে। এরপর হাঁটতে থাকলে ওপরেই লাইভ দূরত্ব দেখাবে। ১০০, ২০০ বা ৪০০ মিটার দূরে গিয়ে আবার লাল ডটে টাচ করলে ২ নম্বর পয়েন্ট হবে।
+        স্ক্রিনের নিচের দিকে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে হাঁটলে নিচ থেকে উপরের দিকে একটি <b>ডট-ডট লাইন</b> এগোবে ও পাশে দূরত্ব দেখাবে। নির্দিষ্ট দূরত্বে গিয়ে ২ নম্বর ডট দিলে নিচ থেকে উপরে দাগ কমপ্লিট হবে।
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    let mode = 'camera'; // 'camera', 'photo', 'map'
+    let mode = 'camera'; // 'camera', 'fieldGrid', 'photo', 'map'
     let shape = 'line';  // 'line', 'triangle', 'quad', 'circle', 'polygon'
-    let points = [];     // {lat, lng, screenX, screenY}
+    let points = [];     // {lat, lng, screenX, screenY, heading}
     let isDrawingDone = false;
     let currentGPS = null;
     let gpsAccuracy = 999;
+    let deviceHeading = 0; // মোবাইল কোন দিকে ঘোরানো আছে (ডিগ্রি)
+
+    // ফাঁকা মাঠ গ্রিড ম্যাপ ও বৃত্ত জুম স্কেল
+    let fieldScalePxPerMeter = 6; // ফাঁকা মাঠ ম্যাপে ১ মিটার = কত পিক্সেল
+    let circleVisualScale = 1.0;  // বৃত্ত মিলিয়ে দেখার স্কেল
 
     const videoEl = document.getElementById('cameraFeed');
     const photoImg = document.getElementById('photoCanvasImg');
@@ -292,30 +314,29 @@
     let map = null;
     let mapLayers = [];
     let liveUserMarker = null;
-    let liveWalkLine = null;
 
     const maxPts = { line: 2, triangle: 3, quad: 4, circle: 2, polygon: 30 };
 
     const shapeInfo = {
         line: {
             title: '১) সোজা দাগ পরিমাপ',
-            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4>মাঠের শুরুতে দাঁড়িয়ে স্ক্রিনের মাঝখানের <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট হবে। এরপর হাঁটতে থাকলে স্ক্রিনের ওপরেই লাইভ দূরত্ব দেখাবে। নির্দিষ্ট দূরত্বে গিয়ে আবার লাল ডটে টাচ করলে ২ নম্বর পয়েন্ট হবে।'
+            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4>নিচে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে এগোলে ১ নম্বর ডটের উপর দিকে <b>ডট-ডট লাইন</b> এগিয়ে যাবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে নিচ থেকে উপরে সোজা দাগ কমপ্লিট হবে।'
         },
         triangle: {
-            title: '২) ত্রিভুজ পরিমাপ',
-            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4>ত্রিভুজের ৩টি কোণায় গিয়ে স্ক্রিনের <b>লাল ডটে</b> পর্যায়ক্রমে ৩ বার টাচ করুন। প্রতিটি কোণায় যাওয়ার সময় স্ক্রিনের ওপরে আগের কোণা থেকে দূরত্ব দেখা যাবে।'
+            title: '২) ত্রিভুজ পরিমাপ (কোণসহ)',
+            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4>প্রথম দাগ কমপ্লিট করার পর মোবাইল নিয়ে যেদিকে ঘুরবেন দ্বিতীয় ডট-ডট লাইন সেদিকে ঘুরবে এবং <b>দুই দাগের মাঝে কত ডিগ্রি কোণ</b> হচ্ছে তা দেখাবে। এভাবে ৩ নম্বর ডট দিলে ত্রিভুজের ৩ বাহু ও ৩ কোণ দেখাবে।'
         },
         quad: {
-            title: '৩) চতুর্ভুজ পরিমাপ',
-            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4>মাঠের চারটি কোণায় গিয়ে স্ক্রিনের <b>লাল ডটে</b> ৪ বার টাচ করুন। ৪টি পয়েন্ট সম্পন্ন হলে লাল ডট সরে যাবে এবং চার বাহু ও ২ কর্ণের মাপ দেখাবে।'
+            title: '৩) চতুর্ভুজ পরিমাপ (কোণ ও কর্ণসহ)',
+            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4>ত্রিভুজের মতোই প্রথম দাগ দিয়ে ঘুরে দাঁড়ালে কোণের ডিগ্রি দেখাবে (৯০° হলে কোণা একদম সোজা)। এভাবে ৪টি ডট দিলে চার বাহু, কোণ এবং ২ কর্ণের মাপ দেখাবে।'
         },
         circle: {
-            title: '৪) গোল / বৃত্ত পরিমাপ',
-            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>বৃত্তের ঠিক মাঝখানে দাঁড়িয়ে <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট হবে। এরপর কেন্দ্র থেকে দূরে হাঁটতে থাকলে স্ক্রিনের ওপরে ব্যাসার্ধের দূরত্ব দেখাবে; নির্দিষ্ট দূরে গিয়ে লাল ডটে টাচ করলে বৃত্ত তৈরি হবে।'
+            title: '৪) গোল / বৃত্ত পরিমাপ (মাঠের বৃত্ত যাচাই)',
+            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>কেন্দ্রে ১ নম্বর ও ব্যাসার্ধের দূরত্বে ২ নম্বর ডট দিলেই বৃত্ত তৈরি হবে। এরপর মাঠে চুন দিয়ে বৃত্ত আঁকার পর ক্যামেরা ধরে <b>➕ / ➖ বাটন</b> বা আঙুল দিয়ে স্ক্রিনের বৃত্তটি মাঠের গোল দাগের ওপর বসিয়ে সমান হয়েছে কি না যাচাই করুন।'
         },
         polygon: {
             title: '৫) অন্যান্য আকৃতি পরিমাপ',
-            guide: '<h4>⬠ অন্যান্য আকৃতি মাপার নিয়ম:</h4>সীমানার প্রতিটি মোড়ে দাঁড়িয়ে <b>লাল ডটে</b> টাচ করে পয়েন্ট দিন। সব পয়েন্ট দেওয়া শেষ হলে <b>"✅ দাগ শেষ করুন"</b> বাটনে চাপলে লাল ডটটি চলে যাবে।'
+            guide: '<h4>⬠ অন্যান্য আকৃতি মাপার নিয়ম:</h4>প্রতিটি মোড়ে গিয়ে ডট দিন ও ঘুরে দাঁড়িয়ে কোণ ও দূরত্ব দেখুন। সব পয়েন্ট দেওয়া শেষ হলে <b>"✅ দাগ শেষ করুন"</b> বাটনে চাপুন।'
         }
     };
 
@@ -329,9 +350,7 @@
     }
 
     function formatShortDist(meters) {
-        if (meters < 1) {
-            return `${(meters * 100).toFixed(0)} সেমি.`;
-        }
+        if (meters < 1) return `${(meters * 100).toFixed(0)} সেমি.`;
         return `${meters.toFixed(1)} মি.`;
     }
 
@@ -345,11 +364,11 @@
             });
             videoEl.srcObject = stream;
         } catch (e) {
-            alert('ক্যামেরা পারমিশন চালু করুন অথবা ওপর থেকে "মাঠের ছবি" বা "GPS ম্যাপ" বেছে নিন।');
+            // ক্যামেরা না থাকলে ফাঁকা মাঠ ম্যাপে সুইচ করা যাবে
         }
     }
 
-    // ২. GPS ট্র্যাকিং ও হাঁটার সময় লাইভ দূরত্ব আপডেট
+    // ২. GPS ট্র্যাকিং
     function initGPS() {
         if (!navigator.geolocation) return;
         navigator.geolocation.watchPosition(
@@ -362,20 +381,51 @@
 
                 updateLiveBanner();
                 updateCards();
-                if (map && mode === 'map') {
-                    updateLiveMapPosition();
-                }
+                if (map && mode === 'map') updateLiveMapPosition();
             },
             () => { document.getElementById('gpsBadge').innerText = '📡 GPS নেই'; },
             { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
     }
 
-    // স্ক্রিনের ওপর ভাসমান লাইভ দূরত্ব ব্যানার আপডেট (সব মোডের জন্য)
+    // ৩. মোবাইল ঘোরানোর কম্পাস সেন্সর (Device Orientation)
+    window.addEventListener('deviceorientationabsolute', handleCompass, true);
+    window.addEventListener('deviceorientation', handleCompass, true);
+    function handleCompass(e) {
+        if (e.webkitCompassHeading !== undefined) {
+            deviceHeading = e.webkitCompassHeading;
+        } else if (e.alpha !== null) {
+            deviceHeading = (360 - e.alpha) % 360;
+        }
+        updateLiveBanner();
+    }
+
+    // দুটি কম্পাস দিকের মধ্যে কোণ (Angle in Degrees: 0° - 180°) বের করা
+    function calcTurnAngle(h1, h2) {
+        let diff = Math.abs(h2 - h1) % 360;
+        if (diff > 180) diff = 360 - diff;
+        // জ্যামিতিক অন্তঃস্থ কোণ (Internal Corner Angle) = 180 - ঘোরার কোণ
+        return Math.round(180 - diff);
+    }
+
+    // দুটি লাইনের স্ক্রিন কোঅর্ডিনেট থেকে কোণ বের করা
+    function calcScreenCornerAngle(pPrev, pCurr, pNext) {
+        const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
+        const v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
+        const dot = v1x * v2x + v1y * v2y;
+        const mag1 = Math.hypot(v1x, v1y);
+        const mag2 = Math.hypot(v2x, v2y);
+        if (mag1 === 0 || mag2 === 0) return 0;
+        const cosA = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
+        return Math.round(Math.acos(cosA) * 180 / Math.PI);
+    }
+
+    // ওপরের ভাসমান ব্যাজ আপডেট (দূরত্ব + কোণ)
     function updateLiveBanner() {
         const banner = document.getElementById('liveDistBanner');
         const labelEl = document.getElementById('liveBannerLabel');
         const valEl = document.getElementById('liveBannerVal');
+        const angEl = document.getElementById('liveBannerAngle');
 
         if (points.length === 0) {
             banner.style.display = 'none';
@@ -383,16 +433,22 @@
         }
 
         banner.style.display = 'flex';
+        angEl.style.display = 'none';
 
-        // যদি এখনো সব পয়েন্ট দেওয়া শেষ না হয়, তবে সর্বশেষ পয়েন্ট থেকে বর্তমান অবস্থানের দূরত্ব দেখাবে
-        if (!isDrawingDone && currentGPS) {
+        if (!isDrawingDone) {
             const lastPt = points[points.length - 1];
-            const liveD = haversine(lastPt, currentGPS);
-            labelEl.innerText = `🚶 ${points.length} নং পয়েন্ট থেকে দূরত্ব:`;
+            const liveD = currentGPS ? haversine(lastPt, currentGPS) : 0;
+            labelEl.innerText = `🚶 ${points.length} নং থেকে:`;
             valEl.innerText = formatDist(liveD);
-        } 
-        // আর যদি দাগ শেষ হয়ে যায়, তবে মোট দূরত্ব বা ব্যাসার্ধ দেখাবে
-        else if (points.length >= 2) {
+
+            // ত্রিভুজ, চতুর্ভুজ বা বহুভুজে ২য় বা তার পরের দাগ টানার সময় মোবাইল ঘোরালে কোণ দেখাবে
+            if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
+                const prevLineHeading = points[points.length - 1].heading;
+                const cornerDeg = calcTurnAngle(prevLineHeading, deviceHeading);
+                angEl.style.display = 'inline';
+                angEl.innerText = `| কোণ: ${cornerDeg}°`;
+            }
+        } else if (points.length >= 2) {
             if (shape === 'circle') {
                 const r = haversine(points[0], points[1]);
                 labelEl.innerText = `⭕ ব্যাসার্ধ:`;
@@ -406,42 +462,54 @@
                 for (let i = 0; i < points.length; i++) {
                     perim += haversine(points[i], points[(i + 1) % points.length]);
                 }
-                labelEl.innerText = `📐 মোট পরিসীমা:`;
+                labelEl.innerText = `📐 পরিসীমা:`;
                 valEl.innerText = formatDist(perim);
             }
         }
     }
 
-    // ৩. মাঝখানের লাল ডটে টাচ করলে পয়েন্ট যুক্ত হবে
+    // ৪. নিচের লাল ডটে টাচ করলে পয়েন্ট বসবে (নিচ থেকে উপরের দিকে অগ্রসর হবে)
     function tapRedDot() {
         if (isDrawingDone || points.length >= maxPts[shape]) return;
 
         const lat = currentGPS ? currentGPS.lat : 23.8103;
         const lng = currentGPS ? currentGPS.lng : 90.4125;
 
+        const w = overlay.width;
+        const h = overlay.height;
         const count = points.length;
-        const cx = overlay.width / 2;
-        const cy = overlay.height / 2;
-        const defaultOffsets = [
-            { x: cx - 60, y: cy - 35 },
-            { x: cx + 70, y: cy - 35 },
-            { x: cx + 70, y: cy + 65 },
-            { x: cx - 60, y: cy + 65 }
-        ];
-        const pos = defaultOffsets[count] || { x: cx + ((count % 4) * 25 - 30), y: cy + ((count % 3) * 25 - 20) };
+
+         // ১ম ডট স্ক্রিনের নিচে (bottom), ২য় ডট স্ক্রিনের উপরে (top)
+        let sx = w * 0.5;
+        let sy = h * 0.78; // নিচে ১ম পয়েন্ট
+
+        if (count === 1) {
+            sx = w * 0.5;
+            sy = h * 0.24; // উপরে ২য় পয়েন্ট
+        } else if (count === 2) {
+            sx = w * 0.80;
+            sy = h * 0.52;
+        } else if (count === 3) {
+            sx = w * 0.20;
+            sy = h * 0.52;
+        } else if (count > 3) {
+            sx = w * 0.5 + ((count % 3 - 1) * 55);
+            sy = h * 0.45;
+        }
 
         points.push({
             lat: lat,
             lng: lng,
-            screenX: pos.x,
-            screenY: pos.y
+            screenX: sx,
+            screenY: sy,
+            heading: deviceHeading
         });
 
         if (shape !== 'polygon' && points.length >= maxPts[shape]) {
             isDrawingDone = true;
         }
 
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
         if (mode === 'map') drawMapShapes();
@@ -449,16 +517,21 @@
 
     function finishDrawing() {
         isDrawingDone = true;
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
         if (mode === 'map') drawMapShapes();
     }
 
-    function updateRedDotVisibility() {
-        const dot = document.getElementById('centerRedDot');
+    function updateControlsVisibility() {
+        const dot = document.getElementById('bottomRedDot');
         const pill = document.getElementById('tapHintPill');
         const finishBtn = document.getElementById('btnFinishPoly');
+        const zoomBar = document.getElementById('zoomControls');
+
+        // ফাঁকা মাঠ গ্রিড ম্যাপ অথবা বৃত্ত কমপ্লিট হলে জুম (+/-) বাটন দেখাবে
+        const showZoom = (mode === 'fieldGrid') || (shape === 'circle' && isDrawingDone);
+        zoomBar.style.display = showZoom ? 'flex' : 'none';
 
         if (mode === 'map') {
             dot.style.display = 'none';
@@ -474,8 +547,23 @@
         } else {
             dot.style.display = 'flex';
             pill.style.display = 'block';
-            pill.innerText = `${points.length + 1} নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন`;
+            pill.innerText = points.length === 0
+                ? 'নিচে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন'
+                : `${points.length + 1} নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন`;
             finishBtn.style.display = (shape === 'polygon' && points.length >= 2) ? 'flex' : 'none';
+        }
+    }
+
+    // ফাঁকা মাঠ ম্যাপ বা বৃত্ত ছোট-বড় করা
+    function adjustScale(factor) {
+        if (mode === 'fieldGrid') {
+            fieldScalePxPerMeter = Math.max(1.2, Math.min(40, fieldScalePxPerMeter * factor));
+        } else if (shape === 'circle' && points.length === 2) {
+            // কেন্দ্র (points[0]) ঠিক রেখে পরিধির বিন্দুটিকে ছোট বা বড় করা
+            const dx = points[1].screenX - points[0].screenX;
+            const dy = points[1].screenY - points[0].screenY;
+            points[1].screenX = points[0].screenX + dx * factor;
+            points[1].screenY = points[0].screenY + dy * factor;
         }
     }
 
@@ -483,6 +571,7 @@
     function switchMode(newMode) {
         mode = newMode;
         document.getElementById('tabCamera').classList.toggle('active', mode === 'camera');
+        document.getElementById('tabFieldGrid').classList.toggle('active', mode === 'fieldGrid');
         document.getElementById('tabPhoto').classList.toggle('active', mode === 'photo');
         document.getElementById('tabMap').classList.toggle('active', mode === 'map');
 
@@ -493,7 +582,7 @@
         document.getElementById('btnSnap').style.display = mode === 'photo' ? 'flex' : 'none';
         document.getElementById('btnGallery').style.display = mode === 'photo' ? 'flex' : 'none';
 
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
 
         if (mode === 'camera') {
@@ -530,8 +619,9 @@
         r.readAsDataURL(f);
     }
 
-    // বিন্দু ধরে স্মুথলি সরানোর (Drag) সিস্টেম
+    // ================= বিন্দু ড্র্যাগ ও দুই আঙুলে বৃত্ত জুম =================
     let dragIdx = -1;
+    let initialPinchDist = 0;
 
     function getTouchPos(e) {
         const rect = overlay.getBoundingClientRect();
@@ -541,11 +631,22 @@
     }
 
     function onDragStart(e) {
-        if (mode === 'map' || points.length === 0) return;
-        const pos = getTouchPos(e);
+        if (mode === 'map') return;
 
+        // দুই আঙুল দিয়ে বৃত্ত বা ফাঁকা মাঠ ম্যাপ ছোট-বড় করার জন্য
+        if (e.touches && e.touches.length === 2) {
+            initialPinchDist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            if (e.cancelable) e.preventDefault();
+            return;
+        }
+
+        if (points.length === 0) return;
+        const pos = getTouchPos(e);
         let closest = -1;
-        let minDist = 42;
+        let minDist = 45;
         for (let i = 0; i < points.length; i++) {
             const d = Math.hypot(pos.x - points[i].screenX, pos.y - points[i].screenY);
             if (d < minDist) {
@@ -553,7 +654,6 @@
                 closest = i;
             }
         }
-
         if (closest !== -1) {
             dragIdx = closest;
             if (e.cancelable) e.preventDefault();
@@ -561,6 +661,18 @@
     }
 
     function onDragMove(e) {
+        if (e.touches && e.touches.length === 2 && initialPinchDist > 0) {
+            if (e.cancelable) e.preventDefault();
+            const newDist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const factor = newDist / initialPinchDist;
+            adjustScale(factor);
+            initialPinchDist = newDist;
+            return;
+        }
+
         if (dragIdx === -1) return;
         if (e.cancelable) e.preventDefault();
         const pos = getTouchPos(e);
@@ -570,6 +682,7 @@
 
     function onDragEnd() {
         dragIdx = -1;
+        initialPinchDist = 0;
     }
 
     overlay.addEventListener('touchstart', onDragStart, { passive: false });
@@ -579,23 +692,40 @@
     window.addEventListener('mousemove', onDragMove);
     window.addEventListener('mouseup', onDragEnd);
 
-    // GPS ম্যাপ মোড
+    // ================= স্যাটেলাইট ও ওপেনস্ট্রিট ম্যাপ (Map data not yet available ফিক্সসহ) =================
     function initMap() {
         if (!map) {
             const lat = currentGPS ? currentGPS.lat : 23.8103;
             const lng = currentGPS ? currentGPS.lng : 90.4125;
-            map = L.map('leafletMap').setView([lat, lng], 19);
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 21
-            }).addTo(map);
+            map = L.map('leafletMap', {
+                maxZoom: 23,
+                zoomControl: true
+            }).setView([lat, lng], 18);
+
+            // স্যাটেলাইট লেয়ার (maxNativeZoom: 18 দেওয়ায় বেশি জুম করলেও "Map data not yet available" আসবে না)
+            const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxNativeZoom: 18,
+                maxZoom: 23,
+                attribution: 'Satellite'
+            });
+
+            // ব্যাকআপ ম্যাপ লেয়ার
+            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxNativeZoom: 19,
+                maxZoom: 23,
+                attribution: 'Map'
+            });
+
+            satLayer.addTo(map);
+            L.control.layers({ "স্যাটেলাইট ভিউ": satLayer, "সাধারণ ম্যাপ": streetLayer }).addTo(map);
 
             map.on('click', (e) => {
                 if (!isDrawingDone && points.length < maxPts[shape]) {
-                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng });
+                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng, heading: deviceHeading });
                     if (shape !== 'polygon' && points.length >= maxPts[shape]) {
                         isDrawingDone = true;
                     }
-                    updateRedDotVisibility();
+                    updateControlsVisibility();
                     updateLiveBanner();
                     drawMapShapes();
                     updateCards();
@@ -615,18 +745,6 @@
             }).addTo(map);
         } else {
             liveUserMarker.setLatLng([currentGPS.lat, currentGPS.lng]);
-        }
-
-        // ম্যাপে ১ম পয়েন্ট থেকে বর্তমান অবস্থান পর্যন্ত ড্যাশ লাইন দেখানো
-        if (liveWalkLine) {
-            map.removeLayer(liveWalkLine);
-            liveWalkLine = null;
-        }
-        if (points.length > 0 && !isDrawingDone) {
-            const last = points[points.length - 1];
-            liveWalkLine = L.polyline([[last.lat, last.lng], [currentGPS.lat, currentGPS.lng]], {
-                color: '#fde047', weight: 2.5, dashArray: '6, 6'
-            }).addTo(map);
         }
     }
 
@@ -652,7 +770,6 @@
                 : L.polyline(coords, { color: '#ffffff', weight: 3.5 }).addTo(map);
             mapLayers.push(poly);
         }
-        updateLiveMapPosition();
     }
 
     // আকৃতি পরিবর্তন
@@ -663,7 +780,7 @@
         document.querySelectorAll('.shape-btn').forEach(b => b.classList.toggle('active', b.dataset.shape === s));
         document.getElementById('sheetTitle').innerText = shapeInfo[s].title;
         document.getElementById('methodGuideText').innerHTML = shapeInfo[s].guide;
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
         if (mode === 'map') drawMapShapes();
@@ -672,7 +789,7 @@
     function undoPoint() {
         points.pop();
         isDrawingDone = false;
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
         if (mode === 'map') drawMapShapes();
@@ -681,7 +798,7 @@
     function resetAll() {
         points = [];
         isDrawingDone = false;
-        updateRedDotVisibility();
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
         if (mode === 'map') drawMapShapes();
@@ -725,7 +842,7 @@
             if (points.length < 3) {
                 const d1 = (points.length === 2) ? haversine(points[0], points[1]) : (points.length === 1 && currentGPS ? haversine(points[0], currentGPS) : 0);
                 addCard(points.length === 1 ? 'লাইভ দূরত্ব (১ম বাহু)' : '১ম বাহুর দৈর্ঘ্য', formatDist(d1));
-                addCard('অবস্থা', `${points.length} / ৩টি পয়েন্ট দেওয়া হয়েছে`);
+                addCard('কোণ (ডিগ্রি)', points.length === 2 ? `${calcTurnAngle(points[1].heading, deviceHeading)}° (ঘুরলে বদলাবে)` : '২য় পয়েন্ট দিন');
             } else {
                 const a = haversine(points[1], points[2]);
                 const b = haversine(points[0], points[2]);
@@ -734,17 +851,17 @@
                 const s = perim / 2;
                 const area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
 
-                addCard('১ম ও ২য় বাহু', `${formatShortDist(c)} ও ${formatShortDist(a)}`);
-                addCard('৩য় বাহু', formatDist(b));
+                addCard('৩ বাহুর দৈর্ঘ্য', `${formatShortDist(c)}, ${formatShortDist(a)}, ${formatShortDist(b)}`);
                 addCard('মোট পরিসীমা', formatDist(perim));
                 addCard('ক্ষেত্রফল', `${area.toFixed(2)} বর্গমিটার`);
+                addCard('কোণসমূহ', `${calcScreenCornerAngle(points[2], points[0], points[1])}°, ${calcScreenCornerAngle(points[0], points[1], points[2])}°, ${calcScreenCornerAngle(points[1], points[2], points[0])}°`);
             }
         }
         else if (shape === 'quad') {
             if (points.length < 4) {
                 const liveSeg = (points.length >= 1 && currentGPS) ? haversine(points[points.length - 1], currentGPS) : 0;
-                addCard('বর্তমান বাহুর লাইভ দূরত্ব', formatDist(liveSeg));
-                addCard('পয়েন্ট সংখ্যা', `${points.length} / ৪টি পয়েন্ট`);
+                addCard('বর্তমান বাহুর দূরত্ব', formatDist(liveSeg));
+                addCard('বর্তমান কোণ', points.length >= 2 ? `${calcTurnAngle(points[points.length - 1].heading, deviceHeading)}°` : `${points.length} / ৪টি পয়েন্ট`);
             } else {
                 const s1 = haversine(points[0], points[1]);
                 const s2 = haversine(points[1], points[2]);
@@ -755,8 +872,8 @@
 
                 addCard('দৈর্ঘ্য (১ম ও ৩য় বাহু)', `${formatShortDist(s1)} ও ${formatShortDist(s3)}`);
                 addCard('প্রস্থ (২য় ও ৪র্থ বাহু)', `${formatShortDist(s2)} ও ${formatShortDist(s4)}`);
-                addCard('১ম কর্ণ (Diagonal 1)', formatDist(d1));
-                addCard('২য় কর্ণ (Diagonal 2)', formatDist(d2));
+                addCard('১ম ও ২য় কর্ণ', `${formatShortDist(d1)} ও ${formatShortDist(d2)}`);
+                addCard('৪ কোণের মাপ', `${calcScreenCornerAngle(points[3], points[0], points[1])}°, ${calcScreenCornerAngle(points[0], points[1], points[2])}°, ${calcScreenCornerAngle(points[1], points[2], points[3])}°, ${calcScreenCornerAngle(points[2], points[3], points[0])}°`);
             }
         }
         else if (shape === 'circle') {
@@ -782,23 +899,52 @@
         }
     }
 
-    // দাগের মাঝখানে দূরত্বের লেবেল আঁকার ফাংশন
-    function drawMidLabel(text, x, y) {
+    // দাগের পাশে দূরত্ব বা কোণের লেবেল আঁকা
+    function drawSideBadge(text, x, y, bgColor = 'rgba(15, 23, 42, 0.9)', textColor = '#fde047') {
         ctx.save();
         ctx.font = 'bold 12px sans-serif';
         const w = ctx.measureText(text).width + 12;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.fillStyle = bgColor;
         ctx.fillRect(x - w / 2, y - 11, w, 22);
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 1;
         ctx.strokeRect(x - w / 2, y - 11, w, 22);
-        ctx.fillStyle = '#fde047';
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.fillText(text, x, y + 4);
         ctx.restore();
     }
 
-    // ক্যানভাস রেন্ডারিং
+    // ফাঁকা মাঠ গ্রিড আঁকার ফাংশন (ব্যবহারকারীর চারপাশের আসল মিটার স্কেলে)
+    function drawEmptyFieldGrid() {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, overlay.width, overlay.height);
+
+        // জুম অনুযায়ী ১ মিটার, ৫ মিটার বা ১০ মিটার পরপর গ্রিড লাইন
+        let meterStep = 10;
+        if (fieldScalePxPerMeter >= 20) meterStep = 1;
+        else if (fieldScalePxPerMeter >= 8) meterStep = 5;
+        else if (fieldScalePxPerMeter < 2.5) meterStep = 25;
+
+        const stepPx = meterStep * fieldScalePxPerMeter;
+        const cx = overlay.width / 2;
+        const cy = overlay.height * 0.78;
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+        ctx.lineWidth = 1;
+
+        for (let x = cx % stepPx; x < overlay.width; x += stepPx) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, overlay.height); ctx.stroke();
+        }
+        for (let y = cy % stepPx; y < overlay.height; y += stepPx) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(overlay.width, y); ctx.stroke();
+        }
+
+        // স্কেল নির্দেশক ব্যাজ
+        drawSideBadge(`ফাঁকা মাঠ স্কেল: ১ ঘর = ${meterStep} মিটার`, overlay.width / 2, overlay.height - 16, 'rgba(30, 58, 138, 0.9)', '#93c5fd');
+    }
+
+    // মূল ক্যানভাস রেন্ডারিং লুপ
     function renderLoop() {
         const vp = document.querySelector('.viewport');
         if (overlay.width !== vp.clientWidth || overlay.height !== vp.clientHeight) {
@@ -807,21 +953,72 @@
         }
         ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-        if ((mode === 'camera' || mode === 'photo') && points.length > 0) {
-            // ১) গোল (বৃত্ত) আঁকা
+        // ফাঁকা মাঠ ম্যাপ মোড হলে ব্যাকগ্রাউন্ডে মিটার গ্রিড আঁকা
+        if (mode === 'fieldGrid') {
+            drawEmptyFieldGrid();
+        }
+
+        if (mode !== 'map' && points.length > 0) {
+            // ১) নিচ থেকে উপরের দিকে অগ্রসর হওয়া লাইভ ডট-ডট লাইন (যখন পরের পয়েন্টের জন্য হাঁটা হচ্ছে)
+            if (!isDrawingDone) {
+                const lastPt = points[points.length - 1];
+                const liveMeters = currentGPS ? haversine(lastPt, currentGPS) : 0;
+
+                // কতদূর এগিয়েছে তার অনুপাতে নিচ থেকে উপরের দিকে ডট-ডট লাইন অগ্রসর হবে
+                const progressPx = Math.min(overlay.height * 0.52, Math.max(45, liveMeters * (mode === 'fieldGrid' ? fieldScalePxPerMeter : 4.5)));
+
+                // ২য় বা পরবর্তী বাহুর ক্ষেত্রে মোবাইল ঘোরালে ডট-ডট লাইনটি কোণ অনুযায়ী ঘুরবে
+                let angleRad = -Math.PI / 2; // সোজা উপরের দিকে (-90 deg)
+                if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
+                    const deltaDeg = ((deviceHeading - points[points.length - 1].heading + 540) % 360) - 180;
+                    angleRad = (-90 + deltaDeg) * Math.PI / 180;
+                }
+
+                const targetX = Math.max(25, Math.min(overlay.width - 25, lastPt.screenX + Math.cos(angleRad) * progressPx));
+                const targetY = Math.max(45, Math.min(overlay.height - 30, lastPt.screenY + Math.sin(angleRad) * progressPx));
+
+                // হলুদ ডট-ডট লাইন আঁকা
+                ctx.save();
+                ctx.setLineDash([7, 7]);
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.moveTo(lastPt.screenX, lastPt.screenY);
+                ctx.lineTo(targetX, targetY);
+                ctx.stroke();
+                ctx.restore();
+
+                // ডট-ডট লাইনের মাথায় চলমান বিন্দু
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(targetX, targetY, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // ডট-ডট লাইনের পাশে লাইভ দূরত্ব দেখানো
+                drawSideBadge(formatShortDist(liveMeters), (lastPt.screenX + targetX) / 2 + 38, (lastPt.screenY + targetY) / 2);
+
+                // দুই দাগের মাঝে কোণের (ডিগ্রি) আর্ক ও মান দেখানো
+                if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
+                    const cornerDeg = calcTurnAngle(points[points.length - 1].heading, deviceHeading);
+                    drawSideBadge(`${cornerDeg}°`, lastPt.screenX, lastPt.screenY - 26, 'rgba(6, 78, 59, 0.92)', '#6ee7b7');
+                }
+            }
+
+            // ২) গোল (বৃত্ত) আঁকা (মাঠের বৃত্তের সাথে মিলিয়ে দেখার জন্য স্পষ্ট রিং)
             if (shape === 'circle' && points.length === 2) {
                 const rPx = Math.hypot(points[1].screenX - points[0].screenX, points[1].screenY - points[0].screenY);
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = '#fde047';
                 ctx.lineWidth = 4;
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.22)';
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.14)';
                 ctx.beginPath();
                 ctx.arc(points[0].screenX, points[0].screenY, rPx, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
 
+                // ব্যাসার্ধের ড্যাশ দাগ
                 ctx.save();
                 ctx.setLineDash([6, 6]);
-                ctx.strokeStyle = '#fbbf24';
+                ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
                 ctx.moveTo(points[0].screenX, points[0].screenY);
@@ -830,13 +1027,13 @@
                 ctx.restore();
 
                 const rMeters = haversine(points[0], points[1]);
-                drawMidLabel(formatShortDist(rMeters), (points[0].screenX + points[1].screenX) / 2, (points[0].screenY + points[1].screenY) / 2);
+                drawSideBadge(`ব্যাসার্ধ: ${formatShortDist(rMeters)}`, (points[0].screenX + points[1].screenX) / 2, (points[0].screenY + points[1].screenY) / 2);
             } 
-            // ২) সোজা দাগ, ত্রিভুজ, চতুর্ভুজ বা বহুভুজ আঁকা
+            // ৩) কমপ্লিট হওয়া সাদা দাগ (নিচ থেকে উপরের দিকে)
             else if (points.length >= 2) {
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 4;
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.20)';
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
                 ctx.beginPath();
                 points.forEach((p, i) => i === 0 ? ctx.moveTo(p.screenX, p.screenY) : ctx.lineTo(p.screenX, p.screenY));
                 if (points.length >= 3 && shape !== 'line' && (shape !== 'polygon' || isDrawingDone)) {
@@ -845,17 +1042,28 @@
                 }
                 ctx.stroke();
 
-                // প্রতিটি বাহুর মাঝখানে মাপ লেখা
+                // প্রতিটি বাহুর পাশে মাপ লেখা
                 const segs = (points.length >= 3 && shape !== 'line' && (shape !== 'polygon' || isDrawingDone)) ? points.length : points.length - 1;
                 for (let i = 0; i < segs; i++) {
                     const pA = points[i];
                     const pB = points[(i + 1) % points.length];
                     const d = haversine(pA, pB);
-                    drawMidLabel(formatShortDist(d), (pA.screenX + pB.screenX) / 2, (pA.screenY + pB.screenY) / 2);
+                    drawSideBadge(formatShortDist(d), (pA.screenX + pB.screenX) / 2, (pA.screenY + pB.screenY) / 2);
+                }
+
+                // ত্রিভুজ ও চতুর্ভুজ কমপ্লিট হলে প্রতিটি কোণায় কত ডিগ্রি কোণ হয়েছে তা দেখানো
+                if (isDrawingDone && points.length >= 3) {
+                    for (let i = 0; i < points.length; i++) {
+                        const prev = points[(i - 1 + points.length) % points.length];
+                        const curr = points[i];
+                        const next = points[(i + 1) % points.length];
+                        const deg = calcScreenCornerAngle(prev, curr, next);
+                        drawSideBadge(`${deg}°`, curr.screenX, curr.screenY - 24, 'rgba(6, 78, 59, 0.92)', '#6ee7b7');
+                    }
                 }
             }
 
-            // ৩) খুঁটি (১, ২, ৩, ৪ নম্বর গোল চিহ্ন) আঁকা
+            // ৪) খুঁটি (১, ২, ৩, ৪ নম্বর গোল চিহ্ন) আঁকা
             points.forEach((p, i) => {
                 const isDragging = (i === dragIdx);
                 ctx.fillStyle = i === 0 ? '#ef4444' : '#f59e0b';
@@ -879,7 +1087,7 @@
     // অ্যাপ শুরু
     initGPS();
     startCamera();
-    updateRedDotVisibility();
+    updateControlsVisibility();
     updateCards();
     renderLoop();
 </script>
