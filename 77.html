@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>খেলার মাঠ পরিমাপক (AR + Compass + Field Map)</title>
+    <title>খেলার মাঠ পরিমাপক (Smart Angle & AR)</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -60,12 +60,12 @@
         }
         .shape-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-        /* মূল ক্যামেরা / ছবি / ম্যাপ ভিউপোর্ট */
+        /* মূল ভিউপোর্ট */
         .viewport {
             position: relative;
             width: 100%;
             height: 58vh;
-            min-height: 370px;
+            min-height: 380px;
             background: #090d16;
             overflow: hidden;
         }
@@ -83,7 +83,7 @@
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.92);
+            background: rgba(15, 23, 42, 0.94);
             border: 1.5px solid #38bdf8;
             color: #ffffff;
             padding: 6px 14px;
@@ -92,31 +92,49 @@
             font-weight: 800;
             z-index: 40;
             white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
             display: none;
             align-items: center;
             gap: 8px;
         }
-        .live-dist-banner span.val { color: #fde047; font-size: 14.5px; }
-        .live-dist-banner span.ang { color: #4ade80; font-size: 13.5px; }
+        .live-dist-banner span.val { color: #fde047; font-size: 14px; }
+        .live-dist-banner span.ang { color: #4ade80; font-size: 14px; }
 
-        /* নিচের দিকে থাকা ১ম/পরবর্তী পয়েন্ট দেওয়ার লাল ডট */
+        /* ডানপাশে কোণ পরীক্ষার স্লাইডার (কম্পাস সেন্সর না থাকলে বা টেস্ট করার জন্য) */
+        .angle-sim-box {
+            position: absolute;
+            top: 48px;
+            right: 10px;
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 6px 8px;
+            z-index: 36;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 115px;
+        }
+        .angle-sim-box label { font-size: 10px; color: #93c5fd; font-weight: 700; margin-bottom: 3px; }
+        .angle-sim-box input[type=range] { width: 100%; accent-color: #f59e0b; }
+
+        /* নিচের বামদিকে থাকা পয়েন্ট দেওয়ার লাল ডট */
         .bottom-red-dot {
             position: absolute;
             bottom: 58px;
-            left: 50%;
+            left: 24%;
             transform: translateX(-50%);
             width: 56px;
             height: 56px;
             border-radius: 50%;
             border: 3px solid var(--accent);
-            background: rgba(220, 38, 38, 0.30);
+            background: rgba(220, 38, 38, 0.32);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 25;
             cursor: pointer;
-            box-shadow: 0 0 18px rgba(0,0,0,0.8);
+            box-shadow: 0 0 18px rgba(0,0,0,0.85);
             transition: transform 0.1s;
         }
         .bottom-red-dot:active { transform: translateX(-50%) scale(0.88); }
@@ -126,21 +144,21 @@
         }
         .tap-hint-pill {
             position: absolute;
-            bottom: 28px;
-            left: 50%;
+            bottom: 26px;
+            left: 26%;
             transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.88);
+            background: rgba(15, 23, 42, 0.90);
             color: #fde047;
             font-size: 11px;
             font-weight: 700;
-            padding: 4px 11px;
+            padding: 4px 10px;
             border-radius: 12px;
             pointer-events: none;
             z-index: 24;
             white-space: nowrap;
         }
 
-        /* বৃত্ত মিলিয়ে দেখার জুম কন্ট্রোল (বৃত্ত আঁকার পর দেখাবে) */
+        /* জুম কন্ট্রোল */
         .circle-zoom-bar {
             position: absolute;
             top: 48px;
@@ -163,8 +181,8 @@
             display: flex; gap: 6px; z-index: 30; flex-wrap: wrap; justify-content: flex-end;
         }
         .f-btn {
-            padding: 8px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(15, 23, 42, 0.92); color: #fff; font-size: 12px; font-weight: 700;
+            padding: 8px 11px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(15, 23, 42, 0.92); color: #fff; font-size: 11.5px; font-weight: 700;
             cursor: pointer; display: flex; align-items: center; gap: 4px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.5);
         }
@@ -184,7 +202,7 @@
             align-items: center;
             margin-bottom: 12px;
         }
-        .sheet-title { font-size: 17px; font-weight: 800; color: var(--primary-dark); }
+        .sheet-title { font-size: 16.5px; font-weight: 800; color: var(--primary-dark); }
         .point-badge {
             font-size: 12px; font-weight: 700; color: var(--primary-dark);
             background: var(--primary-light); padding: 4px 10px; border-radius: 12px;
@@ -253,17 +271,23 @@
         <span class="ang" id="liveBannerAngle" style="display:none;">| কোণ: 90°</span>
     </div>
 
+    <!-- কোণ স্লাইডার (মোবাইল ঘোরানোর পাশাপাশি হাত দিয়েও কোণ সেট করার সুবিধা) -->
+    <div class="angle-sim-box" id="angleSimBox">
+        <label id="angleSimLabel">কোণ ঘোরান: 90°</label>
+        <input type="range" id="manualAngleSlider" min="15" max="175" value="90" oninput="onManualAngleChange(this.value)">
+    </div>
+
     <!-- বৃত্ত ও ফাঁকা মাঠ ম্যাপ ছোট-বড় করার বাটন -->
     <div class="circle-zoom-bar" id="zoomControls">
         <button class="z-btn" onclick="adjustScale(1.25)" title="বড় করুন">➕</button>
         <button class="z-btn" onclick="adjustScale(0.8)" title="ছোট করুন">➖</button>
     </div>
 
-    <!-- নিচের দিকে থাকা লাল ডট -->
+    <!-- নিচের বামদিকে থাকা লাল ডট -->
     <div class="bottom-red-dot" id="bottomRedDot" onclick="tapRedDot()">
         <div class="inner-dot"></div>
     </div>
-    <div class="tap-hint-pill" id="tapHintPill">নিচে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন</div>
+    <div class="tap-hint-pill" id="tapHintPill">বামদিকে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন</div>
 
     <!-- ডানদিকের কন্ট্রোল বাটন -->
     <div class="floating-actions">
@@ -288,7 +312,7 @@
 
     <div class="guide-footer" id="methodGuideText">
         <h4>📏 সোজা দাগ মাপার নিয়ম:</h4>
-        স্ক্রিনের নিচের দিকে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে হাঁটলে নিচ থেকে উপরের দিকে একটি <b>ডট-ডট লাইন</b> এগোবে ও পাশে দূরত্ব দেখাবে। নির্দিষ্ট দূরত্বে গিয়ে ২ নম্বর ডট দিলে নিচ থেকে উপরে দাগ কমপ্লিট হবে।
+        স্ক্রিনের নিচের বামদিকে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে হাঁটলে নিচ থেকে উপরের দিকে <b>ডট-ডট লাইন</b> এগোবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে দাগ কমপ্লিট হবে।
     </div>
 </div>
 
@@ -300,12 +324,15 @@
     let isDrawingDone = false;
     let currentGPS = null;
     let gpsAccuracy = 999;
-    let deviceHeading = 0; // মোবাইল কোন দিকে ঘোরানো আছে (ডিগ্রি)
 
-    // ফাঁকা মাঠ গ্রিড ম্যাপ ও বৃত্ত জুম স্কেল
-    let fieldScalePxPerMeter = 6; // ফাঁকা মাঠ ম্যাপে ১ মিটার = কত পিক্সেল
-    let circleVisualScale = 1.0;  // বৃত্ত মিলিয়ে দেখার স্কেল
+    // সেন্সর ও ঘূর্ণন (Heading & Gyroscope)
+    let deviceHeading = 0;
+    let hasCompassSensor = false;
+    let gyroIntegratedHeading = 0;
+    let lastGyroTime = 0;
+    let currentCornerAngle = 90; // দুই দাগের মধ্যবর্তী কোণ (ডিগ্রি)
 
+    let fieldScalePxPerMeter = 6;
     const videoEl = document.getElementById('cameraFeed');
     const photoImg = document.getElementById('photoCanvasImg');
     const overlay = document.getElementById('overlayCanvas');
@@ -320,19 +347,19 @@
     const shapeInfo = {
         line: {
             title: '১) সোজা দাগ পরিমাপ',
-            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4>নিচে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে এগোলে ১ নম্বর ডটের উপর দিকে <b>ডট-ডট লাইন</b> এগিয়ে যাবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে নিচ থেকে উপরে সোজা দাগ কমপ্লিট হবে।'
+            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4>স্ক্রিনের বামদিকে নিচে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। সামনের দিকে এগোলে উপরের দিকে <b>ডট-ডট লাইন</b> এগিয়ে যাবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে দাগ কমপ্লিট হবে।'
         },
         triangle: {
             title: '২) ত্রিভুজ পরিমাপ (কোণসহ)',
-            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4>প্রথম দাগ কমপ্লিট করার পর মোবাইল নিয়ে যেদিকে ঘুরবেন দ্বিতীয় ডট-ডট লাইন সেদিকে ঘুরবে এবং <b>দুই দাগের মাঝে কত ডিগ্রি কোণ</b> হচ্ছে তা দেখাবে। এভাবে ৩ নম্বর ডট দিলে ত্রিভুজের ৩ বাহু ও ৩ কোণ দেখাবে।'
+            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4>স্ক্রিনের বামদিকে ১ম ও ২য় ডট দিয়ে প্রথম বাহু তৈরি করুন। এরপর মোবাইল নিয়ে ঘুরে দাঁড়ালে <b>প্রথম বাহুটি নিচে বাম থেকে ডান দিকে চলে যাবে</b> এবং ২য় বাহুটি বাম দিক থেকে শুরু হয়ে কত ডিগ্রি কোণে ঘুরছেন তা দেখাবে। ৩য় ডট দিলে ত্রিভুজের ৩টি কোণ ও বাহু দেখাবে।'
         },
         quad: {
             title: '৩) চতুর্ভুজ পরিমাপ (কোণ ও কর্ণসহ)',
-            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4>ত্রিভুজের মতোই প্রথম দাগ দিয়ে ঘুরে দাঁড়ালে কোণের ডিগ্রি দেখাবে (৯০° হলে কোণা একদম সোজা)। এভাবে ৪টি ডট দিলে চার বাহু, কোণ এবং ২ কর্ণের মাপ দেখাবে।'
+            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4>বামদিকে ১ম ও ২য় ডট দিয়ে প্রথম বাহু তৈরি করে ঘুরে দাঁড়ান—প্রথম বাহু নিচে বাম থেকে ডানে চলে যাবে এবং কোণের ডিগ্রি (যেমন ৯০°) দেখাবে। একই নিয়মে ৩য় ও ৪র্থ ডট দিয়ে চতুর্ভুজ সম্পূর্ণ করুন।'
         },
         circle: {
-            title: '৪) গোল / বৃত্ত পরিমাপ (মাঠের বৃত্ত যাচাই)',
-            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>কেন্দ্রে ১ নম্বর ও ব্যাসার্ধের দূরত্বে ২ নম্বর ডট দিলেই বৃত্ত তৈরি হবে। এরপর মাঠে চুন দিয়ে বৃত্ত আঁকার পর ক্যামেরা ধরে <b>➕ / ➖ বাটন</b> বা আঙুল দিয়ে স্ক্রিনের বৃত্তটি মাঠের গোল দাগের ওপর বসিয়ে সমান হয়েছে কি না যাচাই করুন।'
+            title: '৪) গোল / বৃত্ত পরিমাপ',
+            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>কেন্দ্রে ১ নম্বর ও ব্যাসার্ধের দূরত্বে ২ নম্বর ডট দিলেই বৃত্ত তৈরি হবে। মাঠে চুন দিয়ে বৃত্ত আঁকার পর ক্যামেরা ধরে <b>➕ / ➖ বাটন</b> বা দুই আঙুল দিয়ে স্ক্রিনের বৃত্তটি মাঠের গোল দাগের ওপর বসিয়ে সমান হয়েছে কি না যাচাই করুন।'
         },
         polygon: {
             title: '৫) অন্যান্য আকৃতি পরিমাপ',
@@ -363,9 +390,7 @@
                 audio: false
             });
             videoEl.srcObject = stream;
-        } catch (e) {
-            // ক্যামেরা না থাকলে ফাঁকা মাঠ ম্যাপে সুইচ করা যাবে
-        }
+        } catch (e) {}
     }
 
     // ২. GPS ট্র্যাকিং
@@ -388,39 +413,76 @@
         );
     }
 
-    // ৩. মোবাইল ঘোরানোর কম্পাস সেন্সর (Device Orientation)
+    // ৩. কম্পাস ও জাইরোস্কোপ সেন্সর (মোবাইল ঘোরানোর কোণ নির্ণয়)
     window.addEventListener('deviceorientationabsolute', handleCompass, true);
     window.addEventListener('deviceorientation', handleCompass, true);
     function handleCompass(e) {
-        if (e.webkitCompassHeading !== undefined) {
-            deviceHeading = e.webkitCompassHeading;
-        } else if (e.alpha !== null) {
-            deviceHeading = (360 - e.alpha) % 360;
+        let h = null;
+        if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+            h = e.webkitCompassHeading;
+        } else if (e.alpha !== null && e.alpha !== undefined) {
+            h = (360 - e.alpha) % 360;
+        }
+        if (h !== null && !isNaN(h)) {
+            hasCompassSensor = true;
+            deviceHeading = h;
+            updateAngleFromHeading();
+        }
+    }
+
+    // ব্যাকআপ জাইরোস্কোপ (যদি ফোনের ম্যাগনেটোমিটার কাজ না করে)
+    window.addEventListener('devicemotion', (e) => {
+        if (hasCompassSensor) return;
+        const rot = e.rotationRate;
+        if (!rot || rot.alpha === null) return;
+        const now = performance.now();
+        if (lastGyroTime > 0) {
+            const dt = (now - lastGyroTime) / 1000;
+            if (Math.abs(rot.alpha) > 1.5) {
+                gyroIntegratedHeading = (gyroIntegratedHeading - rot.alpha * dt + 360) % 360;
+                deviceHeading = gyroIntegratedHeading;
+                updateAngleFromHeading();
+            }
+        }
+        lastGyroTime = now;
+    });
+
+    function updateAngleFromHeading() {
+        if (points.length >= 2 && !isDrawingDone && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
+            const baseHeading = points[points.length - 1].heading;
+            let turn = Math.abs(deviceHeading - baseHeading) % 360;
+            if (turn > 180) turn = 360 - turn;
+            // ঘোরার সাথে সাথে ১° থেকে ১৭৯° কোণ আপডেট হবে
+            if (turn > 2) {
+                currentCornerAngle = Math.max(10, Math.min(175, Math.round(180 - turn)));
+                document.getElementById('manualAngleSlider').value = currentCornerAngle;
+                document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
+            }
         }
         updateLiveBanner();
     }
 
-    // দুটি কম্পাস দিকের মধ্যে কোণ (Angle in Degrees: 0° - 180°) বের করা
-    function calcTurnAngle(h1, h2) {
-        let diff = Math.abs(h2 - h1) % 360;
-        if (diff > 180) diff = 360 - diff;
-        // জ্যামিতিক অন্তঃস্থ কোণ (Internal Corner Angle) = 180 - ঘোরার কোণ
-        return Math.round(180 - diff);
+    function onManualAngleChange(val) {
+        currentCornerAngle = parseInt(val, 10);
+        document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
+        updateLiveBanner();
+        updateCards();
     }
 
-    // দুটি লাইনের স্ক্রিন কোঅর্ডিনেট থেকে কোণ বের করা
+    // দুটি লাইনের স্ক্রিন কোঅর্ডিনেট থেকে নিরাপদ কোণ বের করা (কখনোই NaN আসবে না)
     function calcScreenCornerAngle(pPrev, pCurr, pNext) {
-        const v1x = pPrev.x - pCurr.x, v1y = pPrev.y - pCurr.y;
-        const v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
-        const dot = v1x * v2x + v1y * v2y;
+        if (!pPrev || !pCurr || !pNext) return 0;
+        const v1x = pPrev.screenX - pCurr.screenX, v1y = pPrev.screenY - pCurr.screenY;
+        const v2x = pNext.screenX - pCurr.screenX, v2y = pNext.screenY - pCurr.screenY;
         const mag1 = Math.hypot(v1x, v1y);
         const mag2 = Math.hypot(v2x, v2y);
-        if (mag1 === 0 || mag2 === 0) return 0;
-        const cosA = Math.max(-1, Math.min(1, dot / (mag1 * mag2)));
-        return Math.round(Math.acos(cosA) * 180 / Math.PI);
+        if (mag1 < 0.001 || mag2 < 0.001) return 0;
+        const cosA = Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / (mag1 * mag2)));
+        const deg = Math.round(Math.acos(cosA) * 180 / Math.PI);
+        return isNaN(deg) ? 0 : deg;
     }
 
-    // ওপরের ভাসমান ব্যাজ আপডেট (দূরত্ব + কোণ)
+    // ওপরের ভাসমান ব্যাজ আপডেট
     function updateLiveBanner() {
         const banner = document.getElementById('liveDistBanner');
         const labelEl = document.getElementById('liveBannerLabel');
@@ -441,12 +503,9 @@
             labelEl.innerText = `🚶 ${points.length} নং থেকে:`;
             valEl.innerText = formatDist(liveD);
 
-            // ত্রিভুজ, চতুর্ভুজ বা বহুভুজে ২য় বা তার পরের দাগ টানার সময় মোবাইল ঘোরালে কোণ দেখাবে
             if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
-                const prevLineHeading = points[points.length - 1].heading;
-                const cornerDeg = calcTurnAngle(prevLineHeading, deviceHeading);
                 angEl.style.display = 'inline';
-                angEl.innerText = `| কোণ: ${cornerDeg}°`;
+                angEl.innerText = `| কোণ: ${currentCornerAngle}°`;
             }
         } else if (points.length >= 2) {
             if (shape === 'circle') {
@@ -468,7 +527,7 @@
         }
     }
 
-    // ৪. নিচের লাল ডটে টাচ করলে পয়েন্ট বসবে (নিচ থেকে উপরের দিকে অগ্রসর হবে)
+    // ৪. পয়েন্ট যোগ করা ও আপনার নিয়ম অনুযায়ী জ্যামিতিক ঘূর্ণন (বামদিকে নতুন বাহু, নিচে আগের বাহু)
     function tapRedDot() {
         if (isDrawingDone || points.length >= maxPts[shape]) return;
 
@@ -479,31 +538,85 @@
         const h = overlay.height;
         const count = points.length;
 
-         // ১ম ডট স্ক্রিনের নিচে (bottom), ২য় ডট স্ক্রিনের উপরে (top)
-        let sx = w * 0.5;
-        let sy = h * 0.78; // নিচে ১ম পয়েন্ট
-
-        if (count === 1) {
-            sx = w * 0.5;
-            sy = h * 0.24; // উপরে ২য় পয়েন্ট
-        } else if (count === 2) {
-            sx = w * 0.80;
-            sy = h * 0.52;
-        } else if (count === 3) {
-            sx = w * 0.20;
-            sy = h * 0.52;
-        } else if (count > 3) {
-            sx = w * 0.5 + ((count % 3 - 1) * 55);
-            sy = h * 0.45;
+        // পয়েন্ট ১: স্ক্রিনের বামদিকে নিচে
+        if (count === 0) {
+            points.push({
+                lat, lng,
+                screenX: w * 0.24,
+                screenY: h * 0.78,
+                heading: deviceHeading
+            });
         }
+        // পয়েন্ট ২: প্রথম বাহু স্ক্রিনের বামদিকে নিচ থেকে উপরে কমপ্লিট হবে
+        else if (count === 1) {
+            points.push({
+                lat, lng,
+                screenX: w * 0.24,
+                screenY: h * 0.28,
+                heading: deviceHeading
+            });
+            // পরবর্তী বাহুর জন্য ডিফল্ট কোণ সেট (চতুর্ভুজে ৯০°, ত্রিভুজে ৬০°)
+            currentCornerAngle = (shape === 'quad') ? 90 : 60;
+            document.getElementById('manualAngleSlider').value = currentCornerAngle;
+            document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
+        }
+        // পয়েন্ট ৩ বা তার বেশি (ত্রিভুজ ও চতুর্ভুজে ঘুরে দাঁড়ানোর জ্যামিতি)
+        else {
+            if (shape === 'triangle' || shape === 'quad' || shape === 'polygon') {
+                // ঘোরার পর: ১ম বাহু স্ক্রিনের নিচে বাম থেকে ডান দিকে চলে যাবে, এবং নতুন বাহু বাম দিক থেকে উপরে উঠবে
+                const baseLeftX = w * 0.24;
+                const baseBottomY = h * 0.76;
+                const baseWidth = Math.min(w * 0.56, 210);
 
-        points.push({
-            lat: lat,
-            lng: lng,
-            screenX: sx,
-            screenY: sy,
-            heading: deviceHeading
-        });
+                if (count === 2) {
+                    // পয়েন্ট ২ (বর্তমান কোণা) বাম নিচে, পয়েন্ট ১ ডান নিচে চলে যাবে
+                    points[1].screenX = baseLeftX;
+                    points[1].screenY = baseBottomY;
+                    points[0].screenX = baseLeftX + baseWidth;
+                    points[0].screenY = baseBottomY;
+
+                    // নতুন পয়েন্ট ৩: পয়েন্ট ২ থেকে currentCornerAngle ডিগ্রি কোণে উপরের দিকে বসবে
+                    const rad = currentCornerAngle * Math.PI / 180;
+                    const sideLen = Math.min(h * 0.48, 195);
+                    const p3x = baseLeftX + Math.cos(rad) * sideLen;
+                    const p3y = baseBottomY - Math.sin(rad) * sideLen;
+
+                    points.push({ lat, lng, screenX: p3x, screenY: p3y, heading: deviceHeading });
+                } else if (count === 3) {
+                    // চতুর্ভুজের ৪র্থ পয়েন্ট: আগের বাহুটি নিচে বাম থেকে ডানে ঘুরবে এবং ৩য় বাহু বাম থেকে উপরে উঠবে
+                    const p2NewX = baseLeftX;
+                    const p2NewY = baseBottomY;
+                    const p1NewX = baseLeftX + baseWidth;
+                    const p1NewY = baseBottomY;
+
+                    // পয়েন্ট ০ কে ডান উপরে পাঠানো যাতে সুন্দর চতুর্ভুজ হয়
+                    const prevAngleRad = calcScreenCornerAngle(points[0], points[1], points[2]) * Math.PI / 180;
+                    const side2Len = Math.min(h * 0.44, 175);
+                    points[0].screenX = p1NewX + Math.cos(Math.PI - prevAngleRad) * side2Len * 0.3;
+                    points[0].screenY = p1NewY - Math.sin(prevAngleRad) * side2Len;
+                    points[1].screenX = p1NewX;
+                    points[1].screenY = p1NewY;
+                    points[2].screenX = p2NewX;
+                    points[2].screenY = p2NewY;
+
+                    const rad = currentCornerAngle * Math.PI / 180;
+                    const side3Len = Math.min(h * 0.46, 185);
+                    const p4x = p2NewX + Math.cos(rad) * side3Len;
+                    const p4y = p2NewY - Math.sin(rad) * side3Len;
+
+                    points.push({ lat, lng, screenX: p4x, screenY: p4y, heading: deviceHeading });
+                } else {
+                    const rad = currentCornerAngle * Math.PI / 180;
+                    const last = points[points.length - 1];
+                    points.push({
+                        lat, lng,
+                        screenX: Math.max(25, Math.min(w - 25, last.screenX + Math.cos(rad) * 90)),
+                        screenY: Math.max(45, Math.min(h - 35, last.screenY - Math.sin(rad) * 90)),
+                        heading: deviceHeading
+                    });
+                }
+            }
+        }
 
         if (shape !== 'polygon' && points.length >= maxPts[shape]) {
             isDrawingDone = true;
@@ -528,10 +641,15 @@
         const pill = document.getElementById('tapHintPill');
         const finishBtn = document.getElementById('btnFinishPoly');
         const zoomBar = document.getElementById('zoomControls');
+        const angleBox = document.getElementById('angleSimBox');
 
-        // ফাঁকা মাঠ গ্রিড ম্যাপ অথবা বৃত্ত কমপ্লিট হলে জুম (+/-) বাটন দেখাবে
         const showZoom = (mode === 'fieldGrid') || (shape === 'circle' && isDrawingDone);
         zoomBar.style.display = showZoom ? 'flex' : 'none';
+
+        // ত্রিভুজ, চতুর্ভুজ বা বহুভুজে ২য় পয়েন্টের পর কোণ ঘোরানোর স্লাইডার দেখাবে
+        const showAngleSlider = (mode !== 'map') && !isDrawingDone && points.length >= 2 &&
+                                (shape === 'triangle' || shape === 'quad' || shape === 'polygon');
+        angleBox.style.display = showAngleSlider ? 'flex' : 'none';
 
         if (mode === 'map') {
             dot.style.display = 'none';
@@ -548,18 +666,16 @@
             dot.style.display = 'flex';
             pill.style.display = 'block';
             pill.innerText = points.length === 0
-                ? 'নিচে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন'
+                ? 'বামদিকে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন'
                 : `${points.length + 1} নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন`;
             finishBtn.style.display = (shape === 'polygon' && points.length >= 2) ? 'flex' : 'none';
         }
     }
 
-    // ফাঁকা মাঠ ম্যাপ বা বৃত্ত ছোট-বড় করা
     function adjustScale(factor) {
         if (mode === 'fieldGrid') {
             fieldScalePxPerMeter = Math.max(1.2, Math.min(40, fieldScalePxPerMeter * factor));
         } else if (shape === 'circle' && points.length === 2) {
-            // কেন্দ্র (points[0]) ঠিক রেখে পরিধির বিন্দুটিকে ছোট বা বড় করা
             const dx = points[1].screenX - points[0].screenX;
             const dy = points[1].screenY - points[0].screenY;
             points[1].screenX = points[0].screenX + dx * factor;
@@ -567,7 +683,6 @@
         }
     }
 
-    // মোড পরিবর্তন
     function switchMode(newMode) {
         mode = newMode;
         document.getElementById('tabCamera').classList.toggle('active', mode === 'camera');
@@ -619,7 +734,7 @@
         r.readAsDataURL(f);
     }
 
-    // ================= বিন্দু ড্র্যাগ ও দুই আঙুলে বৃত্ত জুম =================
+    // বিন্দু ড্র্যাগ ও দুই আঙুলে জুম
     let dragIdx = -1;
     let initialPinchDist = 0;
 
@@ -632,8 +747,6 @@
 
     function onDragStart(e) {
         if (mode === 'map') return;
-
-        // দুই আঙুল দিয়ে বৃত্ত বা ফাঁকা মাঠ ম্যাপ ছোট-বড় করার জন্য
         if (e.touches && e.touches.length === 2) {
             initialPinchDist = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
@@ -642,7 +755,6 @@
             if (e.cancelable) e.preventDefault();
             return;
         }
-
         if (points.length === 0) return;
         const pos = getTouchPos(e);
         let closest = -1;
@@ -667,17 +779,16 @@
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
             );
-            const factor = newDist / initialPinchDist;
-            adjustScale(factor);
+            adjustScale(newDist / initialPinchDist);
             initialPinchDist = newDist;
             return;
         }
-
         if (dragIdx === -1) return;
         if (e.cancelable) e.preventDefault();
         const pos = getTouchPos(e);
         points[dragIdx].screenX = Math.max(15, Math.min(overlay.width - 15, pos.x));
         points[dragIdx].screenY = Math.max(15, Math.min(overlay.height - 15, pos.y));
+        updateCards();
     }
 
     function onDragEnd() {
@@ -692,28 +803,18 @@
     window.addEventListener('mousemove', onDragMove);
     window.addEventListener('mouseup', onDragEnd);
 
-    // ================= স্যাটেলাইট ও ওপেনস্ট্রিট ম্যাপ (Map data not yet available ফিক্সসহ) =================
+    // স্যাটেলাইট ম্যাপ
     function initMap() {
         if (!map) {
             const lat = currentGPS ? currentGPS.lat : 23.8103;
             const lng = currentGPS ? currentGPS.lng : 90.4125;
-            map = L.map('leafletMap', {
-                maxZoom: 23,
-                zoomControl: true
-            }).setView([lat, lng], 18);
+            map = L.map('leafletMap', { maxZoom: 23, zoomControl: true }).setView([lat, lng], 18);
 
-            // স্যাটেলাইট লেয়ার (maxNativeZoom: 18 দেওয়ায় বেশি জুম করলেও "Map data not yet available" আসবে না)
             const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxNativeZoom: 18,
-                maxZoom: 23,
-                attribution: 'Satellite'
+                maxNativeZoom: 18, maxZoom: 23, attribution: 'Satellite'
             });
-
-            // ব্যাকআপ ম্যাপ লেয়ার
             const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxNativeZoom: 19,
-                maxZoom: 23,
-                attribution: 'Map'
+                maxNativeZoom: 19, maxZoom: 23, attribution: 'Map'
             });
 
             satLayer.addTo(map);
@@ -721,10 +822,8 @@
 
             map.on('click', (e) => {
                 if (!isDrawingDone && points.length < maxPts[shape]) {
-                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng, heading: deviceHeading });
-                    if (shape !== 'polygon' && points.length >= maxPts[shape]) {
-                        isDrawingDone = true;
-                    }
+                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng, screenX: 0, screenY: 0, heading: deviceHeading });
+                    if (shape !== 'polygon' && points.length >= maxPts[shape]) isDrawingDone = true;
                     updateControlsVisibility();
                     updateLiveBanner();
                     drawMapShapes();
@@ -772,11 +871,11 @@
         }
     }
 
-    // আকৃতি পরিবর্তন
     function setShape(s) {
         shape = s;
         points = [];
         isDrawingDone = false;
+        currentCornerAngle = (s === 'quad') ? 90 : 60;
         document.querySelectorAll('.shape-btn').forEach(b => b.classList.toggle('active', b.dataset.shape === s));
         document.getElementById('sheetTitle').innerText = shapeInfo[s].title;
         document.getElementById('methodGuideText').innerHTML = shapeInfo[s].guide;
@@ -785,8 +884,8 @@
         updateCards();
         if (mode === 'map') drawMapShapes();
     }
-
-    function undoPoint() {
+    
+function undoPoint() {
         points.pop();
         isDrawingDone = false;
         updateControlsVisibility();
@@ -842,7 +941,7 @@
             if (points.length < 3) {
                 const d1 = (points.length === 2) ? haversine(points[0], points[1]) : (points.length === 1 && currentGPS ? haversine(points[0], currentGPS) : 0);
                 addCard(points.length === 1 ? 'লাইভ দূরত্ব (১ম বাহু)' : '১ম বাহুর দৈর্ঘ্য', formatDist(d1));
-                addCard('কোণ (ডিগ্রি)', points.length === 2 ? `${calcTurnAngle(points[1].heading, deviceHeading)}° (ঘুরলে বদলাবে)` : '২য় পয়েন্ট দিন');
+                addCard('কোণ (ডিগ্রি)', points.length === 2 ? `${currentCornerAngle}° (ঘুরলে বদলাবে)` : '২য় পয়েন্ট দিন');
             } else {
                 const a = haversine(points[1], points[2]);
                 const b = haversine(points[0], points[2]);
@@ -851,17 +950,21 @@
                 const s = perim / 2;
                 const area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
 
+                const ang1 = calcScreenCornerAngle(points[2], points[0], points[1]);
+                const ang2 = calcScreenCornerAngle(points[0], points[1], points[2]);
+                const ang3 = calcScreenCornerAngle(points[1], points[2], points[0]);
+
                 addCard('৩ বাহুর দৈর্ঘ্য', `${formatShortDist(c)}, ${formatShortDist(a)}, ${formatShortDist(b)}`);
                 addCard('মোট পরিসীমা', formatDist(perim));
                 addCard('ক্ষেত্রফল', `${area.toFixed(2)} বর্গমিটার`);
-                addCard('কোণসমূহ', `${calcScreenCornerAngle(points[2], points[0], points[1])}°, ${calcScreenCornerAngle(points[0], points[1], points[2])}°, ${calcScreenCornerAngle(points[1], points[2], points[0])}°`);
+                addCard('ত্রিভুজের ৩ কোণ', `${ang1}°, ${ang2}°, ${ang3}°`);
             }
         }
         else if (shape === 'quad') {
             if (points.length < 4) {
                 const liveSeg = (points.length >= 1 && currentGPS) ? haversine(points[points.length - 1], currentGPS) : 0;
                 addCard('বর্তমান বাহুর দূরত্ব', formatDist(liveSeg));
-                addCard('বর্তমান কোণ', points.length >= 2 ? `${calcTurnAngle(points[points.length - 1].heading, deviceHeading)}°` : `${points.length} / ৪টি পয়েন্ট`);
+                addCard('বর্তমান কোণ', points.length >= 2 ? `${currentCornerAngle}°` : `${points.length} / ৪টি পয়েন্ট`);
             } else {
                 const s1 = haversine(points[0], points[1]);
                 const s2 = haversine(points[1], points[2]);
@@ -870,10 +973,15 @@
                 const d1 = haversine(points[0], points[2]);
                 const d2 = haversine(points[1], points[3]);
 
+                const c1 = calcScreenCornerAngle(points[3], points[0], points[1]);
+                const c2 = calcScreenCornerAngle(points[0], points[1], points[2]);
+                const c3 = calcScreenCornerAngle(points[1], points[2], points[3]);
+                const c4 = calcScreenCornerAngle(points[2], points[3], points[0]);
+
                 addCard('দৈর্ঘ্য (১ম ও ৩য় বাহু)', `${formatShortDist(s1)} ও ${formatShortDist(s3)}`);
                 addCard('প্রস্থ (২য় ও ৪র্থ বাহু)', `${formatShortDist(s2)} ও ${formatShortDist(s4)}`);
                 addCard('১ম ও ২য় কর্ণ', `${formatShortDist(d1)} ও ${formatShortDist(d2)}`);
-                addCard('৪ কোণের মাপ', `${calcScreenCornerAngle(points[3], points[0], points[1])}°, ${calcScreenCornerAngle(points[0], points[1], points[2])}°, ${calcScreenCornerAngle(points[1], points[2], points[3])}°, ${calcScreenCornerAngle(points[2], points[3], points[0])}°`);
+                addCard('চতুর্ভুজের ৪ কোণ', `${c1}°, ${c2}°, ${c3}°, ${c4}°`);
             }
         }
         else if (shape === 'circle') {
@@ -899,8 +1007,7 @@
         }
     }
 
-    // দাগের পাশে দূরত্ব বা কোণের লেবেল আঁকা
-    function drawSideBadge(text, x, y, bgColor = 'rgba(15, 23, 42, 0.9)', textColor = '#fde047') {
+    function drawSideBadge(text, x, y, bgColor = 'rgba(15, 23, 42, 0.92)', textColor = '#fde047') {
         ctx.save();
         ctx.font = 'bold 12px sans-serif';
         const w = ctx.measureText(text).width + 12;
@@ -915,22 +1022,20 @@
         ctx.restore();
     }
 
-    // ফাঁকা মাঠ গ্রিড আঁকার ফাংশন (ব্যবহারকারীর চারপাশের আসল মিটার স্কেলে)
     function drawEmptyFieldGrid() {
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, overlay.width, overlay.height);
 
-        // জুম অনুযায়ী ১ মিটার, ৫ মিটার বা ১০ মিটার পরপর গ্রিড লাইন
         let meterStep = 10;
         if (fieldScalePxPerMeter >= 20) meterStep = 1;
         else if (fieldScalePxPerMeter >= 8) meterStep = 5;
         else if (fieldScalePxPerMeter < 2.5) meterStep = 25;
 
         const stepPx = meterStep * fieldScalePxPerMeter;
-        const cx = overlay.width / 2;
+        const cx = overlay.width * 0.24;
         const cy = overlay.height * 0.78;
 
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.20)';
         ctx.lineWidth = 1;
 
         for (let x = cx % stepPx; x < overlay.width; x += stepPx) {
@@ -940,7 +1045,6 @@
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(overlay.width, y); ctx.stroke();
         }
 
-        // স্কেল নির্দেশক ব্যাজ
         drawSideBadge(`ফাঁকা মাঠ স্কেল: ১ ঘর = ${meterStep} মিটার`, overlay.width / 2, overlay.height - 16, 'rgba(30, 58, 138, 0.9)', '#93c5fd');
     }
 
@@ -953,58 +1057,96 @@
         }
         ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-        // ফাঁকা মাঠ ম্যাপ মোড হলে ব্যাকগ্রাউন্ডে মিটার গ্রিড আঁকা
         if (mode === 'fieldGrid') {
             drawEmptyFieldGrid();
         }
 
         if (mode !== 'map' && points.length > 0) {
-            // ১) নিচ থেকে উপরের দিকে অগ্রসর হওয়া লাইভ ডট-ডট লাইন (যখন পরের পয়েন্টের জন্য হাঁটা হচ্ছে)
+            const w = overlay.width;
+            const h = overlay.height;
+
+            // ১) ঘুরে দাঁড়ানোর প্রিভিউ ও ডট-ডট লাইন
             if (!isDrawingDone) {
                 const lastPt = points[points.length - 1];
                 const liveMeters = currentGPS ? haversine(lastPt, currentGPS) : 0;
+                const progressPx = Math.min(h * 0.48, Math.max(55, liveMeters * (mode === 'fieldGrid' ? fieldScalePxPerMeter : 4.2)));
 
-                // কতদূর এগিয়েছে তার অনুপাতে নিচ থেকে উপরের দিকে ডট-ডট লাইন অগ্রসর হবে
-                const progressPx = Math.min(overlay.height * 0.52, Math.max(45, liveMeters * (mode === 'fieldGrid' ? fieldScalePxPerMeter : 4.5)));
-
-                // ২য় বা পরবর্তী বাহুর ক্ষেত্রে মোবাইল ঘোরালে ডট-ডট লাইনটি কোণ অনুযায়ী ঘুরবে
-                let angleRad = -Math.PI / 2; // সোজা উপরের দিকে (-90 deg)
+                // যখন ২য় ডট দেওয়ার পর ত্রিভুজ বা চতুর্ভুজের জন্য ঘুরে দাঁড়ানো হচ্ছে:
+                // তখন ১ম বাহুটি স্ক্রিনের নিচে বাম থেকে ডান দিকে শুয়ে থাকবে, এবং নতুন ডট-ডট বাহু বাম দিক থেকে কোণ অনুযায়ী উঠবে
                 if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
-                    const deltaDeg = ((deviceHeading - points[points.length - 1].heading + 540) % 360) - 180;
-                    angleRad = (-90 + deltaDeg) * Math.PI / 180;
-                }
+                    const pivotX = w * 0.24;
+                    const pivotY = h * 0.76;
+                    const baseEndX = Math.min(w * 0.80, pivotX + 195);
+                    const baseEndY = pivotY;
 
-                const targetX = Math.max(25, Math.min(overlay.width - 25, lastPt.screenX + Math.cos(angleRad) * progressPx));
-                const targetY = Math.max(45, Math.min(overlay.height - 30, lastPt.screenY + Math.sin(angleRad) * progressPx));
+                    // নিচের দিকে ঘুরে যাওয়া আগের বাহু (বাম থেকে ডানে) দেখানো
+                    ctx.save();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(baseEndX, baseEndY);
+                    ctx.lineTo(pivotX, pivotY);
+                    ctx.stroke();
+                    ctx.restore();
 
-                // হলুদ ডট-ডট লাইন আঁকা
-                ctx.save();
-                ctx.setLineDash([7, 7]);
-                ctx.strokeStyle = '#fde047';
-                ctx.lineWidth = 3.5;
-                ctx.beginPath();
-                ctx.moveTo(lastPt.screenX, lastPt.screenY);
-                ctx.lineTo(targetX, targetY);
-                ctx.stroke();
-                ctx.restore();
+                    // আগের বাহুর দৈর্ঘ্য নিচে দেখানো
+                    const prevSegDist = haversine(points[points.length - 2], points[points.length - 1]);
+                    drawSideBadge(formatShortDist(prevSegDist), (pivotX + baseEndX) / 2, pivotY + 20);
 
-                // ডট-ডট লাইনের মাথায় চলমান বিন্দু
-                ctx.fillStyle = '#38bdf8';
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, 7, 0, Math.PI * 2);
-                ctx.fill();
+                    // নতুন ডট-ডট লাইন (বাম দিকের কোণা থেকে currentCornerAngle ডিগ্রি কোণে)
+                    const rad = currentCornerAngle * Math.PI / 180;
+                    const tipX = Math.max(25, Math.min(w - 25, pivotX + Math.cos(rad) * progressPx));
+                    const tipY = Math.max(50, Math.min(h - 35, pivotY - Math.sin(rad) * progressPx));
 
-                // ডট-ডট লাইনের পাশে লাইভ দূরত্ব দেখানো
-                drawSideBadge(formatShortDist(liveMeters), (lastPt.screenX + targetX) / 2 + 38, (lastPt.screenY + targetY) / 2);
+                    ctx.save();
+                    ctx.setLineDash([7, 7]);
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(pivotX, pivotY);
+                    ctx.lineTo(tipX, tipY);
+                    ctx.stroke();
+                    ctx.restore();
 
-                // দুই দাগের মাঝে কোণের (ডিগ্রি) আর্ক ও মান দেখানো
-                if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
-                    const cornerDeg = calcTurnAngle(points[points.length - 1].heading, deviceHeading);
-                    drawSideBadge(`${cornerDeg}°`, lastPt.screenX, lastPt.screenY - 26, 'rgba(6, 78, 59, 0.92)', '#6ee7b7');
+                    // কোণের বৃত্তাকার আর্ক (Angle Arc) আঁকা
+                    ctx.save();
+                    ctx.strokeStyle = '#4ade80';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(pivotX, pivotY, 34, -rad, 0);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // কোণের ডিগ্রি ও চলমান বাহুর দূরত্ব দেখানো
+                    drawSideBadge(`${currentCornerAngle}°`, pivotX + 46, pivotY - 24, 'rgba(6, 78, 59, 0.94)', '#6ee7b7');
+                    drawSideBadge(formatShortDist(liveMeters), (pivotX + tipX) / 2 - 12, (pivotY + tipY) / 2 - 12);
+
+                    // চলমান মাথায় নীল বিন্দু
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    // প্রথম বাহুর ক্ষেত্রে নিচ থেকে সোজা উপরের দিকে ডট-ডট লাইন এগোবে
+                    const tipX = lastPt.screenX;
+                    const tipY = Math.max(50, lastPt.screenY - progressPx);
+
+                    ctx.save();
+                    ctx.setLineDash([7, 7]);
+                    ctx.strokeStyle = '#fde047';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(lastPt.screenX, lastPt.screenY);
+                    ctx.lineTo(tipX, tipY);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
+
+                    drawSideBadge(formatShortDist(liveMeters), tipX + 42, (lastPt.screenY + tipY) / 2);
                 }
             }
 
-            // ২) গোল (বৃত্ত) আঁকা (মাঠের বৃত্তের সাথে মিলিয়ে দেখার জন্য স্পষ্ট রিং)
+            // ২) গোল (বৃত্ত) আঁকা
             if (shape === 'circle' && points.length === 2) {
                 const rPx = Math.hypot(points[1].screenX - points[0].screenX, points[1].screenY - points[0].screenY);
                 ctx.strokeStyle = '#fde047';
@@ -1015,7 +1157,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // ব্যাসার্ধের ড্যাশ দাগ
                 ctx.save();
                 ctx.setLineDash([6, 6]);
                 ctx.strokeStyle = '#ffffff';
@@ -1029,8 +1170,8 @@
                 const rMeters = haversine(points[0], points[1]);
                 drawSideBadge(`ব্যাসার্ধ: ${formatShortDist(rMeters)}`, (points[0].screenX + points[1].screenX) / 2, (points[0].screenY + points[1].screenY) / 2);
             } 
-            // ৩) কমপ্লিট হওয়া সাদা দাগ (নিচ থেকে উপরের দিকে)
-            else if (points.length >= 2) {
+            // ৩) কমপ্লিট হওয়া সাদা দাগ (যখন সব পয়েন্ট হয়ে গেছে বা প্রথম বাহু আঁকা হয়েছে)
+            else if (points.length >= 2 && (isDrawingDone || shape === 'line')) {
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 4;
                 ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
@@ -1042,7 +1183,6 @@
                 }
                 ctx.stroke();
 
-                // প্রতিটি বাহুর পাশে মাপ লেখা
                 const segs = (points.length >= 3 && shape !== 'line' && (shape !== 'polygon' || isDrawingDone)) ? points.length : points.length - 1;
                 for (let i = 0; i < segs; i++) {
                     const pA = points[i];
@@ -1058,27 +1198,29 @@
                         const curr = points[i];
                         const next = points[(i + 1) % points.length];
                         const deg = calcScreenCornerAngle(prev, curr, next);
-                        drawSideBadge(`${deg}°`, curr.screenX, curr.screenY - 24, 'rgba(6, 78, 59, 0.92)', '#6ee7b7');
+                        drawSideBadge(`${deg}°`, curr.screenX, curr.screenY - 24, 'rgba(6, 78, 59, 0.94)', '#6ee7b7');
                     }
                 }
             }
 
             // ৪) খুঁটি (১, ২, ৩, ৪ নম্বর গোল চিহ্ন) আঁকা
-            points.forEach((p, i) => {
-                const isDragging = (i === dragIdx);
-                ctx.fillStyle = i === 0 ? '#ef4444' : '#f59e0b';
-                ctx.beginPath();
-                ctx.arc(p.screenX, p.screenY, isDragging ? 18 : 14, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = isDragging ? 3.5 : 2.5;
-                ctx.stroke();
+            if (isDrawingDone || points.length <= 1 || shape === 'circle') {
+                points.forEach((p, i) => {
+                    const isDragging = (i === dragIdx);
+                    ctx.fillStyle = i === 0 ? '#ef4444' : '#f59e0b';
+                    ctx.beginPath();
+                    ctx.arc(p.screenX, p.screenY, isDragging ? 18 : 14, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = isDragging ? 3.5 : 2.5;
+                    ctx.stroke();
 
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 13px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(i + 1, p.screenX, p.screenY + 4.5);
-            });
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(i + 1, p.screenX, p.screenY + 4.5);
+                });
+            }
         }
 
         requestAnimationFrame(renderLoop);
@@ -1092,4 +1234,4 @@
     renderLoop();
 </script>
 </body>
-</html>
+</html>    
