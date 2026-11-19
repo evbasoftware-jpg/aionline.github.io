@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>খেলার মাঠ পরিমাপক (Smart Angle & AR)</title>
+    <title>খেলার মাঠ পরিমাপক (Compass AR + Multi-Phone Sync)</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- একাধিক মোবাইল রিয়েল-টাইম যুক্ত করার জন্য হালকা MQTT ক্লায়েন্ট -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root {
             --primary: #1d4ed8;
@@ -33,17 +35,24 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            gap: 6px;
+            gap: 5px;
         }
         .mode-tabs { display: flex; gap: 3px; background: #1e293b; padding: 3px; border-radius: 8px; overflow-x: auto; }
         .tab-btn {
             border: none; background: transparent; color: #cbd5e1; padding: 6px 8px;
-            font-size: 11.5px; font-weight: 700; border-radius: 6px; cursor: pointer; white-space: nowrap;
+            font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; white-space: nowrap;
         }
         .tab-btn.active { background: var(--primary); color: #fff; }
 
+        .right-badges { display: flex; gap: 4px; align-items: center; }
+        .team-btn {
+            background: #d97706; color: #fff; border: 1px solid #fde047;
+            padding: 5px 8px; border-radius: 12px; font-size: 11px; font-weight: 800;
+            cursor: pointer; white-space: nowrap;
+        }
+        .team-btn.connected { background: #059669; border-color: #6ee7b7; }
         .gps-badge {
-            font-size: 11px; padding: 4px 8px; border-radius: 12px;
+            font-size: 10.5px; padding: 4px 7px; border-radius: 12px;
             background: #334155; color: #fde047; font-weight: 700; white-space: nowrap;
         }
         .gps-badge.good { background: var(--primary-dark); color: #93c5fd; border: 1px solid #3b82f6; }
@@ -100,24 +109,6 @@
         .live-dist-banner span.val { color: #fde047; font-size: 14px; }
         .live-dist-banner span.ang { color: #4ade80; font-size: 14px; }
 
-        /* ডানপাশে কোণ পরীক্ষার স্লাইডার (কম্পাস সেন্সর না থাকলে বা টেস্ট করার জন্য) */
-        .angle-sim-box {
-            position: absolute;
-            top: 48px;
-            right: 10px;
-            background: rgba(15, 23, 42, 0.88);
-            border: 1px solid #475569;
-            border-radius: 10px;
-            padding: 6px 8px;
-            z-index: 36;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 115px;
-        }
-        .angle-sim-box label { font-size: 10px; color: #93c5fd; font-weight: 700; margin-bottom: 3px; }
-        .angle-sim-box input[type=range] { width: 100%; accent-color: #f59e0b; }
-
         /* নিচের বামদিকে থাকা পয়েন্ট দেওয়ার লাল ডট */
         .bottom-red-dot {
             position: absolute;
@@ -145,7 +136,7 @@
         .tap-hint-pill {
             position: absolute;
             bottom: 26px;
-            left: 26%;
+            left: 28%;
             transform: translateX(-50%);
             background: rgba(15, 23, 42, 0.90);
             color: #fde047;
@@ -188,6 +179,37 @@
         }
         .f-btn.primary-btn { background: var(--primary); border-color: #60a5fa; }
         .f-btn.done-btn { background: #d97706; border-color: #fde047; color: #fff; }
+
+        /* দলগত মাপ (Multi-Phone Modal) */
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+            z-index: 2000; justify-content: center; align-items: center; padding: 16px;
+        }
+        .modal-card {
+            background: #ffffff; border-radius: 14px; width: 100%; max-width: 380px;
+            padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); color: #0f172a;
+        }
+        .modal-card h3 { font-size: 16px; color: var(--primary-dark); margin-bottom: 6px; }
+        .room-code-display {
+            background: #eff6ff; border: 2px dashed var(--primary); border-radius: 10px;
+            padding: 10px; text-align: center; margin: 10px 0;
+        }
+        .room-code-display strong { font-size: 26px; letter-spacing: 4px; color: var(--primary); display: block; }
+        .join-row { display: flex; gap: 8px; margin-top: 10px; }
+        .join-row input {
+            flex: 1; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+            font-size: 16px; font-weight: 800; text-align: center; letter-spacing: 2px;
+        }
+        .join-row button {
+            padding: 9px 16px; background: var(--primary); color: #fff; border: none;
+            border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        .role-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+        .role-btn {
+            padding: 7px 4px; border: 1.5px solid #cbd5e1; border-radius: 8px;
+            background: #f8fafc; font-weight: 700; font-size: 12px; cursor: pointer;
+        }
+        .role-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
         /* নিচের পরিমাপ ও নিয়মাবলী প্যানেল */
         .bottom-sheet {
@@ -241,11 +263,14 @@
 <div class="top-bar">
     <div class="mode-tabs">
         <button class="tab-btn active" id="tabCamera" onclick="switchMode('camera')">📷 ক্যামেরা</button>
-        <button class="tab-btn" id="tabFieldGrid" onclick="switchMode('fieldGrid')">🟩 ফাঁকা মাঠ ম্যাপ</button>
+        <button class="tab-btn" id="tabFieldGrid" onclick="switchMode('fieldGrid')">🟩 মাঠ গ্রিড</button>
         <button class="tab-btn" id="tabPhoto" onclick="switchMode('photo')">🖼️ ছবি</button>
-        <button class="tab-btn" id="tabMap" onclick="switchMode('map')">🗺️ স্যাটেলাইট</button>
+        <button class="tab-btn" id="tabMap" onclick="switchMode('map')">🗺️ ম্যাপ</button>
     </div>
-    <div class="gps-badge" id="gpsBadge">📡 GPS খুঁজছে...</div>
+    <div class="right-badges">
+        <button class="team-btn" id="btnTeamModal" onclick="openTeamModal()">👥 দলগত মাপ</button>
+        <div class="gps-badge" id="gpsBadge">📡 GPS...</div>
+    </div>
 </div>
 
 <!-- ৫টি আকৃতি নির্বাচন -->
@@ -269,12 +294,6 @@
         <span id="liveBannerLabel">📍 দূরত্ব:</span>
         <span class="val" id="liveBannerVal">0.0 সেমি.</span>
         <span class="ang" id="liveBannerAngle" style="display:none;">| কোণ: 90°</span>
-    </div>
-
-    <!-- কোণ স্লাইডার (মোবাইল ঘোরানোর পাশাপাশি হাত দিয়েও কোণ সেট করার সুবিধা) -->
-    <div class="angle-sim-box" id="angleSimBox">
-        <label id="angleSimLabel">কোণ ঘোরান: 90°</label>
-        <input type="range" id="manualAngleSlider" min="15" max="175" value="90" oninput="onManualAngleChange(this.value)">
     </div>
 
     <!-- বৃত্ত ও ফাঁকা মাঠ ম্যাপ ছোট-বড় করার বাটন -->
@@ -312,7 +331,44 @@
 
     <div class="guide-footer" id="methodGuideText">
         <h4>📏 সোজা দাগ মাপার নিয়ম:</h4>
-        স্ক্রিনের নিচের বামদিকে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। এরপর সামনের দিকে হাঁটলে নিচ থেকে উপরের দিকে <b>ডট-ডট লাইন</b> এগোবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে দাগ কমপ্লিট হবে।
+        স্ক্রিনের বামদিকে নিচে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। সামনের দিকে এগোলে উপরের দিকে <b>ডট-ডট লাইন</b> এগোবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে দাগ কমপ্লিট হবে।
+    </div>
+</div>
+
+<!-- দলগত মাপ (Multi-Phone Live Room Modal) -->
+<div class="modal-backdrop" id="teamModal">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>👥 একাধিক মোবাইল যুক্ত করুন</h3>
+            <button onclick="closeTeamModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✖</button>
+        </div>
+        <p style="font-size:12px; color:#475569; margin-top:4px;">২, ৩ বা ৪ জন ব্যক্তি আলাদা মোবাইল নিয়ে একসাথে সোজা দাগ, ত্রিভুজ বা চতুর্ভুজ মাপতে নিচের কোডটি অন্য মোবাইলে দিন:</p>
+
+        <div class="room-code-display">
+            <span style="font-size:11px; color:#1e3a8a; font-weight:700;">আপনার রুম কোড (Room Code)</span>
+            <strong id="myRoomCodeText">----</strong>
+            <span id="teamConnStatus" style="font-size:11px; color:#059669; font-weight:700;">সংযোগ হচ্ছে...</span>
+        </div>
+
+        <label style="font-size:12px; font-weight:700; color:#334155;">আপনি কোন পয়েন্টে দাঁড়িয়ে আছেন?</label>
+        <div class="role-selector">
+            <button class="role-btn active" id="role1" onclick="selectPlayerRole(1)">১ম ব্যক্তি</button>
+            <button class="role-btn" id="role2" onclick="selectPlayerRole(2)">২য় ব্যক্তি</button>
+            <button class="role-btn" id="role3" onclick="selectPlayerRole(3)">৩য় ব্যক্তি</button>
+            <button class="role-btn" id="role4" onclick="selectPlayerRole(4)">৪র্থ ব্যক্তি</button>
+        </div>
+
+        <div style="margin-top:12px; border-top:1px solid #e2e8f0; padding-top:10px;">
+            <label style="font-size:12px; font-weight:700; color:#334155;">অন্যের রুমে যোগ দিতে কোড লিখুন:</label>
+            <div class="join-row">
+                <input type="number" id="joinCodeInput" placeholder="কোড লিখুন" maxlength="4">
+                <button onclick="joinTeamRoom()">যোগ দিন</button>
+            </div>
+        </div>
+
+        <div id="connectedPeersBox" style="margin-top:10px; font-size:12px; color:#1e293b; background:#f8fafc; padding:8px; border-radius:8px;">
+            সক্রিয় সদস্য: আপনি (১ম ব্যক্তি)
+        </div>
     </div>
 </div>
 
@@ -325,12 +381,19 @@
     let currentGPS = null;
     let gpsAccuracy = 999;
 
-    // সেন্সর ও ঘূর্ণন (Heading & Gyroscope)
+    // হাই-সেন্সিটিভ কম্পাস ও জাইরোস্কোপ ভেরিয়েবল
     let deviceHeading = 0;
-    let hasCompassSensor = false;
-    let gyroIntegratedHeading = 0;
+    let smoothHeading = 0;
+    let hasCompass = false;
     let lastGyroTime = 0;
-    let currentCornerAngle = 90; // দুই দাগের মধ্যবর্তী কোণ (ডিগ্রি)
+    let currentTurnDeg = 0; // মোবাইল ঘোরানোর সাথে সাথে রিয়েল-টাইম কোণ
+
+    // মাল্টি-ফোন (দলগত মাপ) ভেরিয়েবল
+    let mqttClient = null;
+    let roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+    let myRole = 1; // 1, 2, 3, or 4
+    let isTeamActive = false;
+    let teamMembers = {}; // { 1: {lat, lng, locked, heading}, 2: {...}, ... }
 
     let fieldScalePxPerMeter = 6;
     const videoEl = document.getElementById('cameraFeed');
@@ -347,19 +410,19 @@
     const shapeInfo = {
         line: {
             title: '১) সোজা দাগ পরিমাপ',
-            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4>স্ক্রিনের বামদিকে নিচে থাকা <b>লাল ডটে</b> টাচ করলে ১ নম্বর পয়েন্ট বসবে। সামনের দিকে এগোলে উপরের দিকে <b>ডট-ডট লাইন</b> এগিয়ে যাবে ও পাশে দূরত্ব দেখাবে। ২ নম্বর ডট দিলে দাগ কমপ্লিট হবে।'
+            guide: '<h4>📏 সোজা দাগ মাপার নিয়ম:</h4><b>এককভাবে:</b> নিচে বামদিকে লাল ডটে টাচ করে হেঁটে গিয়ে ২য় ডট দিন।<br><b>দলগতভাবে (২ জন):</b> ওপরে <b>👥 দলগত মাপ</b> বাটনে কোড দিয়ে ২ জন যুক্ত হলে একজন ১ম ডট ও অন্যজন ২য় ডট দিতে পারবেন এবং হাঁটার সাথে সাথে দুজনের স্ক্রিনেই দূরত্ব দেখাবে।'
         },
         triangle: {
-            title: '২) ত্রিভুজ পরিমাপ (কোণসহ)',
-            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4>স্ক্রিনের বামদিকে ১ম ও ২য় ডট দিয়ে প্রথম বাহু তৈরি করুন। এরপর মোবাইল নিয়ে ঘুরে দাঁড়ালে <b>প্রথম বাহুটি নিচে বাম থেকে ডান দিকে চলে যাবে</b> এবং ২য় বাহুটি বাম দিক থেকে শুরু হয়ে কত ডিগ্রি কোণে ঘুরছেন তা দেখাবে। ৩য় ডট দিলে ত্রিভুজের ৩টি কোণ ও বাহু দেখাবে।'
+            title: '২) ত্রিভুজ পরিমাপ (কম্পাস কোণসহ)',
+            guide: '<h4>📐 ত্রিভুজ মাপার নিয়ম:</h4><b>এককভাবে:</b> ১ম ও ২য় ডট দেওয়ার পর মোবাইল নিয়ে ঘুরে দাঁড়ালে ১ম বাহু নিচে চলে যাবে এবং নতুন ডট-ডট লাইন বামদিকে উঠে রিয়েল-টাইম কোণের ডিগ্রি দেখাবে।<br><b>দলগতভাবে (৩ জন):</b> ৩ জন ৩টি কোণায় দাঁড়িয়ে ডট দিলে ৩টি বাহু ও ৩টি কোণের সঠিক ডিগ্রি দেখাবে।'
         },
         quad: {
-            title: '৩) চতুর্ভুজ পরিমাপ (কোণ ও কর্ণসহ)',
-            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4>বামদিকে ১ম ও ২য় ডট দিয়ে প্রথম বাহু তৈরি করে ঘুরে দাঁড়ান—প্রথম বাহু নিচে বাম থেকে ডানে চলে যাবে এবং কোণের ডিগ্রি (যেমন ৯০°) দেখাবে। একই নিয়মে ৩য় ও ৪র্থ ডট দিয়ে চতুর্ভুজ সম্পূর্ণ করুন।'
+            title: '৩) চতুর্ভুজ পরিমাপ (কম্পাস ও ৪ বাহু)',
+            guide: '<h4>🏟️ চতুর্ভুজ মাপার নিয়ম:</h4><b>এককভাবে:</b> ২য় ডটের পর ঘুরলে ১ম বাহু নিচে যাবে ও ২য় বাহু বামদিকে উঠবে। <b>৪র্থ বাহু তৈরির সময়</b> ঘুরলে ১ম বাহু ডানদিকে, ২য় বাহু নিচে এবং ৩য় বাহু বামদিকে শুরু হয়ে কোণের ডিগ্রি দেখাবে।<br><b>দলগতভাবে (৪ জন):</b> ৪ জন ৪ কোণায় দাঁড়িয়ে ডট দিলে পূর্ণ চতুর্ভুজ ও ৪টি কোণ দেখাবে।'
         },
         circle: {
             title: '৪) গোল / বৃত্ত পরিমাপ',
-            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>কেন্দ্রে ১ নম্বর ও ব্যাসার্ধের দূরত্বে ২ নম্বর ডট দিলেই বৃত্ত তৈরি হবে। মাঠে চুন দিয়ে বৃত্ত আঁকার পর ক্যামেরা ধরে <b>➕ / ➖ বাটন</b> বা দুই আঙুল দিয়ে স্ক্রিনের বৃত্তটি মাঠের গোল দাগের ওপর বসিয়ে সমান হয়েছে কি না যাচাই করুন।'
+            guide: '<h4>⭕ গোল (বৃত্ত) মাপার নিয়ম:</h4>কেন্দ্রে ১ নম্বর ও ব্যাসার্ধের দূরত্বে ২ নম্বর ডট দিলেই বৃত্ত তৈরি হবে। মাঠে চুন দিয়ে বৃত্ত আঁকার পর <b>➕ / ➖ বাটন</b> বা দুই আঙুল দিয়ে স্ক্রিনের বৃত্তটি মাঠের গোল দাগের ওপর বসিয়ে সমান হয়েছে কি না যাচাই করুন।'
         },
         polygon: {
             title: '৫) অন্যান্য আকৃতি পরিমাপ',
@@ -393,7 +456,7 @@
         } catch (e) {}
     }
 
-    // ২. GPS ট্র্যাকিং
+    // ২. GPS ট্র্যাকিং + দলগত লাইভ লোকেশন ব্রডকাস্ট
     function initGPS() {
         if (!navigator.geolocation) return;
         navigator.geolocation.watchPosition(
@@ -401,8 +464,20 @@
                 currentGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 gpsAccuracy = pos.coords.accuracy;
                 const badge = document.getElementById('gpsBadge');
-                badge.innerText = `📡 ±${gpsAccuracy.toFixed(1)} মি.`;
+                badge.innerText = `📡 ±${gpsAccuracy.toFixed(1)}মি.`;
                 badge.classList.toggle('good', gpsAccuracy <= 10);
+
+                if (isTeamActive) {
+                    const prev = teamMembers[myRole] || {};
+                    teamMembers[myRole] = {
+                        lat: currentGPS.lat,
+                        lng: currentGPS.lng,
+                        locked: prev.locked || false,
+                        heading: smoothHeading
+                    };
+                    publishTeamState();
+                    syncTeamToPoints();
+                }
 
                 updateLiveBanner();
                 updateCards();
@@ -413,10 +488,36 @@
         );
     }
 
-    // ৩. কম্পাস ও জাইরোস্কোপ সেন্সর (মোবাইল ঘোরানোর কোণ নির্ণয়)
-    window.addEventListener('deviceorientationabsolute', handleCompass, true);
-    window.addEventListener('deviceorientation', handleCompass, true);
-    function handleCompass(e) {
+    // ৩. মোবাইল কম্পাস ও জাইরোস্কোপ সেন্সর (সামান্য ঘোরালেও কোণের ডিগ্রি পরিবর্তিত হবে)
+    function initSensors() {
+        // iOS 13+ বা কিছু ব্রাউজারে পারমিশন লাগলে ক্লিকের সাথে অনুরোধ করা
+        document.body.addEventListener('click', () => {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().catch(() => {});
+            }
+        }, { once: true });
+
+        window.addEventListener('deviceorientationabsolute', onOrientationData, true);
+        window.addEventListener('deviceorientation', onOrientationData, true);
+
+        // জাইরোস্কোপ দিয়ে সূক্ষ্ম ঘূর্ণন সাপোর্ট
+        window.addEventListener('devicemotion', (e) => {
+            const rot = e.rotationRate;
+            if (!rot || rot.alpha === null) return;
+            const now = performance.now();
+            if (lastGyroTime > 0 && !hasCompass) {
+                const dt = (now - lastGyroTime) / 1000;
+                if (Math.abs(rot.alpha) > 0.3) {
+                    deviceHeading = (deviceHeading - rot.alpha * dt + 360) % 360;
+                    smoothHeading = deviceHeading;
+                    recalculateLiveTurnAngle();
+                }
+            }
+            lastGyroTime = now;
+        });
+    }
+
+    function onOrientationData(e) {
         let h = null;
         if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
             h = e.webkitCompassHeading;
@@ -424,58 +525,181 @@
             h = (360 - e.alpha) % 360;
         }
         if (h !== null && !isNaN(h)) {
-            hasCompassSensor = true;
+            hasCompass = true;
             deviceHeading = h;
-            updateAngleFromHeading();
+            // স্মুথ ফিল্টার যাতে সামান্য ঘোরালেও কাঁপুনি ছাড়া নিখুঁত ডিগ্রি দেখায়
+            let diff = ((deviceHeading - smoothHeading + 540) % 360) - 180;
+            smoothHeading = (smoothHeading + diff * 0.35 + 360) % 360;
+            recalculateLiveTurnAngle();
         }
     }
 
-    // ব্যাকআপ জাইরোস্কোপ (যদি ফোনের ম্যাগনেটোমিটার কাজ না করে)
-    window.addEventListener('devicemotion', (e) => {
-        if (hasCompassSensor) return;
-        const rot = e.rotationRate;
-        if (!rot || rot.alpha === null) return;
-        const now = performance.now();
-        if (lastGyroTime > 0) {
-            const dt = (now - lastGyroTime) / 1000;
-            if (Math.abs(rot.alpha) > 1.5) {
-                gyroIntegratedHeading = (gyroIntegratedHeading - rot.alpha * dt + 360) % 360;
-                deviceHeading = gyroIntegratedHeading;
-                updateAngleFromHeading();
-            }
-        }
-        lastGyroTime = now;
-    });
-
-    function updateAngleFromHeading() {
+    function recalculateLiveTurnAngle() {
         if (points.length >= 2 && !isDrawingDone && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
-            const baseHeading = points[points.length - 1].heading;
-            let turn = Math.abs(deviceHeading - baseHeading) % 360;
+            const prevHeading = points[points.length - 1].heading;
+            let turn = Math.abs(smoothHeading - prevHeading) % 360;
             if (turn > 180) turn = 360 - turn;
-            // ঘোরার সাথে সাথে ১° থেকে ১৭৯° কোণ আপডেট হবে
-            if (turn > 2) {
-                currentCornerAngle = Math.max(10, Math.min(175, Math.round(180 - turn)));
-                document.getElementById('manualAngleSlider').value = currentCornerAngle;
-                document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
-            }
+            // সামান্য ঘোরালেও অন্তঃস্থ কোণ (180 - turn) পরিবর্তিত হবে
+            currentTurnDeg = Math.max(5, Math.min(178, Math.round(180 - turn)));
+            updateLiveBanner();
+            updateCards();
         }
-        updateLiveBanner();
     }
 
-    function onManualAngleChange(val) {
-        currentCornerAngle = parseInt(val, 10);
-        document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
+    // ৪. দলগত মাপ (Multi-Phone MQTT Sync)
+    function initTeamNetwork() {
+        if (mqttClient) return;
+        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        mqttClient.on('connect', () => {
+            document.getElementById('teamConnStatus').innerText = '✅ সার্ভার যুক্ত (কোড শেয়ার করুন)';
+            subscribeRoom(roomCode);
+        });
+        mqttClient.on('message', (topic, message) => {
+            try {
+                const data = JSON.parse(message.toString());
+                if (data.type === 'state' && data.role !== myRole) {
+                    teamMembers[data.role] = data.payload;
+                    isTeamActive = true;
+                    document.getElementById('btnTeamModal').classList.add('connected');
+                    updateTeamListUI();
+                    syncTeamToPoints();
+                } else if (data.type === 'reset') {
+                    teamMembers = {};
+                    points = [];
+                    isDrawingDone = false;
+                    updateControlsVisibility();
+                    updateLiveBanner();
+                    updateCards();
+                }
+            } catch (err) {}
+        });
+    }
+
+    function subscribeRoom(code) {
+        if (!mqttClient) return;
+        mqttClient.subscribe(`fieldmarker_pro_room_${code}`);
+    }
+
+    function publishTeamState() {
+        if (!mqttClient || !mqttClient.connected) return;
+        const msg = JSON.stringify({
+            type: 'state',
+            role: myRole,
+            payload: teamMembers[myRole]
+        });
+        mqttClient.publish(`fieldmarker_pro_room_${roomCode}`, msg);
+    }
+
+    function openTeamModal() {
+        document.getElementById('teamModal').style.display = 'flex';
+        document.getElementById('myRoomCodeText').innerText = roomCode;
+        initTeamNetwork();
+    }
+
+    function closeTeamModal() {
+        document.getElementById('teamModal').style.display = 'none';
+    }
+
+    function selectPlayerRole(r) {
+        myRole = r;
+        [1, 2, 3, 4].forEach(i => document.getElementById(`role${i}`).classList.toggle('active', i === r));
+        isTeamActive = true;
+        document.getElementById('btnTeamModal').classList.add('connected');
+        if (currentGPS) {
+            teamMembers[myRole] = { lat: currentGPS.lat, lng: currentGPS.lng, locked: false, heading: smoothHeading };
+            publishTeamState();
+        }
+        updateTeamListUI();
+    }
+
+    function joinTeamRoom() {
+        const val = document.getElementById('joinCodeInput').value.trim();
+        if (val.length < 4) {
+            alert('সঠিক ৪-অঙ্কের রুম কোড লিখুন।');
+            return;
+        }
+        roomCode = val;
+        document.getElementById('myRoomCodeText').innerText = roomCode;
+        subscribeRoom(roomCode);
+        isTeamActive = true;
+        document.getElementById('btnTeamModal').classList.add('connected');
+        if (currentGPS) {
+            teamMembers[myRole] = { lat: currentGPS.lat, lng: currentGPS.lng, locked: false, heading: smoothHeading };
+            publishTeamState();
+        }
+        updateTeamListUI();
+        alert(`রুম ${roomCode}-এ যুক্ত হয়েছেন! এখন মাঠে গিয়ে নিজের পয়েন্টে লাল ডটে টাচ করুন।`);
+    }
+
+    function updateTeamListUI() {
+        const box = document.getElementById('connectedPeersBox');
+        const roles = Object.keys(teamMembers).sort();
+        if (roles.length === 0) {
+            box.innerText = `সক্রিয় সদস্য: আপনি (${myRole}নং ব্যক্তি)`;
+            return;
+        }
+        const names = roles.map(r => `${r}নং ব্যক্তি ${teamMembers[r].locked ? '📍(ডট দিয়েছেন)' : '🚶(হাঁটছেন)'}`);
+        box.innerText = `যুক্ত সদস্যরা: ${names.join(' | ')}`;
+    }
+
+    // ২, ৩ বা ৪টি মোবাইলের GPS অবস্থানকে জ্যামিতিক পয়েন্ট ও কোণে রূপান্তর
+    function syncTeamToPoints() {
+        if (!isTeamActive) return;
+        const needed = maxPts[shape];
+        const activeRoles = Object.keys(teamMembers).map(Number).sort();
+        if (activeRoles.length === 0) return;
+
+        const w = overlay.width;
+        const h = overlay.height;
+        const newPts = [];
+
+        // স্ক্রিনের সুন্দর অবস্থানে সদস্যদের বিন্দু বসানো
+        const layout = [
+            { x: w * 0.24, y: h * 0.76 },
+            { x: w * 0.24, y: h * 0.26 },
+            { x: w * 0.78, y: h * 0.26 },
+            { x: w * 0.78, y: h * 0.76 }
+        ];
+
+        activeRoles.slice(0, needed).forEach((r, idx) => {
+            const m = teamMembers[r];
+            newPts.push({
+                lat: m.lat,
+                lng: m.lng,
+                screenX: layout[idx].x,
+                screenY: layout[idx].y,
+                heading: m.heading || 0,
+                locked: m.locked,
+                role: r
+            });
+        });
+
+        points = newPts;
+        const allLocked = (points.length >= needed) && points.every(p => p.locked);
+        isDrawingDone = allLocked;
+
+        updateControlsVisibility();
         updateLiveBanner();
         updateCards();
+        if (mode === 'map') drawMapShapes();
     }
 
-    // দুটি লাইনের স্ক্রিন কোঅর্ডিনেট থেকে নিরাপদ কোণ বের করা (কখনোই NaN আসবে না)
+    // আসল ৩টি GPS স্থানাঙ্ক থেকে নিখুঁত কোণ (Law of Cosines) বের করা
+    function calcGpsCornerAngle(pPrev, pCurr, pNext) {
+        const a = haversine(pCurr, pNext);
+        const b = haversine(pPrev, pCurr);
+        const c = haversine(pPrev, pNext);
+        if (a < 0.05 || b < 0.05) return calcScreenCornerAngle(pPrev, pCurr, pNext);
+        const cosC = Math.max(-1, Math.min(1, (a * a + b * b - c * c) / (2 * a * b)));
+        const deg = Math.round(Math.acos(cosC) * 180 / Math.PI);
+        return isNaN(deg) ? 0 : deg;
+    }
+
     function calcScreenCornerAngle(pPrev, pCurr, pNext) {
         if (!pPrev || !pCurr || !pNext) return 0;
         const v1x = pPrev.screenX - pCurr.screenX, v1y = pPrev.screenY - pCurr.screenY;
         const v2x = pNext.screenX - pCurr.screenX, v2y = pNext.screenY - pCurr.screenY;
-        const mag1 = Math.hypot(v1x, v1y);
-        const mag2 = Math.hypot(v2x, v2y);
+        const mag1 = Math.hypot(v1x, v1y), mag2 = Math.hypot(v2x, v2y);
         if (mag1 < 0.001 || mag2 < 0.001) return 0;
         const cosA = Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / (mag1 * mag2)));
         const deg = Math.round(Math.acos(cosA) * 180 / Math.PI);
@@ -497,6 +721,17 @@
         banner.style.display = 'flex';
         angEl.style.display = 'none';
 
+        if (isTeamActive && points.length >= 2) {
+            const d = haversine(points[0], points[1]);
+            labelEl.innerText = shape === 'line' ? '👥 দুজনের দূরত্ব:' : '👥 দলগত পরিমাপ:';
+            valEl.innerText = formatDist(d);
+            if (points.length >= 3) {
+                angEl.style.display = 'inline';
+                angEl.innerText = `| কোণ: ${calcGpsCornerAngle(points[0], points[1], points[2])}°`;
+            }
+            return;
+        }
+
         if (!isDrawingDone) {
             const lastPt = points[points.length - 1];
             const liveD = currentGPS ? haversine(lastPt, currentGPS) : 0;
@@ -505,7 +740,7 @@
 
             if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
                 angEl.style.display = 'inline';
-                angEl.innerText = `| কোণ: ${currentCornerAngle}°`;
+                angEl.innerText = `| কম্পাস কোণ: ${currentTurnDeg}°`;
             }
         } else if (points.length >= 2) {
             if (shape === 'circle') {
@@ -526,96 +761,88 @@
             }
         }
     }
-
-    // ৪. পয়েন্ট যোগ করা ও আপনার নিয়ম অনুযায়ী জ্যামিতিক ঘূর্ণন (বামদিকে নতুন বাহু, নিচে আগের বাহু)
+    
+// ৫. লাল ডটে টাচ করলে পয়েন্ট যুক্ত হবে (একক ও দলগত উভয় মোডে)
     function tapRedDot() {
-        if (isDrawingDone || points.length >= maxPts[shape]) return;
-
         const lat = currentGPS ? currentGPS.lat : 23.8103;
         const lng = currentGPS ? currentGPS.lng : 90.4125;
+
+        // দলগত মাপ চালু থাকলে নিজের পজিশন লক করা
+        if (isTeamActive) {
+            teamMembers[myRole] = { lat, lng, locked: true, heading: smoothHeading };
+            publishTeamState();
+            updateTeamListUI();
+            syncTeamToPoints();
+            return;
+        }
+
+        if (isDrawingDone || points.length >= maxPts[shape]) return;
 
         const w = overlay.width;
         const h = overlay.height;
         const count = points.length;
 
-        // পয়েন্ট ১: স্ক্রিনের বামদিকে নিচে
+        // ১ম ডট: স্ক্রিনের বামদিকে নিচে
         if (count === 0) {
-            points.push({
-                lat, lng,
-                screenX: w * 0.24,
-                screenY: h * 0.78,
-                heading: deviceHeading
-            });
+            points.push({ lat, lng, screenX: w * 0.24, screenY: h * 0.78, heading: smoothHeading });
         }
-        // পয়েন্ট ২: প্রথম বাহু স্ক্রিনের বামদিকে নিচ থেকে উপরে কমপ্লিট হবে
+        // ২য় ডট: ১ম বাহু স্ক্রিনের বামদিকে কমপ্লিট হবে
         else if (count === 1) {
+            points.push({ lat, lng, screenX: w * 0.24, screenY: h * 0.28, heading: smoothHeading });
+            currentTurnDeg = (shape === 'quad') ? 90 : 60;
+        }
+        // ৩য় ডট: ঘুরে দাঁড়ালে ১ম বাহু নিচে বাম থেকে ডানে যাবে, ২য় বাহু বামদিকে উঠবে
+        else if (count === 2) {
+            const baseLeftX = w * 0.24;
+            const baseBottomY = h * 0.76;
+            const baseWidth = Math.min(w * 0.54, 195);
+
+            points[1].screenX = baseLeftX;
+            points[1].screenY = baseBottomY;
+            points[0].screenX = baseLeftX + baseWidth;
+            points[0].screenY = baseBottomY;
+
+            const rad = currentTurnDeg * Math.PI / 180;
+            const sideLen = Math.min(h * 0.46, 185);
+            const p3x = baseLeftX + Math.cos(rad) * sideLen;
+            const p3y = baseBottomY - Math.sin(rad) * sideLen;
+
+            points.push({ lat, lng, screenX: p3x, screenY: p3y, heading: smoothHeading });
+        }
+        // ৪র্থ ডট (চতুর্ভুজের ৪র্থ বাহু):
+        // ১ম বাহু স্ক্রিনের ডানদিকে চলে যাবে, ২য় বাহু নিচে থাকবে, ৩য় বাহু বামদিকে শুরু হবে
+        else if (count === 3) {
+            const leftX = w * 0.24;
+            const rightX = Math.min(w * 0.78, leftX + 195);
+            const bottomY = h * 0.76;
+            const topY = h * 0.28;
+
+            // ১ম বাহু (points[0] - points[1]) স্ক্রিনের ডানদিকে
+            points[0].screenX = rightX;
+            points[0].screenY = topY;
+            points[1].screenX = rightX;
+            points[1].screenY = bottomY;
+
+            // ২য় বাহু (points[1] - points[2]) স্ক্রিনের নিচে বাম থেকে ডানে
+            points[2].screenX = leftX;
+            points[2].screenY = bottomY;
+
+            // ৩য় বাহু (points[2] - points[3]) স্ক্রিনের বামদিকে উপরের দিকে উঠবে
+            const rad = currentTurnDeg * Math.PI / 180;
+            const side3Len = Math.min(h * 0.46, 185);
+            const p4x = leftX + Math.cos(rad) * side3Len;
+            const p4y = bottomY - Math.sin(rad) * side3Len;
+
+            points.push({ lat, lng, screenX: p4x, screenY: p4y, heading: smoothHeading });
+        } else {
+            const rad = currentTurnDeg * Math.PI / 180;
+            const last = points[points.length - 1];
             points.push({
                 lat, lng,
-                screenX: w * 0.24,
-                screenY: h * 0.28,
-                heading: deviceHeading
+                screenX: Math.max(25, Math.min(w - 25, last.screenX + Math.cos(rad) * 85)),
+                screenY: Math.max(45, Math.min(h - 35, last.screenY - Math.sin(rad) * 85)),
+                heading: smoothHeading
             });
-            // পরবর্তী বাহুর জন্য ডিফল্ট কোণ সেট (চতুর্ভুজে ৯০°, ত্রিভুজে ৬০°)
-            currentCornerAngle = (shape === 'quad') ? 90 : 60;
-            document.getElementById('manualAngleSlider').value = currentCornerAngle;
-            document.getElementById('angleSimLabel').innerText = `কোণ ঘোরান: ${currentCornerAngle}°`;
-        }
-        // পয়েন্ট ৩ বা তার বেশি (ত্রিভুজ ও চতুর্ভুজে ঘুরে দাঁড়ানোর জ্যামিতি)
-        else {
-            if (shape === 'triangle' || shape === 'quad' || shape === 'polygon') {
-                // ঘোরার পর: ১ম বাহু স্ক্রিনের নিচে বাম থেকে ডান দিকে চলে যাবে, এবং নতুন বাহু বাম দিক থেকে উপরে উঠবে
-                const baseLeftX = w * 0.24;
-                const baseBottomY = h * 0.76;
-                const baseWidth = Math.min(w * 0.56, 210);
-
-                if (count === 2) {
-                    // পয়েন্ট ২ (বর্তমান কোণা) বাম নিচে, পয়েন্ট ১ ডান নিচে চলে যাবে
-                    points[1].screenX = baseLeftX;
-                    points[1].screenY = baseBottomY;
-                    points[0].screenX = baseLeftX + baseWidth;
-                    points[0].screenY = baseBottomY;
-
-                    // নতুন পয়েন্ট ৩: পয়েন্ট ২ থেকে currentCornerAngle ডিগ্রি কোণে উপরের দিকে বসবে
-                    const rad = currentCornerAngle * Math.PI / 180;
-                    const sideLen = Math.min(h * 0.48, 195);
-                    const p3x = baseLeftX + Math.cos(rad) * sideLen;
-                    const p3y = baseBottomY - Math.sin(rad) * sideLen;
-
-                    points.push({ lat, lng, screenX: p3x, screenY: p3y, heading: deviceHeading });
-                } else if (count === 3) {
-                    // চতুর্ভুজের ৪র্থ পয়েন্ট: আগের বাহুটি নিচে বাম থেকে ডানে ঘুরবে এবং ৩য় বাহু বাম থেকে উপরে উঠবে
-                    const p2NewX = baseLeftX;
-                    const p2NewY = baseBottomY;
-                    const p1NewX = baseLeftX + baseWidth;
-                    const p1NewY = baseBottomY;
-
-                    // পয়েন্ট ০ কে ডান উপরে পাঠানো যাতে সুন্দর চতুর্ভুজ হয়
-                    const prevAngleRad = calcScreenCornerAngle(points[0], points[1], points[2]) * Math.PI / 180;
-                    const side2Len = Math.min(h * 0.44, 175);
-                    points[0].screenX = p1NewX + Math.cos(Math.PI - prevAngleRad) * side2Len * 0.3;
-                    points[0].screenY = p1NewY - Math.sin(prevAngleRad) * side2Len;
-                    points[1].screenX = p1NewX;
-                    points[1].screenY = p1NewY;
-                    points[2].screenX = p2NewX;
-                    points[2].screenY = p2NewY;
-
-                    const rad = currentCornerAngle * Math.PI / 180;
-                    const side3Len = Math.min(h * 0.46, 185);
-                    const p4x = p2NewX + Math.cos(rad) * side3Len;
-                    const p4y = p2NewY - Math.sin(rad) * side3Len;
-
-                    points.push({ lat, lng, screenX: p4x, screenY: p4y, heading: deviceHeading });
-                } else {
-                    const rad = currentCornerAngle * Math.PI / 180;
-                    const last = points[points.length - 1];
-                    points.push({
-                        lat, lng,
-                        screenX: Math.max(25, Math.min(w - 25, last.screenX + Math.cos(rad) * 90)),
-                        screenY: Math.max(45, Math.min(h - 35, last.screenY - Math.sin(rad) * 90)),
-                        heading: deviceHeading
-                    });
-                }
-            }
         }
 
         if (shape !== 'polygon' && points.length >= maxPts[shape]) {
@@ -641,15 +868,9 @@
         const pill = document.getElementById('tapHintPill');
         const finishBtn = document.getElementById('btnFinishPoly');
         const zoomBar = document.getElementById('zoomControls');
-        const angleBox = document.getElementById('angleSimBox');
 
         const showZoom = (mode === 'fieldGrid') || (shape === 'circle' && isDrawingDone);
         zoomBar.style.display = showZoom ? 'flex' : 'none';
-
-        // ত্রিভুজ, চতুর্ভুজ বা বহুভুজে ২য় পয়েন্টের পর কোণ ঘোরানোর স্লাইডার দেখাবে
-        const showAngleSlider = (mode !== 'map') && !isDrawingDone && points.length >= 2 &&
-                                (shape === 'triangle' || shape === 'quad' || shape === 'polygon');
-        angleBox.style.display = showAngleSlider ? 'flex' : 'none';
 
         if (mode === 'map') {
             dot.style.display = 'none';
@@ -665,9 +886,14 @@
         } else {
             dot.style.display = 'flex';
             pill.style.display = 'block';
-            pill.innerText = points.length === 0
-                ? 'বামদিকে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন'
-                : `${points.length + 1} নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন`;
+            if (isTeamActive) {
+                const locked = teamMembers[myRole]?.locked;
+                pill.innerText = locked ? `✅ আপনার (${myRole}নং) ডট দেওয়া হয়েছে` : `${myRole}নং ব্যক্তি: নিজের ডট দিতে টাচ করুন`;
+            } else {
+                pill.innerText = points.length === 0
+                    ? 'বামদিকে ১ নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন'
+                    : `${points.length + 1} নম্বর পয়েন্ট দিতে লাল ডটে টাচ করুন`;
+            }
             finishBtn.style.display = (shape === 'polygon' && points.length >= 2) ? 'flex' : 'none';
         }
     }
@@ -700,15 +926,12 @@
         updateControlsVisibility();
         updateLiveBanner();
 
-        if (mode === 'camera') {
-            startCamera();
-        } else if (mode === 'photo' && !photoImg.src) {
+        if (mode === 'camera') startCamera();
+        else if (mode === 'photo' && !photoImg.src) {
             videoEl.style.display = 'block';
             photoImg.style.display = 'none';
             startCamera();
-        } else if (mode === 'map') {
-            initMap();
-        }
+        } else if (mode === 'map') initMap();
     }
 
     function capturePhoto() {
@@ -822,7 +1045,7 @@
 
             map.on('click', (e) => {
                 if (!isDrawingDone && points.length < maxPts[shape]) {
-                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng, screenX: 0, screenY: 0, heading: deviceHeading });
+                    points.push({ lat: e.latlng.lat, lng: e.latlng.lng, screenX: 0, screenY: 0, heading: smoothHeading });
                     if (shape !== 'polygon' && points.length >= maxPts[shape]) isDrawingDone = true;
                     updateControlsVisibility();
                     updateLiveBanner();
@@ -875,7 +1098,7 @@
         shape = s;
         points = [];
         isDrawingDone = false;
-        currentCornerAngle = (s === 'quad') ? 90 : 60;
+        currentTurnDeg = (s === 'quad') ? 90 : 60;
         document.querySelectorAll('.shape-btn').forEach(b => b.classList.toggle('active', b.dataset.shape === s));
         document.getElementById('sheetTitle').innerText = shapeInfo[s].title;
         document.getElementById('methodGuideText').innerHTML = shapeInfo[s].guide;
@@ -884,8 +1107,14 @@
         updateCards();
         if (mode === 'map') drawMapShapes();
     }
-    
-function undoPoint() {
+
+    function undoPoint() {
+        if (isTeamActive && teamMembers[myRole]) {
+            teamMembers[myRole].locked = false;
+            publishTeamState();
+            syncTeamToPoints();
+            return;
+        }
         points.pop();
         isDrawingDone = false;
         updateControlsVisibility();
@@ -897,6 +1126,13 @@ function undoPoint() {
     function resetAll() {
         points = [];
         isDrawingDone = false;
+        if (isTeamActive) {
+            teamMembers = {};
+            if (mqttClient && mqttClient.connected) {
+                mqttClient.publish(`fieldmarker_pro_room_${roomCode}`, JSON.stringify({ type: 'reset' }));
+            }
+            updateTeamListUI();
+        }
         updateControlsVisibility();
         updateLiveBanner();
         updateCards();
@@ -929,10 +1165,10 @@ function undoPoint() {
 
         if (shape === 'line') {
             let dist = 0;
-            if (points.length === 2) dist = haversine(points[0], points[1]);
+            if (points.length >= 2) dist = haversine(points[0], points[1]);
             else if (points.length === 1 && currentGPS) dist = haversine(points[0], currentGPS);
 
-            addCard('মোট দূরত্ব', formatDist(dist));
+            addCard(isTeamActive ? 'দুজনের মধ্যবর্তী দূরত্ব' : 'মোট দূরত্ব', formatDist(dist));
             addCard('সেন্টিমিটার ও ইঞ্চি', `${(dist * 100).toFixed(1)} সেমি. / ${(dist * 39.3701).toFixed(1)} ইঞ্চি`);
             addCard('দূরত্ব (ফুট ও গজ)', `${(dist * 3.28084).toFixed(2)} ফুট / ${(dist * 1.09361).toFixed(2)} গজ`);
             addCard('মাঝখানের দাগ (Center)', formatDist(dist / 2));
@@ -941,7 +1177,7 @@ function undoPoint() {
             if (points.length < 3) {
                 const d1 = (points.length === 2) ? haversine(points[0], points[1]) : (points.length === 1 && currentGPS ? haversine(points[0], currentGPS) : 0);
                 addCard(points.length === 1 ? 'লাইভ দূরত্ব (১ম বাহু)' : '১ম বাহুর দৈর্ঘ্য', formatDist(d1));
-                addCard('কোণ (ডিগ্রি)', points.length === 2 ? `${currentCornerAngle}° (ঘুরলে বদলাবে)` : '২য় পয়েন্ট দিন');
+                addCard('কম্পাস কোণ (ডিগ্রি)', points.length === 2 ? `${currentTurnDeg}° (মোবাইল ঘোরালে বদলাবে)` : '২য় পয়েন্ট দিন');
             } else {
                 const a = haversine(points[1], points[2]);
                 const b = haversine(points[0], points[2]);
@@ -950,9 +1186,10 @@ function undoPoint() {
                 const s = perim / 2;
                 const area = Math.sqrt(Math.max(0, s * (s - a) * (s - b) * (s - c)));
 
-                const ang1 = calcScreenCornerAngle(points[2], points[0], points[1]);
-                const ang2 = calcScreenCornerAngle(points[0], points[1], points[2]);
-                const ang3 = calcScreenCornerAngle(points[1], points[2], points[0]);
+                // দলগত মাপে আসল GPS স্থানাঙ্ক থেকে কোণ, আর একক মাপে জ্যামিতিক কোণ
+                const ang1 = isTeamActive ? calcGpsCornerAngle(points[2], points[0], points[1]) : calcScreenCornerAngle(points[2], points[0], points[1]);
+                const ang2 = isTeamActive ? calcGpsCornerAngle(points[0], points[1], points[2]) : calcScreenCornerAngle(points[0], points[1], points[2]);
+                const ang3 = isTeamActive ? calcGpsCornerAngle(points[1], points[2], points[0]) : calcScreenCornerAngle(points[1], points[2], points[0]);
 
                 addCard('৩ বাহুর দৈর্ঘ্য', `${formatShortDist(c)}, ${formatShortDist(a)}, ${formatShortDist(b)}`);
                 addCard('মোট পরিসীমা', formatDist(perim));
@@ -964,7 +1201,7 @@ function undoPoint() {
             if (points.length < 4) {
                 const liveSeg = (points.length >= 1 && currentGPS) ? haversine(points[points.length - 1], currentGPS) : 0;
                 addCard('বর্তমান বাহুর দূরত্ব', formatDist(liveSeg));
-                addCard('বর্তমান কোণ', points.length >= 2 ? `${currentCornerAngle}°` : `${points.length} / ৪টি পয়েন্ট`);
+                addCard('বর্তমান কম্পাস কোণ', points.length >= 2 ? `${currentTurnDeg}°` : `${points.length} / ৪টি পয়েন্ট`);
             } else {
                 const s1 = haversine(points[0], points[1]);
                 const s2 = haversine(points[1], points[2]);
@@ -973,10 +1210,10 @@ function undoPoint() {
                 const d1 = haversine(points[0], points[2]);
                 const d2 = haversine(points[1], points[3]);
 
-                const c1 = calcScreenCornerAngle(points[3], points[0], points[1]);
-                const c2 = calcScreenCornerAngle(points[0], points[1], points[2]);
-                const c3 = calcScreenCornerAngle(points[1], points[2], points[3]);
-                const c4 = calcScreenCornerAngle(points[2], points[3], points[0]);
+                const c1 = isTeamActive ? calcGpsCornerAngle(points[3], points[0], points[1]) : calcScreenCornerAngle(points[3], points[0], points[1]);
+                const c2 = isTeamActive ? calcGpsCornerAngle(points[0], points[1], points[2]) : calcScreenCornerAngle(points[0], points[1], points[2]);
+                const c3 = isTeamActive ? calcGpsCornerAngle(points[1], points[2], points[3]) : calcScreenCornerAngle(points[1], points[2], points[3]);
+                const c4 = isTeamActive ? calcGpsCornerAngle(points[2], points[3], points[0]) : calcScreenCornerAngle(points[2], points[3], points[0]);
 
                 addCard('দৈর্ঘ্য (১ম ও ৩য় বাহু)', `${formatShortDist(s1)} ও ${formatShortDist(s3)}`);
                 addCard('প্রস্থ (২য় ও ৪র্থ বাহু)', `${formatShortDist(s2)} ও ${formatShortDist(s4)}`);
@@ -1057,123 +1294,115 @@ function undoPoint() {
         }
         ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-        if (mode === 'fieldGrid') {
-            drawEmptyFieldGrid();
-        }
+        if (mode === 'fieldGrid') drawEmptyFieldGrid();
 
         if (mode !== 'map' && points.length > 0) {
             const w = overlay.width;
             const h = overlay.height;
 
-            // ১) ঘুরে দাঁড়ানোর প্রিভিউ ও ডট-ডট লাইন
-            if (!isDrawingDone) {
+            // একক মোডে মোবাইল ঘোরানোর জ্যামিতিক প্রিভিউ
+            if (!isTeamActive && !isDrawingDone) {
                 const lastPt = points[points.length - 1];
                 const liveMeters = currentGPS ? haversine(lastPt, currentGPS) : 0;
-                const progressPx = Math.min(h * 0.48, Math.max(55, liveMeters * (mode === 'fieldGrid' ? fieldScalePxPerMeter : 4.2)));
+                const progressPx = Math.min(h * 0.46, Math.max(55, liveMeters * (mode === 'fieldGrid' ? fieldScalePxPerMeter : 4.2)));
 
-                // যখন ২য় ডট দেওয়ার পর ত্রিভুজ বা চতুর্ভুজের জন্য ঘুরে দাঁড়ানো হচ্ছে:
-                // তখন ১ম বাহুটি স্ক্রিনের নিচে বাম থেকে ডান দিকে শুয়ে থাকবে, এবং নতুন ডট-ডট বাহু বাম দিক থেকে কোণ অনুযায়ী উঠবে
-                if (points.length >= 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
+                // ১) ২য় পয়েন্ট দেওয়ার পর (ত্রিভুজ বা চতুর্ভুজের ২য় বাহু):
+                // ১ম বাহু নিচে বাম থেকে ডানে থাকবে, এবং ২য় হলুদ ডট-ডট বাহু বামদিকে কোণ অনুযায়ী উঠবে
+                if (points.length === 2 && (shape === 'triangle' || shape === 'quad' || shape === 'polygon')) {
                     const pivotX = w * 0.24;
                     const pivotY = h * 0.76;
-                    const baseEndX = Math.min(w * 0.80, pivotX + 195);
-                    const baseEndY = pivotY;
+                    const baseEndX = Math.min(w * 0.78, pivotX + 190);
 
-                    // নিচের দিকে ঘুরে যাওয়া আগের বাহু (বাম থেকে ডানে) দেখানো
-                    ctx.save();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 4;
-                    ctx.beginPath();
-                    ctx.moveTo(baseEndX, baseEndY);
-                    ctx.lineTo(pivotX, pivotY);
-                    ctx.stroke();
-                    ctx.restore();
+                    // নিচে শুয়ে পড়া ১ম বাহু
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(baseEndX, pivotY); ctx.lineTo(pivotX, pivotY); ctx.stroke();
+                    drawSideBadge(formatShortDist(haversine(points[0], points[1])), (pivotX + baseEndX) / 2, pivotY + 20);
 
-                    // আগের বাহুর দৈর্ঘ্য নিচে দেখানো
-                    const prevSegDist = haversine(points[points.length - 2], points[points.length - 1]);
-                    drawSideBadge(formatShortDist(prevSegDist), (pivotX + baseEndX) / 2, pivotY + 20);
-
-                    // নতুন ডট-ডট লাইন (বাম দিকের কোণা থেকে currentCornerAngle ডিগ্রি কোণে)
-                    const rad = currentCornerAngle * Math.PI / 180;
+                    // নতুন ২য় ডট-ডট বাহু (বাম দিক থেকে currentTurnDeg কোণে)
+                    const rad = currentTurnDeg * Math.PI / 180;
                     const tipX = Math.max(25, Math.min(w - 25, pivotX + Math.cos(rad) * progressPx));
                     const tipY = Math.max(50, Math.min(h - 35, pivotY - Math.sin(rad) * progressPx));
 
-                    ctx.save();
-                    ctx.setLineDash([7, 7]);
-                    ctx.strokeStyle = '#fde047';
-                    ctx.lineWidth = 3.5;
-                    ctx.beginPath();
-                    ctx.moveTo(pivotX, pivotY);
-                    ctx.lineTo(tipX, tipY);
-                    ctx.stroke();
+                    ctx.save(); ctx.setLineDash([7, 7]); ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3.5;
+                    ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(tipX, tipY); ctx.stroke();
                     ctx.restore();
 
-                    // কোণের বৃত্তাকার আর্ক (Angle Arc) আঁকা
-                    ctx.save();
-                    ctx.strokeStyle = '#4ade80';
-                    ctx.lineWidth = 2.5;
-                    ctx.beginPath();
-                    ctx.arc(pivotX, pivotY, 34, -rad, 0);
-                    ctx.stroke();
+                    // কোণের আর্ক ও ডিগ্রি
+                    ctx.save(); ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2.5;
+                    ctx.beginPath(); ctx.arc(pivotX, pivotY, 34, -rad, 0); ctx.stroke();
                     ctx.restore();
 
-                    // কোণের ডিগ্রি ও চলমান বাহুর দূরত্ব দেখানো
-                    drawSideBadge(`${currentCornerAngle}°`, pivotX + 46, pivotY - 24, 'rgba(6, 78, 59, 0.94)', '#6ee7b7');
+                    drawSideBadge(`${currentTurnDeg}°`, pivotX + 46, pivotY - 24, 'rgba(6, 78, 59, 0.95)', '#6ee7b7');
                     drawSideBadge(formatShortDist(liveMeters), (pivotX + tipX) / 2 - 12, (pivotY + tipY) / 2 - 12);
+                    ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
+                }
+                // ২) চতুর্ভুজের ৩য় পয়েন্ট দেওয়ার পর (৪র্থ বাহু তৈরির সময়):
+                // ১ম বাহু ডানদিকে থাকবে, ২য় বাহু নিচে থাকবে, এবং ৩য় (নতুন ডট-ডট) বাহু বামদিকে শুরু হবে
+                else if (points.length === 3 && (shape === 'quad' || shape === 'polygon')) {
+                    const leftX = w * 0.24;
+                    const rightX = Math.min(w * 0.78, leftX + 190);
+                    const bottomY = h * 0.76;
+                    const topY = h * 0.28;
 
-                    // চলমান মাথায় নীল বিন্দু
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
-                } else {
-                    // প্রথম বাহুর ক্ষেত্রে নিচ থেকে সোজা উপরের দিকে ডট-ডট লাইন এগোবে
+                    // ১ম বাহু (ডানদিকে) ও ২য় বাহু (নিচে বাম থেকে ডানে)
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(rightX, topY);
+                    ctx.lineTo(rightX, bottomY);
+                    ctx.lineTo(leftX, bottomY);
+                    ctx.stroke();
+
+                    drawSideBadge(formatShortDist(haversine(points[0], points[1])), rightX - 28, (topY + bottomY) / 2);
+                    drawSideBadge(formatShortDist(haversine(points[1], points[2])), (leftX + rightX) / 2, bottomY + 20);
+
+                    // ৩য় ডট-ডট বাহু (বাম দিকের কোণা থেকে উপরের দিকে শুরু হবে)
+                    const rad = currentTurnDeg * Math.PI / 180;
+                    const tipX = Math.max(25, Math.min(w - 25, leftX + Math.cos(rad) * progressPx));
+                    const tipY = Math.max(50, Math.min(h - 35, bottomY - Math.sin(rad) * progressPx));
+
+                    ctx.save(); ctx.setLineDash([7, 7]); ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3.5;
+                    ctx.beginPath(); ctx.moveTo(leftX, bottomY); ctx.lineTo(tipX, tipY); ctx.stroke();
+                    ctx.restore();
+
+                    ctx.save(); ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2.5;
+                    ctx.beginPath(); ctx.arc(leftX, bottomY, 34, -rad, 0); ctx.stroke();
+                    ctx.restore();
+
+                    drawSideBadge(`${currentTurnDeg}°`, leftX + 46, bottomY - 24, 'rgba(6, 78, 59, 0.95)', '#6ee7b7');
+                    drawSideBadge(formatShortDist(liveMeters), (leftX + tipX) / 2 - 10, (bottomY + tipY) / 2 - 12);
+                    ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
+                }
+                // ৩) ১ম বাহু তৈরির সময়: স্ক্রিনের বামদিকে নিচ থেকে উপরে ডট-ডট লাইন এগোবে
+                else {
                     const tipX = lastPt.screenX;
                     const tipY = Math.max(50, lastPt.screenY - progressPx);
 
-                    ctx.save();
-                    ctx.setLineDash([7, 7]);
-                    ctx.strokeStyle = '#fde047';
-                    ctx.lineWidth = 3.5;
-                    ctx.beginPath();
-                    ctx.moveTo(lastPt.screenX, lastPt.screenY);
-                    ctx.lineTo(tipX, tipY);
-                    ctx.stroke();
+                    ctx.save(); ctx.setLineDash([7, 7]); ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3.5;
+                    ctx.beginPath(); ctx.moveTo(lastPt.screenX, lastPt.screenY); ctx.lineTo(tipX, tipY); ctx.stroke();
                     ctx.restore();
 
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
-
-                    drawSideBadge(formatShortDist(liveMeters), tipX + 42, (lastPt.screenY + tipY) / 2);
+                    ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(tipX, tipY, 7, 0, Math.PI * 2); ctx.fill();
+                    drawSideBadge(formatShortDist(liveMeters), tipX + 44, (lastPt.screenY + tipY) / 2);
                 }
             }
 
-            // ২) গোল (বৃত্ত) আঁকা
+            // বৃত্ত (Circle) আঁকা
             if (shape === 'circle' && points.length === 2) {
                 const rPx = Math.hypot(points[1].screenX - points[0].screenX, points[1].screenY - points[0].screenY);
-                ctx.strokeStyle = '#fde047';
-                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#fde047'; ctx.lineWidth = 4;
                 ctx.fillStyle = 'rgba(59, 130, 246, 0.14)';
-                ctx.beginPath();
-                ctx.arc(points[0].screenX, points[0].screenY, rPx, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(points[0].screenX, points[0].screenY, rPx, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
 
-                ctx.save();
-                ctx.setLineDash([6, 6]);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(points[0].screenX, points[0].screenY);
-                ctx.lineTo(points[1].screenX, points[1].screenY);
-                ctx.stroke();
+                ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(points[0].screenX, points[0].screenY); ctx.lineTo(points[1].screenX, points[1].screenY); ctx.stroke();
                 ctx.restore();
 
-                const rMeters = haversine(points[0], points[1]);
-                drawSideBadge(`ব্যাসার্ধ: ${formatShortDist(rMeters)}`, (points[0].screenX + points[1].screenX) / 2, (points[0].screenY + points[1].screenY) / 2);
+                drawSideBadge(`ব্যাসার্ধ: ${formatShortDist(haversine(points[0], points[1]))}`, (points[0].screenX + points[1].screenX) / 2, (points[0].screenY + points[1].screenY) / 2);
             } 
-            // ৩) কমপ্লিট হওয়া সাদা দাগ (যখন সব পয়েন্ট হয়ে গেছে বা প্রথম বাহু আঁকা হয়েছে)
-            else if (points.length >= 2 && (isDrawingDone || shape === 'line')) {
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 4;
+            // কমপ্লিট হওয়া সাদা দাগ বা দলগত মাপের দাগ
+            else if (points.length >= 2 && (isDrawingDone || shape === 'line' || isTeamActive)) {
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
                 ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
                 ctx.beginPath();
                 points.forEach((p, i) => i === 0 ? ctx.moveTo(p.screenX, p.screenY) : ctx.lineTo(p.screenX, p.screenY));
@@ -1191,34 +1420,28 @@ function undoPoint() {
                     drawSideBadge(formatShortDist(d), (pA.screenX + pB.screenX) / 2, (pA.screenY + pB.screenY) / 2);
                 }
 
-                // ত্রিভুজ ও চতুর্ভুজ কমপ্লিট হলে প্রতিটি কোণায় কত ডিগ্রি কোণ হয়েছে তা দেখানো
-                if (isDrawingDone && points.length >= 3) {
+                // ত্রিভুজ ও চতুর্ভুজের কোণসমূহ দেখানো
+                if (points.length >= 3) {
                     for (let i = 0; i < points.length; i++) {
                         const prev = points[(i - 1 + points.length) % points.length];
                         const curr = points[i];
                         const next = points[(i + 1) % points.length];
-                        const deg = calcScreenCornerAngle(prev, curr, next);
+                        const deg = isTeamActive ? calcGpsCornerAngle(prev, curr, next) : calcScreenCornerAngle(prev, curr, next);
                         drawSideBadge(`${deg}°`, curr.screenX, curr.screenY - 24, 'rgba(6, 78, 59, 0.94)', '#6ee7b7');
                     }
                 }
             }
 
-            // ৪) খুঁটি (১, ২, ৩, ৪ নম্বর গোল চিহ্ন) আঁকা
-            if (isDrawingDone || points.length <= 1 || shape === 'circle') {
+            // খুঁটি (১, ২, ৩, ৪ নম্বর গোল চিহ্ন) আঁকা
+            if (isDrawingDone || points.length <= 1 || shape === 'circle' || isTeamActive) {
                 points.forEach((p, i) => {
                     const isDragging = (i === dragIdx);
                     ctx.fillStyle = i === 0 ? '#ef4444' : '#f59e0b';
-                    ctx.beginPath();
-                    ctx.arc(p.screenX, p.screenY, isDragging ? 18 : 14, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = isDragging ? 3.5 : 2.5;
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.arc(p.screenX, p.screenY, isDragging ? 18 : 14, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = isDragging ? 3.5 : 2.5; ctx.stroke();
 
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 13px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(i + 1, p.screenX, p.screenY + 4.5);
+                    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+                    ctx.fillText(p.role || (i + 1), p.screenX, p.screenY + 4.5);
                 });
             }
         }
@@ -1228,6 +1451,7 @@ function undoPoint() {
 
     // অ্যাপ শুরু
     initGPS();
+    initSensors();
     startCamera();
     updateControlsVisibility();
     updateCards();
