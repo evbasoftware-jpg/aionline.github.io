@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Annual Sports Format Generator (GP / Circle / Sub-Division / District)</title>
+  <!-- SheetJS for reading Excel & ExcelJS for writing styled Excel with Page Breaks -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --secondary: #0f766e;
+      --accent: #b45309;
+      --bg: #f1f5f9;
+      --border: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Noto Sans Bengali', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: #0f172a;
+    }
+
+    /* Control Panel (Hidden during print) */
+    .control-panel {
+      background: #ffffff;
+      padding: 18px 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .app-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .inputs-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .input-group input[type="file"],
+    .input-group input[type="text"] {
+      margin-top: 4px;
+      padding: 6px 10px;
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      background: #f8fafc;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      padding: 9px 15px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-level {
+      background: #e2e8f0;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+    }
+
+    .btn-level:hover:not(:disabled) {
+      background: #cbd5e1;
+    }
+
+    .btn-level.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-print {
+      background: #059669;
+      color: #ffffff;
+      margin-left: auto;
+    }
+
+    .btn-print:hover:not(:disabled) {
+      background: #047857;
+    }
+
+    .btn-excel {
+      background: #d97706;
+      color: #ffffff;
+    }
+
+    .btn-excel:hover:not(:disabled) {
+      background: #b45309;
+    }
+
+    .status-bar {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #475569;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Preview Container */
+    #preview-container {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .empty-state {
+      background: #fff;
+      padding: 48px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 600px;
+      margin-top: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px dashed #94a3b8;
+    }
+
+    /* Print Page Styling - 1 Format per Page */
+    .sheet-page {
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      padding: 10mm 12mm;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .sheet-page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .page-landscape {
+      width: 297mm;
+      min-height: 205mm;
+    }
+
+    .page-portrait {
+      width: 210mm;
+      min-height: 290mm;
+    }
+
+    .sheet-badge {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      font-size: 10px;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Format Header Styles */
+    .master-header {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .master-header h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .master-header h3 {
+      margin: 2px 0;
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .master-header h4 {
+      margin: 2px 0 6px 0;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .master-meta {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+      padding: 2px 4px;
+      background: #f8fafc;
+      border: 1px solid #000;
+    }
+
+    .event-banner {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 6px;
+      border: 1.5px solid #000;
+      border-bottom: none;
+      background: #f8fafc;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tables */
+    table.sports-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+    }
+
+    table.sports-table th,
+    table.sports-table td {
+      border: 1px solid #000;
+      padding: 3.5px 5px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    table.sports-table th {
+      background-color: #f1f5f9;
+      font-weight: 700;
+    }
+
+    table.sports-table td.text-left {
+      text-align: left;
+    }
+
+    .group-title-row th {
+      background-color: #e2e8f0 !important;
+      font-size: 12px;
+      text-align: left !important;
+      padding-left: 8px !important;
+    }
+
+    /* Gymnastics compact table */
+    table.gym-table {
+      font-size: 9px;
+    }
+
+    table.gym-table th,
+    table.gym-table td {
+      padding: 2.5px 2px;
+    }
+
+    .vertical-header {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      max-height: 95px;
+      font-size: 8.5px;
+      line-height: 1.1;
+      padding: 4px 1px !important;
+    }
+
+    /* Signature Block */
+    .signature-box {
+      margin-top: 28px;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 35px;
+    }
+
+    .signature-inner {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .dual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Print Media Query */
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      .control-panel,
+      .sheet-badge {
+        display: none !important;
+      }
+      #preview-container {
+        padding: 0;
+        gap: 0;
+        display: block;
+      }
+      .sheet-page {
+        box-shadow: none;
+        margin: 0;
+        padding: 6mm 8mm;
+        width: 100% !important;
+        min-height: auto !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+      .sheet-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="control-panel">
+    <div class="top-bar">
+      <h1 class="app-title">🏆 Annual Sports Format Generator</h1>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label for="excelFile">১. Excel ফাইল আপলোড করুন (Sports.xlsx):</label>
+          <input type="file" id="excelFile" accept=".xlsx, .xlsm, .xls" />
+        </div>
+        <div class="input-group">
+          <label for="yearInput">সাল (Year):</label>
+          <input type="text" id="yearInput" value="2026" style="width: 80px;" />
+        </div>
+        <div class="input-group">
+          <label for="hostHeaderInput">আয়োজক সংস্থা (চক্র / মহকুমা / জেলা):</label>
+          <input type="text" id="hostHeaderInput" value="লাভপুর চক্র" style="width: 170px;" />
+        </div>
+        <div class="input-group">
+          <label for="defaultCircleInput">ডিফল্ট Circle নাম (যদি এক্সেলে ফাঁকা থাকে):</label>
+          <input type="text" id="defaultCircleInput" value="LABPUR CIRCLE" style="width: 150px;" />
+        </div>
+        <div class="input-group">
+          <label for="defaultSubDivInput">ডিফল্ট Sub-Division নাম:</label>
+          <input type="text" id="defaultSubDivInput" value="BOLPUR SUB-DIVISION" style="width: 170px;" />
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button id="btnGP" class="btn-level active" onclick="selectLevel('GP')" disabled>GP Level Sports Format</button>
+      <button id="btnCircle" class="btn-level" onclick="selectLevel('CIRCLE')" disabled>Circle Level Sports Format</button>
+      <button id="btnSubDiv" class="btn-level" onclick="selectLevel('SUBDIV')" disabled>Sub-Division Level Sports Format</button>
+      <button id="btnDistrict" class="btn-level" onclick="selectLevel('DISTRICT')" disabled>District Level Sports Format</button>
+
+      <button id="btnPrint" class="btn-print" onclick="window.print()" disabled>🖨️ Print</button>
+      <button id="btnDownload" class="btn-excel" onclick="downloadFormattedExcel()" disabled>📥 Downlod Excel</button>
+    </div>
+
+    <div class="status-bar">
+      <span id="statusText">অনুগ্রহ করে <b>Sports.xlsx</b> ফাইলটি আপলোড করুন।</span>
+      <span id="pageCountText"></span>
+    </div>
+  </div>
+
+  <div id="preview-container">
+    <div class="empty-state">
+      <h3>কোনো ফাইল আপলোড করা হয়নি</h3>
+      <p>উপরে <b>"Excel ফাইল আপলোড করুন"</b> বাটনে ক্লিক করে আপনার স্টুডেন্ট লিস্টের Excel ফাইলটি সিলেক্ট করুন। সাথে সাথেই GP, Circle, Sub-Division এবং District লেভেলের সব ফরম্যাট তৈরি হয়ে যাবে।</p>
+    </div>
+  </div>
+
+  <script>
+    let rawStudents = [];
+    let currentLevel = 'GP'; // 'GP', 'CIRCLE', 'SUBDIV', 'DISTRICT'
+    let generatedPages = []; // Stores structured data for both HTML rendering and ExcelJS export
+
+    // Master Event Structure matching CIRCLE SPORTS.xlsm
+    const MASTER_GROUPS = [
+      {
+        group: 'GROUP - A',
+        events: ['75m Race', 'Shuttle Race', 'Long Jump', 'Yoga']
+      },
+      {
+        group: 'GROUP - B',
+        events: ['100m. Race', '200m. Race', 'Long Jump', 'High Jump', 'Yoga', 'Gymnastic']
+      },
+      {
+        group: 'GROUP - C',
+        events: ['100m. Race', '200m. Race', 'Long Jump', 'High Jump', 'Yoga', 'Gymnastic', 'Football Throw']
+      }
+    ];
+
+    // Event Sheet Definitions matching CIRCLE SPORTS.xlsm
+    const EVENT_FORMATS = [
+      // Track Events (Sheet: A) - Portrait
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - A', gender: 'B', event: '75m Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - A', gender: 'G', event: '75m Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - A', gender: 'B', event: 'Shuttle Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - A', gender: 'G', event: 'Shuttle Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - B', gender: 'B', event: '100m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - B', gender: 'G', event: '100m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - B', gender: 'B', event: '200m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - B', gender: 'G', event: '200m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - C', gender: 'B', event: '100m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - C', gender: 'G', event: '100m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - C', gender: 'B', event: '200m. Race', orient: 'portrait' },
+      { sheet: 'A', type: 'TRACK', group: 'GROUP - C', gender: 'G', event: '200m. Race', orient: 'portrait' },
+
+      // Field 3-Chances Events (Sheet: A (2) & B (2)) - Portrait
+      { sheet: 'A (2)', type: 'CHANCE3', group: 'GROUP - A', gender: 'B', event: 'Long Jump', orient: 'portrait' },
+      { sheet: 'A (2)', type: 'CHANCE3', group: 'GROUP - A', gender: 'G', event: 'Long Jump', orient: 'portrait' },
+      { sheet: 'A (2)', type: 'CHANCE3', group: 'GROUP - C', gender: 'B', event: 'Football Throw', orient: 'portrait' },
+      { sheet: 'A (2)', type: 'CHANCE3', group: 'GROUP - C', gender: 'G', event: 'Football Throw', orient: 'portrait' },
+      { sheet: 'B (2)', type: 'CHANCE3', group: 'GROUP - B', gender: 'B', event: 'Long Jump', orient: 'portrait' },
+      { sheet: 'B (2)', type: 'CHANCE3', group: 'GROUP - B', gender: 'G', event: 'Long Jump', orient: 'portrait' },
+      { sheet: 'B (2)', type: 'CHANCE3', group: 'GROUP - C', gender: 'B', event: 'Long Jump', orient: 'portrait' },
+      { sheet: 'B (2)', type: 'CHANCE3', group: 'GROUP - C', gender: 'G', event: 'Long Jump', orient: 'portrait' },
+
+      // High Jump (Sheet: B) - Landscape
+      { sheet: 'B', type: 'HIGHJUMP', group: 'GROUP - B', gender: 'B', event: 'High Jump', orient: 'landscape' },
+      { sheet: 'B', type: 'HIGHJUMP', group: 'GROUP - B', gender: 'G', event: 'High Jump', orient: 'landscape' },
+      { sheet: 'B', type: 'HIGHJUMP', group: 'GROUP - C', gender: 'B', event: 'High Jump', orient: 'landscape' },
+      { sheet: 'B', type: 'HIGHJUMP', group: 'GROUP - C', gender: 'G', event: 'High Jump', orient: 'landscape' },
+
+      // Yoga (Sheet: yoga) - Landscape
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - A', gender: 'B', event: 'Yoga', orient: 'landscape' },
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - A', gender: 'G', event: 'Yoga', orient: 'landscape' },
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - B', gender: 'B', event: 'Yoga', orient: 'landscape' },
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - B', gender: 'G', event: 'Yoga', orient: 'landscape' },
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - C', gender: 'B', event: 'Yoga', orient: 'landscape' },
+      { sheet: 'yoga', type: 'YOGA', group: 'GROUP - C', gender: 'G', event: 'Yoga', orient: 'landscape' },
+
+      // Gymnastic (Sheet: C) - Landscape
+      { sheet: 'C', type: 'GYM', group: 'GROUP - B', gender: 'B', event: 'Gymnastic', orient: 'landscape' },
+      { sheet: 'C', type: 'GYM', group: 'GROUP - B', gender: 'G', event: 'Gymnastic', orient: 'landscape' },
+      { sheet: 'C', type: 'GYM', group: 'GROUP - C', gender: 'B', event: 'Gymnastic', orient: 'landscape' },
+      { sheet: 'C', type: 'GYM', group: 'GROUP - C', gender: 'G', event: 'Gymnastic', orient: 'landscape' }
+    ];
+
+    // Normalize sport names to handle minor dot/space differences
+    function normalizeEventName(name) {
+      if (!name) return '';
+      const s = String(name).trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
+      if (s.includes('75')) return '75m Race';
+      if (s.includes('100')) return '100m. Race';
+      if (s.includes('200')) return '200m. Race';
+      if (s.includes('shuttle')) return 'Shuttle Race';
+      if (s.includes('long jump')) return 'Long Jump';
+      if (s.includes('high jump')) return 'High Jump';
+      if (s.includes('yoga')) return 'Yoga';
+      if (s.includes('gymnastic')) return 'Gymnastic';
+      if (s.includes('football')) return 'Football Throw';
+      return String(name).trim();
+    }
+
+    function normalizeGroupName(grp) {
+      if (!grp) return '';
+      const s = String(grp).trim().toUpperCase().replace(/\s+/g, '');
+      if (s.includes('A')) return 'GROUP - A';
+      if (s.includes('B')) return 'GROUP - B';
+      if (s.includes('C')) return 'GROUP - C';
+      return String(grp).trim().toUpperCase();
+    }
+
+    function normalizeGender(gen) {
+      if (!gen) return '';
+      const s = String(gen).trim().toUpperCase();
+      if (s.startsWith('B') || s === 'M' || s === 'MALE') return 'B';
+      if (s.startsWith('G') || s === 'F' || s === 'FEMALE') return 'G';
+      return s;
+    }
+
+    // Listen to file upload
+    document.getElementById('excelFile').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+          rawStudents = jsonRows.map(row => {
+            // Flexible column matching
+            const getCol = (keys) => {
+              for (let k of Object.keys(row)) {
+                const cleanK = k.trim().toLowerCase();
+                if (keys.some(target => cleanK === target || cleanK.includes(target))) {
+                  return String(row[k]).trim();
+                }
+              }
+              return '';
+            };
+
+            return {
+              group: normalizeGroupName(getCol(['group'])),
+              gender: normalizeGender(getCol(['gender', 'sex'])),
+              event: normalizeEventName(getCol(['sport name', 'event', 'sport'])),
+              chestNo: getCol(['chest no', 'chest']),
+              name: getCol(["participant's name", 'participant name', 'name', 'student name']),
+              school: getCol(['school name', 'school']),
+              studentClass: getCol(['class']),
+              fatherName: getCol(["father's name", 'father']),
+              dob: getCol(['date of birth', 'dob']),
+              bsId: getCol(['banglarshiksha', 'id']),
+              gp: getCol(['gram panchayet', 'gram panchayat', 'gp']),
+              circle: getCol(['circle']),
+              subDiv: getCol(['sub-division', 'sub division', 'subdivision'])
+            };
+          }).filter(s => s.group && s.event && (s.name || s.chestNo || s.school));
+
+          // Enable buttons
+          ['btnGP', 'btnCircle', 'btnSubDiv', 'btnDistrict', 'btnPrint', 'btnDownload'].forEach(id => {
+            document.getElementById(id).disabled = false;
+          });
+
+          document.getElementById('statusText').innerHTML = `✅ মোট <b>${rawStudents.length}</b> জন প্রতিযোগীর তথ্য লোড হয়েছে।`;
+          renderFormats();
+        } catch (err) {
+          alert('ফাইল পড়তে সমস্যা হয়েছে: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // Re-render when header text inputs change
+    ['yearInput', 'hostHeaderInput', 'defaultCircleInput', 'defaultSubDivInput'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        if (rawStudents.length > 0) renderFormats();
+      });
+    });
+
+    function selectLevel(level) {
+      currentLevel = level;
+      document.querySelectorAll('.btn-level').forEach(btn => btn.classList.remove('active'));
+      if (level === 'GP') document.getElementById('btnGP').classList.add('active');
+      if (level === 'CIRCLE') document.getElementById('btnCircle').classList.add('active');
+      if (level === 'SUBDIV') document.getElementById('btnSubDiv').classList.add('active');
+      if (level === 'DISTRICT') document.getElementById('btnDistrict').classList.add('active');
+
+      if (rawStudents.length > 0) {
+        renderFormats();
+      }
+    }
+
+    // Level Configuration Mapping (Rules 5, 6, 7, 8)
+    function getLevelConfig(level) {
+      const defCircle = document.getElementById('defaultCircleInput').value.trim() || 'CIRCLE';
+      const defSubDiv = document.getElementById('defaultSubDivInput').value.trim() || 'SUB-DIVISION';
+
+      switch (level) {
+        case 'GP':
+          return {
+            levelName: 'GP Level',
+            masterSubTitle: 'বিদ্যালয় স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (GP Level)',
+            eventUnitColHeader: 'School name',
+            getUnitValue: (s) => s.school || 'Unknown School'
+          };
+        case 'CIRCLE':
+          return {
+            levelName: 'Circle Level',
+            masterSubTitle: 'গ্রাম পঞ্চায়েত স্তরে ১ম স্থানাধিকারীদের নামের তালিকা',
+            eventUnitColHeader: 'GP',
+            getUnitValue: (s) => s.gp || 'Unknown GP'
+          };
+        case 'SUBDIV':
+          return {
+            levelName: 'Sub-Division Level',
+            masterSubTitle: 'চক্র স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (Sub-Division Level)',
+            eventUnitColHeader: 'Circle name',
+            getUnitValue: (s) => s.circle || defCircle
+          };
+        case 'DISTRICT':
+          return {
+            levelName: 'District Level',
+            masterSubTitle: 'মহকুমা স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (District Level)',
+            eventUnitColHeader: 'Sub-Division',
+            getUnitValue: (s) => s.subDiv || defSubDiv
+          };
+      }
+    }
+
+    function renderFormats() {
+      const container = document.getElementById('preview-container');
+      container.innerHTML = '';
+      generatedPages = [];
+
+      const cfg = getLevelConfig(currentLevel);
+      const year = document.getElementById('yearInput').value.trim() || '2026';
+      const hostHeader = document.getElementById('hostHeaderInput').value.trim() || 'লাভপুর চক্র';
+
+      // Extract unique sorted units for the current level
+      const unitSet = new Set();
+      rawStudents.forEach(s => {
+        const u = cfg.getUnitValue(s);
+        if (u) unitSet.add(u);
+      });
+      const units = Array.from(unitSet);
+
+      // 1. Generate MASTER SHEET pages (One page per Unit: School / GP / Circle / Sub-Division)
+      units.forEach(unitName => {
+        const unitStudents = rawStudents.filter(s => cfg.getUnitValue(s) === unitName);
+
+        const masterPageData = {
+          kind: 'MASTER',
+          sheetName: 'Master',
+          orient: 'landscape',
+          year,
+          hostHeader,
+          subTitle: cfg.masterSubTitle,
+          unitName,
+          groups: MASTER_GROUPS.map(gObj => ({
+            group: gObj.group,
+            rows: gObj.events.map(evName => {
+              const boy = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'B') || {};
+              const girl = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'G') || {};
+              return {
+                event: evName,
+                bChest: boy.chestNo || '',
+                bName: boy.name || '',
+                bSchool: boy.school || '',
+                gChest: girl.chestNo || '',
+                gName: girl.name || '',
+                gSchool: girl.school || ''
+              };
+            })
+          }))
+        };
+
+        generatedPages.push(masterPageData);
+        container.appendChild(createMasterPageDOM(masterPageData));
+      });
+
+      // 2. Generate EVENT SHEET pages (One format per page)
+      EVENT_FORMATS.forEach(fmt => {
+        const genderLabel = fmt.gender === 'B' ? 'BOYS' : 'GIRLS';
+        const participants = rawStudents
+          .filter(s => s.group === fmt.group && s.gender === fmt.gender && s.event === fmt.event)
+          .map(s => ({
+            chestNo: s.chestNo || '',
+            school: s.school || '',
+            unitCol: cfg.getUnitValue(s),
+            name: s.name || ''
+          }));
+
+        const eventPageData = {
+          kind: fmt.type,
+          sheetName: fmt.sheet,
+          orient: fmt.orient,
+          title: `${fmt.group}       ${genderLabel}       ${fmt.event}`,
+          unitColHeader: cfg.eventUnitColHeader,
+          gender: fmt.gender,
+          rows: participants
+        };
+
+        generatedPages.push(eventPageData);
+        container.appendChild(createEventPageDOM(eventPageData));
+      });
+
+      document.getElementById('pageCountText').innerHTML = `মোট পেজ সংখ্যা: <b>${generatedPages.length}</b> টি (প্রতি পেজে ১টি ফরম্যাট)`;
+    }
+
+    function createMasterPageDOM(data) {
+      const div = document.createElement('div');
+      div.className = 'sheet-page page-landscape';
+
+      let groupsHtml = '';
+      data.groups.forEach(g => {
+        let rowsHtml = g.rows.map(r => `
+          <tr>
+            <td style="font-weight:600; text-align:left;">${r.event}</td>
+            <td>${r.bChest}</td>
+            <td class="text-left" style="font-weight:600;">${r.bName}</td>
+            <td class="text-left">${r.bSchool}</td>
+            <td>${r.gChest}</td>
+            <td class="text-left" style="font-weight:600;">${r.gName}</td>
+            <td class="text-left">${r.gSchool}</td>
+          </tr>
+        `).join('');
+
+        groupsHtml += `
+          <table class="sports-table">
+            <thead>
+              <tr class="group-title-row">
+                <th colspan="7">${g.group}</th>
+              </tr>
+              <tr>
+                <th style="width:13%;">EVENT</th>
+                <th style="width:7%;">CHEST NO.</th>
+                <th style="width:18%;">NAME OF WINNER (BOYS)</th>
+                <th style="width:18.5%;">NAME OF SCHOOL</th>
+                <th style="width:7%;">CHEST NO.</th>
+                <th style="width:18%;">NAME OF WINNER (GIRLS)</th>
+                <th style="width:18.5%;">NAME OF SCHOOL</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+      });
+
+      div.innerHTML = `
+        <span class="sheet-badge">Sheet: Master (${currentLevel})</span>
+        <div class="master-header">
+          <h2>প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা - ${data.year}</h2>
+          <h3>${data.hostHeader}</h3>
+          <h4>${data.subTitle}</h4>
+        </div>
+        <div class="master-meta">
+          <span>${data.unitName}</span>
+          <span>Date: ____/____/${data.year}</span>
+        </div>
+        ${groupsHtml}
+      `;
+      return div;
+    }
+
+    function createEventPageDOM(data) {
+      const div = document.createElement('div');
+      div.className = `sheet-page ${data.orient === 'landscape' ? 'page-landscape' : 'page-portrait'}`;
+
+      let tableHtml = '';
+
+      if (data.kind === 'TRACK') {
+        const rows = data.rows.map(r => `
+          <tr>
+            <td>${r.chestNo}</td>
+            <td class="text-left">${r.school}</td>
+            <td>${r.unitCol}</td>
+            <td class="text-left" style="font-weight:600;">${r.name}</td>
+            <td></td>
+          </tr>
+        `).join('');
+
+        tableHtml = `
+          <table class="sports-table">
+            <thead>
+              <tr>
+                <th style="width:12%;">CHEST NO.</th>
+                <th style="width:32%;">NAME OF SCHOOL</th>
+                <th style="width:18%;">${data.unitColHeader}</th>
+                <th style="width:24%;">PARTICIPANT NAME</th>
+                <th style="width:14%;">REMARKS</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (data.kind === 'CHANCE3') {
+        const rows = data.rows.map(r => `
+          <tr>
+            <td>${r.chestNo}</td>
+            <td class="text-left">${r.school}</td>
+            <td>${r.unitCol}</td>
+            <td class="text-left" style="font-weight:600;">${r.name}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        `).join('');
+
+        tableHtml = `
+          <table class="sports-table">
+            <thead>
+              <tr>
+                <th style="width:9%;">CHEST NO.</th>
+                <th style="width:25%;">NAME OF SCHOOL</th>
+                <th style="width:14%;">${data.unitColHeader}</th>
+                <th style="width:20%;">PARTICIPANT NAME</th>
+                <th style="width:8%;">প্রথম সুযোগ</th>
+                <th style="width:8%;">দ্বিতীয় সুযোগ</th>
+                <th style="width:8%;">তৃতীয় সুযোগ</th>
+                <th style="width:8%;">মন্তব্য</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (data.kind === 'HIGHJUMP') {
+        const rows = data.rows.map(r => `
+          <tr>
+            <td>${r.chestNo}</td>
+            <td class="text-left">${r.school}</td>
+            <td>${r.unitCol}</td>
+            <td class="text-left" style="font-weight:600;">${r.name}</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td></td>
+          </tr>
+        `).join('');
+
+        tableHtml = `
+          <table class="sports-table">
+            <thead>
+              <tr>
+                <th style="width:8%;">CHEST NO.</th>
+                <th style="width:23%;">NAME OF SCHOOL</th>
+                <th style="width:13%;">${data.unitColHeader}</th>
+                <th style="width:19%;">PARTICIPANT NAME</th>
+                <th style="width:4%;"></th><th style="width:4%;"></th><th style="width:4%;"></th>
+                <th style="width:4%;"></th><th style="width:4%;"></th><th style="width:4%;"></th><th style="width:4%;"></th>
+                <th style="width:9%;">মন্তব্য</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (data.kind === 'YOGA') {
+        const rows = data.rows.map(r => `
+          <tr>
+            <td>${r.chestNo}</td>
+            <td class="text-left">${r.school}</td>
+            <td>${r.unitCol}</td>
+            <td class="text-left" style="font-weight:600;">${r.name}</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td></td>
+          </tr>
+        `).join('');
+
+        tableHtml = `
+          <table class="sports-table">
+            <thead>
+              <tr>
+                <th style="width:8%;">CHEST NO.</th>
+                <th style="width:22%;">NAME OF SCHOOL</th>
+                <th style="width:12%;">${data.unitColHeader}</th>
+                <th style="width:18%;">PARTICIPANT NAME</th>
+                <th style="width:6%;">গ্রুপ ১ (2) লটারি</th>
+                <th style="width:6%;">গ্রুপ ১ (2) লটারি</th>
+                <th style="width:6%;">গ্রুপ ২ (2) লটারি</th>
+                <th style="width:5.5%;">গ্রুপ ৩ (2)</th>
+                <th style="width:5.5%;">ইচ্ছামতো (2)</th>
+                <th style="width:5%;">মোট (10)</th>
+                <th style="width:6%;">মন্তব্য</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (data.kind === 'GYM') {
+        const isGirls = data.gender === 'G';
+        const col8 = isGirls ? 'SPLIT SHEET (LRF)' : 'SPLIT SIT (LRF)';
+        const col13 = isGirls ? 'ONE LEG 360 DEGREE TURN' : 'JUMP 360 DEGREE TURN';
+        const col14 = isGirls ? 'LEAP JUMP 1 & 2' : 'DIVE ROLL/ FLY HAND';
+
+        const rows = data.rows.map(r => `
+          <tr>
+            <td>${r.chestNo}</td>
+            <td class="text-left">${r.school}</td>
+            <td>${r.unitCol}</td>
+            <td class="text-left" style="font-weight:600;">${r.name}</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+        `).join('');
+
+        tableHtml = `
+          <table class="sports-table gym-table">
+            <thead>
+              <tr>
+                <th rowspan="2" style="width:5%;">CHEST NO.</th>
+                <th rowspan="2" style="width:16%;">NAME OF SCHOOL</th>
+                <th rowspan="2" style="width:9%;">${data.unitColHeader}</th>
+                <th rowspan="2" style="width:14%;">PARTICIPANT NAME</th>
+                <th class="vertical-header">ONE LEG HAND SPRING</th>
+                <th class="vertical-header">ROUND OFF</th>
+                <th class="vertical-header">BACK FLIP (CONTINOUS)</th>
+                <th class="vertical-header">${col8}</th>
+                <th class="vertical-header">PRESS HAND STAND</th>
+                <th class="vertical-header">FORWARD ROLL</th>
+                <th class="vertical-header">T BALANCE</th>
+                <th class="vertical-header">BACKWARD ROLL</th>
+                <th class="vertical-header">${col13}</th>
+                <th class="vertical-header">${col14}</th>
+                <th class="vertical-header">ROUNDOFF BACKWARD/ FORWARD SALTO</th>
+                <th class="vertical-header">EGR/CR</th>
+                <th class="vertical-header">BONUS</th>
+                <th class="vertical-header">ELEMENTS</th>
+                <th rowspan="2" style="width:5%;">TOTAL</th>
+                <th rowspan="2" style="width:6%;">COMMENT</th>
+              </tr>
+              <tr>
+                <th>0.4</th><th>0.2</th><th>0.6</th><th>1.2</th><th>0.8</th><th>0.8</th>
+                <th>0.6</th><th>0.8</th><th>0.6</th><th>0.8</th><th>1.0</th>
+                <th>${isGirls ? '' : '2.0'}</th><th>${isGirls ? '' : '0.2'}</th><th>${isGirls ? '' : '10'}</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+
+      div.innerHTML = `
+        <span class="sheet-badge">Sheet: ${data.sheetName} (${currentLevel})</span>
+        <div class="event-banner">${data.title}</div>
+        ${tableHtml}
+        <div class="signature-box">
+          <div class="signature-inner">
+            …………………………<br/>
+            বিচারকের স্বাক্ষর
+          </div>
+        </div>
+      `;
+      return div;
+    }
+    
+    // Rule 9: Generate & Download Excel with Pre-configured Page Setup & Page Breaks (1 format per page)
+    async function downloadFormattedExcel() {
+      if (generatedPages.length === 0) return;
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'Annual Sports Format Generator';
+      workbook.created = new Date();
+
+      const borderThin = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+
+      const fontHeader = { name: 'Calibri', size: 11, bold: true };
+      const fontTitle = { name: 'Calibri', size: 13, bold: true };
+      const fontBody = { name: 'Calibri', size: 10, bold: false };
+      const fontBodyBold = { name: 'Calibri', size: 10, bold: true };
+
+      // Helper to configure sheet for exact 1-format-per-page printing
+      function setupSheetPrint(ws, orientation, fitWidth = 1) {
+        ws.views = [{ showGridLines: true }];
+        ws.pageSetup = {
+          paperSize: 9, // A4
+          orientation: orientation,
+          fitToPage: true,
+          fitToWidth: fitWidth,
+          fitToHeight: 0, // Controlled via explicit row page breaks (1 format per page)
+          horizontalCentered: true,
+          margins: {
+            left: 0.3,
+            right: 0.3,
+            top: 0.35,
+            bottom: 0.35,
+            header: 0.15,
+            footer: 0.15
+          }
+        };
+      }
+
+      // 1. Build Master Sheet
+      const wsMaster = workbook.addWorksheet('Master');
+      setupSheetPrint(wsMaster, 'landscape', 1);
+      wsMaster.columns = [
+        { width: 16 }, { width: 10 }, { width: 24 }, { width: 28 },
+        { width: 2 },  { width: 10 }, { width: 24 }, { width: 28 }
+      ];
+
+      let rIdx = 1;
+      const masterPages = generatedPages.filter(p => p.kind === 'MASTER');
+
+      masterPages.forEach((mp, idx) => {
+        wsMaster.mergeCells(rIdx, 1, rIdx, 8);
+        const c1 = wsMaster.getCell(rIdx, 1);
+        c1.value = `প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা - ${mp.year}`;
+        c1.font = fontTitle;
+        c1.alignment = { horizontal: 'center', vertical: 'middle' };
+        rIdx++;
+
+        wsMaster.mergeCells(rIdx, 1, rIdx, 8);
+        const c2 = wsMaster.getCell(rIdx, 1);
+        c2.value = mp.hostHeader;
+        c2.font = { name: 'Calibri', size: 12, bold: true };
+        c2.alignment = { horizontal: 'center', vertical: 'middle' };
+        rIdx++;
+
+        wsMaster.mergeCells(rIdx, 1, rIdx, 8);
+        const c3 = wsMaster.getCell(rIdx, 1);
+        c3.value = mp.subTitle;
+        c3.font = { name: 'Calibri', size: 11, bold: true, underline: true };
+        c3.alignment = { horizontal: 'center', vertical: 'middle' };
+        rIdx++;
+
+        wsMaster.mergeCells(rIdx, 1, rIdx, 5);
+        wsMaster.getCell(rIdx, 1).value = mp.unitName;
+        wsMaster.getCell(rIdx, 1).font = fontHeader;
+        wsMaster.mergeCells(rIdx, 6, rIdx, 8);
+        wsMaster.getCell(rIdx, 6).value = `Date: ____/____/${mp.year}`;
+        wsMaster.getCell(rIdx, 6).font = fontHeader;
+        wsMaster.getCell(rIdx, 6).alignment = { horizontal: 'right' };
+        rIdx++;
+
+        mp.groups.forEach(g => {
+          wsMaster.mergeCells(rIdx, 1, rIdx, 8);
+          const cg = wsMaster.getCell(rIdx, 1);
+          cg.value = g.group;
+          cg.font = fontHeader;
+          cg.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+          for (let c = 1; c <= 8; c++) wsMaster.getCell(rIdx, c).border = borderThin;
+          rIdx++;
+
+          const headers = ['EVENT', 'CHEST NO.', 'NAME OF WINNER (BOYS)', 'NAME OF SCHOOL', '', 'CHEST NO.', 'NAME OF WINNER (GIRLS)', 'NAME OF SCHOOL'];
+          headers.forEach((h, i) => {
+            const cell = wsMaster.getCell(rIdx, i + 1);
+            cell.value = h;
+            cell.font = fontHeader;
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+            cell.border = borderThin;
+          });
+          rIdx++;
+
+          g.rows.forEach(row => {
+            const vals = [row.event, row.bChest, row.bName, row.bSchool, '', row.gChest, row.gName, row.gSchool];
+            vals.forEach((v, i) => {
+              const cell = wsMaster.getCell(rIdx, i + 1);
+              cell.value = v;
+              cell.font = (i === 0 || i === 2 || i === 6) ? fontBodyBold : fontBody;
+              cell.alignment = {
+                horizontal: (i === 1 || i === 5) ? 'center' : 'left',
+                vertical: 'middle',
+                wrapText: true
+              };
+              cell.border = borderThin;
+            });
+            rIdx++;
+          });
+          rIdx++; // Gap between groups
+        });
+
+        // Add Page Break after each Master unit so each prints on 1 page
+        if (idx < masterPages.length - 1) {
+          wsMaster.getRow(rIdx - 1).addPageBreak();
+        }
+      });
+
+      // 2. Build Event Sheets ('A', 'A (2)', 'B (2)', 'B', 'yoga', 'C')
+      const sheetNames = ['A', 'A (2)', 'B (2)', 'B', 'yoga', 'C'];
+
+      sheetNames.forEach(sName => {
+        const pagesForSheet = generatedPages.filter(p => p.sheetName === sName);
+        if (pagesForSheet.length === 0) return;
+
+        const ws = workbook.addWorksheet(sName);
+        const orient = pagesForSheet[0].orient;
+        setupSheetPrint(ws, orient, 1);
+
+        // Set column widths per sheet type
+        if (sName === 'A') {
+          ws.columns = [{ width: 13 }, { width: 34 }, { width: 22 }, { width: 26 }, { width: 18 }];
+        } else if (sName === 'A (2)' || sName === 'B (2)') {
+          ws.columns = [
+            { width: 11 }, { width: 30 }, { width: 20 }, { width: 24 },
+            { width: 12 }, { width: 12 }, { width: 12 }, { width: 14 }
+          ];
+        } else if (sName === 'B') {
+          ws.columns = [
+            { width: 11 }, { width: 32 }, { width: 20 }, { width: 25 },
+            { width: 7 }, { width: 7 }, { width: 7 }, { width: 7 }, { width: 7 }, { width: 7 }, { width: 7 },
+            { width: 16 }
+          ];
+        } else if (sName === 'yoga') {
+          ws.columns = [
+            { width: 11 }, { width: 30 }, { width: 20 }, { width: 24 },
+            { width: 10 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 14 }
+          ];
+        } else if (sName === 'C') {
+          ws.columns = [
+            { width: 9 }, { width: 26 }, { width: 16 }, { width: 20 },
+            { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 5.5 },
+            { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 5.5 },
+            { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 5.5 }, { width: 7 }, { width: 11 }
+          ];
+        }
+
+        let rowCursor = 1;
+
+        pagesForSheet.forEach((ep, pIdx) => {
+          const totalCols = ws.columns.length;
+
+          // Banner Row
+          ws.mergeCells(rowCursor, 1, rowCursor, totalCols);
+          const bannerCell = ws.getCell(rowCursor, 1);
+          bannerCell.value = ep.title;
+          bannerCell.font = fontTitle;
+          bannerCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          bannerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+          for (let c = 1; c <= totalCols; c++) ws.getCell(rowCursor, c).border = borderThin;
+          ws.getRow(rowCursor).height = 24;
+          rowCursor++;
+
+          if (ep.kind === 'GYM') {
+            const isGirls = ep.gender === 'G';
+            const col8 = isGirls ? 'SPLIT SHEET (LRF)' : 'SPLIT SIT (LRF)';
+            const col13 = isGirls ? 'ONE LEG 360 DEGREE TURN' : 'JUMP 360 DEGREE TURN';
+            const col14 = isGirls ? 'LEAP JUMP 1 & 2' : 'DIVE ROLL/ FLY HAND';
+
+            const hRow1 = [
+              'CHEST NO.', 'NAME OF SCHOOL', ep.unitColHeader, 'PARTICIPANT NAME',
+              'ONE LEG HAND SPRING', 'ROUND OFF', 'BACK FLIP (CONTINOUS)', col8,
+              'PRESS HAND STAND', 'FORWARD ROLL', 'T BALANCE', 'BACKWARD ROLL',
+              col13, col14, 'ROUNDOFF BACKWARD/ FORWARD SALTO',
+              'EGR/CR', 'BONUS', 'ELEMENTS', 'TOTAL', 'COMMENT'
+            ];
+
+            const hRow2 = [
+              '', '', '', '',
+              0.4, 0.2, 0.6, 1.2, 0.8, 0.8, 0.6, 0.8, 0.6, 0.8, 1.0,
+              isGirls ? '' : 2.0, isGirls ? '' : 0.2, isGirls ? '' : 10, '', ''
+            ];
+
+            hRow1.forEach((h, i) => {
+              const cell = ws.getCell(rowCursor, i + 1);
+              cell.value = h;
+              cell.font = { name: 'Calibri', size: 8.5, bold: true };
+              cell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle',
+                wrapText: true,
+                textRotation: (i >= 4 && i <= 17) ? 90 : 0
+              };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+              cell.border = borderThin;
+            });
+            ws.getRow(rowCursor).height = 65;
+            rowCursor++;
+
+            hRow2.forEach((h, i) => {
+              const cell = ws.getCell(rowCursor, i + 1);
+              cell.value = h;
+              cell.font = { name: 'Calibri', size: 8.5, bold: true };
+              cell.alignment = { horizontal: 'center', vertical: 'middle' };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+              cell.border = borderThin;
+            });
+            // Merge first 4 and last 2 header rows vertically
+            [1, 2, 3, 4, 19, 20].forEach(colIdx => {
+              ws.mergeCells(rowCursor - 1, colIdx, rowCursor, colIdx);
+            });
+            rowCursor++;
+
+            ep.rows.forEach(r => {
+              const vals = [r.chestNo, r.school, r.unitCol, r.name, ...Array(16).fill('')];
+              vals.forEach((v, i) => {
+                const cell = ws.getCell(rowCursor, i + 1);
+                cell.value = v;
+                cell.font = (i === 3) ? fontBodyBold : fontBody;
+                cell.alignment = { horizontal: (i === 1 || i === 3) ? 'left' : 'center', vertical: 'middle', wrapText: true };
+                cell.border = borderThin;
+              });
+              ws.getRow(rowCursor).height = 20;
+              rowCursor++;
+            });
+          } else {
+            let headers = [];
+            if (ep.kind === 'TRACK') {
+              headers = ['CHEST NO.', 'NAME OF SCHOOL', ep.unitColHeader, 'PARTICIPANT NAME', 'REMARKS'];
+            } else if (ep.kind === 'CHANCE3') {
+              headers = ['CHEST NO.', 'NAME OF SCHOOL', ep.unitColHeader, 'PARTICIPANT NAME', 'প্রথম সুযোগ', 'দ্বিতীয় সুযোগ', 'তৃতীয় সুযোগ', 'মন্তব্য'];
+            } else if (ep.kind === 'HIGHJUMP') {
+              headers = ['CHEST NO.', 'NAME OF SCHOOL', ep.unitColHeader, 'PARTICIPANT NAME', '', '', '', '', '', '', '', 'মন্তব্য'];
+            } else if (ep.kind === 'YOGA') {
+              headers = ['CHEST NO.', 'NAME OF SCHOOL', ep.unitColHeader, 'PARTICIPANT NAME', 'গ্রুপ ১ (2) লটারি', 'গ্রুপ ১ (2) লটারি', 'গ্রুপ ২ (2) লটারি', 'গ্রুপ ৩ (2)', 'ইচ্ছামতো (2)', 'মোট (10)', 'মন্তব্য'];
+            }
+
+            headers.forEach((h, i) => {
+              const cell = ws.getCell(rowCursor, i + 1);
+              cell.value = h;
+              cell.font = fontHeader;
+              cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+              cell.border = borderThin;
+            });
+            ws.getRow(rowCursor).height = 26;
+            rowCursor++;
+
+            ep.rows.forEach(r => {
+              const extraCols = headers.length - 4;
+              const vals = [r.chestNo, r.school, r.unitCol, r.name, ...Array(extraCols).fill('')];
+              vals.forEach((v, i) => {
+                const cell = ws.getCell(rowCursor, i + 1);
+                cell.value = v;
+                cell.font = (i === 3) ? fontBodyBold : fontBody;
+                cell.alignment = { horizontal: (i === 1 || i === 3) ? 'left' : 'center', vertical: 'middle', wrapText: true };
+                cell.border = borderThin;
+              });
+              ws.getRow(rowCursor).height = 22;
+              rowCursor++;
+            });
+          }
+
+          // Signature Block
+          rowCursor += 2;
+          const sigCol = Math.max(4, totalCols - 2);
+          ws.mergeCells(rowCursor, sigCol, rowCursor, totalCols);
+          const s1 = ws.getCell(rowCursor, sigCol);
+          s1.value = '…………………………';
+          s1.alignment = { horizontal: 'center' };
+          rowCursor++;
+
+          ws.mergeCells(rowCursor, sigCol, rowCursor, totalCols);
+          const s2 = ws.getCell(rowCursor, sigCol);
+          s2.value = 'বিচারকের স্বাক্ষর';
+          s2.font = fontHeader;
+          s2.alignment = { horizontal: 'center' };
+          rowCursor++;
+
+          // Exact Page Break after each format so every format prints on 1 page
+          if (pIdx < pagesForSheet.length - 1) {
+            ws.getRow(rowCursor - 1).addPageBreak();
+          }
+        });
+      });
+
+      // Download File
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentLevel}_Level_Sports_Formats.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
