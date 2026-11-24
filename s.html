@@ -3,17 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Annual Sports Format Generator (GP / Circle / Sub-Division / District)</title>
-  <!-- SheetJS for reading Excel & ExcelJS for writing styled Excel with Page Breaks -->
+  <title>Annual Sports Format Generator</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --secondary: #0f766e;
-      --accent: #b45309;
       --bg: #f1f5f9;
-      --border: #1e293b;
+      --border: #0f172a;
     }
 
     * {
@@ -31,7 +27,7 @@
     /* Control Panel (Hidden during print) */
     .control-panel {
       background: #ffffff;
-      padding: 18px 24px;
+      padding: 14px 22px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       position: sticky;
       top: 0;
@@ -45,13 +41,13 @@
       gap: 14px;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .app-title {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      color: var(--primary);
+      color: #1e3a8a;
       margin: 0;
     }
 
@@ -59,19 +55,20 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      align-items: center;
+      align-items: flex-end;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: #334155;
     }
 
     .input-group input[type="file"],
-    .input-group input[type="text"] {
+    .input-group input[type="text"],
+    .input-group input[type="number"] {
       margin-top: 4px;
       padding: 6px 10px;
       border: 1px solid #94a3b8;
@@ -83,66 +80,95 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
     }
 
     button {
-      padding: 9px 15px;
+      padding: 8px 13px;
       border: none;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      gap: 5px;
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.14);
+      opacity: 0.9;
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
     }
 
-    .btn-level {
-      background: #e2e8f0;
-      color: #1e293b;
-      border: 1px solid #cbd5e1;
+    button:hover:not(:disabled) {
+      opacity: 1;
+      transform: translateY(-1px);
     }
 
-    .btn-level:hover:not(:disabled) {
-      background: #cbd5e1;
+    button.active {
+      opacity: 1;
+      outline: 3px solid #0f172a;
+      outline-offset: 1px;
+      font-weight: 700;
     }
 
-    .btn-level.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
+    /* Distinct Non-Green Button Colors */
+    #btnBlankExcel {
+      background: #0284c7; /* Sky Blue */
+      opacity: 1;
+    }
+    #btnGP {
+      background: #2563eb; /* Royal Blue */
+    }
+    #btnCircle {
+      background: #7c3aed; /* Deep Purple */
+    }
+    #btnSubDiv {
+      background: #db2777; /* Rose Magenta */
+    }
+    #btnDistrict {
+      background: #4f46e5; /* Indigo */
+    }
+    #btnPrint {
+      background: #dc2626; /* Crimson Red */
+    }
+    #btnDownload {
+      background: #d97706; /* Amber Orange */
     }
 
-    .btn-print {
-      background: #059669;
-      color: #ffffff;
+    /* Print Page _ to _ Box */
+    .print-range-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef2f2;
+      border: 1.5px solid #fca5a5;
+      padding: 4px 10px;
+      border-radius: 6px;
       margin-left: auto;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #991b1b;
     }
 
-    .btn-print:hover:not(:disabled) {
-      background: #047857;
-    }
-
-    .btn-excel {
-      background: #d97706;
-      color: #ffffff;
-    }
-
-    .btn-excel:hover:not(:disabled) {
-      background: #b45309;
+    .print-range-box input {
+      width: 56px;
+      padding: 5px 6px;
+      border: 1px solid #f87171;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.86rem;
+      background: #ffffff;
     }
 
     .status-bar {
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 0.85rem;
       color: #475569;
       display: flex;
@@ -161,11 +187,11 @@
 
     .empty-state {
       background: #fff;
-      padding: 48px;
+      padding: 44px;
       border-radius: 12px;
       text-align: center;
-      max-width: 600px;
-      margin-top: 40px;
+      max-width: 640px;
+      margin-top: 30px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px dashed #94a3b8;
     }
@@ -176,6 +202,9 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
       padding: 10mm 12mm;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       page-break-after: always;
       break-after: page;
     }
@@ -187,29 +216,31 @@
 
     .page-landscape {
       width: 297mm;
-      min-height: 205mm;
+      height: 204mm;
     }
 
     .page-portrait {
       width: 210mm;
-      min-height: 290mm;
+      height: 290mm;
     }
 
-    .sheet-badge {
-      position: absolute;
-      top: 4px;
-      right: 8px;
-      font-size: 10px;
-      color: #64748b;
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 4px;
+    .page-top-section {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* Page Number Badge */
+    .page-number-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
     }
 
     /* Format Header Styles */
     .master-header {
       text-align: center;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .master-header h2 {
@@ -221,12 +252,6 @@
     .master-header h3 {
       margin: 2px 0;
       font-size: 13.5px;
-      font-weight: 700;
-    }
-
-    .master-header h4 {
-      margin: 2px 0 6px 0;
-      font-size: 13px;
       font-weight: 600;
       text-decoration: underline;
     }
@@ -236,17 +261,26 @@
       justify-content: space-between;
       font-weight: 700;
       font-size: 13px;
-      margin-bottom: 4px;
-      padding: 2px 4px;
+      margin-bottom: 5px;
+      padding: 4px 8px;
       background: #f8fafc;
-      border: 1px solid #000;
+      border: 1.5px solid #000;
+    }
+
+    .event-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
     .event-banner {
       text-align: center;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
-      padding: 6px;
+      padding: 8px;
       border: 1.5px solid #000;
       border-bottom: none;
       background: #f8fafc;
@@ -257,14 +291,19 @@
     table.sports-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 8px;
-      font-size: 11.5px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    table.sports-table.event-full-table {
+      flex: 1;
+      margin-bottom: 0;
     }
 
     table.sports-table th,
     table.sports-table td {
       border: 1px solid #000;
-      padding: 3.5px 5px;
+      padding: 4px 6px;
       text-align: center;
       vertical-align: middle;
     }
@@ -280,19 +319,19 @@
 
     .group-title-row th {
       background-color: #e2e8f0 !important;
-      font-size: 12px;
+      font-size: 12.5px;
       text-align: left !important;
       padding-left: 8px !important;
     }
 
     /* Gymnastics compact table */
     table.gym-table {
-      font-size: 9px;
+      font-size: 9.5px;
     }
 
     table.gym-table th,
     table.gym-table td {
-      padding: 2.5px 2px;
+      padding: 3px 2px;
     }
 
     .vertical-header {
@@ -304,24 +343,24 @@
       padding: 4px 1px !important;
     }
 
-    /* Signature Block */
-    .signature-box {
-      margin-top: 28px;
+    /* Footer Block: Total Count + Page Number + Judge Signature */
+    .page-footer-row {
+      margin-top: 12px;
       display: flex;
-      justify-content: flex-end;
-      padding-right: 35px;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 10px;
+    }
+
+    .total-count-box {
+      font-size: 13.5px;
+      font-weight: 700;
     }
 
     .signature-inner {
       text-align: center;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-    }
-
-    .dual-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
     }
 
     /* Print Media Query */
@@ -329,8 +368,7 @@
       body {
         background: #ffffff;
       }
-      .control-panel,
-      .sheet-badge {
+      .control-panel {
         display: none !important;
       }
       #preview-container {
@@ -338,16 +376,24 @@
         gap: 0;
         display: block;
       }
+      .sheet-page.print-excluded {
+        display: none !important;
+      }
       .sheet-page {
         box-shadow: none;
         margin: 0;
         padding: 6mm 8mm;
         width: 100% !important;
-        min-height: auto !important;
         page-break-after: always !important;
         break-after: page !important;
       }
-      .sheet-page:last-child {
+      .page-portrait {
+        height: 282mm !important;
+      }
+      .page-landscape {
+        height: 194mm !important;
+      }
+      .sheet-page.last-printed-page {
         page-break-after: auto !important;
         break-after: auto !important;
       }
@@ -361,40 +407,44 @@
       <h1 class="app-title">🏆 Annual Sports Format Generator</h1>
       <div class="inputs-row">
         <div class="input-group">
+          <button id="btnBlankExcel" onclick="downloadBlankExcel()">📄 Download Blank Excel</button>
+        </div>
+        <span id="statusText">প্রথমে উপরের Blank Excel ফাইলটি ডাউনলোড করুন। তারপর ফাঁকা excel ফাইলটিতে তথ্য পূরণ করুন। এরপর আপনার পূরণ করা excel ফাইলটি আপলোড করুন।</span>
+
+        <div class="input-group">
           <label for="excelFile">১. Excel ফাইল আপলোড করুন (Sports.xlsx):</label>
           <input type="file" id="excelFile" accept=".xlsx, .xlsm, .xls" />
         </div>
         <div class="input-group">
-          <label for="yearInput">সাল (Year):</label>
-          <input type="text" id="yearInput" value="2026" style="width: 80px;" />
+          <label for="dateInput">তারিখ:</label>
+          <input type="text" id="dateInput" placeholder="যেমন: 02/11/2026" style="width: 145px;" />
         </div>
         <div class="input-group">
-          <label for="hostHeaderInput">আয়োজক সংস্থা (চক্র / মহকুমা / জেলা):</label>
-          <input type="text" id="hostHeaderInput" value="লাভপুর চক্র" style="width: 170px;" />
-        </div>
-        <div class="input-group">
-          <label for="defaultCircleInput">ডিফল্ট Circle নাম (যদি এক্সেলে ফাঁকা থাকে):</label>
-          <input type="text" id="defaultCircleInput" value="LABPUR CIRCLE" style="width: 150px;" />
-        </div>
-        <div class="input-group">
-          <label for="defaultSubDivInput">ডিফল্ট Sub-Division নাম:</label>
-          <input type="text" id="defaultSubDivInput" value="BOLPUR SUB-DIVISION" style="width: 170px;" />
+          <label for="defaultSubDivInput">Sub-Division নাম (District Level এর জন্য):</label>
+          <input type="text" id="defaultSubDivInput" value="BOLPUR SUB-DIVISION" style="width: 180px;" />
         </div>
       </div>
     </div>
 
     <div class="btn-row">
-      <button id="btnGP" class="btn-level active" onclick="selectLevel('GP')" disabled>GP Level Sports Format</button>
-      <button id="btnCircle" class="btn-level" onclick="selectLevel('CIRCLE')" disabled>Circle Level Sports Format</button>
-      <button id="btnSubDiv" class="btn-level" onclick="selectLevel('SUBDIV')" disabled>Sub-Division Level Sports Format</button>
-      <button id="btnDistrict" class="btn-level" onclick="selectLevel('DISTRICT')" disabled>District Level Sports Format</button>
+      <button id="btnGP" class="active" onclick="selectLevel('GP')" disabled>GP Level Sports Format</button>
+      <button id="btnCircle" onclick="selectLevel('CIRCLE')" disabled>Circle Level Sports Format</button>
+      <button id="btnSubDiv" onclick="selectLevel('SUBDIV')" disabled>Sub-Division Level Sports Format</button>
+      <button id="btnDistrict" onclick="selectLevel('DISTRICT')" disabled>District Level Sports Format</button>
 
-      <button id="btnPrint" class="btn-print" onclick="window.print()" disabled>🖨️ Print</button>
-      <button id="btnDownload" class="btn-excel" onclick="downloadFormattedExcel()" disabled>📥 Downlod Excel</button>
+      <div class="print-range-box">
+        <span>Print Page</span>
+        <input type="number" id="printFromInput" min="1" value="1" disabled />
+        <span>to</span>
+        <input type="number" id="printToInput" min="1" value="1" disabled />
+        <button id="btnPrint" onclick="handleRangePrint()" disabled>🖨️ Print</button>
+      </div>
+
+      <button id="btnDownload" onclick="downloadFormattedExcel()" disabled>📥 Downlod Excel</button>
     </div>
 
     <div class="status-bar">
-      <span id="statusText">অনুগ্রহ করে <b>Sports.xlsx</b> ফাইলটি আপলোড করুন।</span>
+      <span id="statusText">প্রথমে <b>Download Blank Excel</b> থেকে ফাঁকা ফাইল নিয়ে তথ্য পূরণ করুন অথবা আপনার পূরণ করা <b>Sports.xlsx</b> ফাইলটি আপলোড করুন।</span>
       <span id="pageCountText"></span>
     </div>
   </div>
@@ -402,16 +452,15 @@
   <div id="preview-container">
     <div class="empty-state">
       <h3>কোনো ফাইল আপলোড করা হয়নি</h3>
-      <p>উপরে <b>"Excel ফাইল আপলোড করুন"</b> বাটনে ক্লিক করে আপনার স্টুডেন্ট লিস্টের Excel ফাইলটি সিলেক্ট করুন। সাথে সাথেই GP, Circle, Sub-Division এবং District লেভেলের সব ফরম্যাট তৈরি হয়ে যাবে।</p>
+      <p>উপরে <b>"Download Blank Excel"</b> বাটনে ক্লিক করে <code>Sports.xlsx</code>-এর মতো ব্ল্যাঙ্ক এক্সেল ফাইল ডাউনলোড করুন। সেখানে ছাত্র-ছাত্রীদের তথ্য পূরণ করে <b>"Excel ফাইল আপলোড করুন"</b> বাটনে আপলোড করলেই সব ফরম্যাট তৈরি হয়ে যাবে।</p>
     </div>
   </div>
 
   <script>
     let rawStudents = [];
-    let currentLevel = 'GP'; // 'GP', 'CIRCLE', 'SUBDIV', 'DISTRICT'
-    let generatedPages = []; // Stores structured data for both HTML rendering and ExcelJS export
+    let currentLevel = 'GP';
+    let generatedPages = [];
 
-    // Master Event Structure matching CIRCLE SPORTS.xlsm
     const MASTER_GROUPS = [
       {
         group: 'GROUP - A',
@@ -427,7 +476,6 @@
       }
     ];
 
-    // Event Sheet Definitions matching CIRCLE SPORTS.xlsm
     const EVENT_FORMATS = [
       // Track Events (Sheet: A) - Portrait
       { sheet: 'A', type: 'TRACK', group: 'GROUP - A', gender: 'B', event: '75m Race', orient: 'portrait' },
@@ -474,7 +522,6 @@
       { sheet: 'C', type: 'GYM', group: 'GROUP - C', gender: 'G', event: 'Gymnastic', orient: 'landscape' }
     ];
 
-    // Normalize sport names to handle minor dot/space differences
     function normalizeEventName(name) {
       if (!name) return '';
       const s = String(name).trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
@@ -507,7 +554,129 @@
       return s;
     }
 
-    // Listen to file upload
+    function findColumnValue(row, exactCandidates, partialCandidates) {
+      const keys = Object.keys(row);
+      for (let target of exactCandidates) {
+        for (let k of keys) {
+          const cleanK = k.trim().toLowerCase().replace(/['’]/g, '');
+          if (cleanK === target) {
+            return String(row[k]).trim();
+          }
+        }
+      }
+      for (let target of partialCandidates) {
+        for (let k of keys) {
+          const cleanK = k.trim().toLowerCase().replace(/['’]/g, '');
+          if (cleanK.includes(target)) {
+            return String(row[k]).trim();
+          }
+        }
+      }
+      return '';
+    }
+
+    // Rule 3: Download Blank Excel matching Sports.xlsx structure
+    async function downloadBlankExcel() {
+      const workbook = new ExcelJS.Workbook();
+      const ws = workbook.addWorksheet('Sheet1');
+
+      const headers = [
+        'GROUP',
+        'GENDER',
+        'Sport Name',
+        'CHEST NO.',
+        "Participant's Name",
+        'School Name',
+        'Class',
+        "Father's Name",
+        'Date of Birth',
+        'Banglarshiksha I D',
+        'Gram Panchayet',
+        'Circle'
+      ];
+
+      ws.columns = [
+        { width: 14 }, // GROUP
+        { width: 10 }, // GENDER
+        { width: 18 }, // Sport Name
+        { width: 13 }, // CHEST NO.
+        { width: 26 }, // Participant's Name
+        { width: 32 }, // School Name
+        { width: 10 }, // Class
+        { width: 24 }, // Father's Name
+        { width: 15 }, // Date of Birth
+        { width: 20 }, // Banglarshiksha I D
+        { width: 20 }, // Gram Panchayet
+        { width: 18 }  // Circle
+      ];
+
+      const headerRow = ws.getRow(1);
+      headers.forEach((h, idx) => {
+        const cell = headerRow.getCell(idx + 1);
+        cell.value = h;
+        cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+      headerRow.height = 26;
+
+      // Pre-populate blank structured rows for Group A, B, C (Boys & Girls) so user can easily type data
+      let rowNum = 2;
+      MASTER_GROUPS.forEach(gObj => {
+        gObj.events.forEach(evName => {
+          ['B', 'G'].forEach(gen => {
+            const row = ws.getRow(rowNum);
+            row.getCell(1).value = gObj.group;
+            row.getCell(2).value = gen;
+            row.getCell(3).value = evName;
+            for (let c = 1; c <= 12; c++) {
+              row.getCell(c).border = {
+                top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+                right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+              };
+              if (c <= 3) {
+                row.getCell(c).alignment = { horizontal: 'center', vertical: 'middle' };
+              }
+            }
+            row.height = 20;
+            rowNum++;
+          });
+        });
+      });
+
+      // Add 30 extra blank formatted rows below for additional entries
+      for (let i = 0; i < 30; i++) {
+        const row = ws.getRow(rowNum);
+        for (let c = 1; c <= 12; c++) {
+          row.getCell(c).border = {
+            top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+            left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+            bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+            right: { style: 'thin', color: { argb: 'FFCBD5E1' } }
+          };
+        }
+        row.height = 20;
+        rowNum++;
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Sports_Blank_Template.xlsx';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     document.getElementById('excelFile').addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -521,36 +690,28 @@
           const jsonRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
 
           rawStudents = jsonRows.map(row => {
-            // Flexible column matching
-            const getCol = (keys) => {
-              for (let k of Object.keys(row)) {
-                const cleanK = k.trim().toLowerCase();
-                if (keys.some(target => cleanK === target || cleanK.includes(target))) {
-                  return String(row[k]).trim();
-                }
-              }
-              return '';
-            };
-
             return {
-              group: normalizeGroupName(getCol(['group'])),
-              gender: normalizeGender(getCol(['gender', 'sex'])),
-              event: normalizeEventName(getCol(['sport name', 'event', 'sport'])),
-              chestNo: getCol(['chest no', 'chest']),
-              name: getCol(["participant's name", 'participant name', 'name', 'student name']),
-              school: getCol(['school name', 'school']),
-              studentClass: getCol(['class']),
-              fatherName: getCol(["father's name", 'father']),
-              dob: getCol(['date of birth', 'dob']),
-              bsId: getCol(['banglarshiksha', 'id']),
-              gp: getCol(['gram panchayet', 'gram panchayat', 'gp']),
-              circle: getCol(['circle']),
-              subDiv: getCol(['sub-division', 'sub division', 'subdivision'])
+              group: normalizeGroupName(findColumnValue(row, ['group'], ['group'])),
+              gender: normalizeGender(findColumnValue(row, ['gender', 'sex'], ['gender', 'sex'])),
+              event: normalizeEventName(findColumnValue(row, ['sport name', 'event', 'sport'], ['sport name', 'event'])),
+              chestNo: findColumnValue(row, ['chest no.', 'chest no', 'chest'], ['chest']),
+              name: findColumnValue(
+                row,
+                ['participants name', 'participant name', 'student name', 'name of participant', 'name'],
+                ['participant', 'student name']
+              ),
+              school: findColumnValue(row, ['school name', 'name of school', 'school'], ['school']),
+              studentClass: findColumnValue(row, ['class'], ['class']),
+              fatherName: findColumnValue(row, ['fathers name', 'father name'], ['father']),
+              dob: findColumnValue(row, ['date of birth', 'dob'], ['birth', 'dob']),
+              bsId: findColumnValue(row, ['banglarshiksha i d', 'banglarshiksha id'], ['banglarshiksha']),
+              gp: findColumnValue(row, ['gram panchayet', 'gram panchayat', 'gp'], ['panchay', 'gp']),
+              circle: findColumnValue(row, ['circle', 'circle name'], ['circle']),
+              subDiv: findColumnValue(row, ['sub-division', 'sub division', 'subdivision'], ['sub-division', 'sub division', 'subdivision'])
             };
-          }).filter(s => s.group && s.event && (s.name || s.chestNo || s.school));
+          }).filter(s => s.group && s.event && s.name);
 
-          // Enable buttons
-          ['btnGP', 'btnCircle', 'btnSubDiv', 'btnDistrict', 'btnPrint', 'btnDownload'].forEach(id => {
+          ['btnGP', 'btnCircle', 'btnSubDiv', 'btnDistrict', 'btnPrint', 'btnDownload', 'printFromInput', 'printToInput'].forEach(id => {
             document.getElementById(id).disabled = false;
           });
 
@@ -563,16 +724,17 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // Re-render when header text inputs change
-    ['yearInput', 'hostHeaderInput', 'defaultCircleInput', 'defaultSubDivInput'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => {
+    ['dateInput', 'defaultSubDivInput'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
         if (rawStudents.length > 0) renderFormats();
       });
     });
 
     function selectLevel(level) {
       currentLevel = level;
-      document.querySelectorAll('.btn-level').forEach(btn => btn.classList.remove('active'));
+      ['btnGP', 'btnCircle', 'btnSubDiv', 'btnDistrict'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
       if (level === 'GP') document.getElementById('btnGP').classList.add('active');
       if (level === 'CIRCLE') document.getElementById('btnCircle').classList.add('active');
       if (level === 'SUBDIV') document.getElementById('btnSubDiv').classList.add('active');
@@ -583,9 +745,7 @@
       }
     }
 
-    // Level Configuration Mapping (Rules 5, 6, 7, 8)
     function getLevelConfig(level) {
-      const defCircle = document.getElementById('defaultCircleInput').value.trim() || 'CIRCLE';
       const defSubDiv = document.getElementById('defaultSubDivInput').value.trim() || 'SUB-DIVISION';
 
       switch (level) {
@@ -594,28 +754,32 @@
             levelName: 'GP Level',
             masterSubTitle: 'বিদ্যালয় স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (GP Level)',
             eventUnitColHeader: 'School name',
-            getUnitValue: (s) => s.school || 'Unknown School'
+            getMasterUnitValue: (s) => s.school || 'Unknown School',
+            getEventUnitValue: (s) => s.school || ''
           };
         case 'CIRCLE':
           return {
             levelName: 'Circle Level',
-            masterSubTitle: 'গ্রাম পঞ্চায়েত স্তরে ১ম স্থানাধিকারীদের নামের তালিকা',
+            masterSubTitle: 'গ্রাম পঞ্চায়েত স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (Circle Level)',
             eventUnitColHeader: 'GP',
-            getUnitValue: (s) => s.gp || 'Unknown GP'
+            getMasterUnitValue: (s) => s.gp || 'Unknown GP',
+            getEventUnitValue: (s) => s.gp || ''
           };
         case 'SUBDIV':
           return {
             levelName: 'Sub-Division Level',
             masterSubTitle: 'চক্র স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (Sub-Division Level)',
             eventUnitColHeader: 'Circle name',
-            getUnitValue: (s) => s.circle || defCircle
+            getMasterUnitValue: (s) => s.circle || 'Unknown Circle',
+            getEventUnitValue: (s) => s.circle || ''
           };
         case 'DISTRICT':
           return {
             levelName: 'District Level',
             masterSubTitle: 'মহকুমা স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (District Level)',
-            eventUnitColHeader: 'Sub-Division',
-            getUnitValue: (s) => s.subDiv || defSubDiv
+            eventUnitColHeader: 'Circle Name',
+            getMasterUnitValue: (s) => s.subDiv || defSubDiv,
+            getEventUnitValue: (s) => s.circle || ''
           };
       }
     }
@@ -626,83 +790,151 @@
       generatedPages = [];
 
       const cfg = getLevelConfig(currentLevel);
-      const year = document.getElementById('yearInput').value.trim() || '2026';
-      const hostHeader = document.getElementById('hostHeaderInput').value.trim() || 'লাভপুর চক্র';
+      const dateStr = document.getElementById('dateInput').value.trim();
 
-      // Extract unique sorted units for the current level
+      // 1. MASTER SHEET PAGES
       const unitSet = new Set();
       rawStudents.forEach(s => {
-        const u = cfg.getUnitValue(s);
+        const u = cfg.getMasterUnitValue(s);
         if (u) unitSet.add(u);
       });
       const units = Array.from(unitSet);
 
-      // 1. Generate MASTER SHEET pages (One page per Unit: School / GP / Circle / Sub-Division)
       units.forEach(unitName => {
-        const unitStudents = rawStudents.filter(s => cfg.getUnitValue(s) === unitName);
+        const unitStudents = rawStudents.filter(s => cfg.getMasterUnitValue(s) === unitName);
+        const uniqueParticipantNames = new Set();
 
-        const masterPageData = {
+        const groupsData = MASTER_GROUPS.map(gObj => ({
+          group: gObj.group,
+          rows: gObj.events.map(evName => {
+            const boy = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'B' && s.name) || {};
+            const girl = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'G' && s.name) || {};
+            if (boy.name) uniqueParticipantNames.add(`${boy.chestNo}_${boy.name}`);
+            if (girl.name) uniqueParticipantNames.add(`${girl.chestNo}_${girl.name}`);
+            return {
+              event: evName,
+              bChest: boy.chestNo || '',
+              bName: boy.name || '',
+              bSchool: boy.school || '',
+              gChest: girl.chestNo || '',
+              gName: girl.name || '',
+              gSchool: girl.school || ''
+            };
+          })
+        }));
+
+        generatedPages.push({
           kind: 'MASTER',
           sheetName: 'Master',
           orient: 'landscape',
-          year,
-          hostHeader,
+          dateStr,
           subTitle: cfg.masterSubTitle,
           unitName,
-          groups: MASTER_GROUPS.map(gObj => ({
-            group: gObj.group,
-            rows: gObj.events.map(evName => {
-              const boy = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'B') || {};
-              const girl = unitStudents.find(s => s.group === gObj.group && s.event === evName && s.gender === 'G') || {};
-              return {
-                event: evName,
-                bChest: boy.chestNo || '',
-                bName: boy.name || '',
-                bSchool: boy.school || '',
-                gChest: girl.chestNo || '',
-                gName: girl.name || '',
-                gSchool: girl.school || ''
-              };
-            })
-          }))
-        };
-
-        generatedPages.push(masterPageData);
-        container.appendChild(createMasterPageDOM(masterPageData));
+          totalCount: uniqueParticipantNames.size,
+          groups: groupsData
+        });
       });
 
-      // 2. Generate EVENT SHEET pages (One format per page)
+      // 2. EVENT SHEET PAGES
       EVENT_FORMATS.forEach(fmt => {
         const genderLabel = fmt.gender === 'B' ? 'BOYS' : 'GIRLS';
         const participants = rawStudents
-          .filter(s => s.group === fmt.group && s.gender === fmt.gender && s.event === fmt.event)
+          .filter(s => s.group === fmt.group && s.gender === fmt.gender && s.event === fmt.event && s.name)
           .map(s => ({
             chestNo: s.chestNo || '',
             school: s.school || '',
-            unitCol: cfg.getUnitValue(s),
+            unitCol: cfg.getEventUnitValue(s),
             name: s.name || ''
           }));
 
-        const eventPageData = {
+        generatedPages.push({
           kind: fmt.type,
           sheetName: fmt.sheet,
           orient: fmt.orient,
+          dateStr,
           title: `${fmt.group}       ${genderLabel}       ${fmt.event}`,
           unitColHeader: cfg.eventUnitColHeader,
           gender: fmt.gender,
+          totalCount: participants.length,
           rows: participants
-        };
-
-        generatedPages.push(eventPageData);
-        container.appendChild(createEventPageDOM(eventPageData));
+        });
       });
 
-      document.getElementById('pageCountText').innerHTML = `মোট পেজ সংখ্যা: <b>${generatedPages.length}</b> টি (প্রতি পেজে ১টি ফরম্যাট)`;
+      const totalPages = generatedPages.length;
+
+      // Assign Page Numbers (1 to totalPages) and render DOM
+      generatedPages.forEach((pageData, idx) => {
+        pageData.pageNumber = idx + 1;
+        pageData.totalPages = totalPages;
+
+        const pageEl = pageData.kind === 'MASTER'
+          ? createMasterPageDOM(pageData)
+          : createEventPageDOM(pageData);
+
+        pageEl.dataset.pageNum = pageData.pageNumber;
+        container.appendChild(pageEl);
+      });
+
+      // Update Print Page _ to _ inputs
+      const fromInput = document.getElementById('printFromInput');
+      const toInput = document.getElementById('printToInput');
+      fromInput.min = 1;
+      fromInput.max = totalPages;
+      fromInput.value = 1;
+      toInput.min = 1;
+      toInput.max = totalPages;
+      toInput.value = totalPages;
+
+      document.getElementById('pageCountText').innerHTML = `মোট পেজ সংখ্যা: <b>${totalPages}</b> টি (প্রতি পেজে ১টি ফরম্যাট)`;
     }
+
+    // Rule 1: Print Page _ to _ Handler
+    function handleRangePrint() {
+      const total = generatedPages.length;
+      if (total === 0) return;
+
+      let fromPage = parseInt(document.getElementById('printFromInput').value, 10) || 1;
+      let toPage = parseInt(document.getElementById('printToInput').value, 10) || total;
+
+      if (fromPage < 1) fromPage = 1;
+      if (toPage > total) toPage = total;
+      if (fromPage > toPage) {
+        alert(`অনুগ্রহ করে সঠিক পেজ নম্বর দিন (1 থেকে ${total} এর মধ্যে)।`);
+        return;
+      }
+
+      const allPages = document.querySelectorAll('.sheet-page');
+      let lastVisiblePage = null;
+
+      allPages.forEach(pageEl => {
+        const pNum = parseInt(pageEl.dataset.pageNum, 10);
+        pageEl.classList.remove('print-excluded', 'last-printed-page');
+        if (pNum < fromPage || pNum > toPage) {
+          pageEl.classList.add('print-excluded');
+        } else {
+          lastVisiblePage = pageEl;
+        }
+      });
+
+      if (lastVisiblePage) {
+        lastVisiblePage.classList.add('last-printed-page');
+      }
+
+      window.print();
+    }
+
+    // Reset print visibility classes after printing finishes
+    window.addEventListener('afterprint', () => {
+      document.querySelectorAll('.sheet-page').forEach(pageEl => {
+        pageEl.classList.remove('print-excluded', 'last-printed-page');
+      });
+    });
 
     function createMasterPageDOM(data) {
       const div = document.createElement('div');
       div.className = 'sheet-page page-landscape';
+
+      const dateDisplay = data.dateStr ? `তারিখ: ${data.dateStr}` : `তারিখ: ____/____/______`;
 
       let groupsHtml = '';
       data.groups.forEach(g => {
@@ -719,7 +951,7 @@
         `).join('');
 
         groupsHtml += `
-          <table class="sports-table">
+          <table class="sports-table" style="margin-bottom:5px;">
             <thead>
               <tr class="group-title-row">
                 <th colspan="7">${g.group}</th>
@@ -740,17 +972,25 @@
       });
 
       div.innerHTML = `
-        <span class="sheet-badge">Sheet: Master (${currentLevel})</span>
-        <div class="master-header">
-          <h2>প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা - ${data.year}</h2>
-          <h3>${data.hostHeader}</h3>
-          <h4>${data.subTitle}</h4>
+        <div class="page-top-section">
+          <div class="master-header">
+            <h2>প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা</h2>
+            <h3>${data.subTitle}</h3>
+          </div>
+          <div class="master-meta">
+            <span>${data.unitName}</span>
+            <span>${dateDisplay}</span>
+          </div>
+          ${groupsHtml}
         </div>
-        <div class="master-meta">
-          <span>${data.unitName}</span>
-          <span>Date: ____/____/${data.year}</span>
+        <div class="page-footer-row" style="margin-top:6px;">
+          <div class="total-count-box">মোট ${data.totalCount} জন প্রতিযোগী</div>
+          <div class="page-number-label">Page ${data.pageNumber} of ${data.totalPages}</div>
+          <div class="signature-inner">
+            …………………………<br/>
+            স্বাক্ষর
+          </div>
         </div>
-        ${groupsHtml}
       `;
       return div;
     }
@@ -759,11 +999,18 @@
       const div = document.createElement('div');
       div.className = `sheet-page ${data.orient === 'landscape' ? 'page-landscape' : 'page-portrait'}`;
 
+      const targetBodyHeight = data.orient === 'portrait' ? 760 : 450;
+      const rowCount = Math.max(data.rows.length, 1);
+      const calculatedRowHeight = Math.min(72, Math.max(32, Math.floor(targetBodyHeight / rowCount)));
+      const rowStyle = `height: ${calculatedRowHeight}px;`;
+
+      const dateText = data.dateStr ? `তারিখ: ${data.dateStr}` : '';
+
       let tableHtml = '';
 
       if (data.kind === 'TRACK') {
         const rows = data.rows.map(r => `
-          <tr>
+          <tr style="${rowStyle}">
             <td>${r.chestNo}</td>
             <td class="text-left">${r.school}</td>
             <td>${r.unitCol}</td>
@@ -773,9 +1020,9 @@
         `).join('');
 
         tableHtml = `
-          <table class="sports-table">
+          <table class="sports-table event-full-table">
             <thead>
-              <tr>
+              <tr style="height:36px;">
                 <th style="width:12%;">CHEST NO.</th>
                 <th style="width:32%;">NAME OF SCHOOL</th>
                 <th style="width:18%;">${data.unitColHeader}</th>
@@ -788,7 +1035,7 @@
         `;
       } else if (data.kind === 'CHANCE3') {
         const rows = data.rows.map(r => `
-          <tr>
+          <tr style="${rowStyle}">
             <td>${r.chestNo}</td>
             <td class="text-left">${r.school}</td>
             <td>${r.unitCol}</td>
@@ -801,9 +1048,9 @@
         `).join('');
 
         tableHtml = `
-          <table class="sports-table">
+          <table class="sports-table event-full-table">
             <thead>
-              <tr>
+              <tr style="height:38px;">
                 <th style="width:9%;">CHEST NO.</th>
                 <th style="width:25%;">NAME OF SCHOOL</th>
                 <th style="width:14%;">${data.unitColHeader}</th>
@@ -819,7 +1066,7 @@
         `;
       } else if (data.kind === 'HIGHJUMP') {
         const rows = data.rows.map(r => `
-          <tr>
+          <tr style="${rowStyle}">
             <td>${r.chestNo}</td>
             <td class="text-left">${r.school}</td>
             <td>${r.unitCol}</td>
@@ -830,9 +1077,9 @@
         `).join('');
 
         tableHtml = `
-          <table class="sports-table">
+          <table class="sports-table event-full-table">
             <thead>
-              <tr>
+              <tr style="height:36px;">
                 <th style="width:8%;">CHEST NO.</th>
                 <th style="width:23%;">NAME OF SCHOOL</th>
                 <th style="width:13%;">${data.unitColHeader}</th>
@@ -847,7 +1094,7 @@
         `;
       } else if (data.kind === 'YOGA') {
         const rows = data.rows.map(r => `
-          <tr>
+          <tr style="${rowStyle}">
             <td>${r.chestNo}</td>
             <td class="text-left">${r.school}</td>
             <td>${r.unitCol}</td>
@@ -858,9 +1105,9 @@
         `).join('');
 
         tableHtml = `
-          <table class="sports-table">
+          <table class="sports-table event-full-table">
             <thead>
-              <tr>
+              <tr style="height:40px;">
                 <th style="width:8%;">CHEST NO.</th>
                 <th style="width:22%;">NAME OF SCHOOL</th>
                 <th style="width:12%;">${data.unitColHeader}</th>
@@ -884,7 +1131,7 @@
         const col14 = isGirls ? 'LEAP JUMP 1 & 2' : 'DIVE ROLL/ FLY HAND';
 
         const rows = data.rows.map(r => `
-          <tr>
+          <tr style="${rowStyle}">
             <td>${r.chestNo}</td>
             <td class="text-left">${r.school}</td>
             <td>${r.unitCol}</td>
@@ -895,7 +1142,7 @@
         `).join('');
 
         tableHtml = `
-          <table class="sports-table gym-table">
+          <table class="sports-table gym-table event-full-table">
             <thead>
               <tr>
                 <th rowspan="2" style="width:5%;">CHEST NO.</th>
@@ -931,10 +1178,17 @@
       }
 
       div.innerHTML = `
-        <span class="sheet-badge">Sheet: ${data.sheetName} (${currentLevel})</span>
-        <div class="event-banner">${data.title}</div>
-        ${tableHtml}
-        <div class="signature-box">
+        <div class="page-top-section">
+          <div class="event-top-bar">
+            <span class="page-number-label">Page ${data.pageNumber} of ${data.totalPages}</span>
+            <span>${dateText}</span>
+          </div>
+          <div class="event-banner">${data.title}</div>
+          ${tableHtml}
+        </div>
+        <div class="page-footer-row">
+          <div class="total-count-box">মোট ${data.totalCount} জন প্রতিযোগী</div>
+          <div class="page-number-label">Page ${data.pageNumber}</div>
           <div class="signature-inner">
             …………………………<br/>
             বিচারকের স্বাক্ষর
@@ -943,8 +1197,8 @@
       `;
       return div;
     }
-    
-    // Rule 9: Generate & Download Excel with Pre-configured Page Setup & Page Breaks (1 format per page)
+
+    // Download Formatted Excel with Page Numbers, Date, Total Count & 1-Format-Per-Page Breaks
     async function downloadFormattedExcel() {
       if (generatedPages.length === 0) return;
 
@@ -961,18 +1215,17 @@
 
       const fontHeader = { name: 'Calibri', size: 11, bold: true };
       const fontTitle = { name: 'Calibri', size: 13, bold: true };
-      const fontBody = { name: 'Calibri', size: 10, bold: false };
-      const fontBodyBold = { name: 'Calibri', size: 10, bold: true };
+      const fontBody = { name: 'Calibri', size: 11, bold: false };
+      const fontBodyBold = { name: 'Calibri', size: 11, bold: true };
 
-      // Helper to configure sheet for exact 1-format-per-page printing
-      function setupSheetPrint(ws, orientation, fitWidth = 1) {
+      function setupSheetPrint(ws, orientation) {
         ws.views = [{ showGridLines: true }];
         ws.pageSetup = {
           paperSize: 9, // A4
           orientation: orientation,
           fitToPage: true,
-          fitToWidth: fitWidth,
-          fitToHeight: 0, // Controlled via explicit row page breaks (1 format per page)
+          fitToWidth: 1,
+          fitToHeight: 0,
           horizontalCentered: true,
           margins: {
             left: 0.3,
@@ -985,9 +1238,9 @@
         };
       }
 
-      // 1. Build Master Sheet
+      // 1. Master Sheet
       const wsMaster = workbook.addWorksheet('Master');
-      setupSheetPrint(wsMaster, 'landscape', 1);
+      setupSheetPrint(wsMaster, 'landscape');
       wsMaster.columns = [
         { width: 16 }, { width: 10 }, { width: 24 }, { width: 28 },
         { width: 2 },  { width: 10 }, { width: 24 }, { width: 28 }
@@ -999,30 +1252,23 @@
       masterPages.forEach((mp, idx) => {
         wsMaster.mergeCells(rIdx, 1, rIdx, 8);
         const c1 = wsMaster.getCell(rIdx, 1);
-        c1.value = `প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা - ${mp.year}`;
+        c1.value = 'প্রাথমিক, নিম্ন বুনিয়াদী, মাদ্রাসা ও শিশুশিক্ষা কেন্দ্রের ছাত্র-ছাত্রীগণের বার্ষিক ক্রীড়া প্রতিযোগিতা';
         c1.font = fontTitle;
         c1.alignment = { horizontal: 'center', vertical: 'middle' };
         rIdx++;
 
         wsMaster.mergeCells(rIdx, 1, rIdx, 8);
         const c2 = wsMaster.getCell(rIdx, 1);
-        c2.value = mp.hostHeader;
-        c2.font = { name: 'Calibri', size: 12, bold: true };
+        c2.value = mp.subTitle;
+        c2.font = { name: 'Calibri', size: 11, bold: true, underline: true };
         c2.alignment = { horizontal: 'center', vertical: 'middle' };
-        rIdx++;
-
-        wsMaster.mergeCells(rIdx, 1, rIdx, 8);
-        const c3 = wsMaster.getCell(rIdx, 1);
-        c3.value = mp.subTitle;
-        c3.font = { name: 'Calibri', size: 11, bold: true, underline: true };
-        c3.alignment = { horizontal: 'center', vertical: 'middle' };
         rIdx++;
 
         wsMaster.mergeCells(rIdx, 1, rIdx, 5);
         wsMaster.getCell(rIdx, 1).value = mp.unitName;
         wsMaster.getCell(rIdx, 1).font = fontHeader;
         wsMaster.mergeCells(rIdx, 6, rIdx, 8);
-        wsMaster.getCell(rIdx, 6).value = `Date: ____/____/${mp.year}`;
+        wsMaster.getCell(rIdx, 6).value = mp.dateStr ? `তারিখ: ${mp.dateStr}` : 'তারিখ: ____/____/______';
         wsMaster.getCell(rIdx, 6).font = fontHeader;
         wsMaster.getCell(rIdx, 6).alignment = { horizontal: 'right' };
         rIdx++;
@@ -1060,18 +1306,28 @@
               };
               cell.border = borderThin;
             });
+            wsMaster.getRow(rIdx).height = 22;
             rIdx++;
           });
-          rIdx++; // Gap between groups
+          rIdx++;
         });
 
-        // Add Page Break after each Master unit so each prints on 1 page
+        wsMaster.mergeCells(rIdx, 1, rIdx, 4);
+        wsMaster.getCell(rIdx, 1).value = `মোট ${mp.totalCount} জন প্রতিযোগী`;
+        wsMaster.getCell(rIdx, 1).font = fontHeader;
+
+        wsMaster.mergeCells(rIdx, 5, rIdx, 8);
+        wsMaster.getCell(rIdx, 5).value = `Page ${mp.pageNumber} of ${mp.totalPages}`;
+        wsMaster.getCell(rIdx, 5).font = fontHeader;
+        wsMaster.getCell(rIdx, 5).alignment = { horizontal: 'right' };
+        rIdx++;
+
         if (idx < masterPages.length - 1) {
           wsMaster.getRow(rIdx - 1).addPageBreak();
         }
       });
 
-      // 2. Build Event Sheets ('A', 'A (2)', 'B (2)', 'B', 'yoga', 'C')
+      // 2. Event Sheets
       const sheetNames = ['A', 'A (2)', 'B (2)', 'B', 'yoga', 'C'];
 
       sheetNames.forEach(sName => {
@@ -1080,9 +1336,8 @@
 
         const ws = workbook.addWorksheet(sName);
         const orient = pagesForSheet[0].orient;
-        setupSheetPrint(ws, orient, 1);
+        setupSheetPrint(ws, orient);
 
-        // Set column widths per sheet type
         if (sName === 'A') {
           ws.columns = [{ width: 13 }, { width: 34 }, { width: 22 }, { width: 26 }, { width: 18 }];
         } else if (sName === 'A (2)' || sName === 'B (2)') {
@@ -1115,7 +1370,28 @@
         pagesForSheet.forEach((ep, pIdx) => {
           const totalCols = ws.columns.length;
 
-          // Banner Row
+          const targetExcelHeight = orient === 'portrait' ? 560 : 340;
+          const rCount = Math.max(ep.rows.length, 1);
+          const excelDataRowHeight = Math.min(54, Math.max(28, Math.floor(targetExcelHeight / rCount)));
+
+          // Top Bar: Page Number (Left) + Date (Right)
+          const midCol = Math.max(2, Math.floor(totalCols / 2));
+          ws.mergeCells(rowCursor, 1, rowCursor, midCol);
+          const pageTopCell = ws.getCell(rowCursor, 1);
+          pageTopCell.value = `Page ${ep.pageNumber} of ${ep.totalPages}`;
+          pageTopCell.font = fontHeader;
+          pageTopCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+          if (ep.dateStr) {
+            ws.mergeCells(rowCursor, midCol + 1, rowCursor, totalCols);
+            const dateCell = ws.getCell(rowCursor, midCol + 1);
+            dateCell.value = `তারিখ: ${ep.dateStr}`;
+            dateCell.font = fontHeader;
+            dateCell.alignment = { horizontal: 'right', vertical: 'middle' };
+          }
+          ws.getRow(rowCursor).height = 20;
+          rowCursor++;
+
           ws.mergeCells(rowCursor, 1, rowCursor, totalCols);
           const bannerCell = ws.getCell(rowCursor, 1);
           bannerCell.value = ep.title;
@@ -1123,7 +1399,7 @@
           bannerCell.alignment = { horizontal: 'center', vertical: 'middle' };
           bannerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
           for (let c = 1; c <= totalCols; c++) ws.getCell(rowCursor, c).border = borderThin;
-          ws.getRow(rowCursor).height = 24;
+          ws.getRow(rowCursor).height = 28;
           rowCursor++;
 
           if (ep.kind === 'GYM') {
@@ -1159,7 +1435,7 @@
               cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
               cell.border = borderThin;
             });
-            ws.getRow(rowCursor).height = 65;
+            ws.getRow(rowCursor).height = 68;
             rowCursor++;
 
             hRow2.forEach((h, i) => {
@@ -1170,7 +1446,6 @@
               cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
               cell.border = borderThin;
             });
-            // Merge first 4 and last 2 header rows vertically
             [1, 2, 3, 4, 19, 20].forEach(colIdx => {
               ws.mergeCells(rowCursor - 1, colIdx, rowCursor, colIdx);
             });
@@ -1185,7 +1460,7 @@
                 cell.alignment = { horizontal: (i === 1 || i === 3) ? 'left' : 'center', vertical: 'middle', wrapText: true };
                 cell.border = borderThin;
               });
-              ws.getRow(rowCursor).height = 20;
+              ws.getRow(rowCursor).height = excelDataRowHeight;
               rowCursor++;
             });
           } else {
@@ -1208,7 +1483,7 @@
               cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
               cell.border = borderThin;
             });
-            ws.getRow(rowCursor).height = 26;
+            ws.getRow(rowCursor).height = 30;
             rowCursor++;
 
             ep.rows.forEach(r => {
@@ -1221,14 +1496,28 @@
                 cell.alignment = { horizontal: (i === 1 || i === 3) ? 'left' : 'center', vertical: 'middle', wrapText: true };
                 cell.border = borderThin;
               });
-              ws.getRow(rowCursor).height = 22;
+              ws.getRow(rowCursor).height = excelDataRowHeight;
               rowCursor++;
             });
           }
 
-          // Signature Block
+          // Footer: Total Participant Count (Left) + Page Number (Center) + Judge Signature (Right)
           rowCursor += 2;
+          ws.mergeCells(rowCursor, 1, rowCursor + 1, 2);
+          const countCell = ws.getCell(rowCursor, 1);
+          countCell.value = `মোট ${ep.totalCount} জন প্রতিযোগী`;
+          countCell.font = fontHeader;
+          countCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
           const sigCol = Math.max(4, totalCols - 2);
+          if (sigCol > 3) {
+            ws.mergeCells(rowCursor, 3, rowCursor + 1, sigCol - 1);
+            const pFootCell = ws.getCell(rowCursor, 3);
+            pFootCell.value = `Page ${ep.pageNumber}`;
+            pFootCell.font = fontHeader;
+            pFootCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
+
           ws.mergeCells(rowCursor, sigCol, rowCursor, totalCols);
           const s1 = ws.getCell(rowCursor, sigCol);
           s1.value = '…………………………';
@@ -1242,14 +1531,12 @@
           s2.alignment = { horizontal: 'center' };
           rowCursor++;
 
-          // Exact Page Break after each format so every format prints on 1 page
           if (pIdx < pagesForSheet.length - 1) {
             ws.getRow(rowCursor - 1).addPageBreak();
           }
         });
       });
 
-      // Download File
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
