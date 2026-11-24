@@ -357,6 +357,13 @@
       font-weight: 700;
     }
 
+    .below-table-signature {
+      margin-top: 28px;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 25px;
+    }
+
     .signature-inner {
       text-align: center;
       font-size: 13px;
@@ -746,12 +753,17 @@
 
     function getLevelConfig(level) {
       const defSubDiv = document.getElementById('defaultSubDivInput').value.trim() || 'SUB-DIVISION';
+      const firstCircle = (rawStudents.find(s => s.circle) || {}).circle || 'CIRCLE';
+      const firstGP = (rawStudents.find(s => s.gp) || {}).gp || 'GP';
 
       switch (level) {
         case 'GP':
           return {
             levelName: 'GP Level',
-            masterSubTitle: 'বিদ্যালয় স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (GP Level)',
+            getMasterSubTitle: (unitStudents) => {
+              const gpName = (unitStudents.find(s => s.gp) || {}).gp || firstGP;
+              return `বিদ্যালয় স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (${gpName})`;
+            },
             eventUnitColHeader: 'School name',
             getMasterUnitValue: (s) => s.school || 'Unknown School',
             getEventUnitValue: (s) => s.school || ''
@@ -759,7 +771,10 @@
         case 'CIRCLE':
           return {
             levelName: 'Circle Level',
-            masterSubTitle: 'গ্রাম পঞ্চায়েত স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (Circle Level)',
+            getMasterSubTitle: (unitStudents) => {
+              const circleName = (unitStudents.find(s => s.circle) || {}).circle || firstCircle;
+              return `গ্রাম পঞ্চায়েত স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (${circleName})`;
+            },
             eventUnitColHeader: 'GP',
             getMasterUnitValue: (s) => s.gp || 'Unknown GP',
             getEventUnitValue: (s) => s.gp || ''
@@ -767,7 +782,10 @@
         case 'SUBDIV':
           return {
             levelName: 'Sub-Division Level',
-            masterSubTitle: 'চক্র স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (Sub-Division Level)',
+            getMasterSubTitle: (unitStudents) => {
+              const subDivName = (unitStudents.find(s => s.subDiv) || {}).subDiv || defSubDiv;
+              return `চক্র স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (${subDivName})`;
+            },
             eventUnitColHeader: 'Circle name',
             getMasterUnitValue: (s) => s.circle || 'Unknown Circle',
             getEventUnitValue: (s) => s.circle || ''
@@ -775,7 +793,10 @@
         case 'DISTRICT':
           return {
             levelName: 'District Level',
-            masterSubTitle: 'মহকুমা স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (District Level)',
+            getMasterSubTitle: (unitStudents) => {
+              const subDivName = (unitStudents.find(s => s.subDiv) || {}).subDiv || defSubDiv;
+              return `মহকুমা স্তরে ১ম স্থানাধিকারীদের নামের তালিকা (${subDivName})`;
+            },
             eventUnitColHeader: 'Circle Name',
             getMasterUnitValue: (s) => s.subDiv || defSubDiv,
             getEventUnitValue: (s) => s.circle || ''
@@ -827,7 +848,7 @@
           sheetName: 'Master',
           orient: 'landscape',
           dateStr,
-          subTitle: cfg.masterSubTitle,
+          subTitle: cfg.getMasterSubTitle(unitStudents),
           unitName,
           totalCount: uniqueParticipantNames.size,
           groups: groupsData
@@ -985,10 +1006,7 @@
         <div class="page-footer-row" style="margin-top:6px;">
           <div class="total-count-box">মোট ${data.totalCount} জন প্রতিযোগী</div>
           <div class="page-number-label">Page ${data.pageNumber} of ${data.totalPages}</div>
-          <div class="signature-inner">
-            …………………………<br/>
-            স্বাক্ষর
-          </div>
+          <div style="width: 120px;"></div>
         </div>
       `;
       return div;
@@ -1184,14 +1202,17 @@
           </div>
           <div class="event-banner">${data.title}</div>
           ${tableHtml}
+          <div class="below-table-signature">
+            <div class="signature-inner"><br><br><br><br><br><br>
+              …………………………<br/>
+              বিচারকের স্বাক্ষর
+            </div>
+          </div>
         </div>
         <div class="page-footer-row">
           <div class="total-count-box">মোট ${data.totalCount} জন প্রতিযোগী</div>
           <div class="page-number-label">Page ${data.pageNumber}</div>
-          <div class="signature-inner">
-            …………………………<br/>
-            বিচারকের স্বাক্ষর
-          </div>
+          <div style="width: 120px;"></div>
         </div>
       `;
       return div;
@@ -1500,23 +1521,9 @@
             });
           }
 
-          // Footer: Total Participant Count (Left) + Page Number (Center) + Judge Signature (Right)
+          // Judge Signature directly below the table
           rowCursor += 2;
-          ws.mergeCells(rowCursor, 1, rowCursor + 1, 2);
-          const countCell = ws.getCell(rowCursor, 1);
-          countCell.value = `মোট ${ep.totalCount} জন প্রতিযোগী`;
-          countCell.font = fontHeader;
-          countCell.alignment = { horizontal: 'left', vertical: 'middle' };
-
           const sigCol = Math.max(4, totalCols - 2);
-          if (sigCol > 3) {
-            ws.mergeCells(rowCursor, 3, rowCursor + 1, sigCol - 1);
-            const pFootCell = ws.getCell(rowCursor, 3);
-            pFootCell.value = `Page ${ep.pageNumber}`;
-            pFootCell.font = fontHeader;
-            pFootCell.alignment = { horizontal: 'center', vertical: 'middle' };
-          }
-
           ws.mergeCells(rowCursor, sigCol, rowCursor, totalCols);
           const s1 = ws.getCell(rowCursor, sigCol);
           s1.value = '…………………………';
@@ -1528,6 +1535,22 @@
           s2.value = 'বিচারকের স্বাক্ষর';
           s2.font = fontHeader;
           s2.alignment = { horizontal: 'center' };
+          rowCursor += 2;
+
+          // Footer: Total Participant Count (Left) + Page Number (Center) without signature
+          ws.mergeCells(rowCursor, 1, rowCursor, 2);
+          const countCell = ws.getCell(rowCursor, 1);
+          countCell.value = `মোট ${ep.totalCount} জন প্রতিযোগী`;
+          countCell.font = fontHeader;
+          countCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+          if (sigCol > 3) {
+            ws.mergeCells(rowCursor, 3, rowCursor, totalCols);
+            const pFootCell = ws.getCell(rowCursor, 3);
+            pFootCell.value = `Page ${ep.pageNumber}`;
+            pFootCell.font = fontHeader;
+            pFootCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
           rowCursor++;
 
           if (pIdx < pagesForSheet.length - 1) {
