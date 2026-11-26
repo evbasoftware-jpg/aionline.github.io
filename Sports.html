@@ -648,10 +648,6 @@
         'CHEST NO.',
         "Participant's Name",
         'School Name',
-        'Class',
-        "Father's Name",
-        'Date of Birth',
-        'Banglarshiksha I D',
         'Gram Panchayet',
         'Circle',
         'Sub-Division',
@@ -665,10 +661,6 @@
         { width: 13 }, // CHEST NO.
         { width: 26 }, // Participant's Name
         { width: 32 }, // School Name
-        { width: 10 }, // Class
-        { width: 24 }, // Father's Name
-        { width: 15 }, // Date of Birth
-        { width: 20 }, // Banglarshiksha I D
         { width: 20 }, // Gram Panchayet
         { width: 18 }, // Circle
         { width: 20 }, // Sub-Division
@@ -700,7 +692,7 @@
             row.getCell(1).value = gObj.group;
             row.getCell(2).value = gen;
             row.getCell(3).value = evName;
-            for (let c = 1; c <= 14; c++) {
+            for (let c = 1; c <= 10; c++) {
               row.getCell(c).border = {
                 top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
                 left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
@@ -720,7 +712,7 @@
       // Add 30 extra blank formatted rows below for additional entries
       for (let i = 0; i < 30; i++) {
         const row = ws.getRow(rowNum);
-        for (let c = 1; c <= 14; c++) {
+        for (let c = 1; c <= 10; c++) {
           row.getCell(c).border = {
             top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
             left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
@@ -1131,7 +1123,7 @@
       div.className = `sheet-page ${data.orient === 'landscape' ? 'page-landscape' : 'page-portrait'}`;
 
       const targetBodyHeight = data.orient === 'portrait' ? 720 : 280;
-      const maxRowH = data.orient === 'portrait' ? 68 : 58;
+      const maxRowH = data.orient === 'portrait' ? 68 : 44;
       const rowCount = Math.max(data.rows.length, 1);
       const calculatedRowHeight = Math.min(maxRowH, Math.max(28, Math.floor(targetBodyHeight / rowCount)));
       const rowStyle = `height: ${calculatedRowHeight}px;`;
@@ -1322,7 +1314,7 @@
           <div class="event-banner">${data.title}</div>
           ${tableHtml}
           <div class="below-table-signature">
-            <div class="signature-inner"><br><br>
+            <div class="signature-inner">
               …………………………<br/>
               বিচারকের স্বাক্ষর
             </div>
